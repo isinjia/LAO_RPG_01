@@ -41,6 +41,16 @@ def main():
             jobs.append('%s|%s|%s' % (e or m, rel, fp))
         if not exprs:
             jobs.append('%s|%s|' % (m, rel))
+    # 도입부 컷 그림도 2DModel 프리팹 (부위 조각 묶음): 그대로 찍는다
+    cgs = set()
+    for s in story:
+        for part in ('start', 'mid', 'end'):
+            for n in s[part]:
+                if n.get('cg', '').startswith('2DModel_'): cgs.add(n['cg'])
+    for cg in sorted(cgs):
+        prefab = SRC + '/AssetBundleResource/Character_2D/%s.prefab' % cg
+        if os.path.exists(prefab):
+            jobs.append('%s|%s|' % (cg, S.copy_asset(prefab, copied)))
     open(os.path.join(S.PROJ, 'portrait_jobs.txt'), 'w').write('\n'.join(jobs) + '\n')
     print('assets:', len(copied), 'jobs:', len(jobs))
 

@@ -1414,19 +1414,34 @@
   // ── 화면들 ───────────────────────────────────────────────
   function screen(html) { $('screen').innerHTML = html; mode = 'screen'; }
   function hideScreen() { $('screen').innerHTML = ''; }
+  // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
+  const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
-    AU.bgm('title');
+    AU.bgm('lo_title');
     const has = save.clear > 0 || Object.values(save.heroes).some((h) => h.lv > 1);
-    screen(`<div class="scr title" style="background-image:url(assets/bg/title.webp)">
-      <div class="logo">오르카 전기<small>라스트오리진 전술 시뮬레이션</small></div>
-      <div class="menuBtns">
-        ${has ? '<button class="gold" id="tCont">이어하기</button>' : ''}
-        <button id="tNew" class="${has ? '' : 'gold'}">처음부터</button>
+    const motes = Array.from({ length: 14 }, (_, i) => `<i style="left:${(i * 53) % 100}%;animation-delay:${-(i * 1.7) % 9}s;animation-duration:${8 + (i % 5)}s;--s:${0.4 + (i % 4) * 0.25}"></i>`).join('');
+    screen(`<div class="title2">
+      <div class="tbg"></div><div class="tlight"></div><div class="tmotes">${motes}</div><div class="tvig"></div>
+      <div class="tcenter"><img class="tlogo" src="assets/title/logo.webp" alt=""><div class="tsub">오르카 전기 · 랑그릿사식 전술 RPG</div></div>
+      <div class="ttouch" id="tTouch">화면을 터치해 주세요</div>
+      <div class="tmenu hidden" id="tMenu">
+        ${has ? '<button id="tCont">이어하기</button>' : ''}
+        <button id="tNew">처음부터</button>
         <button id="tHelp">도움말</button>
       </div>
-      <div class="foot">본작 메인 스토리를 따라가는 비영리 팬메이드 게임입니다.<br>세로·가로 화면과 PC 모두 지원합니다.</div></div>`);
-    const go = () => { AU.play('click'); stageSelect(); };
+      <div class="tcopy">라스트오리진 원작 자원을 사용한 비영리 팬메이드 게임</div></div>`);
+    let touched = false;
+    $('screen').querySelector('.title2').onclick = (e) => {
+      if (touched || e.target.closest('button')) return;
+      touched = true;
+      AU.bgm('lo_title');
+      AU.voice(TITLE_CALLS[Math.floor(Math.random() * TITLE_CALLS.length)]);
+      AU.play('lo_stage_in', 0.6);
+      $('tTouch').classList.add('hidden');
+      $('tMenu').classList.remove('hidden');
+    };
+    const go = () => { AU.play('lo_trans_in', 0.6); stageSelect(); };
     if ($('tCont')) $('tCont').onclick = go;
     $('tNew').onclick = () => {
       const start = () => { save.clear = 0; save.troops = {}; save.joined = []; for (const id in D.HEROES) save.heroes[id] = { lv: 1, exp: 0, tier: 0 }; writeSave(); startStage(0); };
@@ -1437,7 +1452,7 @@
   }
   function stageSelect() {
     leaveMap();
-    AU.bgm('title');
+    AU.bgm('lo_talk1');
     const cards = D.STAGES.map((st, i) => {
       const lock = i > save.clear, clear = i < save.clear;
       const S = window.STORY && STORY[st.idx];
@@ -1500,10 +1515,10 @@
   async function startStage(si) {
     const st = D.STAGES[si];
     leaveMap();
-    AU.bgm('title');
     hideScreen();
     const S = window.STORY && STORY[st.idx];
-    if (S) await story(S.start);
+    AU.play('lo_trans_in', 0.5);
+    if (S) { AU.bgm(S.bgmStart); await story(S.start); }
     prep(si);
   }
 
@@ -1548,6 +1563,7 @@
     AU.bgm(st.bgm);
     setTop();
     if (si === 0 && !save.tutSeen) { save.tutSeen = true; writeSave(); await new Promise((r) => help(r)); }
+    AU.play('lo_battle_start', 0.7);
     await startPhase('p');
   }
   function leaveMap() {
@@ -1571,7 +1587,7 @@
     await wait(400);
     banner(win ? '작전 성공!' : '작전 실패', why || (win ? st.goal + ' 달성' : '콘스탄챠가 퇴각했습니다'), win ? 'gold' : 'e');
     AU.bgm(null);
-    AU.play(win ? 'win' : 'fail', 0.8);
+    AU.play(win ? 'lo_win' : 'fail', 0.8);
     await wait(1700);
     const lines = [];
     const gain = R.stageExp(st.id - 1, win);
@@ -1600,8 +1616,8 @@
     const next = win && si + 1 < D.STAGES.length;
     leaveMap();
     const S = window.STORY && STORY[st.idx];
-    if (win && S) await story(S.end);
-    if (win && si === D.STAGES.length - 1) AU.bgm('title');
+    if (win && S) { AU.bgm(S.bgmEnd); await story(S.end); }
+    AU.bgm('lo_talk1');
     screen(`<div class="scr result"><div class="big ${win ? 'win' : 'lose'}">${win ? '작전 성공' : '작전 실패'}</div>
       <div class="lines">${st.idx} ${st.title}<br>${win ? '' : '얻은 경험치는 유지됩니다.<br>'}${lines.join('<br>') || '레벨 변화 없음'}</div>
       <div class="menuBtns">${next ? '<button class="gold" id="rNext">다음 작전으로</button>' : ''}${!win ? '<button class="gold" id="rRetry">다시 도전</button>' : ''}<button id="rSel">작전 선택</button></div>
@@ -1686,11 +1702,14 @@
     const first = ['constantia', 'griffon'];
     let n = 0;
     await Promise.all(first.map((id) => SD.prepare(id).then(() => { $('loadMsg').textContent = `불러오는 중… ${++n}/${first.length}`; })));
+    // 타이틀 그림은 미리 받아 둔다 (검은 화면에서 튀어나오지 않게)
+    await Promise.all(['assets/title/bg.webp', 'assets/title/light.webp', 'assets/title/logo.webp'].map((u) => new Promise((r) => { const im = new Image(); im.onload = im.onerror = r; im.src = u; })));
+    await document.fonts.load('16px LO_B').catch(() => {});
     $('boot').classList.add('hidden');
     requestAnimationFrame(frame);
     title();
     // 첫 터치에서 배경음 시작 (모바일 정책)
-    const kick = () => { AU.bgm(AU.bgmName || 'title'); removeEventListener('pointerdown', kick); };
+    const kick = () => { AU.bgm(AU.bgmName || 'lo_title'); removeEventListener('pointerdown', kick); };
     addEventListener('pointerdown', kick);
     // 시험용 훅
     window.GAME = {

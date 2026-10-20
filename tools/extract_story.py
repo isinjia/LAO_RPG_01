@@ -64,17 +64,14 @@ def dialog(group, loc):
             who = clean(loc.get(str(r.get('Char_Name_' + p) or ''), ''))
             model = (r.get('Char_ImageName_' + p) or '').replace('2DModel_', '')
             expr = r.get('Char_ImageVarName_' + p) or ''
-        cg = r.get('Add_ImageName') or ''
-        for p in POS:  # 도입부 컷 그림 (2DModel_*_Dialog010101)
-            m = r.get('Char_ImageName_' + p) or ''
-            if 'Dialog0' in m and not cg: cg = m
+        cg = r.get('Add_ImageName') or ''  # 도입부 컷 그림(2DModel_*_Dialog010101)은 인물 자리에 서므로 cast 로
         if 'Dialog0' in model: model = model.replace('_Dialog010101', '_N')
         ch = [[clean(loc.get(str(s), '')), num(n)] for s, n in zip(r.get('SelectionIndex') or [], (r.get('SelectionIndex_Next') or []) + [r.get('NextDialogScript')] * 9)]
         # 화면에 선 인물: 위치별 [모델, 표정, 밝기(0 보통 / 1 어둡게 / 2 회상)]
         cast = {}
         for p in POS:
             m = (r.get('Char_ImageName_' + p) or '').replace('2DModel_', '')
-            if not m or 'Dialog0' in m: continue
+            if not m: continue
             cast[p] = [m, r.get('Char_ImageVarName_' + p) or '', r.get('Char_SCGActivation_' + p) or 0]
         out.append({'id': num(k), 'who': who, 'model': model, 'expr': expr, 'text': clean(loc.get(str(r.get('Script')), '')),
                     'bg': r.get('BG_ImageName') or '', 'cg': cg, 'next': num(r.get('NextDialogScript')), 'choices': ch,
@@ -113,7 +110,9 @@ def main():
         if boss:
             waves.append([[boss.get('mobIndexString%d' % j), boss.get('mobLevel%d' % j), clean(loc.get(str((mon.get(boss.get('mobIndexString%d' % j)) or {}).get('Name')), ''))]
                           for j in range(1, 10) if boss.get('mobIndexString%d' % j)])
-        res.append({'key': s['Key'], 'idx': s['StageIdxString'], 'name': clean(loc.get(str(s.get('StageName')), '')),
+        bgm = lambda f: (cut.get(str(s.get(f) or '')) or {}).get('BGMFileName') or ''
+        res.append({'bgm_start': bgm('StartCutsceneIndex'), 'bgm_end': bgm('EndCutsceneIndex'),
+                    'key': s['Key'], 'idx': s['StageIdxString'], 'name': clean(loc.get(str(s.get('StageName')), '')),
                     'desc': clean(loc.get(str(s.get('StageDesc')), '')), 'start': cs('StartCutsceneIndex'),
                     'mid': cs('MidCutsceneIndex'), 'end': cs('EndCutsceneIndex'), 'waves': waves})
     json.dump(res, open(os.path.join(ROOT, 'tools', 'story_%s.json' % CHAPTER.lower()), 'w', encoding='utf8'), ensure_ascii=False, indent=1)

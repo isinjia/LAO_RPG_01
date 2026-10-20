@@ -1,3 +1,5 @@
+@font-face { font-family: 'LO_M'; src: url(../assets/font/LO_M.woff2) format('woff2'); font-display: swap; }
+@font-face { font-family: 'LO_B'; src: url(../assets/font/LO_B.woff2) format('woff2'); font-display: swap; }
 :root {
   --bg: #0b1020;
   --panel: rgba(14, 20, 38, 0.92);
@@ -17,7 +19,7 @@
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--txt);
-  font-family: Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif; user-select: none; -webkit-user-select: none; }
+  font-family: 'LO_M', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif; user-select: none; -webkit-user-select: none; }
 #stage { position: fixed; inset: 0; touch-action: none; }
 #stage canvas { display: block; width: 100%; height: 100%; }
 .hidden { display: none !important; }
@@ -321,3 +323,30 @@ button.red { background: linear-gradient(#a8343a, #6d1e25); }
   #talkBg .stand[data-p="L"] { left: 28%; } #talkBg .stand[data-p="R"] { left: 72%; }
   #talk .tchoices button { height: 46px; font-size: 14px; }
 }
+
+/* 원작 글꼴: 제목·버튼·이름은 굵은 글꼴 */
+button, h2, h3, .tname, #banner, #turnNo, .nm, .stg .tt, .result .big, #fight .fname, #fight .fvs { font-family: 'LO_B', 'LO_M', sans-serif; }
+
+/* ── 타이틀 (원작 구성) ── */
+.title2 { position: fixed; inset: 0; overflow: hidden; background: #000; cursor: pointer; }
+.title2 .tbg { position: absolute; inset: -4%; background: url(../assets/title/bg.webp) center/cover; animation: tzoom 24s ease-in-out infinite alternate; }
+.title2 .tlight { position: absolute; inset: -4%; background: url(../assets/title/light.webp) center/cover; mix-blend-mode: screen; opacity: .35; animation: tlight 6s ease-in-out infinite alternate, tzoom 24s ease-in-out infinite alternate; }
+.title2 .tvig { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 42%, transparent 35%, rgba(0,0,0,.75) 100%); }
+.title2 .tmotes i { position: absolute; bottom: -10%; width: 14px; height: 14px; border-radius: 50%; background: radial-gradient(circle, rgba(255,240,190,.95), rgba(255,200,90,.35) 40%, transparent 70%); mix-blend-mode: screen; opacity: 0;
+  transform: scale(var(--s)); animation: tmote linear infinite; }
+@keyframes tzoom { from { transform: scale(1); } to { transform: scale(1.06) translateY(-1%); } }
+@keyframes tlight { from { opacity: .15; } to { opacity: .45; } }
+@keyframes tmote { 0% { opacity: 0; transform: translateY(0) scale(var(--s)); } 15% { opacity: .9; } 85% { opacity: .6; } 100% { opacity: 0; transform: translateY(-110vh) translateX(6vw) scale(var(--s)); } }
+.title2 .tcenter { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); width: min(78vw, 900px); text-align: center; animation: tlogo 1.6s ease-out both; }
+.title2 .tlogo { width: 100%; filter: drop-shadow(0 0 24px rgba(255, 190, 90, .35)); }
+.title2 .tsub { margin-top: 6px; color: #e9eefc; font-family: 'LO_B', sans-serif; letter-spacing: 6px; font-size: clamp(12px, 1.8vw, 18px); text-shadow: 0 2px 6px #000; opacity: .9; }
+@keyframes tlogo { from { opacity: 0; transform: translate(-50%, -46%) scale(.96); filter: blur(6px); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: none; } }
+.title2 .ttouch { position: absolute; left: 0; right: 0; bottom: 18%; text-align: center; color: #fff; font-family: 'LO_B', sans-serif; font-size: clamp(15px, 2.2vw, 22px); letter-spacing: 4px;
+  text-shadow: 0 0 10px rgba(255, 200, 100, .8), 0 2px 4px #000; animation: blink 1.6s ease-in-out infinite; }
+.title2 .tmenu { position: absolute; left: 50%; top: calc(40% + min(9vw, 105px) + 30px); transform: translateX(-50%); display: flex; flex-direction: column; gap: 10px; width: min(320px, 80vw); animation: tfade .5s ease-out both; }
+@keyframes tfade { from { opacity: 0; } to { opacity: 1; } }
+.title2 .tmenu button { height: 52px; font-size: 18px; color: #fff; background: none; border-radius: 0; border: 0 solid transparent;
+  border-image: url(../assets/ui/UI_Dialog_Main_CharDialog_Frame_CharName_4.png) 0 39 0 46 fill; border-image-width: 0 58px 0 68px; }
+.title2 .tmenu button:hover { border-image-source: url(../assets/ui/UI_Dialog_Main_CharDialog_Frame_CharName_4_on.png); border-image-slice: 0 48 0 47 fill; color: #ffd76a; filter: none; }
+.title2 .tcopy { position: absolute; left: 0; right: 0; bottom: calc(10px + var(--safe-b)); text-align: center; font-size: 11px; color: #fff8; }
+@media (orientation: portrait) { .title2 .tcenter { top: 34%; width: 90vw; } .title2 .tmenu { top: calc(34% + 14vw + 30px); } }

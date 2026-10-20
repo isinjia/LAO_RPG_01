@@ -29,6 +29,13 @@
       this.bgmEl = el;
       if (this.on) el.play().catch(() => {});
     },
+    voice(name, vol = 1) {
+      if (!this.on || !name) return;
+      if (this.vEl) this.vEl.pause();
+      this.vEl = new Audio('assets/voice/' + name + '.mp3');
+      this.vEl.volume = Math.min(1, this.vol * 1.4 * vol);
+      this.vEl.play().catch(() => {});
+    },
     setOn(v) {
       this.on = v;
       if (this.bgmEl) { if (v) this.bgmEl.play().catch(() => {}); else this.bgmEl.pause(); }

@@ -90,7 +90,9 @@ def main():
                               't': n['text'], 'bg': bg, 'cg': cg, 'next': n['next'], 'ch': n['choices'],
                               'cast': [c for c in cast if c[1]], 'spk': n.get('spk', '')})
             parts[part] = nodes
-        story[s['idx']] = {'name': s['name'], 'desc': s['desc'], **parts}
+        # 원작 컷신 배경음 -> assets/bgm/lo_*.mp3 (tools/build_media.py)
+        bgm = lambda n: {'07 BGM_Talk_01': 'lo_talk1', '08 BGM_Talk_02': 'lo_talk2', '09 BGM_Talk_03': 'lo_talk3'}.get(n, 'lo_talk1')
+        story[s['idx']] = {'name': s['name'], 'desc': s['desc'], 'bgmStart': bgm(s.get('bgm_start')), 'bgmEnd': bgm(s.get('bgm_end')), **parts}
     with open(os.path.join(ROOT, 'js', 'story.js'), 'w', encoding='utf8') as f:
         f.write('// tools/build_story.py 로 생성: 본작 메인 스토리 대본 (선택지 갈래 포함)\nwindow.STORY = Object.assign(window.STORY || {}, ' + json.dumps(story, ensure_ascii=False) + ');\n')
     # 초상화를 js/assets.js 에 합친다

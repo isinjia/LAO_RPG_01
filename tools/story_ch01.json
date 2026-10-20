@@ -1,5 +1,7 @@
 [
  {
+  "bgm_start": "08 BGM_Talk_02",
+  "bgm_end": "07 BGM_Talk_01",
   "key": "Ch01Stage01",
   "idx": "1-1",
   "name": "비상 상황",
@@ -155,10 +157,21 @@
     "expr": "",
     "text": "살아났나? 눈을 깜빡거리는데? 숨도 제대로 쉬는 것 같아.",
     "bg": "BG_HoleLight",
-    "cg": "2DModel_BR_PA00EL_Dialog010101",
+    "cg": "",
     "next": 13,
     "choices": [],
-    "cast": {},
+    "cast": {
+     "L": [
+      "BR_PA00EL_Dialog010101",
+      "",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_Dialog010101",
+      "",
+      0
+     ]
+    },
     "spk": "L"
    },
    {
@@ -168,10 +181,21 @@
     "expr": "",
     "text": "휴, 다행이야.\n이분이 명령만 내려 주시면 우리도 이젠 제대로 싸울 수 있을 테니…",
     "bg": "BG_HoleLight",
-    "cg": "2DModel_BR_PA00EL_Dialog010101",
+    "cg": "",
     "next": 14,
     "choices": [],
-    "cast": {},
+    "cast": {
+     "L": [
+      "BR_PA00EL_Dialog010101",
+      "",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_Dialog010101",
+      "",
+      1
+     ]
+    },
     "spk": "R"
    },
    {
@@ -181,10 +205,21 @@
     "expr": "",
     "text": "괜찮긴 한 거야? 그러니까 명령을 내릴 수 있을 정도로 말이야.\n분명히 기억이 없을 거라고 했잖아.",
     "bg": "BG_HoleLight",
-    "cg": "2DModel_BR_PA00EL_Dialog010101",
+    "cg": "",
     "next": 15,
     "choices": [],
-    "cast": {},
+    "cast": {
+     "L": [
+      "BR_PA00EL_Dialog010101",
+      "",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_Dialog010101",
+      "",
+      0
+     ]
+    },
     "spk": "L"
    },
    {
@@ -194,10 +229,21 @@
     "expr": "",
     "text": "이상한 명령이라도 내리면 어쩌지?",
     "bg": "BG_HoleLight",
-    "cg": "2DModel_BR_PA00EL_Dialog010101",
+    "cg": "",
     "next": 16,
     "choices": [],
-    "cast": {},
+    "cast": {
+     "L": [
+      "BR_PA00EL_Dialog010101",
+      "",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_Dialog010101",
+      "",
+      0
+     ]
+    },
     "spk": "L"
    },
    {
@@ -207,10 +253,21 @@
     "expr": "",
     "text": "그럴 리야 있겠니? 그리고 기억이 없어도 괜찮아.\n적어도 파괴 명령만 내려 주셔도... 싸움이 훨씬 수월해 질 테니까.",
     "bg": "BG_HoleLight",
-    "cg": "2DModel_BR_PA00EL_Dialog010101",
+    "cg": "",
     "next": 17,
     "choices": [],
-    "cast": {},
+    "cast": {
+     "L": [
+      "BR_PA00EL_Dialog010101",
+      "",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_Dialog010101",
+      "",
+      1
+     ]
+    },
     "spk": "R"
    },
    {
@@ -246,10 +303,21 @@
     "expr": "",
     "text": "칫, 그래도 이상한 명령이나 내리면 그냥 짐덩어리일걸?\n게다가 기억도 없으면 뭐든지 다 설명해야 하잖아.",
     "bg": "BG_HoleLight",
-    "cg": "2DModel_BR_PA00EL_Dialog010101",
+    "cg": "",
     "next": 20,
     "choices": [],
-    "cast": {},
+    "cast": {
+     "L": [
+      "BR_PA00EL_Dialog010101",
+      "",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_Dialog010101",
+      "",
+      0
+     ]
+    },
     "spk": "L"
    },
    {
@@ -259,10 +327,21 @@
     "expr": "",
     "text": "설명이야 해드리면 되잖아. 시간이 좀 걸리더라도…\n분명히 우리에게 파괴 명령을 내려 주실 거야.",
     "bg": "BG_HoleLight",
-    "cg": "2DModel_BR_PA00EL_Dialog010101",
+    "cg": "",
     "next": 21,
     "choices": [],
-    "cast": {},
+    "cast": {
+     "L": [
+      "BR_PA00EL_Dialog010101",
+      "",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_Dialog010101",
+      "",
+      1
+     ]
+    },
     "spk": "R"
    },
    {
@@ -272,7 +351,7 @@
     "expr": "",
     "text": "그럴려나? 흐응… 응? 잠깐, 지금 움직였어! 깨어난 것 같은데?\n인간, 깨어난 거지? 깨어난 거 맞지?",
     "bg": "BG_HoleLight",
-    "cg": "2DModel_BR_PA00EL_Dialog010101",
+    "cg": "",
     "next": null,
     "choices": [
      [
@@ -284,7 +363,18 @@
       22
      ]
     ],
-    "cast": {},
+    "cast": {
+     "L": [
+      "BR_PA00EL_Dialog010101",
+      "",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_Dialog010101",
+      "",
+      0
+     ]
+    },
     "spk": "L"
    },
    {
@@ -294,10 +384,21 @@
     "expr": "",
     "text": "어? 말을 하네? 저기 콘스탄챠, 인간이 말도 할 수 있어?\n철충들은 말을 못하던데…",
     "bg": "BG_HoleLight",
-    "cg": "2DModel_BR_PA00EL_Dialog010101",
+    "cg": "",
     "next": 23,
     "choices": [],
-    "cast": {},
+    "cast": {
+     "L": [
+      "BR_PA00EL_Dialog010101",
+      "",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_Dialog010101",
+      "",
+      0
+     ]
+    },
     "spk": "L"
    },
    {
@@ -307,10 +408,21 @@
     "expr": "",
     "text": "원래 말은 인간님들이 하는 거야.\n우린 인간님들을 흉내낸 거고. 우린, 인간님들을 모방해서 만든 거니까.",
     "bg": "BG_HoleLight",
-    "cg": "2DModel_BR_PA00EL_Dialog010101",
+    "cg": "",
     "next": 24,
     "choices": [],
-    "cast": {},
+    "cast": {
+     "L": [
+      "BR_PA00EL_Dialog010101",
+      "",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_Dialog010101",
+      "",
+      1
+     ]
+    },
     "spk": "R"
    },
    {
@@ -320,10 +432,21 @@
     "expr": "",
     "text": "잠시만요. 인간님, 일단 일으켜 드리고 설명은 조금만 있다가 드릴게요.\n조금만 기다려 주세요.",
     "bg": "BG_HoleLight",
-    "cg": "2DModel_BR_PA00EL_Dialog010101",
+    "cg": "",
     "next": 25,
     "choices": [],
-    "cast": {},
+    "cast": {
+     "L": [
+      "BR_PA00EL_Dialog010101",
+      "",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_Dialog010101",
+      "",
+      1
+     ]
+    },
     "spk": "R"
    },
    {
@@ -333,10 +456,21 @@
     "expr": "",
     "text": "",
     "bg": "BG_HoleLight",
-    "cg": "2DModel_BR_PA00EL_Dialog010101",
+    "cg": "",
     "next": 26,
     "choices": [],
-    "cast": {},
+    "cast": {
+     "L": [
+      "BR_PA00EL_Dialog010101",
+      "",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_Dialog010101",
+      "",
+      0
+     ]
+    },
     "spk": "LC"
    },
    {
@@ -2704,6 +2838,8 @@
   ]
  },
  {
+  "bgm_start": "07 BGM_Talk_01",
+  "bgm_end": "07 BGM_Talk_01",
   "key": "Ch01Stage02",
   "idx": "1-2",
   "name": "등대로!",
@@ -3783,6 +3919,8 @@
   ]
  },
  {
+  "bgm_start": "08 BGM_Talk_02",
+  "bgm_end": "07 BGM_Talk_01",
   "key": "Ch01Stage03",
   "idx": "1-3",
   "name": "등대 아래 비밀기지",
@@ -5693,6 +5831,8 @@
   ]
  },
  {
+  "bgm_start": "09 BGM_Talk_03",
+  "bgm_end": "07 BGM_Talk_01",
   "key": "Ch01Stage04",
   "idx": "1-4",
   "name": "구조 신호",
@@ -6348,6 +6488,8 @@
   ]
  },
  {
+  "bgm_start": "07 BGM_Talk_01",
+  "bgm_end": "07 BGM_Talk_01",
   "key": "Ch01Stage05",
   "idx": "1-5",
   "name": "동맹의 조건",
@@ -7651,6 +7793,8 @@
   ]
  },
  {
+  "bgm_start": "08 BGM_Talk_02",
+  "bgm_end": "07 BGM_Talk_01",
   "key": "Ch01Stage06",
   "idx": "1-6",
   "name": "미끼",
@@ -9633,6 +9777,8 @@
   ]
  },
  {
+  "bgm_start": "08 BGM_Talk_02",
+  "bgm_end": "08 BGM_Talk_02",
   "key": "Ch01Stage07",
   "idx": "1-7",
   "name": "교살 밧줄",
@@ -10203,6 +10349,8 @@
   ]
  },
  {
+  "bgm_start": "08 BGM_Talk_02",
+  "bgm_end": "07 BGM_Talk_01",
   "key": "Ch01Stage08",
   "idx": "1-8",
   "name": "위험한 미끼",

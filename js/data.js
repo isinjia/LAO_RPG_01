@@ -150,7 +150,7 @@
   const C = (t, lv) => [t, lv];
   const STAGES = [
     {
-      id: 1, idx: '1-1', title: '비상 상황', bgm: 'battle', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      id: 1, idx: '1-1', title: '비상 상황', bgm: 'lo_battle1', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
       heroes: ['constantia', 'griffon'],
       map: [
         '##ss..s..sss',
@@ -168,7 +168,7 @@
       waves: [{ turn: 1, at: [9, 4], units: [C('launcher', 1), C('launcher', 2), C('launcher', 1), C('launcher', 1)] }],
     },
     {
-      id: 2, idx: '1-2', title: '등대로!', bgm: 'battle', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      id: 2, idx: '1-2', title: '등대로!', bgm: 'lo_battle1', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
       heroes: ['constantia', 'griffon', 'johanna'],
       map: [
         '...ff..r.www',
@@ -188,7 +188,7 @@
       waves: [{ turn: 1, at: [7, 2], units: [C('chick', 2), C('launcher', 2), C('chick', 2), C('chick', 2), C('launcher', 2)] }],
     },
     {
-      id: 3, idx: '1-3', title: '등대 아래 비밀기지', bgm: 'battle2', night: true, goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      id: 3, idx: '1-3', title: '등대 아래 비밀기지', bgm: 'lo_battle2', night: true, goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
       heroes: ['constantia', 'griffon', 'johanna'],
       map: [
         'mm....cc..mm',
@@ -213,7 +213,7 @@
       ],
     },
     {
-      id: 4, idx: '1-4', title: '구조 신호', bgm: 'battle', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      id: 4, idx: '1-4', title: '구조 신호', bgm: 'lo_battle1', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
       heroes: ['constantia', 'griffon', 'johanna', 'lrl'],
       map: [
         'ss..ss...rr..s',
@@ -236,7 +236,7 @@
       ],
     },
     {
-      id: 5, idx: '1-5', title: '동맹의 조건', bgm: 'battle2', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      id: 5, idx: '1-5', title: '동맹의 조건', bgm: 'lo_battle2', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
       heroes: ['constantia', 'griffon', 'johanna', 'lrl', 'pupphead'],
       map: [
         'ff..ff...ss.ff',
@@ -262,7 +262,7 @@
       ],
     },
     {
-      id: 6, idx: '1-6', title: '미끼', bgm: 'battle', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      id: 6, idx: '1-6', title: '미끼', bgm: 'lo_battle1', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
       heroes: ['constantia', 'griffon', 'johanna', 'lrl', 'pupphead', 'fallen'],
       map: [
         'wwwwww..wwwwww',
@@ -289,7 +289,7 @@
       ],
     },
     {
-      id: 7, idx: '1-7', title: '교살 밧줄', bgm: 'battle2', goal: '철충 전멸', lose: '콘스탄챠 퇴각 / 18턴 초과', win: 'all', turnLimit: 18,
+      id: 7, idx: '1-7', title: '교살 밧줄', bgm: 'lo_battle2', goal: '철충 전멸', lose: '콘스탄챠 퇴각 / 18턴 초과', win: 'all', turnLimit: 18,
       heroes: ['constantia', 'griffon', 'johanna', 'lrl', 'pupphead', 'fallen'],
       map: [
         's..ss....h..ss',
@@ -313,7 +313,7 @@
       ],
     },
     {
-      id: 8, idx: '1-8', title: '위험한 미끼', bgm: 'boss', goal: '스토커 격파', lose: '콘스탄챠 퇴각', win: 'boss',
+      id: 8, idx: '1-8', title: '위험한 미끼', bgm: 'lo_boss1', goal: '스토커 격파', lose: '콘스탄챠 퇴각', win: 'boss',
       heroes: ['constantia', 'griffon', 'johanna', 'lrl', 'pupphead', 'fallen'],
       map: [
         'wwwwwwwwww..ww',
