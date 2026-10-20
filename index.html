@@ -34,16 +34,18 @@
 
 <!-- 전투 연출 화면 -->
 <div id="fight" class="hidden">
-  <div class="fside L"><img class="fimg"><div class="fname"></div><div class="fhp"><i></i><b></b></div><div class="fstat"></div></div>
+  <div class="fside L"><img class="fimg"><div class="fname"></div><div class="fhp h"><i></i><b></b></div><div class="fhp t"><i></i><b></b></div><div class="fstat"></div></div>
   <div class="fvs">⚔<small></small></div>
-  <div class="fside R"><img class="fimg"><div class="fname"></div><div class="fhp"><i></i><b></b></div><div class="fstat"></div></div>
+  <div class="fside R"><img class="fimg"><div class="fname"></div><div class="fhp h"><i></i><b></b></div><div class="fhp t"><i></i><b></b></div><div class="fstat"></div></div>
   <div class="fskip">화면을 누르면 건너뜁니다</div>
 </div>
 
 <div id="banner" class="hidden"></div>
 
 <!-- 대화 -->
+<div id="talkBg" class="hidden"><img class="tcg"></div>
 <div id="talk" class="hidden">
+  <div class="tchoices"></div>
   <div class="tface"><img></div>
   <div class="tbox">
     <div class="tname"></div>
@@ -66,6 +68,7 @@
 <script src="js/sd.js"></script>
 <script src="js/assets.js"></script>
 <script src="js/anim_events.js"></script>
+<script src="js/story.js"></script>
 <script src="js/data.js"></script>
 <script src="js/rules.js"></script>
 <script src="js/audio.js"></script>

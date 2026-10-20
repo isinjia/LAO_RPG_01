@@ -139,12 +139,15 @@ button.red { background: linear-gradient(#a8343a, #6d1e25); }
   border-radius: 14px; padding: 8px 10px; display: grid; grid-template-columns: 48px 1fr; gap: 2px 8px; align-items: center; }
 #fight .fside.L { left: calc(10px + var(--safe-l)); border-color: #4aa8ff88; }
 #fight .fside.R { right: calc(10px + var(--safe-r)); border-color: #ff5a5a88; }
-#fight .fimg { grid-row: span 3; width: 48px; height: 48px; border-radius: 8px; background: #0006; }
+#fight .fimg { grid-row: span 4; width: 48px; height: 48px; border-radius: 8px; background: #0006; }
 #fight .fname { font-weight: 800; font-size: 15px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-#fight .fhp { position: relative; height: 14px; background: #1c2440; border-radius: 7px; overflow: hidden; }
-#fight .fhp i { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(90deg, #3ad17a, #8dffb2); transition: width .3s; }
-#fight .R .fhp i { background: linear-gradient(90deg, #ff5a4a, #ff9a8a); }
-#fight .fhp b { position: absolute; right: 6px; top: -2px; font-size: 13px; text-shadow: 0 1px 2px #000; }
+#fight .fhp { position: relative; height: 13px; background: #1c2440; border-radius: 7px; overflow: hidden; }
+#fight .fhp i { position: absolute; left: 0; top: 0; bottom: 0; transition: width .3s; }
+#fight .fhp.t i { background: linear-gradient(90deg, #3a8cff, #8fc4ff); }
+#fight .fhp.h i { background: linear-gradient(90deg, #3ad17a, #8dffb2); }
+#fight .R .fhp.t i { background: linear-gradient(90deg, #ff8a3a, #ffc08a); }
+#fight .R .fhp.h i { background: linear-gradient(90deg, #ff5a4a, #ff9a8a); }
+#fight .fhp b { position: absolute; right: 6px; top: -2px; font-size: 11px; text-shadow: 0 1px 2px #000; white-space: nowrap; }
 #fight .fstat { font-size: 11px; color: var(--dim); }
 #fight .fvs { position: absolute; left: 50%; top: calc(18px + var(--safe-t)); transform: translateX(-50%); font-size: 22px; font-weight: 900; color: var(--gold); text-align: center; text-shadow: 0 2px 0 #000; }
 #fight .fvs small { display: block; font-size: 12px; color: #fff; }
@@ -166,7 +169,15 @@ button.red { background: linear-gradient(#a8343a, #6d1e25); }
 #talk.nar .tbox { text-align: center; padding-left: 18px; }
 #talk.nar .tname { display: none; }
 @keyframes blink { 50% { opacity: .2; } }
-#talkBg { position: fixed; inset: 0; z-index: 29; background: #000 center/cover; }
+#talkBg { position: fixed; inset: 0; z-index: 29; background: #000 center/cover; transition: background-image .3s; }
+#talkBg .tcg { position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%); max-width: min(86vw, 900px); max-height: 62vh; border-radius: 10px; box-shadow: 0 10px 40px #000c; }
+#talkBg .tcg:not([src]), #talkBg .tcg[src=""] { display: none; }
+.ttext { white-space: pre-line; }
+.tchoices { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(150px + var(--safe-b)); display: flex; flex-direction: column; gap: 8px; width: min(560px, 92vw); z-index: 2; }
+.tchoices:empty { display: none; }
+.tchoices button { padding: 13px 16px; font-size: 15px; text-align: left; background: linear-gradient(#2c3d70, #1b2647); border-color: #f3c96988; }
+.tchoices button::before { content: '▶ '; color: var(--gold); }
+.tface img.icon { border-radius: 16px; width: 70%; margin: 0 auto; }
 
 /* ── 화면들 ── */
 #screen { position: fixed; inset: 0; z-index: 25; overflow: auto; }
@@ -238,3 +249,37 @@ button.red { background: linear-gradient(#a8343a, #6d1e25); }
 
 #boot { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; background: var(--bg); }
 #loadMsg { color: var(--dim); }
+
+/* 영웅·병사 체력 막대 */
+.bars2 { display: flex; flex-direction: column; gap: 3px; }
+.bar2 { position: relative; height: 13px; background: #1c2440; border-radius: 7px; overflow: hidden; }
+.bar2 i { position: absolute; inset: 0 auto 0 0; }
+.bar2.t i { background: linear-gradient(90deg, #3a8cff, #8fc4ff); } .bar2.h i { background: linear-gradient(90deg, #3ad17a, #8dffb2); }
+.e .bar2.t i { background: linear-gradient(90deg, #ff8a3a, #ffc08a); } .e .bar2.h i { background: linear-gradient(90deg, #ff5a4a, #ff9a8a); }
+.bar2 b { position: absolute; left: 6px; top: -1px; font-size: 11px; text-shadow: 0 1px 2px #000; white-space: nowrap; }
+.tline { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--dim); }
+.tline img { width: 22px; height: 22px; border-radius: 5px; }
+.pop.tdmg { color: #ffb36b; font-size: 18px; }
+.cd { color: #ff8a7a; }
+.troopPick { display: flex; gap: 6px; flex-wrap: wrap; grid-column: 1 / -1; }
+.troopPick button { display: flex; align-items: center; gap: 6px; padding: 6px 8px; font-size: 12px; text-align: left; }
+.troopPick button img { width: 36px; height: 36px; border-radius: 6px; }
+.troopPick button.on { border-color: #f3c969; box-shadow: 0 0 0 2px #f3c96966 inset; background: linear-gradient(#3a4a80, #24305a); }
+.troopPick button small { display: block; color: var(--dim); font-size: 11px; }
+.chap { width: min(1000px, 100%); margin: 4px 0 10px; color: var(--dim); font-size: 13px; }
+.chap b { color: var(--gold); font-size: 17px; margin-right: 8px; }
+
+/* 전투 정보판: 랑그릿사 모바일처럼 아래쪽 양 끝 */
+#fight .fside { top: auto; bottom: calc(10px + var(--safe-b)); grid-template-columns: 76px 1fr; width: min(44vw, 360px); padding: 8px 12px 8px 8px; }
+#fight .fimg { width: 76px; height: 76px; border-radius: 12px; border: 2px solid #4aa8ff; }
+#fight .R .fimg { border-color: #ff5a5a; }
+#fight .fside.R { grid-template-columns: 1fr 76px; padding: 8px 8px 8px 12px; text-align: right; }
+#fight .fside.R .fimg { grid-column: 2; grid-row: 1 / span 4; }
+#fight .fside.R > :not(.fimg) { grid-column: 1; }
+#fight .fside.R .fhp i { left: auto; right: 0; }
+#fight .fside.R .fhp b { right: auto; left: 6px; }
+#fight .fhp { height: 16px; }
+#fight .fhp b { font-size: 12px; top: 0; }
+#fight .fvs { top: auto; bottom: calc(40px + var(--safe-b)); }
+#fight .fskip { bottom: auto; top: calc(10px + var(--safe-t)); }
+@media (orientation: portrait) { #fight .fvs { bottom: calc(118px + var(--safe-b)); top: auto; } #fight .fside { width: calc(50vw - 14px); grid-template-columns: 56px 1fr; } #fight .fside.R { grid-template-columns: 1fr 56px; } #fight .fimg { width: 56px; height: 56px; } }

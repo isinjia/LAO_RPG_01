@@ -75,14 +75,14 @@
   const save = loadSave();
   function loadSave() {
     let s = null;
-    try { s = JSON.parse(localStorage.getItem('orca_srpg_save') || 'null'); } catch (e) { s = null; }
-    const def = { clear: 0, gold: 600, heroes: {}, hire: {}, opts: { fight: true, fast: false, sound: true, autoEnd: true } };
+    try { s = JSON.parse(localStorage.getItem('orca_srpg_save2') || 'null'); } catch (e) { s = null; }
+    const def = { clear: 0, heroes: {}, troops: {}, opts: { fight: true, fast: false, sound: true, autoEnd: true } };
     s = Object.assign(def, s || {});
     s.opts = Object.assign(def.opts, s.opts || {});
     for (const id in D.HEROES) if (!s.heroes[id]) s.heroes[id] = { lv: 1, exp: 0, tier: 0 };
     return s;
   }
-  function writeSave() { try { localStorage.setItem('orca_srpg_save', JSON.stringify(save)); } catch (e) { /* 저장 불가 환경 */ } }
+  function writeSave() { try { localStorage.setItem('orca_srpg_save2', JSON.stringify(save)); } catch (e) { /* 저장 불가 환경 */ } }
   AU.on = save.opts.sound;
   speedK = save.opts.fast ? 2 : 1;
 
@@ -283,6 +283,19 @@
       g.fillStyle = '#5a3d22'; g.fillRect(30, 62, 12, 24);
       g.fillStyle = '#8fd0ff'; g.fillRect(56, 58, 12, 10);
     }));
+    DECO.rubble = [0, 1].map((v) => canvasTex(128, 112, (g) => {
+      g.fillStyle = 'rgba(0,0,0,.3)'; g.beginPath(); g.ellipse(64, 102, 56, 9, 0, 0, 7); g.fill();
+      const blocks = v ? [[18, 58, 40, 44, -0.2], [52, 30, 34, 72, 0.08], [84, 62, 34, 40, 0.25]] : [[20, 46, 46, 56, 0.12], [62, 62, 48, 40, -0.15], [44, 22, 26, 34, 0.3]];
+      for (const [x, y, w, h, r] of blocks) {
+        g.save(); g.translate(x + w / 2, y + h / 2); g.rotate(r);
+        g.fillStyle = '#7d7a74'; g.fillRect(-w / 2, -h / 2, w, h);
+        g.fillStyle = '#9c9890'; g.fillRect(-w / 2, -h / 2, w, h * 0.28);
+        g.fillStyle = '#5a5751'; g.fillRect(w * 0.18, -h / 2, w * 0.32, h);
+        g.strokeStyle = '#3d3a35'; g.lineWidth = 2; g.strokeRect(-w / 2, -h / 2, w, h);
+        g.strokeStyle = '#6b4a2e'; g.lineWidth = 3; g.beginPath(); g.moveTo(-w * 0.3, -h / 2); g.lineTo(-w * 0.36, -h / 2 - 8); g.stroke();
+        g.restore();
+      }
+    }));
     DECO.tower = canvasTex(96, 160, (g) => {
       g.fillStyle = 'rgba(0,0,0,.3)'; g.beginPath(); g.ellipse(48, 152, 40, 7, 0, 0, 7); g.fill();
       g.fillStyle = '#8d877c'; g.fillRect(16, 40, 64, 112);
@@ -378,8 +391,7 @@
         decos.push(sprite(DECO.house[0], 0.5, 0.5, x + 0.3, y + 0.42, night));
         decos.push(sprite(DECO.house[1], 0.46, 0.46, x + 0.72, y + 0.62, night));
       } else if (t === '#') {
-        const corner = (G.map[y][x - 1] !== '#' || G.map[y][x + 1] !== '#');
-        if (corner && hash(x, y, 4) > 0.3) decos.push(sprite(DECO.tower, 0.6, 1.0, x + 0.5, y + 0.8, night));
+        decos.push(sprite(DECO.rubble[hash(x, y, 4) > 0.5 ? 1 : 0], 0.95, 0.83, x + 0.5, y + 0.82, night));
       }
     }
     decos.forEach((s) => root.add(s));
@@ -394,80 +406,106 @@
   const isDeco = (t) => Object.values(DECO).flat().includes(t);
 
   // ── 유닛 표시 ───────────────────────────────────────────
+  // 한 칸 = 영웅(큰 리그) + 뒤쪽 병사 2명(작은 리그). 발밑 고리 색 = 진영, 앞쪽 막대 = 병사(위)·영웅(아래) 체력
   const views = new Map(); // uid -> 표시 객체
-  const badgeCache = {};
-  function badgeTex(side, hp, cmd, acted) {
-    const k = side + hp + cmd + acted;
-    if (badgeCache[k]) return badgeCache[k];
-    return (badgeCache[k] = canvasTex(72, 48, (g) => {
-      const col = acted ? ['#4b5163', '#2e3342'] : side === 'p' ? ['#3f9bff', '#1c4f9c'] : ['#ff5a4f', '#9c241c'];
-      g.fillStyle = 'rgba(0,0,0,.5)'; rr(g, 3, 7, 66, 38, 10); g.fill();
-      const lg = g.createLinearGradient(0, 4, 0, 42); lg.addColorStop(0, col[0]); lg.addColorStop(1, col[1]);
-      g.fillStyle = lg; rr(g, 2, 4, 66, 38, 10); g.fill();
-      g.strokeStyle = cmd ? '#ffd76a' : 'rgba(255,255,255,.6)'; g.lineWidth = cmd ? 4 : 2; rr(g, 2, 4, 66, 38, 10); g.stroke();
-      g.fillStyle = '#fff'; g.font = 'bold 30px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-      g.fillText(String(hp), cmd ? 42 : 35, 25);
-      if (cmd) { g.fillStyle = '#ffd76a'; g.font = 'bold 22px sans-serif'; g.fillText('★', 16, 24); }
-    }));
-  }
   function rr(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
   const ringTex = {};
-  function getRingTex(side, cmd) {
-    const k = side + cmd;
+  function getRingTex(side, big) {
+    const k = side + big;
     if (ringTex[k]) return ringTex[k];
     return (ringTex[k] = canvasTex(128, 128, (g) => {
       const c = side === 'p' ? '74,168,255' : '255,90,80';
       const rg = g.createRadialGradient(64, 64, 10, 64, 64, 62);
-      rg.addColorStop(0, `rgba(0,0,0,.45)`); rg.addColorStop(0.6, `rgba(${c},.35)`); rg.addColorStop(0.85, `rgba(${c},.9)`); rg.addColorStop(1, `rgba(${c},0)`);
+      rg.addColorStop(0, 'rgba(0,0,0,.45)'); rg.addColorStop(0.6, `rgba(${c},.35)`); rg.addColorStop(0.85, `rgba(${c},.9)`); rg.addColorStop(1, `rgba(${c},0)`);
       g.fillStyle = rg; g.beginPath(); g.arc(64, 64, 62, 0, 7); g.fill();
-      if (cmd) { g.strokeStyle = 'rgba(255,215,106,.95)'; g.lineWidth = 6; g.beginPath(); g.arc(64, 64, 50, 0, 7); g.stroke(); }
+      if (big) { g.strokeStyle = 'rgba(255,215,106,.95)'; g.lineWidth = 6; g.beginPath(); g.arc(64, 64, 50, 0, 7); g.stroke(); }
     }));
   }
-  function addView(u) {
-    const g = new THREE.Group();
+  function billboard(rigId, h, native, f) {
     const bb = new THREE.Group();
-    g.add(bb);
-    const h = (u.cmd ? (u.def.mapH || 1.02) : 0.74) * (u.def.sizeK || 1);
-    const rig = new Rig(u.rig, h, u.side === 'p' ? 1 : -1);
-    rig.face(u.side === 'p' ? 1 : -1);
+    const rig = new Rig(rigId, h, native);
+    rig.face(f);
     rig.loop('idle');
     rig.c.time = Math.random() * 2;
     bb.add(rig.g);
     bb.quaternion.copy(camera.quaternion);
-    const ring = new THREE.Mesh(new THREE.PlaneGeometry(0.86, 0.86), new THREE.MeshBasicMaterial({ map: getRingTex(u.side, u.cmd), transparent: true, depthTest: false, depthWrite: false }));
+    return { bb, rig };
+  }
+  function addView(u) {
+    const g = new THREE.Group();
+    const native = u.side === 'p' ? 1 : -1, f = u.side === 'p' ? 1 : -1;
+    const hero = billboard(u.rig, (u.def.big ? 1.2 : 0.88) * (u.def.sizeK || 1), native, f);
+    hero.bb.position.set(0, 0, 0.12);
+    g.add(hero.bb);
+    const soldiers = [];
+    if (u.troop) for (const [ox, oz] of [[-0.34, -0.2], [0.34, -0.26]]) {
+      const s = billboard(u.troop.rig, 0.58, native, f);
+      s.bb.position.set(ox, 0, oz);
+      g.add(s.bb);
+      soldiers.push(s);
+    }
+    const big = !!(u.lead || u.boss || u.def.big);
+    const ring = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.9), new THREE.MeshBasicMaterial({ map: getRingTex(u.side, big), transparent: true, depthTest: false, depthWrite: false }));
     ring.rotation.x = -Math.PI / 2; ring.position.y = 0.012; ring.renderOrder = 4;
     g.add(ring);
-    const badge = new THREE.Sprite(new THREE.SpriteMaterial({ map: badgeTex(u.side, u.hp, u.cmd, false), depthTest: false, transparent: true }));
-    badge.scale.set(0.36, 0.24, 1);
+    const bc = canvas(112, 40);
+    const bt = new THREE.CanvasTexture(bc);
+    const badge = new THREE.Sprite(new THREE.SpriteMaterial({ map: bt, depthTest: false, transparent: true }));
+    badge.scale.set(0.62, 0.22, 1);
     badge.center.set(0.5, 0.5);
-    badge.position.set(0.3, 0.06, 0.32);
+    badge.position.set(0, 0.02, 0.5);
     badge.renderOrder = 5000;
     g.add(badge);
     g.position.set(u.x + 0.5, 0, u.y + 0.5);
     world.root.add(g);
-    const v = { u, g, bb, rig, ring, badge, h, fade: 1, bob: Math.random() * 6 };
+    const v = { u, g, bb: hero.bb, rig: hero.rig, soldiers, ring, badge, bc, bt, bob: Math.random() * 6 };
     views.set(u.uid, v);
     refreshView(u);
     return v;
   }
+  function drawBadge(v) {
+    const u = v.u, g = v.bc.getContext('2d'), W = v.bc.width;
+    const acted = u.acted && u.side === G.side && u.side === 'p';
+    g.clearRect(0, 0, W, 40);
+    g.fillStyle = 'rgba(0,0,0,.6)'; rr(g, 0, 2, W, 36, 8); g.fill();
+    const bar = (y, k, c0, c1) => {
+      g.fillStyle = '#1a2036'; rr(g, 16, y, W - 22, 11, 4); g.fill();
+      if (k > 0) { const lg = g.createLinearGradient(16, 0, W - 6, 0); lg.addColorStop(0, acted ? '#777' : c0); lg.addColorStop(1, acted ? '#999' : c1); g.fillStyle = lg; rr(g, 16, y, Math.max(6, (W - 22) * k), 11, 4); g.fill(); }
+    };
+    if (u.troop) bar(8, u.troop.hp / u.troop.hpMax, u.side === 'p' ? '#3a8cff' : '#ff8a3a', u.side === 'p' ? '#9cd0ff' : '#ffc890');
+    bar(u.troop ? 22 : 15, u.hp / u.hpMax, u.side === 'p' ? '#2fc46c' : '#e8402f', u.side === 'p' ? '#9dffbc' : '#ff9a8a');
+    g.fillStyle = u.lead || u.boss ? '#ffd76a' : D.KIND[R.troopAlive(u) ? u.troop.kind : u.kind].color;
+    g.font = 'bold 15px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(u.lead || u.boss ? '★' : '●', 9, 21);
+    v.bt.needsUpdate = true;
+  }
   function refreshView(u) {
     const v = views.get(u.uid);
     if (!v) return;
-    v.badge.material.map = badgeTex(u.side, Math.max(0, Math.round(u.hp)), u.cmd, u.acted && u.side === G.side);
+    drawBadge(v);
     const dim = u.acted && u.side === G.side && u.side === 'p';
-    v.rig.c.setTint(dim ? 0.5 : 1, dim ? 0.5 : 1, dim ? 0.58 : 1);
+    const k = u.troop && u.troop.hp > 0 ? (u.troop.hp / u.troop.hpMax > 0.5 ? 2 : 1) : 0;
+    v.soldiers.forEach((s, i) => { s.bb.visible = i < k; });
+    for (const r of [v.rig, ...v.soldiers.map((s) => s.rig)]) r.c.setTint(dim ? 0.5 : 1, dim ? 0.5 : 1, dim ? 0.58 : 1);
   }
   function removeView(u) {
     const v = views.get(u.uid);
     if (!v) return;
     v.rig.dispose();
+    v.soldiers.forEach((s) => s.rig.dispose());
     v.g.parent && v.g.parent.remove(v.g);
-    v.ring.material.dispose(); v.ring.geometry.dispose(); v.badge.material.dispose();
+    v.ring.material.dispose(); v.ring.geometry.dispose(); v.badge.material.dispose(); v.bt.dispose();
     views.delete(u.uid);
   }
   function clearViews() { for (const v of [...views.values()]) removeView(v.u); }
   const tilePos = (x, y) => new THREE.Vector3(x + 0.5, 0, y + 0.5);
-  function faceTo(u, x) { const v = views.get(u.uid); if (v && x !== u.x) v.rig.face(x > u.x ? 1 : -1); }
+  function faceTo(u, x) {
+    const v = views.get(u.uid);
+    if (!v || x === u.x) return;
+    const f = x > u.x ? 1 : -1;
+    v.rig.face(f);
+    v.soldiers.forEach((s) => s.rig.face(f));
+  }
 
   // 화면 좌표
   function toScreen(p) {
@@ -475,13 +513,18 @@
     return { x: (v.x + 1) / 2 * innerWidth, y: (1 - v.y) / 2 * innerHeight };
   }
   function pop(x, y, text, cls = 'dmg', dy = 0.9) {
-    const s = toScreen(new THREE.Vector3(x + 0.5, dy, y + 0.5).add(new THREE.Vector3(0, 0, 0)));
+    const s = toScreen(new THREE.Vector3(x + 0.5, dy, y + 0.5));
     const e = document.createElement('div');
     e.className = 'pop ' + cls;
     e.textContent = text;
     e.style.left = s.x + 'px'; e.style.top = s.y + 'px';
     $('pops').appendChild(e);
     setTimeout(() => e.remove(), 1200);
+  }
+  // 피해 표시: 병사(주황)·영웅(빨강)
+  function popDmg(u, t, h) {
+    if (t > 0) pop(u.x, u.y, '병사 -' + Math.round(t), 'tdmg', 1.15);
+    if (h > 0) wait(140).then(() => pop(u.x, u.y, '-' + Math.round(h), 'dmg', 0.8));
   }
 
   // 지도 위 이펙트
@@ -671,12 +714,6 @@
     world.ot.needsUpdate = true;
   }
   function clearOv(keepDanger = true) { for (const k in OV) if (!(keepDanger && k === 'danger')) OV[k] = null; drawOverlay(); }
-  function auraTiles(c) {
-    if (!c || !c.cmd || !c.alive) return null;
-    const r = R.baseStat(c, 'cmd'), out = [];
-    for (let y = 0; y < G.h; y++) for (let x = 0; x < G.w; x++) if (R.dist(x, y, c.x, c.y) <= r) out.push([x, y]);
-    return out;
-  }
   // 이동 칸 + 그 칸들에서 칠 수 있는 칸
   function ranges(u, reach) {
     const mv = [], atk = new Map();
@@ -714,39 +751,30 @@
   // ── 화면 요소 (정보·행동·예상) ───────────────────────────
   const ui = { state: 'idle', sel: null, reach: null, from: null, target: null, skill: null, skillTile: null };
   let busy = false;
-  let mode = 'boot'; // boot | title | screen | talk | map | fight
+  let mode = 'boot'; // boot | screen | talk | map | fight
   function setHint(t) { $('hint').textContent = t || ''; }
   const kindTag = (k) => `<span class="kind" style="color:${D.KIND[k].color}">${D.KIND[k].name}</span>`;
+  const bars = (u) => `<div class="bars2 ${u.side}">${u.troop ? `<div class="bar2 t"><i style="width:${(u.troop.hp / u.troop.hpMax) * 100}%"></i><b>병사 ${Math.round(u.troop.hp)} / ${u.troop.hpMax}</b></div>` : ''}<div class="bar2 h"><i style="width:${(u.hp / u.hpMax) * 100}%"></i><b>영웅 ${Math.round(u.hp)} / ${u.hpMax}</b></div></div>`;
   function showInfo(u, tile) {
     const el = $('info');
     if (!u && !tile) { el.classList.add('hidden'); syncInfoH(); return; }
     if (!u) {
       const t = R.terr(G, tile[0], tile[1]);
-      const c = t.cost;
       const cs = (v) => (v >= 99 ? '불가' : v);
       el.innerHTML = `<div class="pic" style="background:#203050"></div><div class="nm">${t.name}</div>
-        <div class="st">방어 보정 <b>${t.def > 0 ? '+' : ''}${Math.round(t.def * 100)}%</b>${t.heal ? ' · 차례 시작 시 병력 <b>+' + t.heal + '</b>' : ''}</div>
-        <div class="st">이동 소모: 보병 <b>${cs(c.foot)}</b> · 기동 <b>${cs(c.horse)}</b> · 비행 <b>${cs(c.fly)}</b></div>`;
+        <div class="st">방어 보정 <b>${t.def > 0 ? '+' : ''}${Math.round(t.def * 100)}%</b>${t.heal ? ' · 차례 시작 시 체력 <b>+' + Math.round(t.heal * 100) + '%</b>' : ''}</div>
+        <div class="st">이동 소모: 보병 <b>${cs(t.cost.foot)}</b> · 기동 <b>${cs(t.cost.horse)}</b> · 비행 <b>${cs(t.cost.fly)}</b></div>`;
       el.classList.remove('hidden'); syncInfoH(); return;
     }
-    const at = R.stat(u, 'at'), df = R.stat(u, 'df'), bat = R.baseStat(u, 'at') + R.buffSum(u, 'at'), bdf = R.baseStat(u, 'df') + R.buffSum(u, 'df');
-    const up = (v, b) => (v - b > 0.01 ? ` <span class="up">(+${Math.round(v - b)})</span>` : '');
-    const pips = Array.from({ length: 10 }, (_, i) => `<i class="${i < Math.round(u.hp) ? 'on' : ''}"></i>`).join('');
     const t = R.terr(G, u.x, u.y);
-    let ex = '';
-    if (u.cmd) {
-      const sk = R.skillsOf(u).map((s) => D.SKILLS[s].name).join(', ') || '없음';
-      ex = `지휘 범위 <b>${R.baseStat(u, 'cmd')}</b> · 용병 공격 <b>+${R.baseStat(u, 'ca')}</b> 방어 <b>+${R.baseStat(u, 'cd')}</b> · 특기: ${sk}`;
-      if (u.side === 'p') ex += ` · 경험치 <b>${u.exp}</b>/100`;
-    } else {
-      ex = `지휘관 <b>${u.cmdr.name}</b> · ${R.inAura(u) ? '<span style="color:#ffd76a">지휘 범위 안</span>' : '<span style="color:#ff8a7a">지휘 범위 밖 (보정 없음)</span>'}`;
-    }
-    const buf = u.buffs.length ? ' · <span class="up">강화 중</span>' : '';
+    const pct = (k) => { const b = R.buffK(u, k); return b > 1.001 ? ` <span class="up">(+${Math.round((b - 1) * 100)}%)</span>` : ''; };
+    const sk = R.skillsOf(u).map((s) => D.SKILLS[s].name + (u.cd[s] > 0 ? `<span class="cd">(${u.cd[s]})</span>` : '')).join(', ') || '없음';
+    const troopLine = u.troop ? `<div class="tline"><img src="${IMG[u.troop.icon]}">${u.troop.name} ${kindTag(u.troop.kind)} 공격 <b>${Math.round(R.atk(u, 'T'))}</b> · 방어 <b>${Math.round(R.def(u, 'T'))}</b></div>` : '<div class="tline">병사 없음</div>';
     el.innerHTML = `<div class="pic ${u.side}" style="background-image:url(${IMG[u.icon]})"><span class="lv">Lv${u.lv}</span></div>
-      <div class="nm">${u.name}${kindTag(u.kind)}<small>${u.cmd ? u.cls : '용병'}</small></div>
-      <div class="hpbar ${u.side}">${pips}<span>${Math.round(u.hp)}</span></div>
-      <div class="st">공격 <b>${Math.round(at)}</b>${up(at, bat)} · 방어 <b>${Math.round(df)}</b>${up(df, bdf)} · 이동 <b>${R.stat(u, 'mov')}</b> · 사거리 <b>${u.rng}</b>${u.cmd ? ` · MP <b>${u.mp}</b>/${R.maxMp(u)}` : ''}${buf}</div>
-      <div class="ex">${ex} · 지형 ${t.name}${u.move !== 'fly' && t.def ? ` (${t.def > 0 ? '+' : ''}${Math.round(t.def * 100)}%)` : ''}</div>`;
+      <div class="nm">${u.name}${kindTag(u.kind)}<small>${u.cls}</small></div>
+      ${bars(u)}
+      <div class="st">공격 <b>${Math.round(R.atk(u, 'H'))}</b>${pct('at')} · 방어 <b>${Math.round(R.def(u, 'H'))}</b>${pct('df')} · 이동 <b>${R.mov(u)}</b> · 사거리 <b>${u.rng}</b></div>
+      <div class="ex">${troopLine}특기: ${sk}${u.side === 'p' ? ` · 경험치 <b>${u.exp}</b>/100` : ''} · 지형 ${t.name}${u.move !== 'fly' && t.def ? ` (${t.def > 0 ? '+' : ''}${Math.round(t.def * 100)}%)` : ''}</div>`;
     el.classList.remove('hidden');
     syncInfoH();
   }
@@ -783,9 +811,9 @@
     ph.textContent = G.side === 'p' ? '아군 차례' : '적 차례';
     ph.className = G.side;
     const st = G.stage;
-    $('goalBox').innerHTML = `승리: <b>${st.goal}</b> · 패배: ${st.lose}`;
+    const left = st.waves.length - 1 - G.wave;
+    $('goalBox').innerHTML = `${st.idx} ${st.title} · 승리: <b>${st.goal}</b>${left > 0 ? ` · 남은 무리 ${left}` : ''} · 패배: ${st.lose}`;
     $('btnEnd').disabled = G.side !== 'p' || busy;
-    $('btnAuto').disabled = false;
   }
 
   // ── 플레이어 조작 ───────────────────────────────────────
@@ -798,7 +826,7 @@
       OV.path = n && n.stop ? R.path(ui.reach, t[0], t[1]) : null;
       drawOverlay();
     }
-    if (ui.state === 'skill' && t) { previewSkillArea(t); }
+    if (ui.state === 'skill' && t) previewSkillArea(t);
     if (ui.state === 'idle' && t) { const u = R.unitAt(G, t[0], t[1]); showInfo(u, u ? null : t); }
   }
   function onTap(x, y) {
@@ -815,7 +843,7 @@
         const n = ui.reach.get(ui.reach.key(x, y));
         if (u === ui.sel) { openActions(); return; }
         if (n && n.stop) { moveSel(x, y); return; }
-        if (u && u.side === 'e') { // 칠 수 있는 적을 바로 누르면 알맞은 칸으로 가서 공격
+        if (u && u.side === 'e') {
           const spot = bestSpot(ui.sel, u);
           if (spot) { moveSel(spot[0], spot[1], u); return; }
           inspect(u); return;
@@ -834,8 +862,7 @@
         else backToTarget();
         break;
       case 'skill': {
-        const ok = OV.skill && OV.skill.some(([a, b]) => a === x && b === y);
-        if (!ok) return;
+        if (!(OV.skill && OV.skill.some(([a, b]) => a === x && b === y))) return;
         if (ui.skillTile && ui.skillTile[0] === x && ui.skillTile[1] === y) { doSkill(); return; }
         ui.skillTile = [x, y];
         previewSkillArea([x, y]);
@@ -851,17 +878,16 @@
     const rg = ranges(u, R.reach(G, u));
     OV.move = u.side === 'e' ? null : rg.mv;
     OV.atk = u.side === 'e' ? [...rg.mv, ...rg.atk] : rg.atk;
-    OV.aura = auraTiles(u.cmd ? u : u.cmdr);
-    OV.path = null; OV.targets = null; OV.skill = null; OV.area = null;
+    OV.aura = null; OV.path = null; OV.targets = null; OV.skill = null; OV.area = null;
     drawOverlay();
-    if (u.side === 'e') setHint(`${u.name}: 이동·공격 가능 범위`); else setHint('');
+    setHint(u.side === 'e' ? `${u.name}: 이동·공격 가능 범위` : '');
   }
   function selectUnit(u) {
     AU.play('click', 0.6);
     ui.sel = u; ui.state = 'move'; ui.from = [u.x, u.y];
     ui.reach = R.reach(G, u);
     const rg = ranges(u, ui.reach);
-    OV.move = rg.mv; OV.atk = rg.atk; OV.aura = auraTiles(u.cmd ? u : u.cmdr); OV.path = null; OV.targets = null;
+    OV.move = rg.mv; OV.atk = rg.atk; OV.aura = null; OV.path = null; OV.targets = null;
     drawOverlay();
     showInfo(u);
     showActs([{ label: '제자리', sub: '이동 안 함', fn: openActions }, { label: '취소', fn: deselect }]);
@@ -872,7 +898,7 @@
     clearOv(); showActs(null); setHint(''); $('forecast').classList.add('hidden');
     showInfo(null);
   }
-  // 적 u를 칠 수 있는 칸 중 가장 좋은 곳 (지금 자리 > 방어 지형 > 가까운 칸)
+  // 적 u를 칠 수 있는 칸 중 가장 좋은 곳 (지금 자리 > 반격 안 받는 거리 > 방어 지형 > 가까운 칸)
   function bestSpot(a, u) {
     let best = null;
     for (const t of ui.reach.values()) {
@@ -880,8 +906,7 @@
       const d = R.dist(t.x, t.y, u.x, u.y);
       if (d < 1 || d > a.rng) continue;
       let sc = -t.c * 0.2 + (a.move === 'fly' ? 0 : R.terr(G, t.x, t.y).def) * 5 + (t.x === a.x && t.y === a.y ? 3 : 0);
-      if (a.rng > 1 && d === a.rng) sc += 2; // 사격은 반격 받지 않는 거리
-      if (!a.cmd && R.inAura(a, t.x, t.y)) sc += 1.5;
+      if (a.rng > 1 && d > u.rng) sc += 4;
       if (!best || sc > best.sc) best = { sc, x: t.x, y: t.y };
     }
     return best ? [best.x, best.y] : null;
@@ -898,32 +923,32 @@
     return new Promise((res) => {
       const v = views.get(u.uid);
       if (!v || path.length < 2) { res(); return; }
-      v.rig.loop('move', 1.3);
+      const rigs = [v.rig, ...v.soldiers.map((s) => s.rig)];
+      rigs.forEach((r) => r.loop('move', 1.3));
       let i = 1;
-      const step = () => {
-        if (i >= path.length) { v.rig.loop('idle'); res(); return; }
+      const stepTile = () => {
+        if (i >= path.length) { rigs.forEach((r) => r.loop('idle')); res(); return; }
         const [nx, ny] = path[i];
         faceTo(u, nx);
         const from = v.g.position.clone(), to = tilePos(nx, ny);
         const dur = (u.move === 'horse' || u.move === 'fly' ? 0.1 : 0.13) / speedK;
-        animate(dur, (k) => v.g.position.lerpVectors(from, to, k), () => { u.x = nx; u.y = ny; i++; step(); });
+        animate(dur, (k) => v.g.position.lerpVectors(from, to, k), () => { u.x = nx; u.y = ny; i++; stepTile(); });
       };
-      step();
+      stepTile();
       AU.play('click', 0.25);
     });
   }
   function openActions() {
     const u = ui.sel;
     ui.state = 'menu';
-    OV.move = null; OV.atk = null; OV.path = null;
-    OV.aura = auraTiles(u.cmd ? u : u.cmdr);
+    OV.move = null; OV.atk = null; OV.path = null; OV.aura = null;
     const tg = R.targetsFrom(G, u, u.x, u.y);
     OV.targets = tg.map((o) => [o.x, o.y]);
     drawOverlay();
     showInfo(u);
-    const acts = [];
-    acts.push({ label: '공격', cls: tg.length ? 'gold' : '', disabled: !tg.length, fn: () => { ui.state = 'target'; setHint('공격할 적을 고르세요'); showActs([{ label: '취소', fn: cancel }]); if (tg.length === 1) showForecast(tg[0]); } });
-    if (u.cmd && R.skillsOf(u).length) acts.push({ label: '특기', sub: `MP ${u.mp}`, fn: openSkills });
+    const ready = R.skillsOf(u).some((s) => R.skillReady(u, s));
+    const acts = [{ label: '공격', cls: tg.length ? 'gold' : '', disabled: !tg.length, fn: () => { ui.state = 'target'; setHint('공격할 적을 고르세요'); showActs([{ label: '취소', fn: cancel }]); if (tg.length === 1) showForecast(tg[0]); } }];
+    if (R.skillsOf(u).length) acts.push({ label: '특기', sub: ready ? '사용 가능' : '대기 중', disabled: !ready, fn: openSkills });
     acts.push({ label: '대기', fn: () => finishAct(u) });
     acts.push({ label: '취소', fn: cancel });
     showActs(acts);
@@ -933,8 +958,8 @@
     const u = ui.sel;
     ui.state = 'skillpick';
     const list = R.skillsOf(u).map((sk) => {
-      const s = D.SKILLS[sk];
-      return { label: s.name, sub: `MP ${s.mp} · ${s.desc}`, disabled: u.mp < s.mp, fn: () => pickSkill(sk) };
+      const s = D.SKILLS[sk], cd = u.cd[sk] || 0;
+      return { label: s.name, sub: cd > 0 ? `${cd}턴 뒤 사용 가능` : `${s.desc} · 대기 ${s.cd}턴`, disabled: cd > 0, fn: () => pickSkill(sk) };
     });
     list.push({ label: '취소', fn: openActions });
     showActs(list);
@@ -959,9 +984,7 @@
   }
   function previewSkillArea(t) {
     const u = ui.sel, sk = ui.skill;
-    if (!u || !sk) return;
-    const s = D.SKILLS[sk];
-    if (s.tgt === 'self') return;
+    if (!u || !sk || D.SKILLS[sk].tgt === 'self') return;
     const ok = OV.skill && OV.skill.some(([a, b]) => a === t[0] && b === t[1]);
     const tt = ok ? t : ui.skillTile;
     OV.area = tt ? R.skillArea(G, u, sk, tt[0], tt[1]) : null;
@@ -981,16 +1004,15 @@
     OV.targets = R.targetsFrom(G, a, a.x, a.y).map((o) => [o.x, o.y]);
     OV.area = [[d.x, d.y]];
     drawOverlay();
-    const p = R.preview(G, a, d, a.x, a.y);
+    const p = R.combat(G, a, d, a.x, a.y);
     const el = $('forecast');
-    const rel = p.relA > 0 ? `<span class="good">▲ 상성 우위 (공방 x1.25)</span>` : p.relA < 0 ? `<span class="bad">▼ 상성 열세 (공방 x0.85)</span>` : '상성 보통';
+    const rel = p.rel > 0 ? `<span class="good">▲ 상성 우위 (x${R.ADV})</span>` : p.rel < 0 ? `<span class="bad">▼ 상성 열세 (x${R.DISADV})</span>` : '상성 보통';
     const terr = R.terr(G, d.x, d.y);
-    const hpA = Math.max(0, Math.round(a.hp - p.aLoss)), hpD = Math.max(0, Math.round(d.hp - p.dLoss));
-    el.innerHTML = `<div class="row">
-      <div class="side"><img src="${IMG[a.icon]}"><div><div class="n">${a.name}</div><div class="h">${Math.round(a.hp)}<em>→ ${hpA}</em></div></div></div>
-      <div class="mid">예상<b>⚔</b>${p.counter ? '반격 있음' : '반격 없음'}</div>
-      <div class="side R"><img src="${IMG[d.icon]}"><div><div class="n">${d.name}</div><div class="h">${Math.round(d.hp)}<em>→ ${hpD}</em></div></div></div></div>
-      <div class="rel">${rel} · 적 지형 ${terr.name}${d.move !== 'fly' && terr.def ? ` ${terr.def > 0 ? '+' : ''}${Math.round(terr.def * 100)}%` : ''}</div>
+    const side = (u, t, h, cls) => `<div class="side ${cls}"><img src="${IMG[u.icon]}"><div><div class="n">${u.name}</div>
+      ${u.troop ? `<div class="h" style="font-size:14px">병사 ${Math.round(u.troop.hp)}<em>→ ${Math.max(0, Math.round(u.troop.hp - t))}</em></div>` : ''}
+      <div class="h" style="font-size:16px">영웅 ${Math.round(u.hp)}<em>→ ${Math.max(0, Math.round(u.hp - h))}</em></div></div></div>`;
+    el.innerHTML = `<div class="row">${side(a, p.aT, p.aH, '')}<div class="mid">예상<b>⚔</b>${p.counter ? '반격 있음' : '반격 없음'}</div>${side(d, p.dT, p.dH, 'R')}</div>
+      <div class="rel">${rel} · 적 지형 ${terr.name}${d.move !== 'fly' && terr.def ? ` ${terr.def > 0 ? '+' : ''}${Math.round(terr.def * 100)}%` : ''}${p.dDead ? ' · <span class="good">격파 예상</span>' : ''}</div>
       <div class="btns"><button class="gold" id="fcGo">공격</button><button id="fcNo">취소</button></div>`;
     el.classList.remove('hidden');
     $('fcGo').onclick = () => confirmAttack();
@@ -999,11 +1021,7 @@
     showActs(null);
     setHint('같은 적을 한 번 더 누르면 공격합니다');
   }
-  function backToTarget() {
-    $('forecast').classList.add('hidden');
-    ui.target = null;
-    openActions();
-  }
+  function backToTarget() { $('forecast').classList.add('hidden'); ui.target = null; openActions(); }
   async function confirmAttack() {
     const a = ui.sel, d = ui.target;
     if (!a || !d) return;
@@ -1019,9 +1037,8 @@
     $('forecast').classList.add('hidden');
     switch (ui.state) {
       case 'move': deselect(); break;
-      case 'menu': { // 이동 되돌리기
-        const u = ui.sel;
-        const v = views.get(u.uid);
+      case 'menu': {
+        const u = ui.sel, v = views.get(u.uid);
         u.x = ui.from[0]; u.y = ui.from[1];
         v.g.position.copy(tilePos(u.x, u.y));
         selectUnit(u);
@@ -1040,50 +1057,42 @@
     checkAutoEnd();
   }
   function checkAutoEnd() {
-    if (!save.opts.autoEnd || G.side !== 'p') return;
+    if (!save.opts.autoEnd || !G || G.side !== 'p') return;
     if (G.units.every((u) => !u.alive || u.side !== 'p' || u.acted)) wait(450).then(() => { if (G && G.side === 'p' && !busy && mode === 'map') endTurn(); });
   }
   function endTurnAsk() {
     if (busy || G.side !== 'p' || mode !== 'map') return;
     const left = G.units.filter((u) => u.alive && u.side === 'p' && !u.acted).length;
     if (!left) { endTurn(); return; }
-    modal(`<h3>턴 종료</h3><p>아직 행동하지 않은 유닛이 <b>${left}</b> 있습니다. 턴을 마칠까요?</p>
+    modal(`<h3>턴 종료</h3><p>아직 행동하지 않은 영웅이 <b>${left}</b>명 있습니다. 턴을 마칠까요?</p>
       <div class="opts"><button class="gold" data-a="yes">턴 종료</button><button data-a="no">계속하기</button></div>`, (a) => { if (a === 'yes') endTurn(); });
   }
 
   // ── 행동 실행 (아군·적 공용) ─────────────────────────────
-  let bossTalked = false;
   async function attack(a, d) {
     faceTo(a, d.x); faceTo(d, a.x);
-    if (!bossTalked && (a.boss || d.boss) && G.stage.bossTalk) { bossTalked = true; await talk(G.stage.bossTalk); }
     const res = R.combat(G, a, d, a.x, a.y, Math.random);
-    const bg = R.terr(G, d.x, d.y).bg;
     if (save.opts.fight) {
       mode = 'fight';
       $('hud').classList.add('hidden');
       $('banner').classList.add('hidden');
-      await FIGHT.play(a, d, res, { bg, speed: speedK });
+      await FIGHT.play(a, d, res, { bg: R.terr(G, d.x, d.y).bg, speed: speedK });
       mode = 'map';
       $('hud').classList.remove('hidden');
-    } else {
-      await mapClash(a, d, res);
-    }
-    // 결과 반영
-    const dl = d.hp - res.dHp, al = a.hp - res.aHp;
-    d.hp = res.dHp; a.hp = res.aHp;
-    if (dl > 0) pop(d.x, d.y, '-' + Math.round(dl), 'dmg');
-    if (al > 0) setTimeout(() => pop(a.x, a.y, '-' + Math.round(al), 'dmg'), 150);
-    gainExp(a, d, dl, d.hp <= 0);
-    if (res.counter) gainExp(d, a, al, a.hp <= 0);
+    } else await mapClash(a, d, res);
+    R.apply(d, res.dT, res.dH);
+    R.apply(a, res.aT, res.aH);
+    popDmg(d, res.dT, res.dH);
+    wait(150).then(() => popDmg(a, res.aT, res.aH));
+    gainExp(a, d, res.dT + res.dH, d.hp <= 0);
+    if (res.counter) gainExp(d, a, res.aT + res.aH, a.hp <= 0);
     refreshView(a); refreshView(d);
-    if (d.side === 'e' || a.side === 'e') { const sq = G.squads[(a.side === 'e' ? a : d).squad]; if (sq) sq.woke = true; }
     const deaths = [];
     if (d.hp <= 0) deaths.push(kill(d));
     if (a.hp <= 0) deaths.push(kill(a));
     await Promise.all(deaths);
     if (deaths.length) await wait(200);
   }
-  // 전투 장면을 끈 경우: 지도 위에서 짧게
   async function mapClash(a, d, res) {
     const va = views.get(a.uid), vd = views.get(d.uid);
     va.rig.once('atk', Math.max(1, va.rig.dur('atk') / 1.0) * speedK);
@@ -1102,35 +1111,25 @@
     await wait(250);
   }
   function gainExp(src, tgt, dmg, killed) {
-    const hero = src.cmd ? src : src.cmdr;
-    if (!hero || hero.side !== 'p' || !hero.alive) return;
-    const e = R.expFor(src, tgt, dmg, killed);
-    if (!e) return;
-    const ups = R.addExp(hero, e);
-    if (ups) { setTimeout(() => { pop(hero.x, hero.y, '레벨 업!', 'info big', 1.4); AU.play('rankUp', 0.7); }, 500); }
+    if (src.side !== 'p' || !src.alive) return;
+    const ups = R.addExp(src, R.expFor(src, tgt, dmg, killed));
+    if (ups) wait(500).then(() => { pop(src.x, src.y, '레벨 업!', 'info big', 1.4); AU.play('rankUp', 0.7); });
   }
   async function kill(u) {
     u.alive = false; u.hp = 0;
     const v = views.get(u.uid);
+    pop(u.x, u.y, u.side === 'p' ? '퇴각' : '격파!', 'info big', 1.3);
     if (v) {
-      if (v.rig.c.has('die')) v.rig.once('die', 1.4 * speedK, true);
-      await animateP(0.9, (k) => v.rig.c.setOpacity(1 - k * k));
+      for (const r of [v.rig, ...v.soldiers.map((s) => s.rig)]) if (r.c.has('die')) r.once('die', 1.4 * speedK, true);
+      await animateP(0.9, (k) => { for (const r of [v.rig, ...v.soldiers.map((s) => s.rig)]) r.c.setOpacity(1 - k * k); });
       removeView(u);
     }
-    // 지휘관이 쓰러지면 그 용병들도 퇴각
-    if (u.cmd) {
-      const alive = u.troops.filter((t) => t.alive);
-      if (alive.length) {
-        pop(u.x, u.y, u.side === 'p' ? '퇴각' : '격파!', 'info big', 1.3);
-        await Promise.all(alive.map((t, i) => wait(i * 90).then(() => { pop(t.x, t.y, '퇴각', 'info'); return kill(t); })));
-      } else pop(u.x, u.y, u.side === 'p' ? '퇴각' : '격파!', 'info big', 1.3);
-      AU.play(u.side === 'p' ? 'fail' : 'expB', 0.6);
-    }
+    if (u.boss || u.lead) AU.play(u.side === 'p' ? 'fail' : 'expB', 0.6);
     updateDanger();
   }
   async function useSkill(u, sk, tx, ty) {
     const s = D.SKILLS[sk];
-    u.mp -= s.mp;
+    u.cd[sk] = s.cd + 1; // 다음 차례 시작에 1 줄어 s.cd 턴 동안 못 쓴다
     faceTo(u, tx);
     const v = views.get(u.uid);
     panTo(tx, ty);
@@ -1140,34 +1139,49 @@
     OV.area = R.skillArea(G, u, sk, tx, ty); drawOverlay();
     await wait(800);
     AU.play(s.sfx, 0.8);
-    const area = OV.area;
-    area.forEach(([x, y], i) => fxAt(x, y, s.fx, i * 40));
+    OV.area.forEach(([x, y], i) => fxAt(x, y, s.fx, i * 40));
     await wait(350);
-    const res = R.skillEffect(G, u, sk, tx, ty, Math.random);
     const deaths = [];
-    for (const r of res) {
-      if (r.dmg) {
-        r.u.hp = Math.max(0, r.u.hp - r.dmg);
-        pop(r.u.x, r.u.y, '-' + r.dmg, 'dmg');
-        gainExp(u, r.u, r.dmg, r.u.hp <= 0);
+    for (const r of R.skillEffect(G, u, sk, tx, ty, Math.random)) {
+      if (r.toT != null) {
+        R.apply(r.u, r.toT, r.toH);
+        popDmg(r.u, r.toT, r.toH);
+        gainExp(u, r.u, r.toT + r.toH, r.u.hp <= 0);
+        if (s.slow) r.u.slowNext = s.slow;
         refreshView(r.u);
-        if (r.u.side === 'e') { const sq = G.squads[r.u.squad]; if (sq) sq.woke = true; }
         if (r.u.hp <= 0) deaths.push(kill(r.u));
-      }
-      if (r.heal) { r.u.hp = Math.min(10, r.u.hp + r.heal); pop(r.u.x, r.u.y, '+' + r.heal, 'heal'); refreshView(r.u); if (u.side === 'p') R.addExp(u, 4 * r.heal); }
-      if (r.buff) {
-        r.u.buffs = r.u.buffs.filter((b) => !Object.keys(s.buff).some((k) => b[k]));
-        r.u.buffs.push({ ...s.buff, until: G.turn + (s.buff.mov ? 2 : 1), side: u.side });
-        pop(r.u.x, r.u.y, Object.entries(s.buff).map(([k, n]) => ({ at: '공격', df: '방어', mov: '이동' }[k] + ' +' + n)).join(' '), 'info');
-        if (u.side === 'p') R.addExp(u, 3);
+      } else {
+        if (r.hH || r.hT) {
+          r.u.hp += r.hH; if (r.u.troop) r.u.troop.hp += r.hT;
+          pop(r.u.x, r.u.y, '+' + Math.round(r.hH + r.hT), 'heal');
+          if (u.side === 'p') R.addExp(u, Math.round(((r.hH + r.hT) / R.totalMax(r.u)) * 40));
+        }
+        if (r.buff) {
+          r.u.buffs = r.u.buffs.filter((b) => !Object.keys(s.buff).some((k) => b[k]));
+          r.u.buffs.push({ ...s.buff, until: G.turn + 1, side: u.side });
+          pop(r.u.x, r.u.y, Object.entries(s.buff).map(([k, n]) => ({ at: '공격', df: '방어', mov: '이동' }[k] + ' +' + Math.round(n * 100) + '%')).join(' '), 'info');
+          if (u.side === 'p') R.addExp(u, 3);
+        }
+        refreshView(r.u);
       }
     }
     await Promise.all(deaths);
     OV.area = null; drawOverlay();
     await wait(250);
   }
-  // 행동 뒤 승패 확인. 계속 진행하면 true
+  // 행동 뒤: 적 무리가 다 쓰러졌으면 다음 무리, 그리고 승패. 계속 진행하면 true
   async function afterAction() {
+    if (!G) return false;
+    if (!G.units.some((u) => u.alive && u.side === 'e') && G.wave < G.stage.waves.length - 1 && R.check(G) !== 'lose') {
+      await wait(300);
+      const list = R.spawnWave(G, G.wave + 1);
+      banner('철충 증원!', `${G.wave + 1}번째 무리 (${list.length})`, 'e');
+      AU.play('reinforce', 0.7);
+      for (const u of list) { addView(u); fxAt(u.x, u.y, 'spawn'); }
+      if (list[0]) panTo(list[0].x, list[0].y, true);
+      setTop();
+      await wait(900);
+    }
     const r = R.check(G);
     if (r) { await endStage(r === 'win'); return false; }
     return true;
@@ -1176,42 +1190,30 @@
   // ── 차례 진행 ───────────────────────────────────────────
   async function startPhase(side) {
     G.side = side;
-    // 강화 효과 만료, 회복, 행동 초기화
     for (const u of G.units) {
       if (!u.alive) continue;
       u.buffs = u.buffs.filter((b) => !(b.side === side && b.until <= G.turn));
       if (u.side !== side) continue;
       u.acted = false;
-      if (u.cmd) u.mp = Math.min(R.maxMp(u), u.mp + 1);
+      for (const k in u.cd) if (u.cd[k] > 0) u.cd[k]--;
+      u.slow = u.slowNext || 0; u.slowNext = 0;
     }
     clearOv(); setTop();
     if (side === 'p' && G.stage.turnLimit && G.turn > G.stage.turnLimit) { await endStage(false, '제한 턴을 넘겼습니다'); return; }
     banner(side === 'p' ? `${G.turn}턴 · 아군 차례` : '적 차례', side === 'p' && G.stage.turnLimit ? `제한 ${G.stage.turnLimit}턴` : '', side === 'e' ? 'e' : '');
     AU.play(side === 'p' ? 'start' : 'warning', 0.5);
     await wait(900);
-    // 회복: 마을·요새, 지휘관 곁의 용병
     let healed = false;
     for (const u of G.units) {
-      if (!u.alive || u.side !== side || u.hp >= 10) continue;
-      const t = R.terr(G, u.x, u.y);
-      let h = t.heal || 0;
-      if (!u.cmd && u.cmdr && u.cmdr.alive && R.dist(u.x, u.y, u.cmdr.x, u.cmdr.y) === 1) h = Math.max(h, 2);
-      if (h) { const n = Math.min(10 - u.hp, h); u.hp += n; pop(u.x, u.y, '+' + Math.round(n), 'heal'); refreshView(u); healed = true; }
+      if (!u.alive || u.side !== side) continue;
+      const h = R.terr(G, u.x, u.y).heal;
+      if (!h) continue;
+      const a = Math.min(u.hpMax - u.hp, Math.round(u.hpMax * h)), b = u.troop ? Math.min(u.troop.hpMax - u.troop.hp, Math.round(u.troop.hpMax * h)) : 0;
+      if (a + b <= 0) continue;
+      u.hp += a; if (u.troop) u.troop.hp += b;
+      pop(u.x, u.y, '+' + (a + b), 'heal'); healed = true;
     }
     if (healed) { AU.play('energy', 0.4); await wait(500); }
-    // 스테이지 이벤트
-    for (const ev of G.stage.events) {
-      if (ev.done || ev.turn !== G.turn || ev.side !== side) continue;
-      ev.done = true;
-      if (ev.talk) await talk(ev.talk);
-      for (const spec of ev.reinforce || []) {
-        const b = R.makeBoss(G, JSON.parse(JSON.stringify(spec)));
-        G.squads[b.squad].woke = true;
-        for (const u of [b, ...b.troops]) { addView(u); fxAt(u.x, u.y, 'spawn'); }
-        panTo(spec.x, spec.y);
-      }
-      if (ev.reinforce) { AU.play('reinforce', 0.7); await wait(700); }
-    }
     G.units.forEach(refreshView);
     updateDanger();
     if (side === 'e') await enemyPhase();
@@ -1226,35 +1228,34 @@
   // 판단 장치로 한 편의 유닛을 모두 움직인다 (적 차례, 아군 자동 전투). 승패가 나면 false
   async function runAI(side) {
     const fields = {};
+    const g0 = G; // 도중에 작전이 바뀌면(포기·재시작) 멈춘다
     const near = (u) => Math.min(99, ...G.units.filter((o) => o.alive && o.side !== side).map((o) => R.dist(o.x, o.y, u.x, u.y)));
-    for (let pass = 0; pass < 2; pass++) {
-      const list = G.units.filter((u) => u.alive && u.side === side && !u.acted && (pass === 0 ? !u.cmd : u.cmd)).sort((a, b) => near(a) - near(b));
-      for (const u of list) {
-        if (!G || !u.alive || mode === 'screen') return false;
-        if (side === 'p' && !autoOn) return true;
-        const plan = R.plan(G, u, fields);
-        u.acted = true;
-        const moved = plan.to[0] !== u.x || plan.to[1] !== u.y;
-        if (!moved && plan.act === 'wait') { refreshView(u); continue; }
-        panTo(u.x, u.y);
-        await wait(moved ? 160 : 80);
-        if (moved) {
-          const reach = R.reach(G, u);
-          const path = R.path(reach, plan.to[0], plan.to[1]);
-          if (path.length > 1) await walk(u, path);
-          else { u.x = plan.to[0]; u.y = plan.to[1]; }
-        }
-        if (plan.act === 'attack' && plan.target.alive && R.dist(u.x, u.y, plan.target.x, plan.target.y) <= u.rng) {
-          showInfo(plan.target);
-          await wait(200);
-          await attack(u, plan.target);
-        } else if (plan.act === 'skill') {
-          await useSkill(u, plan.skill, plan.tx, plan.ty);
-        }
-        refreshView(u);
-        if (!(await afterAction())) return false;
-        await wait(80);
+    const list = G.units.filter((u) => u.alive && u.side === side && !u.acted).sort((a, b) => (a.lead || a.boss ? 1 : 0) - (b.lead || b.boss ? 1 : 0) || near(a) - near(b));
+    for (const u of list) {
+      if (G !== g0 || mode === 'screen') return false;
+      if (!u.alive) continue;
+      if (side === 'p' && !autoOn) return true;
+      const plan = R.plan(G, u, fields);
+      u.acted = true;
+      const moved = plan.to[0] !== u.x || plan.to[1] !== u.y;
+      if (!moved && plan.act === 'wait') { refreshView(u); continue; }
+      panTo(u.x, u.y);
+      await wait(moved ? 160 : 80);
+      if (moved) {
+        const path = R.path(R.reach(G, u), plan.to[0], plan.to[1]);
+        if (path.length > 1) await walk(u, path); else { u.x = plan.to[0]; u.y = plan.to[1]; }
       }
+      if (plan.act === 'attack' && plan.target.alive && R.dist(u.x, u.y, plan.target.x, plan.target.y) <= u.rng) {
+        showInfo(plan.target);
+        await wait(200);
+        if (G !== g0) return false;
+        await attack(u, plan.target);
+      } else if (plan.act === 'skill') await useSkill(u, plan.skill, plan.tx, plan.ty);
+      if (G !== g0) return false;
+      refreshView(u);
+      fields.threat = null;
+      if (!(await afterAction())) return false;
+      await wait(80);
     }
     return true;
   }
@@ -1266,7 +1267,6 @@
     G.turn++;
     await startPhase('p');
   }
-  // 아군 자동 전투: 켜 두면 아군 차례마다 판단 장치가 대신 움직인다
   let autoOn = false;
   async function autoPlayer() {
     if (!autoOn || !G || G.side !== 'p' || busy || mode !== 'map') return;
@@ -1284,58 +1284,67 @@
     if (v) autoPlayer();
   }
 
-  // ── 대화 ─────────────────────────────────────────────────
-  let talkQ = null, talkDone = null;
-  function talk(lines, bg) {
+  // ── 대화 (본작 대본: 노드 사슬 + 사령관 선택지) ─────────
+  let talkNodes = null, talkCur = null, talkDone = null;
+  // nodes: js/story.js 노드 배열 [{id, who, face, t, bg, cg, next, ch}]
+  function story(nodes) {
     return new Promise((res) => {
-      talkQ = lines.slice(); talkDone = res;
-      const prev = mode;
-      talk.prev = prev;
+      if (!nodes || !nodes.length) { res(); return; }
+      talkNodes = new Map(nodes.map((n) => [n.id, n]));
+      talkDone = res;
+      talk.prev = mode;
       mode = 'talk';
-      const el = $('talk');
-      el.classList.remove('hidden');
-      let bgEl = $('talkBg');
-      if (bg) {
-        if (!bgEl) { bgEl = document.createElement('div'); bgEl.id = 'talkBg'; document.body.appendChild(bgEl); }
-        bgEl.style.backgroundImage = `url(assets/bg/${bg}.webp)`;
-      } else if (bgEl) bgEl.remove();
-      talkNext();
+      $('talk').classList.remove('hidden');
+      $('talkBg').classList.remove('hidden');
+      $('talkBg').style.backgroundImage = '';
+      showNode(nodes[0]);
     });
   }
-  function talkNext() {
-    if (!talkQ) return;
-    const line = talkQ.shift();
-    if (!line) { talkEnd(); return; }
-    const [who, ex, text] = line;
-    const el = $('talk');
-    const face = el.querySelector('.tface'), img = face.querySelector('img');
-    el.classList.toggle('nar', who === 'nar');
-    let name = '', src = '';
-    if (who === 'nar') face.classList.add('none');
-    else {
-      face.classList.remove('none');
-      const h = D.HEROES[who], b = D.BOSSES[who];
-      const def = h || b;
-      name = def ? (h ? h.full : b.name) : who;
-      if (def && def.face && ex) src = `assets/face/${def.face}_${ex}.webp`;
-      else src = def ? IMG[def.icon] : '';
-      img.onerror = () => { img.onerror = null; img.src = def ? IMG[def.icon] : ''; };
-      img.src = src;
-    }
-    el.querySelector('.tname').textContent = name;
-    el.querySelector('.ttext').textContent = text;
-    AU.play('click', 0.3);
+  function talk(lines) { // 간단한 대사 [[화자, 얼굴, 문장]] (도움말 등)
+    return story(lines.map(([who, face, t], i) => ({ id: i + 1, who, face, t, bg: '', cg: '', next: i + 2 <= lines.length ? i + 2 : null, ch: [] })));
   }
+  function showNode(n) {
+    talkCur = n;
+    const el = $('talk'), bg = $('talkBg');
+    if (n.bg) bg.style.backgroundImage = `url(assets/story/bg/${n.bg}.webp)`;
+    const cg = bg.querySelector('.tcg');
+    if (n.cg) { if (cg.dataset.k !== n.cg) { cg.src = `assets/story/cg/${n.cg}.webp`; cg.dataset.k = n.cg; } } else { cg.removeAttribute('src'); cg.dataset.k = ''; }
+    if (!n.t && !(n.ch && n.ch.length)) { goNode(n.next); return; } // 화면 전환만 하는 빈 줄
+    const face = el.querySelector('.tface'), img = face.querySelector('img');
+    el.classList.toggle('nar', !n.who);
+    face.classList.toggle('none', !n.face);
+    if (n.face) {
+      const icon = n.face.startsWith('icon:');
+      img.className = icon ? 'icon' : '';
+      img.src = icon ? IMG[n.face.slice(5)] : `assets/story/face/${n.face}.webp`;
+    }
+    el.querySelector('.tname').textContent = n.who || '';
+    el.querySelector('.ttext').textContent = n.t;
+    const ch = el.querySelector('.tchoices');
+    ch.innerHTML = '';
+    if (n.ch && n.ch.length) {
+      for (const [text, next] of n.ch) {
+        const b = document.createElement('button');
+        b.textContent = text;
+        b.onclick = (e) => { e.stopPropagation(); AU.play('click', 0.5); goNode(next); };
+        ch.appendChild(b);
+      }
+    }
+    el.querySelector('.tnext').style.visibility = n.ch && n.ch.length ? 'hidden' : '';
+    AU.play('click', 0.25);
+  }
+  function goNode(id) { const n = id != null && talkNodes.get(id); if (n) showNode(n); else talkEnd(); }
+  function talkNext() { if (!talkCur) return; if (talkCur.ch && talkCur.ch.length) return; goNode(talkCur.next); }
   function talkEnd() {
-    talkQ = null;
+    talkNodes = null; talkCur = null;
     $('talk').classList.add('hidden');
-    const bgEl = $('talkBg'); if (bgEl) bgEl.remove();
+    $('talkBg').classList.add('hidden');
     mode = talk.prev === 'talk' ? 'map' : talk.prev;
     const cb = talkDone; talkDone = null;
     if (cb) cb();
   }
-  function talkSkip() { if (talkQ) { talkQ = []; talkNext(); } }
-  $('talk').addEventListener('click', (e) => { if (e.target.closest('.tskip')) { talkSkip(); return; } talkNext(); });
+  function talkSkip() { if (talkCur) talkEnd(); }
+  $('talk').addEventListener('click', (e) => { if (e.target.closest('.tskip')) { talkSkip(); return; } if (e.target.closest('.tchoices')) return; talkNext(); });
 
   // ── 모달 ─────────────────────────────────────────────────
   function modal(html, cb) {
@@ -1346,7 +1355,6 @@
       const b = e.target.closest('[data-a]');
       if (!b && e.target !== m) return;
       const a = b ? b.dataset.a : null;
-      if (b && b.dataset.keep) { cb && cb(a, b); return; }
       m.classList.add('hidden'); m.innerHTML = '';
       AU.play('click', 0.4);
       cb && cb(a, b);
@@ -1364,7 +1372,7 @@
       <button data-a="help">도움말 (규칙·조작)</button>
       <button data-a="goal">승리·패배 조건</button>
       <button data-a="retry">처음부터 다시</button>
-      <button data-a="quit" class="red">스테이지 포기 (선택 화면으로)</button>
+      <button data-a="quit" class="red">작전 포기 (선택 화면으로)</button>
       <button data-a="close" class="gold">닫기</button></div>`, (a) => {
       if (['fight', 'fast', 'autoEnd', 'sound'].includes(a)) {
         o[a] = !o[a]; writeSave();
@@ -1372,24 +1380,24 @@
         openMenu();
       } else if (a === 'help') help();
       else if (a === 'goal') goalInfo();
-      else if (a === 'retry') startStage(G.stage.id - 1, true);
+      else if (a === 'retry') { const si = G.stage.id - 1; leaveMap(); prep(si); }
       else if (a === 'quit') { leaveMap(); stageSelect(); }
     });
   }
   function goalInfo() {
     const st = G.stage;
-    modal(`<h3>${st.id}장 · ${st.title}</h3><p>승리 조건: <b>${st.goal}</b></p><p>패배 조건: ${st.lose}</p>
-      <p style="color:#9aa6c4">적 지휘관을 쓰러뜨리면 그 부하 용병도 함께 퇴각합니다.</p><div class="opts"><button class="gold" data-a="ok">확인</button></div>`);
+    modal(`<h3>${st.idx} ${st.title}</h3><p>승리 조건: <b>${st.goal}</b></p><p>패배 조건: ${st.lose}</p>
+      <p style="color:#9aa6c4">적 무리를 모두 쓰러뜨리면 다음 무리가 나타납니다 (전체 ${st.waves.length}무리).</p><div class="opts"><button class="gold" data-a="ok">확인</button></div>`);
   }
   function help(cb) {
     modal(`<h3>도움말</h3>
-      <p><b>지휘관과 용병</b> · 지휘관(★)은 용병을 거느립니다. 용병은 지휘관의 <b>지휘 범위</b>(노란 테두리) 안에 있을 때 공격·방어 보정을 받습니다. 지휘관이 쓰러지면 그 용병도 모두 퇴각합니다.</p>
-      <p><b>병종 상성</b> · 경장 ▶ 중장 ▶ 기동 ▶ 경장. 기동은 사격에도 강합니다. 비행은 지상 근접 병종에 강하고 사격에 약합니다. 우위면 공격·방어 x1.25, 열세면 x0.85.</p>
-      <p><b>사격</b> · 사거리 2. 두 칸 떨어져 쏘면 근접 부대는 반격하지 못합니다. 붙어서 싸우면 약해집니다.</p>
-      <p><b>병력</b> · 모든 부대는 병력 10. 남은 병력이 곧 싸우는 병사 수라, 지친 부대는 약합니다.</p>
-      <p><b>회복</b> · 마을·요새 위에서 차례를 시작하면 +3, 지휘관 바로 옆의 용병은 +2. 다프네의 수복 특기로도 회복합니다.</p>
-      <p><b>지형</b> · 숲·언덕·산·요새는 방어 보정이 있습니다. 적과 맞닿은 칸에 들어가면 더 나아갈 수 없습니다(지배 영역).</p>
-      <p><b>조작</b> · 누르기: 선택·이동·공격 / 끌기: 지도 이동 / 두 손가락·휠: 확대 / 오른쪽 클릭·Esc: 취소 / 방향키+Enter: 커서 / E: 턴 종료 / D: 위험 범위</p>
+      <p><b>영웅과 병사</b> · 지도 위 한 칸은 영웅 한 명과 배속된 병사 부대입니다. 공격받으면 <b>병사가 먼저</b> 피해를 받고, 병사가 전멸하면 영웅이 직접 맞습니다. 영웅이 쓰러지면 그 칸은 퇴각합니다.</p>
+      <p><b>병사 배속</b> · 출격 전에 영웅마다 병사를 고릅니다. 고를 수 있는 병사는 영웅의 전직 단계에 따라 늘어납니다.</p>
+      <p><b>병종 상성</b> · 경장 ▶ 중장 ▶ 기동 ▶ 경장, 기동 ▶ 사격, 비행 ▶ 지상 근접, 사격 ▶ 비행. 병사는 병사의 병종, 영웅은 영웅의 병종으로 따집니다. 우위 x${R.ADV}, 열세 x${R.DISADV}.</p>
+      <p><b>사격</b> · 사거리 2 이상. 상대 사거리 밖에서 쏘면 반격을 받지 않습니다. 붙어서 싸우면 약해집니다.</p>
+      <p><b>특기</b> · 쓰고 나면 정해진 턴 동안 다시 쓸 수 없습니다(괄호 안 숫자).</p>
+      <p><b>지형</b> · 숲·언덕·산·폐허·기지는 방어 보정, 마을·기지에서 차례를 시작하면 체력 회복. 적과 맞닿은 칸에 들어가면 더 나아갈 수 없습니다.</p>
+      <p><b>조작</b> · 누르기: 선택·이동·공격 / 끌기: 지도 이동 / 두 손가락·휠: 확대 / 오른쪽 클릭·Esc: 취소 / 방향키+Enter: 커서 / E: 턴 종료 / D: 위험 범위 / Q: 자동</p>
       <div class="opts"><button class="gold" data-a="ok">확인</button></div>`, cb);
   }
 
@@ -1407,11 +1415,11 @@
         <button id="tNew" class="${has ? '' : 'gold'}">처음부터</button>
         <button id="tHelp">도움말</button>
       </div>
-      <div class="foot">라스트오리진 에셋을 사용한 비영리 팬메이드 게임입니다.<br>세로·가로 화면과 PC 모두 지원합니다.</div></div>`);
+      <div class="foot">본작 메인 스토리를 따라가는 비영리 팬메이드 게임입니다.<br>세로·가로 화면과 PC 모두 지원합니다.</div></div>`);
     const go = () => { AU.play('click'); stageSelect(); };
     if ($('tCont')) $('tCont').onclick = go;
     $('tNew').onclick = () => {
-      const start = () => { save.clear = 0; save.gold = 600; save.hire = {}; for (const id in D.HEROES) save.heroes[id] = { lv: 1, exp: 0, tier: 0 }; writeSave(); go(); };
+      const start = () => { save.clear = 0; save.troops = {}; save.joined = []; for (const id in D.HEROES) save.heroes[id] = { lv: 1, exp: 0, tier: 0 }; writeSave(); startStage(0); };
       if (has) modal('<h3>처음부터</h3><p>지금까지의 진행이 지워집니다. 시작할까요?</p><div class="opts"><button class="red" data-a="y">처음부터 시작</button><button data-a="n">취소</button></div>', (a) => { if (a === 'y') start(); });
       else start();
     };
@@ -1422,121 +1430,103 @@
     AU.bgm('title');
     const cards = D.STAGES.map((st, i) => {
       const lock = i > save.clear, clear = i < save.clear;
+      const S = window.STORY && STORY[st.idx];
       return `<button class="stg ${lock ? 'lock' : ''} ${clear ? 'clear' : ''}" data-i="${i}" ${lock ? 'disabled' : ''}>
-        <span class="no">${st.id}장</span><span class="tt">${st.title}</span><span class="gl">승리: ${st.goal}</span><span class="gl">출격: ${st.heroes.map((h) => D.HEROES[h].name).join(', ')}</span></button>`;
+        <span class="no">${st.idx}</span><span class="tt">${st.title}</span><span class="gl">${S ? S.desc : ''}</span><span class="gl">승리: ${st.goal} · 출격 ${st.heroes.length}명</span></button>`;
     }).join('');
-    const end = save.clear >= D.STAGES.length ? '<div class="tipbox"><b>모든 장을 클리어했습니다!</b> 원하는 장을 다시 플레이해 영웅을 더 키울 수 있습니다.</div>' : '';
-    screen(`<div class="scr"><div class="bar"><button id="sBack" class="ghost">◀ 타이틀</button><h2>작전 선택</h2><span class="gold-n">자금 ${save.gold}</span></div>
+    const end = save.clear >= D.STAGES.length ? '<div class="tipbox"><b>1지역을 모두 클리어했습니다!</b> 다시 플레이해 영웅을 더 키울 수 있습니다.</div>' : '';
+    screen(`<div class="scr"><div class="bar"><button id="sBack" class="ghost">◀ 타이틀</button><h2>작전 선택</h2><span></span></div>
+      <div class="chap"><b>1지역</b>지구의 마지막 인간</div>
       ${end}<div class="stages">${cards}</div>
       <h2 style="margin-top:22px">영웅</h2><div class="heroes">${heroCards()}</div></div>`);
     $('sBack').onclick = title;
     document.querySelectorAll('.stg').forEach((b) => (b.onclick = () => { AU.play('click'); startStage(+b.dataset.i); }));
   }
-  function heroCards(only) {
-    return Object.entries(D.HEROES).filter(([id]) => !only || only.includes(id)).map(([id, h]) => {
+  const joined = () => new Set(D.STAGES.slice(0, Math.min(D.STAGES.length, save.clear + 1)).flatMap((s) => s.heroes));
+  function heroStatLine(id) {
+    const h = D.HEROES[id], s = save.heroes[id], t = h.tiers[s.tier], k = 1 + 0.07 * (s.lv - D.TIER_LV[s.tier]);
+    return `${kindTag(h.kind)} 체력 <b>${Math.round(t.hp * k)}</b> · 공격 <b>${Math.round(t.at * k)}</b> · 방어 <b>${Math.round(t.df * k)}</b> · 이동 <b>${t.mov}</b> · 사거리 <b>${h.rng}</b>`;
+  }
+  function heroCards() {
+    const j = joined();
+    return Object.entries(D.HEROES).filter(([id]) => j.has(id)).map(([id, h]) => {
       const s = save.heroes[id], t = h.tiers[s.tier];
-      const at = Math.round(t.at + h.grow.at * (s.lv - D.TIER_LV[s.tier])), df = Math.round(t.df + h.grow.df * (s.lv - D.TIER_LV[s.tier]));
       return `<div class="hero"><div class="pic" style="background-image:url(${IMG[h.icon]})"></div>
         <div class="nm">${h.full}<small>Lv${s.lv} · ${t.cls}</small></div>
-        <div class="st">${kindTag(h.kind)} 공격 <b>${at}</b> · 방어 <b>${df}</b> · 이동 <b>${t.mov}</b> · 지휘 <b>${t.cmd}</b> (+${t.ca}/+${t.cd}) · 용병 <b>${t.slots}</b></div></div>`;
+        <div class="st">${heroStatLine(id)}</div></div>`;
     }).join('');
   }
 
-  // 출격 준비: 용병 고용
+  // 출격 준비: 영웅마다 병사 배속
   function prep(si) {
     const st = D.STAGES[si];
-    const hire = {};
+    const pick = {};
     for (const id of st.heroes) {
-      const h = D.HEROES[id], t = h.tiers[save.heroes[id].tier];
-      const prev = save.hire[id] || [];
-      hire[id] = Array.from({ length: t.slots }, (_, i) => (prev[i] && t.troops.includes(prev[i]) ? prev[i] : prev[i] === null ? null : t.troops[i % t.troops.length]));
+      const t = D.HEROES[id].tiers[save.heroes[id].tier];
+      pick[id] = t.troops.includes(save.troops[id]) ? save.troops[id] : t.troops[0];
     }
-    const cost = () => Object.values(hire).flat().reduce((s, k) => s + (k ? D.TROOPS[k].cost : 0), 0);
-    // 처음엔 자금 안에서 앞쪽부터 채운다
-    while (cost() > save.gold) { const all = Object.values(hire); const row = all.reduce((a, b) => (b.filter(Boolean).length > a.filter(Boolean).length ? b : a)); const i = row.map(Boolean).lastIndexOf(true); if (i < 0) break; row[i] = null; }
     const render = () => {
-      const c = cost();
       const cards = st.heroes.map((id) => {
         const h = D.HEROES[id], s = save.heroes[id], t = h.tiers[s.tier];
-        const slots = hire[id].map((k, i) => k
-          ? `<div class="slot on" data-h="${id}" data-i="${i}"><img src="${IMG[D.TROOPS[k].icon]}">${D.TROOPS[k].name}<div class="c">${D.TROOPS[k].cost}</div></div>`
-          : `<div class="slot empty" data-h="${id}" data-i="${i}"><img src="${IMG[h.icon]}">비어 있음<div class="c">+ 고용</div></div>`).join('');
+        const opts = t.troops.map((k) => { const tr = D.TROOPS[k]; return `<button class="${pick[id] === k ? 'on' : ''}" data-h="${id}" data-t="${k}"><img src="${IMG[tr.icon]}"><span>${tr.short} ${kindTag(tr.kind)}<small>체력 ${tr.hp} · 공 ${tr.at} · 방 ${tr.df}</small></span></button>`; }).join('');
         return `<div class="hero"><div class="pic" style="background-image:url(${IMG[h.icon]})"></div>
           <div class="nm">${h.full}<small>Lv${s.lv} · ${t.cls}</small></div>
-          <div class="st">${kindTag(h.kind)} 지휘 범위 <b>${t.cmd}</b> · 용병 공격 <b>+${t.ca}</b> 방어 <b>+${t.cd}</b> · 특기 ${t.skills.map((k) => D.SKILLS[k].name).join(', ')}</div>
-          <div class="slots">${slots}</div></div>`;
+          <div class="st">${heroStatLine(id)}<br>특기: ${t.skills.map((k) => D.SKILLS[k].name).join(', ')}</div>
+          <div class="troopPick">${opts}</div></div>`;
       }).join('');
-      screen(`<div class="scr"><div class="bar"><button id="pBack" class="ghost">◀ 작전 선택</button><h2>${st.id}장 출격 준비</h2>
-        <span class="gold-n">자금 ${save.gold - c} <small style="color:#9aa6c4;font-size:12px">(고용 ${c})</small></span></div>
-        <div class="tipbox">칸을 눌러 용병을 고릅니다. 용병은 이번 전투에만 함께하며, 남은 자금은 다음 전투로 넘어갑니다.<br>
+      screen(`<div class="scr"><div class="bar"><button id="pBack" class="ghost">◀ 작전 선택</button><h2>${st.idx} 출격 준비 · 병사 배속</h2><span></span></div>
+        <div class="tipbox">영웅마다 함께 싸울 병사를 고르세요. 공격받으면 병사가 먼저 피해를 받습니다.<br>
         승리: <b>${st.goal}</b> · 패배: ${st.lose} · 상성 <b>경장 ▶ 중장 ▶ 기동 ▶ 경장·사격</b>, 비행 ▶ 지상 근접, 사격 ▶ 비행</div>
         <div class="heroes">${cards}</div>
-        <div class="prepFoot"><button id="pHelp" class="ghost">도움말</button><button id="pAuto">자동 편성</button><button id="pClear">모두 비우기</button><button id="pGo" class="gold">출격</button></div></div>`);
+        <div class="prepFoot"><button id="pHelp" class="ghost">도움말</button><button id="pGo" class="gold">출격</button></div></div>`);
       $('pBack').onclick = stageSelect;
       $('pHelp').onclick = () => help();
-      $('pAuto').onclick = () => {
-        for (const id of st.heroes) { const t = D.HEROES[id].tiers[save.heroes[id].tier]; hire[id] = hire[id].map((_, i) => t.troops[i % t.troops.length]); }
-        while (cost() > save.gold) { let done = false; for (const id of [...st.heroes].reverse()) { const i = hire[id].map(Boolean).lastIndexOf(true); if (i >= 0 && cost() > save.gold) { hire[id][i] = null; done = true; } } if (!done) break; }
-        render();
-      };
-      $('pClear').onclick = () => { for (const id of st.heroes) hire[id] = hire[id].map(() => null); render(); };
-      $('pGo').onclick = () => {
-        save.gold -= cost();
-        save.hire = Object.assign(save.hire, hire);
-        writeSave();
-        launch(si, hire);
-      };
-      document.querySelectorAll('.slot').forEach((el) => (el.onclick = () => {
-        const id = el.dataset.h, i = +el.dataset.i, t = D.HEROES[id].tiers[save.heroes[id].tier];
-        const left = save.gold - cost() + (hire[id][i] ? D.TROOPS[hire[id][i]].cost : 0);
-        const opts = t.troops.map((k) => { const tr = D.TROOPS[k]; return `<button data-a="${k}" ${tr.cost > left ? 'disabled' : ''}><img src="${IMG[tr.icon]}">${tr.name}<small>${D.KIND[tr.kind].name} · 공${tr.at} 방${tr.df} 이동${tr.mov}${tr.rng > 1 ? ' · 사거리' + tr.rng : ''}</small><small style="color:#f3c969">${tr.cost}</small></button>`; }).join('');
-        modal(`<h3>${D.HEROES[id].name}의 용병</h3><div class="pick">${opts}<button data-a="none">비우기</button></div>`, (a) => {
-          if (!a) return;
-          hire[id][i] = a === 'none' ? null : a;
-          render();
-        });
-      }));
+      $('pGo').onclick = () => { Object.assign(save.troops, pick); writeSave(); launch(si); };
+      document.querySelectorAll('.troopPick button').forEach((b) => (b.onclick = () => { AU.play('click', 0.4); pick[b.dataset.h] = b.dataset.t; render(); }));
     };
     render();
   }
 
-  async function startStage(si, retry) {
+  async function startStage(si) {
     const st = D.STAGES[si];
     leaveMap();
-    if (!retry) {
-      AU.bgm('title');
-      hideScreen();
-      await talk(st.intro, st.bg);
-    }
+    AU.bgm('title');
+    hideScreen();
+    const S = window.STORY && STORY[st.idx];
+    if (S) await story(S.start);
     prep(si);
   }
 
   // 지도 전투 시작
   let stageStart = null;
-  async function launch(si, hire) {
+  async function launch(si) {
     const st = D.STAGES[si];
-    st.events.forEach((e) => { e.done = false; });
     hideScreen();
     if (G) leaveMap();
     G = R.newGame(st);
-    bossTalked = false;
     buildWorld();
-    for (let i = 0; i < st.heroes.length; i++) {
-      const id = st.heroes[i];
-      const [x, y] = st.starts[i];
-      const hu = R.makeHero(G, id, save.heroes[id], x, y);
-      const list = (hire[id] || []).filter(Boolean);
-      const spots = R.freeAround(G, x, y, { move: 'foot' }, list.length);
-      list.forEach((k, j) => { if (spots[j]) R.makeTroop(G, k, hu, spots[j][0], spots[j][1]); });
+    // 처음 합류하는 영웅은 일행 평균 레벨 근처에서 시작한다 (본작처럼 뒤늦게 합류해도 뒤처지지 않게)
+    save.joined = save.joined || [];
+    const old = save.joined.filter((id) => save.heroes[id]);
+    for (const id of st.heroes) {
+      if (save.joined.includes(id)) continue;
+      if (old.length) {
+        const avg = old.reduce((s, k) => s + save.heroes[k].lv, 0) / old.length;
+        const lv = Math.max(save.heroes[id].lv, Math.round(avg) - 1);
+        save.heroes[id] = { lv, exp: 0, tier: lv >= D.TIER_LV[2] ? 2 : lv >= D.TIER_LV[1] ? 1 : 0 };
+      }
+      save.joined.push(id);
     }
-    for (const e of st.enemies) R.makeBoss(G, JSON.parse(JSON.stringify(e)));
-    stageStart = { lv: Object.fromEntries(st.heroes.map((id) => [id, save.heroes[id].lv])), kills: 0 };
-    // 리그 불러오기
-    const rigs = [...new Set(G.units.map((u) => u.rig).concat(st.events.flatMap((e) => (e.reinforce || []).flatMap((r) => [D.BOSSES[r.cmd].rig, ...r.troops.map((t) => D.TROOPS[t[0]].rig)]))))];
+    st.heroes.forEach((id, i) => R.makeHero(G, id, save.heroes[id], save.troops[id], st.starts[i][0], st.starts[i][1]));
+    R.spawnWave(G, 0);
+    stageStart = { lv: Object.fromEntries(st.heroes.map((id) => [id, save.heroes[id].lv])) };
+    const rigs = new Set();
+    G.units.forEach((u) => { rigs.add(u.rig); if (u.troop) rigs.add(u.troop.rig); });
+    st.waves.forEach((w) => w.units.forEach(([t]) => { const e = D.ENEMIES[t]; rigs.add(e.rig); if (e.troop) rigs.add(D.TROOPS[e.troop].rig); }));
     $('boot').classList.remove('hidden');
     $('boot').querySelector('.logo').classList.add('hidden');
     let n = 0;
-    await Promise.all(rigs.map((id) => SD.prepare(id).then(() => { $('loadMsg').textContent = `부대 집결 중… ${++n}/${rigs.length}`; })));
+    await Promise.all([...rigs].map((id) => SD.prepare(id).then(() => { $('loadMsg').textContent = `부대 집결 중… ${++n}/${rigs.size}`; })));
     await Promise.all([...new Set(st.map.join('').split('').map((c) => (D.TERRAIN[c] || D.TERRAIN['.']).bg))].map((b) => loadTex('assets/bg/' + b + '.webp')));
     $('boot').classList.add('hidden');
     $('boot').querySelector('.logo').classList.remove('hidden');
@@ -1547,10 +1537,7 @@
     ui.state = 'idle'; busy = false; dangerOn = false; $('btnDanger').classList.remove('on'); autoOn = false; $('btnAuto').classList.remove('on');
     AU.bgm(st.bgm);
     setTop();
-    if (save.clear === 0 && si === 0 && !save.tutSeen) {
-      save.tutSeen = true; writeSave();
-      await new Promise((r) => help(r));
-    }
+    if (si === 0 && !save.tutSeen) { save.tutSeen = true; writeSave(); await new Promise((r) => help(r)); }
     await startPhase('p');
   }
   function leaveMap() {
@@ -1570,49 +1557,44 @@
 
   async function endStage(win, why) {
     busy = true;
-    const st = G.stage;
+    const g = G, st = G.stage;
     await wait(400);
-    banner(win ? '승리!' : '패배', why || (win ? st.goal + ' 달성' : '라비아타가 퇴각했습니다'), win ? 'gold' : 'e');
+    banner(win ? '작전 성공!' : '작전 실패', why || (win ? st.goal + ' 달성' : '콘스탄챠가 퇴각했습니다'), win ? 'gold' : 'e');
     AU.bgm(null);
     AU.play(win ? 'win' : 'fail', 0.8);
     await wait(1700);
-    // 성장 반영 (패배해도 얻은 경험치는 남는다)
     const lines = [];
-    const heroes = G.units.filter((u) => u.cmd && u.side === 'p');
-    for (const u of heroes) {
+    for (const u of g.units.filter((x) => x.side === 'p')) {
       const s = save.heroes[u.key];
       s.lv = u.lv; s.exp = u.exp;
       const before = stageStart.lv[u.key];
       if (u.lv > before) lines.push(`<span class="lvup">${u.name} Lv${before} → Lv${u.lv}</span>`);
-      // 전직
       const h = D.HEROES[u.key];
       while (s.tier < 2 && s.lv >= D.TIER_LV[s.tier + 1]) {
         const from = h.tiers[s.tier].cls;
         s.tier++;
         lines.push(`<span class="cc">★ 전직! ${u.name}: ${from} → ${h.tiers[s.tier].cls}</span>`);
-        const ns = h.tiers[s.tier].skills.filter((k) => !h.tiers[s.tier - 1].skills.includes(k));
+        const prev = h.tiers[s.tier - 1];
+        const ns = h.tiers[s.tier].skills.filter((k) => !prev.skills.includes(k)), nt = h.tiers[s.tier].troops.filter((k) => !prev.troops.includes(k));
         if (ns.length) lines.push(`<span class="cc">　새 특기: ${ns.map((k) => D.SKILLS[k].name).join(', ')}</span>`);
+        if (nt.length) lines.push(`<span class="cc">　새 병사: ${nt.map((k) => D.TROOPS[k].short).join(', ')}</span>`);
       }
     }
-    let gold = 0;
-    if (win) {
-      const kills = G.units.filter((u) => u.side === 'e' && !u.alive);
-      gold = st.reward + kills.reduce((a, u) => a + (u.cmd ? 80 : 20), 0);
-      save.gold += gold;
-      save.clear = Math.max(save.clear, st.id);
-    }
+    if (win) save.clear = Math.max(save.clear, st.id);
+    window.GAME_LAST = { idx: st.idx, win, turn: g.turn, wave: g.wave + 1, alive: g.units.filter((u) => u.side === 'p').map((u) => u.name + (u.alive ? ':' + Math.round(u.hp) : 'x')).join(' ') };
     writeSave();
     const si = st.id - 1;
     const next = win && si + 1 < D.STAGES.length;
-    if (win) await talk(st.outro, st.bg);
     leaveMap();
+    const S = window.STORY && STORY[st.idx];
+    if (win && S) await story(S.end);
     if (win && si === D.STAGES.length - 1) AU.bgm('title');
-    screen(`<div class="scr result"><div class="big ${win ? 'win' : 'lose'}">${win ? '승리' : '패배'}</div>
-      <div class="lines">${st.id}장 · ${st.title}<br>${win ? `획득 자금 <b style="color:#f3c969">+${gold}</b> (보유 ${save.gold})<br>` : '얻은 경험치는 유지됩니다.<br>'}${lines.join('<br>') || '레벨 변화 없음'}</div>
-      <div class="menuBtns">${next ? '<button class="gold" id="rNext">다음 장으로</button>' : ''}${!win ? '<button class="gold" id="rRetry">다시 도전</button>' : ''}<button id="rSel">작전 선택</button></div>
-      ${win && si === D.STAGES.length - 1 ? '<div class="foot">모든 장을 클리어했습니다. 플레이해 주셔서 감사합니다!</div>' : ''}</div>`);
+    screen(`<div class="scr result"><div class="big ${win ? 'win' : 'lose'}">${win ? '작전 성공' : '작전 실패'}</div>
+      <div class="lines">${st.idx} ${st.title}<br>${win ? '' : '얻은 경험치는 유지됩니다.<br>'}${lines.join('<br>') || '레벨 변화 없음'}</div>
+      <div class="menuBtns">${next ? '<button class="gold" id="rNext">다음 작전으로</button>' : ''}${!win ? '<button class="gold" id="rRetry">다시 도전</button>' : ''}<button id="rSel">작전 선택</button></div>
+      ${win && si === D.STAGES.length - 1 ? '<div class="foot">1지역 「지구의 마지막 인간」 완료. 플레이해 주셔서 감사합니다!</div>' : ''}</div>`);
     if ($('rNext')) $('rNext').onclick = () => startStage(si + 1);
-    if ($('rRetry')) $('rRetry').onclick = () => startStage(si, true);
+    if ($('rRetry')) $('rRetry').onclick = () => prep(si);
     $('rSel').onclick = stageSelect;
     busy = false;
   }
@@ -1663,11 +1645,12 @@
     }
     const t = now / 1000;
     for (const v of views.values()) {
-      v.rig.update(dt * (v.u.acted && v.u.side === 'p' ? 0.4 : 1));
-      v.rig.order = 100 + Math.round(v.g.position.z * 20) + 2;
-      const sel = ui.sel === v.u;
-      v.ring.scale.setScalar(sel ? 1 + Math.sin(t * 6) * 0.08 : 1);
-      if (v.u.def.mapFly || v.u.move === 'fly') v.bb.position.y = 0.06 + Math.sin(t * 2.2 + v.bob) * 0.04;
+      const sp = dt * (v.u.acted && v.u.side === 'p' ? 0.4 : 1);
+      v.rig.update(sp);
+      v.rig.order = 100 + Math.round((v.g.position.z + 0.1) * 20) + 2;
+      for (const s of v.soldiers) { if (!s.bb.visible) continue; s.rig.update(sp); s.rig.order = 100 + Math.round((v.g.position.z + s.bb.position.z) * 20); }
+      v.ring.scale.setScalar(ui.sel === v.u ? 1 + Math.sin(t * 6) * 0.08 : 1);
+      if (v.u.move === 'fly') v.bb.position.y = 0.06 + Math.sin(t * 2.2 + v.bob) * 0.04;
     }
     if (world.water) world.water.material.map.offset.set(t * 0.03, t * 0.02);
     if (world.cursor.visible) world.cursor.scale.setScalar(1 + Math.sin(t * 5) * 0.04);
@@ -1687,7 +1670,7 @@
     FIGHT.init();
     resize();
     // 타이틀 전에 아군 영웅 리그만 먼저 (나머지는 출격 때)
-    const first = ['labiata', 'leona', 'daphne'];
+    const first = ['constantia', 'griffon'];
     let n = 0;
     await Promise.all(first.map((id) => SD.prepare(id).then(() => { $('loadMsg').textContent = `불러오는 중… ${++n}/${first.length}`; })));
     $('boot').classList.add('hidden');
@@ -1699,7 +1682,7 @@
     // 시험용 훅
     window.GAME = {
       get G() { return G; }, get mode() { return mode; }, get ui() { return ui; }, save, R, D,
-      launch: (si) => launch(si, save.hire), setAuto, startStage, endTurn, onTap, fitCamera, views, camera, cam,
+      launch, prep, setAuto, startStage, endTurn, onTap, fitCamera, views, camera, cam,
       // 창이 숨겨져 rAF가 멈춘 상태에서 시험할 때: 시간을 직접 진행하고 한 장 찍어 서버에 저장
       step(sec) { for (let i = 0; i < Math.round(sec * 30); i++) step(1 / 30); },
       // 시간을 진행하면서 약속(Promise)들도 풀리게 한다 (숨은 창에서도 타이머 제한 없이)
@@ -1713,7 +1696,7 @@
         await fetch('/tools/lab/out/' + name + '.json', { method: 'PUT', body: JSON.stringify({ d }) });
         return d.length;
       },
-      skip() { if (FIGHT.active()) FIGHT.skip(); if (talkQ) talkSkip(); },
+      skip() { if (FIGHT.active()) FIGHT.skip(); if (talkCur) talkSkip(); },
     };
   }
   boot();

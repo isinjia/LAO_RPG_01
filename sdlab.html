@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>리그 점검</title>
+<style>html,body{margin:0;background:#3a4660;overflow:hidden}#info{position:fixed;left:8px;top:8px;color:#fff;font:13px sans-serif;white-space:pre}</style>
+</head>
+<body>
+<div id="info"></div>
+<script src="js/vendor/three.min.js"></script>
+<script src="js/sd.js"></script>
+<script>
+// sdlab.html?ids=a,b&clip=atk&t=1.2 : 리그를 나란히 그려 깨진 부위를 본다
+(async () => {
+  const q = new URLSearchParams(location.search);
+  const ids = (q.get('ids') || 'constantia,griffon,johanna,lrl,pupphead,fallen,e_NightChick_N,e_NightChickM_N,e_NightChickS_N,e_BigChick_N,e_Stalker_B0108').split(',');
+  const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+  renderer.setSize(innerWidth, innerHeight);
+  document.body.appendChild(renderer.domElement);
+  SD.mipmaps = renderer.capabilities.isWebGL2;
+  const scene = new THREE.Scene();
+  const W = ids.length * 2.2, cam = new THREE.OrthographicCamera(-W / 2, W / 2, W / 2 * innerHeight / innerWidth, -W / 2 * innerHeight / innerWidth, -50, 50);
+  await Promise.all(ids.map((id) => SD.prepare(id)));
+  const chars = [];
+  ids.forEach((id, i) => {
+    const t = SD.template(id);
+    if (!t) return;
+    const c = SD.create(id), k = 1.8 / t.height;
+    c.root.scale.set(id.startsWith('e_') ? -k : k, k, 1);
+    c.root.position.set(-W / 2 + 1.1 + i * 2.2 - (t.box.min.x + t.box.max.x) / 2 * k, -0.9 - t.box.min.y * k, 0);
+    scene.add(c.root);
+    if (q.get('clip')) { c.play(q.get('clip'), null, true); c.update(+(q.get('t') || 0.8)); }
+    chars.push(c);
+  });
+  window.LAB = { chars, scene, cam, renderer };
+  document.getElementById('info').textContent = chars.map((c) => `${c.tpl.id}: 스킨 ${c.tpl.rends.filter((r) => r.kind === 1).length} / 깨짐 ${c.tpl.rends.filter((r) => r.broken).length} / 동작 ${Object.keys(c.tpl.data.clips).join(',')}`).join('\n');
+  renderer.render(scene, cam);
+  const loop = () => { requestAnimationFrame(loop); if (!q.get('clip')) chars.forEach((c) => c.update(1 / 60)); renderer.render(scene, cam); };
+  loop();
+})();
+</script>
+</body>
+</html>

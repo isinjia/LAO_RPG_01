@@ -1,2 +1,4 @@
 tools/lab/out/
 __pycache__/
+tools/story_cache.json
+tools/unity_ref/proj/
