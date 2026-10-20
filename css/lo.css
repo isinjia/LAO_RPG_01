@@ -333,3 +333,10 @@
 .mbox button.gold { background: var(--lo-y); border-color: var(--lo-y); color: #111; text-align: center; }
 .mbox button.red { background: rgba(255, 59, 92, .14); border-color: rgba(255, 59, 92, .6); color: #ff8da0; }
 .mbox p b { color: var(--lo-y); }
+#modal.wide .mbox { width: min(1100px, 96vw); }
+.rgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.rcard { height: 300px; max-width: none; cursor: default; }
+.rcard .pimg { filter: none !important; }
+.ptroop.rst { justify-content: space-between; gap: 4px; font: 11px 'LO_B', sans-serif; color: #dfe4ee; white-space: nowrap; }
+@media (orientation: portrait) { .rgrid { grid-template-columns: repeat(2, 1fr); } .rcard { height: 240px; } }
+.wnode em.new { color: var(--lo-y); animation: blink 1.2s ease-in-out infinite; }

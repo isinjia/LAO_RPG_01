@@ -1397,7 +1397,7 @@
   let stageSel = -1;
   function stageSelect() {
     leaveMap();
-    AU.bgm('lo_talk1');
+    AU.bgm('lo_lobby');
     const pts = (window.WORLD && WORLD.ch01) || [];
     const last = D.STAGES.length - 1;
     if (stageSel < 0 || stageSel > Math.min(save.clear, last)) stageSel = Math.min(save.clear, last);
@@ -1409,7 +1409,7 @@
         <i class="ol" style="background-image:url(assets/ui/UI_WolrdMap_Chapter_Icon_Selected_OL_${col}.png)"></i>
         <i class="base" style="background-image:url(assets/ui/UI_WolrdMap_Chapter_Icon_Base_${col}.png)"></i>
         <i class="ico" style="background-image:url(assets/ui/UI_WolrdMap_Chapter_Icon_${lock ? 'Lock' : 'Main'}_${col}.png)"></i>
-        <b class="tag">${st.idx}</b>${clear ? '<em>CLEAR</em>' : ''}</button>`;
+        <b class="tag">${st.idx}</b>${clear ? '<em>CLEAR</em>' : i === save.clear ? '<em class="new">NEW</em>' : ''}</button>`;
     }).join('');
     const line = pts.slice(0, Math.min(save.clear + 1, D.STAGES.length)).map(([x, y]) => `${x * 1000},${y * 562.5}`).join(' ');
     screen(`<div class="wscr">
@@ -1446,7 +1446,15 @@
   }
   // 부대 현황: 합류한 영웅 목록
   function heroRoster() {
-    modal(`<div class="roster"><h3>부대 현황</h3><div class="heroes">${heroCards()}</div><div class="opts"><button class="gold" data-a="ok">닫기</button></div></div>`);
+    const j = joined();
+    const cards = Object.keys(D.HEROES).filter((id) => j.has(id)).map((id) => {
+      const h = D.HEROES[id], s = save.heroes[id], t = h.tiers[s.tier], k = 1 + 0.07 * (s.lv - D.TIER_LV[s.tier]);
+      return `<div class="pcard rcard"><div class="pimg ${id === 'pupphead' || id === 'fallen' ? 'whole' : ''}" style="background-image:url(assets/story/stand/${HERO_STAND[id]}.webp)"></div>${h.lead ? '<i class="plead"></i>' : ''}
+        <div class="pfoot"><span class="plv">Lv.${s.lv}</span><b>${h.name}</b><small>${kindTag(h.kind)} · ${t.cls}</small></div>
+        <div class="ptroop rst"><span>체력 ${Math.round(t.hp * k)}</span><span>공격 ${Math.round(t.at * k)}</span><span>방어 ${Math.round(t.df * k)}</span></div></div>`;
+    }).join('');
+    $('modal').classList.add('wide');
+    modal(`<h3>부대 현황 <small style="color:#8d95a8;font:13px LO_M">합류 ${j.size}명</small></h3><div class="rgrid">${cards}</div><div class="opts"><button class="gold" data-a="ok">닫기</button></div>`, () => $('modal').classList.remove('wide'));
   }
   const joined = () => new Set(D.STAGES.slice(0, Math.min(D.STAGES.length, save.clear + 1)).flatMap((s) => s.heroes));
   function heroStatLine(id) {
@@ -1477,7 +1485,7 @@
     let cur = st.heroes.find((id) => !j.has(id) || id === 'constantia') || st.heroes[0];
     // 이번에 처음 합류하는 영웅이 있으면 합류 음성
     const fresh = st.heroes.find((id) => !(save.joined || []).includes(id));
-    AU.bgm('lo_talk1');
+    AU.bgm('lo_lobby');
     const stat = (id) => {
       const h = D.HEROES[id], s = save.heroes[id], t = h.tiers[s.tier], k = 1 + 0.07 * (s.lv - D.TIER_LV[s.tier]);
       return { h, s, t, hp: Math.round(t.hp * k), at: Math.round(t.at * k), df: Math.round(t.df * k) };

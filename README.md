@@ -52,7 +52,10 @@ python tools/serve.py 8795
 | `js/rules.js` | 이동 범위·지배 영역, 영웅+병사 전투 계산, 특기, 경험치, 적 무리, 승패, 적 판단 — 화면과 무관 (node에서도 실행) |
 | `js/game.js` | 지도 3D 판, 유닛 표시(영웅+병사 2명, 체력 막대 두 줄), 입력, 차례 진행, 대화(선택지), 화면들 |
 | `js/battle.js` | 전투 연출: 영웅이 앞, 병사가 뒤. 타격 시점마다 병사가 먼저 쓰러짐 |
-| `js/story.js` | 본작 대본 (`tools/build_story.py`로 생성) |
+| `js/talk.js` | 원작 노벨 대화창: 배경 교차 전환, 인물 등장·퇴장 효과, 장소 자막, 화면 효과·덧붙임 효과(소리), AUTO / FAST / SKIP / HISTORY |
+| `css/lo.css` | 원작 화면 모양: 대화, 작전 선택(3D 지역 지도), 출격 준비(편성 화면), 결과(MISSION COMPLETE), 불러오기·화면 전환·확인 창 |
+| `js/story.js` | 본작 대본 (`tools/build_story.py`로 생성, 연출 값 포함) |
+| `js/world.js` | 지역 지도 위 작전 지점 (`tools/build_world.py`로 생성) |
 | `js/sd/*` | 변환된 리그 |
 | `assets/story/` | 대화 배경·컷 그림·표정 얼굴 (원본 텍스처에서 변환) |
 
@@ -64,6 +67,13 @@ python tools/serve.py 8795
 1. `python tools/extract_story.py Ch01` → `tools/story_ch01.json`, 읽기용 `tools/story_ch01.txt` (처음 한 번 마스터 표 캐시 생성)
 2. `python tools/build_story.py ch01` → `js/story.js`, `assets/story/*`, 초상화를 `js/assets.js`에 합침
 3. 새 지역은 `js/data.js`의 `STAGES`에 지도·출격 인원·무리를 추가 (적 레벨은 `story_<ch>.txt`의 편성을 따른다)
+
+## 원작 화면·소리 자원
+
+- UI 조각: `python tools/extract_ui.py <아틀라스>` → `tools/ui_src`, 쓰는 것만 `python tools/copy_ui.py` → `assets/ui`
+- 지역 지도: `python tools/unity_ref/setup_worldmap.py` → 유니티 `-executeMethod RefWorldMap.Run` (그래픽 켠 채로) → `python tools/build_world.py`
+- 대화 전신 그림·컷 그림: `tools/unity_ref/setup_portrait.py` → `RefPortrait.Run` (컷 그림은 프리팹 안 좌우 반전을 되돌림)
+- 배경음·효과음·타이틀 콜·인물 음성(합류·출격 선택·편성·작전 개시·최우수·퇴각)·글꼴: `python tools/build_media.py`
 
 ## 캐릭터 추가 (SD 리그)
 
