@@ -14,7 +14,9 @@
     "bg": "BG_Black",
     "cg": "",
     "next": 2,
-    "choices": []
+    "choices": [],
+    "cast": {},
+    "spk": "L"
    },
    {
     "id": 2,
@@ -25,7 +27,9 @@
     "bg": "BG_Black",
     "cg": "",
     "next": 3,
-    "choices": []
+    "choices": [],
+    "cast": {},
+    "spk": "L"
    },
    {
     "id": 3,
@@ -36,7 +40,9 @@
     "bg": "BG_Black",
     "cg": "",
     "next": 4,
-    "choices": []
+    "choices": [],
+    "cast": {},
+    "spk": "L"
    },
    {
     "id": 4,
@@ -47,7 +53,9 @@
     "bg": "BG_Black",
     "cg": "",
     "next": 5,
-    "choices": []
+    "choices": [],
+    "cast": {},
+    "spk": "L"
    },
    {
     "id": 5,
@@ -58,7 +66,9 @@
     "bg": "BG_Black",
     "cg": "",
     "next": 6,
-    "choices": []
+    "choices": [],
+    "cast": {},
+    "spk": "R"
    },
    {
     "id": 6,
@@ -69,7 +79,9 @@
     "bg": "BG_Black",
     "cg": "",
     "next": 7,
-    "choices": []
+    "choices": [],
+    "cast": {},
+    "spk": "L"
    },
    {
     "id": 7,
@@ -80,7 +92,9 @@
     "bg": "BG_Black",
     "cg": "",
     "next": 8,
-    "choices": []
+    "choices": [],
+    "cast": {},
+    "spk": "L"
    },
    {
     "id": 8,
@@ -91,7 +105,9 @@
     "bg": "BG_Black",
     "cg": "",
     "next": 9,
-    "choices": []
+    "choices": [],
+    "cast": {},
+    "spk": "LC"
    },
    {
     "id": 9,
@@ -102,7 +118,9 @@
     "bg": "BG_Black",
     "cg": "",
     "next": 10,
-    "choices": []
+    "choices": [],
+    "cast": {},
+    "spk": "C"
    },
    {
     "id": 10,
@@ -113,7 +131,9 @@
     "bg": "BG_Black",
     "cg": "",
     "next": 11,
-    "choices": []
+    "choices": [],
+    "cast": {},
+    "spk": "R"
    },
    {
     "id": 11,
@@ -124,7 +144,9 @@
     "bg": "BG_Black",
     "cg": "",
     "next": 12,
-    "choices": []
+    "choices": [],
+    "cast": {},
+    "spk": "LC"
    },
    {
     "id": 12,
@@ -135,7 +157,9 @@
     "bg": "BG_HoleLight",
     "cg": "2DModel_BR_PA00EL_Dialog010101",
     "next": 13,
-    "choices": []
+    "choices": [],
+    "cast": {},
+    "spk": "L"
    },
    {
     "id": 13,
@@ -146,7 +170,9 @@
     "bg": "BG_HoleLight",
     "cg": "2DModel_BR_PA00EL_Dialog010101",
     "next": 14,
-    "choices": []
+    "choices": [],
+    "cast": {},
+    "spk": "R"
    },
    {
     "id": 14,
@@ -157,7 +183,9 @@
     "bg": "BG_HoleLight",
     "cg": "2DModel_BR_PA00EL_Dialog010101",
     "next": 15,
-    "choices": []
+    "choices": [],
+    "cast": {},
+    "spk": "L"
    },
    {
     "id": 15,
@@ -168,7 +196,9 @@
     "bg": "BG_HoleLight",
     "cg": "2DModel_BR_PA00EL_Dialog010101",
     "next": 16,
-    "choices": []
+    "choices": [],
+    "cast": {},
+    "spk": "L"
    },
    {
     "id": 16,
@@ -179,7 +209,9 @@
     "bg": "BG_HoleLight",
     "cg": "2DModel_BR_PA00EL_Dialog010101",
     "next": 17,
-    "choices": []
+    "choices": [],
+    "cast": {},
+    "spk": "R"
    },
    {
     "id": 17,
@@ -190,7 +222,9 @@
     "bg": "BG_HoleLight",
     "cg": "",
     "next": 18,
-    "choices": []
+    "choices": [],
+    "cast": {},
+    "spk": "L"
    },
    {
     "id": 18,
@@ -201,7 +235,9 @@
     "bg": "BG_HoleLight",
     "cg": "",
     "next": 19,
-    "choices": []
+    "choices": [],
+    "cast": {},
+    "spk": "L"
    },
    {
     "id": 19,
@@ -212,7 +248,9 @@
     "bg": "BG_HoleLight",
     "cg": "2DModel_BR_PA00EL_Dialog010101",
     "next": 20,
-    "choices": []
+    "choices": [],
+    "cast": {},
+    "spk": "L"
    },
    {
     "id": 20,
@@ -223,7 +261,9 @@
     "bg": "BG_HoleLight",
     "cg": "2DModel_BR_PA00EL_Dialog010101",
     "next": 21,
-    "choices": []
+    "choices": [],
+    "cast": {},
+    "spk": "R"
    },
    {
     "id": 21,
@@ -243,7 +283,9 @@
       "너흰 누구야?",
       22
      ]
-    ]
+    ],
+    "cast": {},
+    "spk": "L"
    },
    {
     "id": 22,
@@ -254,7 +296,9 @@
     "bg": "BG_HoleLight",
     "cg": "2DModel_BR_PA00EL_Dialog010101",
     "next": 23,
-    "choices": []
+    "choices": [],
+    "cast": {},
+    "spk": "L"
    },
    {
     "id": 23,
@@ -265,7 +309,9 @@
     "bg": "BG_HoleLight",
     "cg": "2DModel_BR_PA00EL_Dialog010101",
     "next": 24,
-    "choices": []
+    "choices": [],
+    "cast": {},
+    "spk": "R"
    },
    {
     "id": 24,
@@ -276,7 +322,9 @@
     "bg": "BG_HoleLight",
     "cg": "2DModel_BR_PA00EL_Dialog010101",
     "next": 25,
-    "choices": []
+    "choices": [],
+    "cast": {},
+    "spk": "R"
    },
    {
     "id": 25,
@@ -287,7 +335,9 @@
     "bg": "BG_HoleLight",
     "cg": "2DModel_BR_PA00EL_Dialog010101",
     "next": 26,
-    "choices": []
+    "choices": [],
+    "cast": {},
+    "spk": "LC"
    },
    {
     "id": 26,
@@ -298,7 +348,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 27,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 27,
@@ -309,7 +372,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 28,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 28,
@@ -320,7 +396,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 29,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 29,
@@ -340,7 +429,20 @@
       "바이오로이드? 너희 인간이 아닌 거야?",
       30
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 30,
@@ -351,7 +453,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 31,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 31,
@@ -362,7 +477,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 32,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 32,
@@ -378,7 +506,20 @@
       "내 이름은…",
       33
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 33,
@@ -389,7 +530,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 34,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 34,
@@ -400,7 +554,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 35,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 35,
@@ -411,7 +578,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 36,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 36,
@@ -422,7 +602,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 37,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ]
+    },
+    "spk": "LC"
    },
    {
     "id": 37,
@@ -433,7 +626,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 38,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 38,
@@ -444,7 +650,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 39,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 39,
@@ -455,7 +674,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 40,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Resolve",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 40,
@@ -466,7 +698,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 41,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 41,
@@ -477,7 +722,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 42,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "LC"
    },
    {
     "id": 42,
@@ -488,7 +746,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 43,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Anger",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 43,
@@ -499,7 +770,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 44,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 44,
@@ -510,7 +794,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 45,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 45,
@@ -526,7 +823,20 @@
       "파괴 명령? 그게 무슨 말이야?",
       46
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 46,
@@ -542,7 +852,20 @@
       "누구와 싸운다는 거야?",
       47
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 47,
@@ -553,7 +876,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 48,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 48,
@@ -564,7 +900,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 49,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 49,
@@ -575,7 +924,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 50,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 50,
@@ -586,7 +948,20 @@
     "bg": "BG_Black",
     "cg": "",
     "next": 51,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 51,
@@ -597,7 +972,20 @@
     "bg": "BG_Black",
     "cg": "",
     "next": 52,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 52,
@@ -608,7 +996,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 53,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 53,
@@ -624,7 +1025,20 @@
       "파괴 명령을 내릴게. 지휘는 내가 해도 되겠지?",
       54
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 54,
@@ -640,7 +1054,20 @@
       "믿어도 될 거야.",
       55
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 55,
@@ -651,7 +1078,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 56,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 56,
@@ -662,7 +1102,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 57,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Resolve",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 57,
@@ -673,7 +1126,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 58,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Resolve",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 58,
@@ -684,7 +1150,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 59,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Resolve",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 59,
@@ -695,7 +1174,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 60,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Resolve",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 60,
@@ -706,7 +1198,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": null,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ]
+    },
+    "spk": "R"
    }
   ],
   "mid": [],
@@ -720,7 +1225,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 2,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 2,
@@ -731,7 +1249,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 3,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 3,
@@ -742,7 +1273,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 4,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 4,
@@ -753,7 +1297,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 5,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_CloseEye",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 5,
@@ -764,7 +1321,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 6,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Question",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 6,
@@ -775,7 +1345,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 7,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Surprised",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 7,
@@ -786,7 +1369,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 8,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 8,
@@ -810,7 +1406,20 @@
       "일단 빨리 움직이자.",
       25
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 9,
@@ -821,7 +1430,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 10,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Question",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 10,
@@ -832,7 +1454,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 11,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 11,
@@ -843,7 +1478,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 12,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 12,
@@ -854,7 +1502,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 13,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 13,
@@ -878,7 +1539,20 @@
       "일단 빨리 움직이자.",
       25
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 14,
@@ -898,7 +1572,20 @@
       "일단 빨리 움직이자.",
       25
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 15,
@@ -909,7 +1596,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 16,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 16,
@@ -920,7 +1620,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 17,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 17,
@@ -931,7 +1644,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 18,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 18,
@@ -942,7 +1668,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 19,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 19,
@@ -962,7 +1701,20 @@
       "너흰 바이오로이드야? 바이오로이드가 뭐야?",
       20
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 20,
@@ -973,7 +1725,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 21,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Question",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 21,
@@ -984,7 +1749,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 22,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 22,
@@ -995,7 +1773,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 23,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 23,
@@ -1006,7 +1797,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 24,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 24,
@@ -1022,7 +1826,20 @@
       "일단 빨리 움직이자.",
       25
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 25,
@@ -1033,7 +1850,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 26,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 26,
@@ -1044,7 +1874,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 27,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Smile",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 27,
@@ -1055,7 +1898,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 28,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 28,
@@ -1066,7 +1922,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 29,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 29,
@@ -1077,7 +1946,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 30,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 30,
@@ -1088,7 +1970,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 31,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 31,
@@ -1099,7 +1994,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 32,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 32,
@@ -1110,7 +2018,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 33,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 33,
@@ -1121,7 +2042,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 34,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 34,
@@ -1132,7 +2066,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 35,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 35,
@@ -1143,7 +2090,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 36,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 36,
@@ -1154,7 +2114,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 37,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 37,
@@ -1170,7 +2143,20 @@
       "문제 없어.",
       38
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 38,
@@ -1181,7 +2167,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 39,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 39,
@@ -1192,7 +2191,15 @@
     "bg": "BG_CoastCity",
     "cg": "",
     "next": 40,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 40,
@@ -1203,7 +2210,20 @@
     "bg": "BG_CoastCity",
     "cg": "",
     "next": 41,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 41,
@@ -1214,7 +2234,20 @@
     "bg": "BG_CoastCity",
     "cg": "",
     "next": 42,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 42,
@@ -1225,7 +2258,20 @@
     "bg": "BG_CoastCity",
     "cg": "",
     "next": 43,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 43,
@@ -1236,7 +2282,20 @@
     "bg": "BG_CoastCity",
     "cg": "",
     "next": 44,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 44,
@@ -1247,7 +2306,20 @@
     "bg": "BG_CoastCity",
     "cg": "",
     "next": 45,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 45,
@@ -1258,7 +2330,20 @@
     "bg": "BG_CoastCity",
     "cg": "",
     "next": 46,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 46,
@@ -1269,7 +2354,20 @@
     "bg": "BG_CoastCity",
     "cg": "",
     "next": 47,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 47,
@@ -1289,7 +2387,20 @@
       "우회로를 찾을 수 있을까?",
       52
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 48,
@@ -1300,7 +2411,20 @@
     "bg": "BG_CoastCity",
     "cg": "",
     "next": 49,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Resolve",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 49,
@@ -1311,7 +2435,20 @@
     "bg": "BG_CoastCity",
     "cg": "",
     "next": 50,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Resolve",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 50,
@@ -1327,7 +2464,20 @@
       "바로 출발하자.",
       51
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 51,
@@ -1343,7 +2493,20 @@
       "잠깐, 저기 누군가 있어.",
       54
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 52,
@@ -1354,7 +2517,20 @@
     "bg": "BG_CoastCity",
     "cg": "",
     "next": 53,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 53,
@@ -1370,7 +2546,20 @@
       "강행돌파로 포위망을 뚫어보자.",
       48
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 54,
@@ -1381,7 +2570,25 @@
     "bg": "BG_CoastCity",
     "cg": "",
     "next": 55,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Serious",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 55,
@@ -1392,7 +2599,25 @@
     "bg": "BG_CoastCity",
     "cg": "",
     "next": 56,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Surprised",
+      1
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 56,
@@ -1403,7 +2628,25 @@
     "bg": "BG_CoastCity",
     "cg": "",
     "next": 57,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Surprised",
+      0
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 57,
@@ -1414,7 +2657,25 @@
     "bg": "BG_CoastCity",
     "cg": "",
     "next": null,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Surprised",
+      0
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ]
+    },
+    "spk": "C"
    }
   ],
   "waves": [
@@ -1457,7 +2718,25 @@
     "bg": "BG_CoastCity",
     "cg": "",
     "next": 2,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 2,
@@ -1468,7 +2747,25 @@
     "bg": "BG_CoastCity",
     "cg": "",
     "next": 3,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Serious",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 3,
@@ -1479,7 +2776,25 @@
     "bg": "BG_CoastCity",
     "cg": "",
     "next": null,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Proud",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Serious",
+      0
+     ]
+    },
+    "spk": "L"
    }
   ],
   "mid": [],
@@ -1493,7 +2808,25 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 2,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 2,
@@ -1504,7 +2837,25 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 3,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 3,
@@ -1515,7 +2866,25 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 4,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 4,
@@ -1535,7 +2904,25 @@
       "말투가 특이하네.",
       30
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 5,
@@ -1546,7 +2933,25 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 6,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 6,
@@ -1557,7 +2962,25 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 7,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 7,
@@ -1568,7 +2991,25 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 8,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 8,
@@ -1579,7 +3020,25 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 9,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 9,
@@ -1590,7 +3049,25 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 10,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 10,
@@ -1601,7 +3078,25 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 11,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 11,
@@ -1612,7 +3107,25 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 12,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Surprised",
+      1
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 12,
@@ -1623,7 +3136,25 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 13,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Surprised",
+      0
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 13,
@@ -1634,7 +3165,25 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 14,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Surprised",
+      0
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 14,
@@ -1645,7 +3194,25 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 15,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Surprised",
+      0
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 15,
@@ -1656,7 +3223,25 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 16,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Surprised",
+      0
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_CloseEye",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 16,
@@ -1667,7 +3252,25 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 17,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 17,
@@ -1678,7 +3281,25 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 18,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 18,
@@ -1689,7 +3310,25 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 19,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 19,
@@ -1700,7 +3339,25 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 20,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 20,
@@ -1711,7 +3368,25 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 21,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 21,
@@ -1722,7 +3397,25 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 22,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 22,
@@ -1733,7 +3426,25 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 23,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 23,
@@ -1744,7 +3455,25 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 24,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 24,
@@ -1760,7 +3489,25 @@
       "도대체 '그곳'이 뭐야?",
       25
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 25,
@@ -1771,7 +3518,25 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 26,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      1
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 26,
@@ -1782,7 +3547,25 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 27,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      0
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 27,
@@ -1793,7 +3576,25 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 28,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      0
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 28,
@@ -1809,7 +3610,25 @@
       "상관 없어.",
       29
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      1
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 29,
@@ -1820,7 +3639,25 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": null,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 30,
@@ -1831,7 +3668,25 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 31,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      1
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 31,
@@ -1842,7 +3697,25 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 32,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 32,
@@ -1858,7 +3731,25 @@
       "화려한 환영 고마워.",
       5
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ]
+    },
+    "spk": "C"
    }
   ],
   "waves": [
@@ -1906,7 +3797,20 @@
     "bg": "BG_CliffNight",
     "cg": "",
     "next": 2,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 2,
@@ -1917,7 +3821,20 @@
     "bg": "BG_CliffNight",
     "cg": "",
     "next": 3,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 3,
@@ -1928,7 +3845,20 @@
     "bg": "BG_CliffNight",
     "cg": "",
     "next": 4,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 4,
@@ -1944,7 +3874,20 @@
       "도대체 그게 뭐야?",
       5
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Proud",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 5,
@@ -1955,7 +3898,20 @@
     "bg": "BG_CliffNight",
     "cg": "",
     "next": 6,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 6,
@@ -1966,7 +3922,20 @@
     "bg": "BG_CliffNight",
     "cg": "",
     "next": 7,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 7,
@@ -1977,7 +3946,20 @@
     "bg": "BG_CliffNight",
     "cg": "",
     "next": 8,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Question",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 8,
@@ -1988,7 +3970,20 @@
     "bg": "BG_CliffNight",
     "cg": "",
     "next": 9,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ]
+    },
+    "spk": "LC"
    },
    {
     "id": 9,
@@ -1999,7 +3994,20 @@
     "bg": "BG_CliffNight",
     "cg": "",
     "next": 10,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Surprised",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 10,
@@ -2010,7 +4018,20 @@
     "bg": "BG_CliffNight",
     "cg": "",
     "next": 11,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Surprised",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 11,
@@ -2021,7 +4042,20 @@
     "bg": "BG_CliffNight",
     "cg": "",
     "next": 12,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Surprised",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 12,
@@ -2032,7 +4066,20 @@
     "bg": "BG_CliffNight",
     "cg": "",
     "next": 13,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 13,
@@ -2048,7 +4095,20 @@
       "그 아이는 또 누구야?",
       14
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 14,
@@ -2059,7 +4119,20 @@
     "bg": "BG_CliffNight",
     "cg": "",
     "next": 15,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 15,
@@ -2070,7 +4143,20 @@
     "bg": "BG_CliffNight",
     "cg": "",
     "next": 16,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 16,
@@ -2081,7 +4167,20 @@
     "bg": "BG_CliffNight",
     "cg": "",
     "next": null,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ]
+    },
+    "spk": "R"
    }
   ],
   "mid": [],
@@ -2095,7 +4194,15 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 2,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 2,
@@ -2106,7 +4213,25 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 3,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 3,
@@ -2117,7 +4242,25 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 4,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Anger",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 4,
@@ -2128,7 +4271,25 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 5,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 5,
@@ -2139,7 +4300,25 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 6,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Embarrass",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 6,
@@ -2150,7 +4329,25 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 7,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Resolve",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 7,
@@ -2161,7 +4358,25 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 8,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 8,
@@ -2172,7 +4387,25 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 9,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 9,
@@ -2183,7 +4416,25 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 10,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Worry",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 10,
@@ -2194,7 +4445,25 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 11,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 11,
@@ -2205,7 +4474,25 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 12,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Laugh",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 12,
@@ -2216,7 +4503,25 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 13,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Question",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 13,
@@ -2227,7 +4532,25 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 14,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Anger",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 14,
@@ -2238,7 +4561,25 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 15,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Anger",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 15,
@@ -2249,7 +4590,25 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 16,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 16,
@@ -2260,7 +4619,25 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 17,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Sulk",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 17,
@@ -2280,7 +4657,25 @@
       "크크크… 네가 내 진정한 정체를 알아볼 수 있을까?",
       32
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 18,
@@ -2291,7 +4686,25 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 19,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Smile",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 19,
@@ -2302,7 +4715,25 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 20,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_M2",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 20,
@@ -2313,7 +4744,25 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 21,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 21,
@@ -2324,7 +4773,25 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 22,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Sulk",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 22,
@@ -2335,7 +4802,25 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 23,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Resolve",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 23,
@@ -2346,7 +4831,25 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 24,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Anger",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 24,
@@ -2357,7 +4860,25 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 25,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Smile",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 25,
@@ -2368,7 +4889,25 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 26,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Anger",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 26,
@@ -2379,7 +4918,25 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 27,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 27,
@@ -2390,7 +4947,25 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 28,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Sulk",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 28,
@@ -2401,7 +4976,25 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 29,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 29,
@@ -2412,7 +5005,25 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 30,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 30,
@@ -2423,7 +5034,25 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 31,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 31,
@@ -2439,7 +5068,25 @@
       "(엘리베이터로 내려간다.)",
       35
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 32,
@@ -2450,7 +5097,25 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 33,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_M2",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 33,
@@ -2461,7 +5126,25 @@
     "bg": "BG_LightTower",
     "cg": "",
     "next": 34,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 34,
@@ -2477,7 +5160,25 @@
       "인간이야! 만나서 반가워!",
       18
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Anger",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 35,
@@ -2493,7 +5194,25 @@
       "이 잠수함이 '그거'야?",
       36
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Proud",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 36,
@@ -2504,7 +5223,25 @@
     "bg": "BG_SubmarineHangar",
     "cg": "",
     "next": 37,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 37,
@@ -2524,7 +5261,25 @@
       "군용 잠수함처럼 생겼네?",
       42
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 38,
@@ -2535,7 +5290,25 @@
     "bg": "BG_SubmarineHangar",
     "cg": "",
     "next": 39,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Proud",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 39,
@@ -2551,7 +5324,25 @@
       "금속? 녹이 슬 것 같진 않아 보이던데?",
       40
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 40,
@@ -2562,7 +5353,25 @@
     "bg": "BG_SubmarineHangar",
     "cg": "",
     "next": 41,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 41,
@@ -2573,7 +5382,25 @@
     "bg": "BG_SubmarineHangar",
     "cg": "",
     "next": null,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_CloseEye",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 42,
@@ -2584,7 +5411,25 @@
     "bg": "BG_SubmarineHangar",
     "cg": "",
     "next": 43,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Question",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 43,
@@ -2595,7 +5440,25 @@
     "bg": "BG_SubmarineHangar",
     "cg": "",
     "next": 44,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Proud",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 44,
@@ -2606,7 +5469,25 @@
     "bg": "BG_SubmarineHangar",
     "cg": "",
     "next": 45,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Proud",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 45,
@@ -2617,7 +5498,25 @@
     "bg": "BG_SubmarineHangar",
     "cg": "",
     "next": 46,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Laugh",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 46,
@@ -2628,7 +5527,25 @@
     "bg": "BG_SubmarineHangar",
     "cg": "",
     "next": 47,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 47,
@@ -2639,7 +5556,25 @@
     "bg": "BG_SubmarineHangar",
     "cg": "",
     "next": 48,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 48,
@@ -2650,7 +5585,25 @@
     "bg": "BG_SubmarineHangar",
     "cg": "",
     "next": 49,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 49,
@@ -2666,7 +5619,25 @@
       "응? 어째서 철충이 쫓아오질 못한다는 거야?",
       38
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    }
   ],
   "waves": [
@@ -2736,7 +5707,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 2,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 2,
@@ -2747,7 +5731,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 3,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 3,
@@ -2758,7 +5755,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 4,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 4,
@@ -2769,7 +5779,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": null,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ]
+    },
+    "spk": "R"
    }
   ],
   "mid": [],
@@ -2783,7 +5806,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 2,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 2,
@@ -2799,7 +5835,20 @@
       "AGS가 뭐야?",
       3
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 3,
@@ -2810,7 +5859,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 4,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 4,
@@ -2821,7 +5883,20 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 5,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 5,
@@ -2832,7 +5907,25 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 6,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Surprised",
+      1
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 6,
@@ -2843,7 +5936,25 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 7,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Surprised",
+      1
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 7,
@@ -2854,7 +5965,25 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 8,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Surprised",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 8,
@@ -2865,7 +5994,25 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 9,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Surprised",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 9,
@@ -2876,7 +6023,25 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 10,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      1
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 10,
@@ -2887,7 +6052,25 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 11,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 11,
@@ -2898,7 +6081,25 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 12,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Anger",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 12,
@@ -2909,7 +6110,25 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 13,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Anger",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 13,
@@ -2920,7 +6139,25 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 14,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 14,
@@ -2931,7 +6168,25 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 15,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 15,
@@ -2942,7 +6197,25 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 16,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Disappoint",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_What",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 16,
@@ -2953,7 +6226,25 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 17,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Resolve",
+      1
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 17,
@@ -2964,7 +6255,25 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": 18,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 18,
@@ -2975,7 +6284,25 @@
     "bg": "BG_Ruin",
     "cg": "",
     "next": null,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "R"
    }
   ],
   "waves": [
@@ -3035,7 +6362,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 2,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 2,
@@ -3051,7 +6396,25 @@
       "생각보다 작네. 이 로봇이 AGS야?",
       3
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 3,
@@ -3067,7 +6430,25 @@
       "펍 헤드, 그럼 다른 AGS들은 고립돼 있어?",
       4
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 4,
@@ -3078,7 +6459,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 5,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 5,
@@ -3089,7 +6488,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 6,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 6,
@@ -3100,7 +6517,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 7,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 7,
@@ -3111,7 +6546,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 8,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 8,
@@ -3127,7 +6580,25 @@
       "사이가 안 좋다고?",
       9
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Question",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 9,
@@ -3138,7 +6609,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 10,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 10,
@@ -3149,7 +6638,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 11,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 11,
@@ -3160,7 +6667,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 12,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Proud",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_What",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 12,
@@ -3171,7 +6696,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 13,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 13,
@@ -3182,7 +6725,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": null,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      1
+     ]
+    },
+    "spk": "C"
    }
   ],
   "mid": [],
@@ -3201,7 +6762,25 @@
       "저게 감염이야?",
       2
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 2,
@@ -3212,7 +6791,25 @@
     "bg": "BG_1_5_3",
     "cg": "",
     "next": 3,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 3,
@@ -3223,7 +6820,25 @@
     "bg": "BG_1_5_3",
     "cg": "",
     "next": 4,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 4,
@@ -3234,7 +6849,25 @@
     "bg": "BG_1_5_3",
     "cg": "",
     "next": 5,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 5,
@@ -3245,7 +6878,25 @@
     "bg": "BG_1_5_3",
     "cg": "",
     "next": 6,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 6,
@@ -3261,7 +6912,20 @@
       "무슨 일인데?",
       7
      ]
-    ]
+    ],
+    "cast": {
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 7,
@@ -3272,7 +6936,20 @@
     "bg": "BG_1_5_3",
     "cg": "",
     "next": 8,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 8,
@@ -3283,7 +6960,20 @@
     "bg": "BG_1_5_3",
     "cg": "",
     "next": 9,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 9,
@@ -3294,7 +6984,25 @@
     "bg": "BG_1_5_3",
     "cg": "",
     "next": 10,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "AGS_Fallen_N",
+      "",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 10,
@@ -3305,7 +7013,25 @@
     "bg": "BG_1_5_3",
     "cg": "",
     "next": 11,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "AGS_Fallen_N",
+      "",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 11,
@@ -3316,7 +7042,25 @@
     "bg": "BG_1_5_3",
     "cg": "",
     "next": 12,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "AGS_Fallen_N",
+      "",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      1
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 12,
@@ -3327,7 +7071,25 @@
     "bg": "BG_1_5_3",
     "cg": "",
     "next": 13,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "AGS_Fallen_N",
+      "",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 13,
@@ -3338,7 +7100,25 @@
     "bg": "BG_1_5_3",
     "cg": "",
     "next": 14,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "AGS_Fallen_N",
+      "",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 14,
@@ -3349,7 +7129,25 @@
     "bg": "BG_1_5_3",
     "cg": "",
     "next": 15,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "AGS_Fallen_N",
+      "",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 15,
@@ -3360,7 +7158,25 @@
     "bg": "BG_1_5_3",
     "cg": "",
     "next": 16,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "AGS_Fallen_N",
+      "",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 16,
@@ -3371,7 +7187,25 @@
     "bg": "BG_1_5_3",
     "cg": "",
     "next": 17,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "AGS_Fallen_N",
+      "",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 17,
@@ -3382,7 +7216,25 @@
     "bg": "BG_1_5_3",
     "cg": "",
     "next": 18,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "AGS_Fallen_N",
+      "",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 18,
@@ -3393,7 +7245,25 @@
     "bg": "BG_1_5_3",
     "cg": "",
     "next": 19,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "AGS_Fallen_N",
+      "",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 19,
@@ -3404,7 +7274,25 @@
     "bg": "BG_1_5_3",
     "cg": "",
     "next": 20,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "AGS_Fallen_N",
+      "",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 20,
@@ -3415,7 +7303,25 @@
     "bg": "BG_1_5_3",
     "cg": "",
     "next": 21,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "AGS_Fallen_N",
+      "",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 21,
@@ -3426,7 +7332,25 @@
     "bg": "BG_1_5_3",
     "cg": "",
     "next": 22,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "AGS_Fallen_N",
+      "",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 22,
@@ -3437,7 +7361,25 @@
     "bg": "BG_1_5_3",
     "cg": "",
     "next": 23,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "AGS_Fallen_N",
+      "",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 23,
@@ -3448,7 +7390,25 @@
     "bg": "BG_1_5_3",
     "cg": "",
     "next": 24,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "AGS_Fallen_N",
+      "",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 24,
@@ -3459,7 +7419,25 @@
     "bg": "BG_1_5_3",
     "cg": "",
     "next": 25,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "AGS_Fallen_N",
+      "",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 25,
@@ -3470,7 +7448,25 @@
     "bg": "BG_1_5_3",
     "cg": "",
     "next": 26,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "AGS_Fallen_N",
+      "",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 26,
@@ -3486,7 +7482,25 @@
       "연결체?",
       27
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "AGS_Fallen_N",
+      "",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 27,
@@ -3497,7 +7511,25 @@
     "bg": "BG_1_5_3",
     "cg": "",
     "next": 28,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "AGS_Fallen_N",
+      "",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 28,
@@ -3508,7 +7540,25 @@
     "bg": "BG_1_5_3",
     "cg": "",
     "next": null,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "AGS_Fallen_N",
+      "",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "R"
    }
   ],
   "waves": [
@@ -3615,7 +7665,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 2,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 2,
@@ -3626,7 +7694,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 3,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 3,
@@ -3637,7 +7723,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 4,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 4,
@@ -3648,7 +7752,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 5,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 5,
@@ -3659,7 +7781,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 6,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Surprised",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 6,
@@ -3670,7 +7810,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 7,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Surprised",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 7,
@@ -3681,7 +7839,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 8,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Anger",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 8,
@@ -3692,7 +7868,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 9,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_CloseEye",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Scare",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 9,
@@ -3703,7 +7897,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 10,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Anger",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 10,
@@ -3714,7 +7926,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 11,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 11,
@@ -3725,7 +7955,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 12,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Surprised",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 12,
@@ -3736,7 +7984,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 13,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Surprised",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 13,
@@ -3747,7 +8013,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 14,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Surprised",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 14,
@@ -3758,7 +8042,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 15,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Surprised",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 15,
@@ -3769,7 +8071,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 16,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Surprised",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 16,
@@ -3780,7 +8100,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 17,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Anger",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Surprised",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 17,
@@ -3791,7 +8129,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 18,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 18,
@@ -3802,7 +8158,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 19,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 19,
@@ -3813,7 +8187,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 20,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Question",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 20,
@@ -3824,7 +8216,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 21,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Question",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 21,
@@ -3835,7 +8245,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 22,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Question",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 22,
@@ -3851,7 +8279,25 @@
       "피할 수 없다면 싸울 수 밖에 없지.",
       23
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Question",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 23,
@@ -3862,7 +8308,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 24,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 24,
@@ -3873,7 +8337,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 25,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 25,
@@ -3884,7 +8366,20 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 26,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 26,
@@ -3895,7 +8390,20 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 27,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 27,
@@ -3906,7 +8414,20 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": null,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    }
   ],
   "mid": [],
@@ -3920,7 +8441,25 @@
     "bg": "BG_1_6_3",
     "cg": "",
     "next": 2,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      1
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 2,
@@ -3931,7 +8470,25 @@
     "bg": "BG_1_6_3",
     "cg": "Cut_1C6SM2",
     "next": 3,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 3,
@@ -3942,7 +8499,25 @@
     "bg": "BG_1_6_3",
     "cg": "Cut_1C6SM2",
     "next": 4,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 4,
@@ -3953,7 +8528,25 @@
     "bg": "BG_1_6_3",
     "cg": "Cut_1C6SM4",
     "next": 5,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Resolve",
+      1
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 5,
@@ -3969,7 +8562,25 @@
       "다리를 폭파시키고 뛰어 내려.",
       6
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Resolve",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 6,
@@ -3985,7 +8596,25 @@
       "괜찮아. 내가 왔으니.",
       7
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Resolve",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 7,
@@ -3996,7 +8625,25 @@
     "bg": "BG_1_6_3",
     "cg": "Cut_1C6SM7",
     "next": 8,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Resolve",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 8,
@@ -4007,7 +8654,25 @@
     "bg": "BG_1_6_3",
     "cg": "",
     "next": 9,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Surprised",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 9,
@@ -4018,7 +8683,25 @@
     "bg": "BG_1_6_3",
     "cg": "Cut_1C6SM7",
     "next": 10,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Resolve",
+      1
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 10,
@@ -4029,7 +8712,25 @@
     "bg": "BG_1_6_3",
     "cg": "",
     "next": 11,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Resolve",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_What",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 11,
@@ -4040,7 +8741,25 @@
     "bg": "BG_1_6_3",
     "cg": "",
     "next": 12,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_What",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 12,
@@ -4051,7 +8770,25 @@
     "bg": "BG_1_6_3",
     "cg": "",
     "next": 13,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Resolve",
+      1
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 13,
@@ -4062,7 +8799,25 @@
     "bg": "BG_1_6_3",
     "cg": "",
     "next": 14,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Resolve",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 14,
@@ -4073,7 +8828,25 @@
     "bg": "BG_1_6_3",
     "cg": "",
     "next": 15,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Resolve",
+      0
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 15,
@@ -4084,7 +8857,25 @@
     "bg": "BG_1_6_3",
     "cg": "",
     "next": 16,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Resolve",
+      1
+     ],
+     "C": [
+      "PECS_PuppHead_N",
+      "",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 16,
@@ -4095,7 +8886,9 @@
     "bg": "BG_1_6_3",
     "cg": "",
     "next": 17,
-    "choices": []
+    "choices": [],
+    "cast": {},
+    "spk": "LC"
    },
    {
     "id": 17,
@@ -4106,7 +8899,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 18,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 18,
@@ -4117,7 +8928,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 19,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_BigSmile",
+      1
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 19,
@@ -4128,7 +8957,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 20,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_CloseEye",
+      0
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 20,
@@ -4139,7 +8986,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 21,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 21,
@@ -4150,7 +9015,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 22,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Question",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 22,
@@ -4161,7 +9044,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 23,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Shy",
+      1
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 23,
@@ -4172,7 +9073,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 24,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Question",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 24,
@@ -4183,7 +9102,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 25,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_M2",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 25,
@@ -4194,7 +9131,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 26,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Disappoint",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 26,
@@ -4205,7 +9160,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 27,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 27,
@@ -4225,7 +9198,25 @@
       "대충 그렇지 않을까 생각했어.",
       33
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 28,
@@ -4236,7 +9227,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 29,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 29,
@@ -4247,7 +9256,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 30,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_M2",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 30,
@@ -4258,7 +9285,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 31,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Anger",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 31,
@@ -4269,7 +9314,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 32,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_CloseEye",
+      1
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 32,
@@ -4285,7 +9348,25 @@
       "대충 그렇지 않을까 생각했어.",
       33
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 33,
@@ -4296,7 +9377,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 34,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_M2",
+      1
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 34,
@@ -4307,7 +9406,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 35,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 35,
@@ -4318,7 +9435,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 36,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 36,
@@ -4329,7 +9464,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 37,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 37,
@@ -4345,7 +9498,25 @@
       "정찰을 부탁할게.",
       38
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 38,
@@ -4356,7 +9527,25 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": null,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "R"
    }
   ],
   "waves": [
@@ -4458,7 +9647,20 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 2,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_What",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 2,
@@ -4469,7 +9671,20 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 3,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 3,
@@ -4480,7 +9695,20 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 4,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_What",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 4,
@@ -4491,7 +9719,20 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 5,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 5,
@@ -4502,7 +9743,20 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 6,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 6,
@@ -4513,7 +9767,20 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": null,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ]
+    },
+    "spk": "R"
    }
   ],
   "mid": [],
@@ -4527,7 +9794,20 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 2,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 2,
@@ -4538,7 +9818,20 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 3,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 3,
@@ -4549,7 +9842,20 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 4,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Question",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 4,
@@ -4560,7 +9866,20 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 5,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 5,
@@ -4571,7 +9890,20 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 6,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 6,
@@ -4582,7 +9914,20 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 7,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 7,
@@ -4593,7 +9938,20 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 8,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 8,
@@ -4604,7 +9962,20 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 9,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Question",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 9,
@@ -4615,7 +9986,20 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 10,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 10,
@@ -4626,7 +10010,20 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 11,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 11,
@@ -4642,7 +10039,20 @@
       "미끼를 바꿔 보자.",
       12
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ]
+    },
+    "spk": "C"
    },
    {
     "id": 12,
@@ -4658,7 +10068,20 @@
       "자세한 계획을 이야기해 줄게.",
       13
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 13,
@@ -4669,7 +10092,20 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": null,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "C"
    }
   ],
   "waves": [
@@ -4781,7 +10217,20 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 2,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Serious",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 2,
@@ -4792,7 +10241,20 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 3,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 3,
@@ -4803,7 +10265,20 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 4,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Serious",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 4,
@@ -4814,7 +10289,20 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 5,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 5,
@@ -4825,7 +10313,20 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 6,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 6,
@@ -4836,7 +10337,20 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 7,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 7,
@@ -4847,7 +10361,20 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 8,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 8,
@@ -4858,7 +10385,20 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 9,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 9,
@@ -4869,7 +10409,20 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 10,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 10,
@@ -4880,7 +10433,20 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 11,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 11,
@@ -4891,7 +10457,20 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 12,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 12,
@@ -4902,7 +10481,20 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 13,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 13,
@@ -4913,7 +10505,20 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 14,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 14,
@@ -4924,7 +10529,20 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 15,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 15,
@@ -4935,7 +10553,20 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 16,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 16,
@@ -4946,7 +10577,20 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 17,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 17,
@@ -4957,7 +10601,20 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 18,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 18,
@@ -4968,7 +10625,20 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 19,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 19,
@@ -4979,7 +10649,20 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": 20,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 20,
@@ -4990,7 +10673,20 @@
     "bg": "BG_Lobby",
     "cg": "",
     "next": null,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ]
+    },
+    "spk": "R"
    }
   ],
   "mid": [],
@@ -5004,7 +10700,20 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 2,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Smile",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 2,
@@ -5015,7 +10724,20 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 3,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Smile",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 3,
@@ -5026,7 +10748,20 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 4,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 4,
@@ -5042,7 +10777,20 @@
       "아, 칭찬해 준 거 아니었어?",
       5
      ]
-    ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 5,
@@ -5053,7 +10801,20 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 6,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Shy",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 6,
@@ -5064,7 +10825,20 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 7,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 7,
@@ -5075,7 +10849,20 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 8,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 8,
@@ -5086,7 +10873,20 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 9,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_BigSmile",
+      1
+     ]
+    },
+    "spk": "R"
    },
    {
     "id": 9,
@@ -5097,7 +10897,20 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 10,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 10,
@@ -5108,7 +10921,20 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": 11,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ]
+    },
+    "spk": "L"
    },
    {
     "id": 11,
@@ -5119,7 +10945,20 @@
     "bg": "BG_Cliff",
     "cg": "",
     "next": null,
-    "choices": []
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      0
+     ]
+    },
+    "spk": "L"
    }
   ],
   "waves": [

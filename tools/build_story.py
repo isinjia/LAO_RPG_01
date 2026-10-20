@@ -60,6 +60,19 @@ def face_for(model, expr):
     return name
 
 
+STAND = os.path.join(ROOT, 'assets', 'story', 'stand')
+
+
+def stand_for(model, expr):
+    """전신 일러스트 파일 이름 (tools/unity_ref/setup_portrait.py 와 같은 기본 표정 규칙)"""
+    if expr and os.path.exists(os.path.join(STAND, expr + '.webp')):
+        return expr
+    folder = TEX + 'face/' + model
+    faces = sorted(os.path.basename(f)[:-4] for f in glob.glob(folder + '/*.png')) if os.path.isdir(folder) else []
+    d = next((f for f in faces if f.lower().endswith('_idle')), None) or next((f for f in faces if 'smile' in f.lower()), faces[0] if faces else model)
+    return d if os.path.exists(os.path.join(STAND, d + '.webp')) else ''
+
+
 def main():
     S = json.load(open(os.path.join(ROOT, 'tools', 'story_%s.json' % CH), encoding='utf8'))
     story = {}
@@ -72,8 +85,10 @@ def main():
                 if bg: webp(TEX + 'BGImg/' + bg + '.png', os.path.join(OUT, 'bg', bg + '.webp'), 'bg', 80)
                 cg = n['cg'] if n['cg'] and os.path.exists(TEX + 'CutImg/' + n['cg'] + '.png') else ''
                 if cg: webp(TEX + 'CutImg/' + cg + '.png', os.path.join(OUT, 'cg', cg + '.webp'), 1400, 82)
+                cast = [[p, stand_for(m, e), d] for p, (m, e, d) in n.get('cast', {}).items()]
                 nodes.append({'id': n['id'], 'who': n['who'], 'face': face_for(n['model'], n['expr']) if n['who'] else '',
-                              't': n['text'], 'bg': bg, 'cg': cg, 'next': n['next'], 'ch': n['choices']})
+                              't': n['text'], 'bg': bg, 'cg': cg, 'next': n['next'], 'ch': n['choices'],
+                              'cast': [c for c in cast if c[1]], 'spk': n.get('spk', '')})
             parts[part] = nodes
         story[s['idx']] = {'name': s['name'], 'desc': s['desc'], **parts}
     with open(os.path.join(ROOT, 'js', 'story.js'), 'w', encoding='utf8') as f:

@@ -70,8 +70,15 @@ def dialog(group, loc):
             if 'Dialog0' in m and not cg: cg = m
         if 'Dialog0' in model: model = model.replace('_Dialog010101', '_N')
         ch = [[clean(loc.get(str(s), '')), num(n)] for s, n in zip(r.get('SelectionIndex') or [], (r.get('SelectionIndex_Next') or []) + [r.get('NextDialogScript')] * 9)]
+        # 화면에 선 인물: 위치별 [모델, 표정, 밝기(0 보통 / 1 어둡게 / 2 회상)]
+        cast = {}
+        for p in POS:
+            m = (r.get('Char_ImageName_' + p) or '').replace('2DModel_', '')
+            if not m or 'Dialog0' in m: continue
+            cast[p] = [m, r.get('Char_ImageVarName_' + p) or '', r.get('Char_SCGActivation_' + p) or 0]
         out.append({'id': num(k), 'who': who, 'model': model, 'expr': expr, 'text': clean(loc.get(str(r.get('Script')), '')),
-                    'bg': r.get('BG_ImageName') or '', 'cg': cg, 'next': num(r.get('NextDialogScript')), 'choices': ch})
+                    'bg': r.get('BG_ImageName') or '', 'cg': cg, 'next': num(r.get('NextDialogScript')), 'choices': ch,
+                    'cast': cast, 'spk': POS[sp] if isinstance(sp, int) and sp < 5 else ''})
     return out
 
 

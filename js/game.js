@@ -1297,6 +1297,7 @@
       $('talk').classList.remove('hidden');
       $('talkBg').classList.remove('hidden');
       $('talkBg').style.backgroundImage = '';
+      $('talkBg').querySelector('.tstage').innerHTML = '';
       showNode(nodes[0]);
     });
   }
@@ -1309,6 +1310,18 @@
     if (n.bg) bg.style.backgroundImage = `url(assets/story/bg/${n.bg}.webp)`;
     const cg = bg.querySelector('.tcg');
     if (n.cg) { if (cg.dataset.k !== n.cg) { cg.src = `assets/story/cg/${n.cg}.webp`; cg.dataset.k = n.cg; } } else { cg.removeAttribute('src'); cg.dataset.k = ''; }
+    bg.classList.toggle('cg', !!n.cg);
+    // 전신 일러스트: 말하는 쪽은 밝게, 나머지는 어둡게 (2 = 회상)
+    const stage = bg.querySelector('.tstage');
+    const want = new Map((n.cast || []).map(([p, s, d]) => [p, [s, d]]));
+    stage.querySelectorAll('.stand').forEach((im) => { if (!want.has(im.dataset.p)) im.remove(); });
+    for (const [p, [s, d]] of want) {
+      let im = stage.querySelector(`.stand[data-p="${p}"]`);
+      if (!im) { im = document.createElement('img'); im.className = 'stand'; im.dataset.p = p; stage.appendChild(im); }
+      if (im.dataset.s !== s) { im.src = `assets/story/stand/${s}.webp`; im.dataset.s = s; }
+      im.classList.toggle('dim', !!n.spk && n.spk !== p && d !== 2);
+      im.classList.toggle('past', d === 2);
+    }
     if (!n.t && !(n.ch && n.ch.length)) { goNode(n.next); return; } // 화면 전환만 하는 빈 줄
     const face = el.querySelector('.tface'), img = face.querySelector('img');
     el.classList.toggle('nar', !n.who);

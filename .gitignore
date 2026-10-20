@@ -5,3 +5,5 @@ tools/unity_ref/proj/
 tools/unity_ref/*.log
 tools/lab/guid_index.json
 tools/lab/fbx_manifest.json
+tools/ui_src/
+tools/unity_ref/proj/

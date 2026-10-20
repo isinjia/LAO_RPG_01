@@ -283,3 +283,41 @@ button.red { background: linear-gradient(#a8343a, #6d1e25); }
 #fight .fvs { top: auto; bottom: calc(40px + var(--safe-b)); }
 #fight .fskip { bottom: auto; top: calc(10px + var(--safe-t)); }
 @media (orientation: portrait) { #fight .fvs { bottom: calc(118px + var(--safe-b)); top: auto; } #fight .fside { width: calc(50vw - 14px); grid-template-columns: 56px 1fr; } #fight .fside.R { grid-template-columns: 1fr 56px; } #fight .fimg { width: 56px; height: 56px; } }
+
+/* ── 대화: 원작 대화창 조각 (assets/ui, 늘림 경계는 원작 아틀라스 값) ── */
+#talk { --s: .62; background: linear-gradient(transparent, rgba(0,0,0,.45) 60%); padding: 0 calc(8px + var(--safe-r)) calc(8px + var(--safe-b)) calc(8px + var(--safe-l)); align-items: flex-end; }
+#talk .tface { display: none; }
+#talk .tbox { position: relative; flex: 1; max-width: 1200px; margin: 0 auto; min-height: calc(242px * var(--s)); background: none; border: 0 solid transparent; border-radius: 0;
+  border-image: url(../assets/ui/UI_Dialog_Main_CharDialog_Frame_2.png) 89 658 138 5 fill;
+  border-image-width: calc(89px * var(--s)) calc(658px * var(--s)) calc(138px * var(--s)) calc(5px * var(--s));
+  padding: calc(40px * var(--s) + 16px) 28px 22px 26px; }
+#talk .tname { position: absolute; left: 10px; top: calc(-55px * var(--s) + 4px); height: calc(55px * var(--s) + 6px); min-width: calc(330px * var(--s)); padding: 0 calc(150px * var(--s)) 0 22px;
+  display: flex; align-items: center; color: #fff; font-size: 17px; font-weight: 800; text-shadow: 0 1px 2px #000; margin: 0;
+  border: 0 solid transparent; border-image: url(../assets/ui/UI_Dialog_Main_CharDialog_Frame_CharName_2.png) 0 153 0 163 fill; border-image-width: 0 calc(153px * var(--s)) 0 calc(163px * var(--s)); }
+#talk .tname:empty { display: none; }
+#talk .ttext { color: #f1f3f8; font-size: 17px; line-height: 1.6; text-shadow: 0 1px 2px #000; }
+#talk .tnext { right: 26px; bottom: 16px; width: 16px; height: 13px; color: transparent; background: url(../assets/ui/UI_Dialog_Main_CharDialog_arrow.png) center/contain no-repeat; animation: tnext 0.8s ease-in-out infinite; }
+@keyframes tnext { 50% { transform: translateY(4px); } }
+#talk.nar .tbox { text-align: left; padding-left: 26px; }
+#talk .tskip { position: fixed; top: calc(12px + var(--safe-t)); right: calc(12px + var(--safe-r)); width: 113px; height: 37px; padding: 0; border: 0; border-radius: 0;
+  background: url(../assets/ui/UI_Dialog_Main_BG_BTN_Skip.png) center/contain no-repeat; }
+#talk .tchoices { bottom: calc(242px * var(--s) + 40px + var(--safe-b)); gap: 10px; width: min(620px, 94vw); }
+#talk .tchoices button { height: 50px; padding: 0 56px 0 52px; font-size: 16px; font-weight: 700; color: #fff; text-align: left; border-radius: 0; background: none;
+  border: 0 solid transparent; border-image: url(../assets/ui/UI_Dialog_Main_CharDialog_Frame_CharName_4.png) 0 39 0 46 fill; border-image-width: 0 58px 0 68px; }
+#talk .tchoices button:hover, #talk .tchoices button:active { border-image-source: url(../assets/ui/UI_Dialog_Main_CharDialog_Frame_CharName_4_on.png); border-image-slice: 0 48 0 47 fill; color: #ffd76a; filter: none; }
+#talk .tchoices button::before { content: none; }
+/* 전신 일러스트 */
+#talkBg .tstage { position: absolute; inset: 0; overflow: hidden; }
+#talkBg .stand { position: absolute; bottom: -4vh; height: 96vh; max-width: 62vw; object-fit: contain; object-position: bottom; transform: translateX(-50%); transition: filter .2s, opacity .2s; filter: drop-shadow(0 0 18px rgba(0,0,0,.45)); }
+#talkBg .stand.dim { filter: brightness(.42) drop-shadow(0 0 18px rgba(0,0,0,.45)); }
+#talkBg .stand.past { filter: sepia(.8) brightness(.7); }
+#talkBg .stand[data-p="L"] { left: 25%; } #talkBg .stand[data-p="R"] { left: 75%; } #talkBg .stand[data-p="C"] { left: 50%; }
+#talkBg .stand[data-p="LC"] { left: 38%; } #talkBg .stand[data-p="RC"] { left: 62%; }
+#talkBg.cg .tstage { opacity: .0; }
+@media (orientation: portrait) {
+  #talk { --s: .4; }
+  #talk .ttext { font-size: 15px; }
+  #talkBg .stand { height: 74vh; max-width: 90vw; bottom: 8vh; }
+  #talkBg .stand[data-p="L"] { left: 28%; } #talkBg .stand[data-p="R"] { left: 72%; }
+  #talk .tchoices button { height: 46px; font-size: 14px; }
+}
