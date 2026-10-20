@@ -475,8 +475,8 @@
     if (u.troop) bar(8, u.troop.hp / u.troop.hpMax, u.side === 'p' ? '#3a8cff' : '#ff8a3a', u.side === 'p' ? '#9cd0ff' : '#ffc890');
     bar(u.troop ? 22 : 15, u.hp / u.hpMax, u.side === 'p' ? '#2fc46c' : '#e8402f', u.side === 'p' ? '#9dffbc' : '#ff9a8a');
     g.fillStyle = u.lead || u.boss ? '#ffd76a' : D.KIND[R.troopAlive(u) ? u.troop.kind : u.kind].color;
-    g.font = 'bold 15px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillText(u.lead || u.boss ? '★' : '●', 9, 21);
+    g.font = 'bold 16px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(u.troop ? String(R.soldiers(u)) : (u.lead || u.boss ? '★' : '●'), 9, 21);
     v.bt.needsUpdate = true;
   }
   function refreshView(u) {
@@ -523,7 +523,7 @@
   }
   // 피해 표시: 병사(주황)·영웅(빨강)
   function popDmg(u, t, h) {
-    if (t > 0) pop(u.x, u.y, '병사 -' + Math.round(t), 'tdmg', 1.15);
+    if (t > 0) { const lost = R.soldiers(u, u.troop.hp + t) - R.soldiers(u); pop(u.x, u.y, lost > 0 ? `병사 -${lost}명` : '병사 -' + Math.round(t), 'tdmg', 1.15); }
     if (h > 0) wait(140).then(() => pop(u.x, u.y, '-' + Math.round(h), 'dmg', 0.8));
   }
 
@@ -754,7 +754,7 @@
   let mode = 'boot'; // boot | screen | talk | map | fight
   function setHint(t) { $('hint').textContent = t || ''; }
   const kindTag = (k) => `<span class="kind" style="color:${D.KIND[k].color}">${D.KIND[k].name}</span>`;
-  const bars = (u) => `<div class="bars2 ${u.side}">${u.troop ? `<div class="bar2 t"><i style="width:${(u.troop.hp / u.troop.hpMax) * 100}%"></i><b>병사 ${Math.round(u.troop.hp)} / ${u.troop.hpMax}</b></div>` : ''}<div class="bar2 h"><i style="width:${(u.hp / u.hpMax) * 100}%"></i><b>영웅 ${Math.round(u.hp)} / ${u.hpMax}</b></div></div>`;
+  const bars = (u) => `<div class="bars2 ${u.side}">${u.troop ? `<div class="bar2 t"><i style="width:${(u.troop.hp / u.troop.hpMax) * 100}%"></i><b>병사 ${R.soldiers(u)}/10명 · ${Math.round(u.troop.hp)}</b></div>` : ''}<div class="bar2 h"><i style="width:${(u.hp / u.hpMax) * 100}%"></i><b>영웅 ${Math.round(u.hp)} / ${u.hpMax}</b></div></div>`;
   function showInfo(u, tile) {
     const el = $('info');
     if (!u && !tile) { el.classList.add('hidden'); syncInfoH(); return; }
@@ -811,8 +811,8 @@
     ph.textContent = G.side === 'p' ? '아군 차례' : '적 차례';
     ph.className = G.side;
     const st = G.stage;
-    const left = st.waves.length - 1 - G.wave;
-    $('goalBox').innerHTML = `${st.idx} ${st.title} · 승리: <b>${st.goal}</b>${left > 0 ? ` · 남은 무리 ${left}` : ''} · 패배: ${st.lose}`;
+    const nt = R.nextWaveTurn(G);
+    $('goalBox').innerHTML = `${st.idx} ${st.title} · 승리: <b>${st.goal}</b>${nt ? ` · 증원 ${nt}턴` : ''} · 패배: ${st.lose}`;
     $('btnEnd').disabled = G.side !== 'p' || busy;
   }
 
@@ -1006,13 +1006,16 @@
     drawOverlay();
     const p = R.combat(G, a, d, a.x, a.y);
     const el = $('forecast');
-    const rel = p.rel > 0 ? `<span class="good">▲ 상성 우위 (x${R.ADV})</span>` : p.rel < 0 ? `<span class="bad">▼ 상성 열세 (x${R.DISADV})</span>` : '상성 보통';
+    const aK = R.troopAlive(a) ? a.troop.kind : a.kind, dK = R.troopAlive(d) ? d.troop.kind : d.kind;
+    const rel = R.relX(aK, dK) ? `<span class="good">▲ 상성 유리 (${D.KIND[aK].name} ▶ ${D.KIND[dK].name} +${Math.round(R.relX(aK, dK) * 100)}%)</span>`
+      : R.relX(dK, aK) ? `<span class="bad">▼ 상성 불리 (${D.KIND[dK].name} ▶ ${D.KIND[aK].name})</span>` : '상성 없음';
+    const near = p.dist === 1 && [aK, a.kind].some((k) => D.KIND[k].ranged) ? ' · <span class="bad">원거리 병종 근접전 (피해 30%)</span>' : '';
     const terr = R.terr(G, d.x, d.y);
     const side = (u, t, h, cls) => `<div class="side ${cls}"><img src="${IMG[u.icon]}"><div><div class="n">${u.name}</div>
       ${u.troop ? `<div class="h" style="font-size:14px">병사 ${Math.round(u.troop.hp)}<em>→ ${Math.max(0, Math.round(u.troop.hp - t))}</em></div>` : ''}
       <div class="h" style="font-size:16px">영웅 ${Math.round(u.hp)}<em>→ ${Math.max(0, Math.round(u.hp - h))}</em></div></div></div>`;
     el.innerHTML = `<div class="row">${side(a, p.aT, p.aH, '')}<div class="mid">예상<b>⚔</b>${p.counter ? '반격 있음' : '반격 없음'}</div>${side(d, p.dT, p.dH, 'R')}</div>
-      <div class="rel">${rel} · 적 지형 ${terr.name}${d.move !== 'fly' && terr.def ? ` ${terr.def > 0 ? '+' : ''}${Math.round(terr.def * 100)}%` : ''}${p.dDead ? ' · <span class="good">격파 예상</span>' : ''}</div>
+      <div class="rel">${rel}${near} · 적 지형 ${terr.name}${d.move !== 'fly' && terr.def ? ` ${terr.def > 0 ? '+' : ''}${Math.round(terr.def * 100)}%` : ''}${p.dDead ? ' · <span class="good">격파 예상</span>' : ''}</div>
       <div class="btns"><button class="gold" id="fcGo">공격</button><button id="fcNo">취소</button></div>`;
     el.classList.remove('hidden');
     $('fcGo').onclick = () => confirmAttack();
@@ -1084,8 +1087,6 @@
     R.apply(a, res.aT, res.aH);
     popDmg(d, res.dT, res.dH);
     wait(150).then(() => popDmg(a, res.aT, res.aH));
-    gainExp(a, d, res.dT + res.dH, d.hp <= 0);
-    if (res.counter) gainExp(d, a, res.aT + res.aH, a.hp <= 0);
     refreshView(a); refreshView(d);
     const deaths = [];
     if (d.hp <= 0) deaths.push(kill(d));
@@ -1109,11 +1110,6 @@
       fxAt(a.x, a.y, 'hit');
     }
     await wait(250);
-  }
-  function gainExp(src, tgt, dmg, killed) {
-    if (src.side !== 'p' || !src.alive) return;
-    const ups = R.addExp(src, R.expFor(src, tgt, dmg, killed));
-    if (ups) wait(500).then(() => { pop(src.x, src.y, '레벨 업!', 'info big', 1.4); AU.play('rankUp', 0.7); });
   }
   async function kill(u) {
     u.alive = false; u.hp = 0;
@@ -1146,7 +1142,6 @@
       if (r.toT != null) {
         R.apply(r.u, r.toT, r.toH);
         popDmg(r.u, r.toT, r.toH);
-        gainExp(u, r.u, r.toT + r.toH, r.u.hp <= 0);
         if (s.slow) r.u.slowNext = s.slow;
         refreshView(r.u);
         if (r.u.hp <= 0) deaths.push(kill(r.u));
@@ -1154,13 +1149,11 @@
         if (r.hH || r.hT) {
           r.u.hp += r.hH; if (r.u.troop) r.u.troop.hp += r.hT;
           pop(r.u.x, r.u.y, '+' + Math.round(r.hH + r.hT), 'heal');
-          if (u.side === 'p') R.addExp(u, Math.round(((r.hH + r.hT) / R.totalMax(r.u)) * 40));
         }
         if (r.buff) {
           r.u.buffs = r.u.buffs.filter((b) => !Object.keys(s.buff).some((k) => b[k]));
           r.u.buffs.push({ ...s.buff, until: G.turn + 1, side: u.side });
           pop(r.u.x, r.u.y, Object.entries(s.buff).map(([k, n]) => ({ at: '공격', df: '방어', mov: '이동' }[k] + ' +' + Math.round(n * 100) + '%')).join(' '), 'info');
-          if (u.side === 'p') R.addExp(u, 3);
         }
         refreshView(r.u);
       }
@@ -1169,19 +1162,9 @@
     OV.area = null; drawOverlay();
     await wait(250);
   }
-  // 행동 뒤: 적 무리가 다 쓰러졌으면 다음 무리, 그리고 승패. 계속 진행하면 true
+  // 행동 뒤 승패 확인. 계속 진행하면 true
   async function afterAction() {
     if (!G) return false;
-    if (!G.units.some((u) => u.alive && u.side === 'e') && G.wave < G.stage.waves.length - 1 && R.check(G) !== 'lose') {
-      await wait(300);
-      const list = R.spawnWave(G, G.wave + 1);
-      banner('철충 증원!', `${G.wave + 1}번째 무리 (${list.length})`, 'e');
-      AU.play('reinforce', 0.7);
-      for (const u of list) { addView(u); fxAt(u.x, u.y, 'spawn'); }
-      if (list[0]) panTo(list[0].x, list[0].y, true);
-      setTop();
-      await wait(900);
-    }
     const r = R.check(G);
     if (r) { await endStage(r === 'win'); return false; }
     return true;
@@ -1214,6 +1197,17 @@
       pop(u.x, u.y, '+' + (a + b), 'heal'); healed = true;
     }
     if (healed) { AU.play('energy', 0.4); await wait(500); }
+    if (side === 'e') { // 정해진 턴의 적 차례에 증원
+      for (const i of R.wavesAt(G, G.turn)) {
+        const list = R.spawnWave(G, i);
+        banner('철충 증원!', `${list.length}기 출현`, 'e');
+        AU.play('reinforce', 0.7);
+        for (const u of list) { addView(u); fxAt(u.x, u.y, 'spawn'); }
+        if (list[0]) panTo(list[0].x, list[0].y, true);
+        setTop();
+        await wait(1000);
+      }
+    }
     G.units.forEach(refreshView);
     updateDanger();
     if (side === 'e') await enemyPhase();
@@ -1406,10 +1400,13 @@
     modal(`<h3>도움말</h3>
       <p><b>영웅과 병사</b> · 지도 위 한 칸은 영웅 한 명과 배속된 병사 부대입니다. 공격받으면 <b>병사가 먼저</b> 피해를 받고, 병사가 전멸하면 영웅이 직접 맞습니다. 영웅이 쓰러지면 그 칸은 퇴각합니다.</p>
       <p><b>병사 배속</b> · 출격 전에 영웅마다 병사를 고릅니다. 고를 수 있는 병사는 영웅의 전직 단계에 따라 늘어납니다.</p>
-      <p><b>병종 상성</b> · 경장 ▶ 중장 ▶ 기동 ▶ 경장, 기동 ▶ 사격, 비행 ▶ 지상 근접, 사격 ▶ 비행. 병사는 병사의 병종, 영웅은 영웅의 병종으로 따집니다. 우위 x${R.ADV}, 열세 x${R.DISADV}.</p>
-      <p><b>사격</b> · 사거리 2 이상. 상대 사거리 밖에서 쏘면 반격을 받지 않습니다. 붙어서 싸우면 약해집니다.</p>
+      <p><b>병사 10명</b> · 한 부대의 병사는 10명입니다. 남은 병사 수만큼만 공격하므로 병사가 줄면 부대가 약해집니다. 이동력은 영웅과 병사 중 느린 쪽을 따릅니다.</p>
+      <p><b>병종 상성</b> · 보병 ▶ 창병 ▶ 기병 ▶ 보병 (+30%), 궁병 ▶ 비병 (+40%), 승려 ▶ 마물 (+80%). 그 밖에는 상성이 없습니다. 병사는 병사의 병종, 영웅은 영웅의 병종으로 따집니다.</p>
+      <p><b>원거리</b> · 궁병은 사거리 2. 두 칸에서 쏘면 근접 부대는 반격하지 못합니다. 원거리 병종이 붙어서 싸우면 피해가 30%로 줄어듭니다.</p>
+      <p><b>적의 움직임</b> · 적은 아군이 자기 공격 범위(위험 범위)에 들어와야 움직이기 시작합니다. 「위험」 단추로 범위를 확인하고 하나씩 끌어내세요. 증원은 정해진 턴에 나타나며, 그 전에 적을 모두 쓰러뜨리면 승리합니다.</p>
+      <p><b>경험치</b> · 전투가 끝나면 참가한 영웅 전원이 같은 양을 받습니다.</p>
       <p><b>특기</b> · 쓰고 나면 정해진 턴 동안 다시 쓸 수 없습니다(괄호 안 숫자).</p>
-      <p><b>지형</b> · 숲·언덕·산·폐허·기지는 방어 보정, 마을·기지에서 차례를 시작하면 체력 회복. 적과 맞닿은 칸에 들어가면 더 나아갈 수 없습니다.</p>
+      <p><b>지형</b> · 숲 +20%, 산·언덕·기지 +10%, 폐허·마을 +5% 방어. 기병은 숲·산에서 느려지고, 비병은 지형의 영향을 받지 않습니다. 적 칸은 지나갈 수 없습니다.</p>
       <p><b>조작</b> · 누르기: 선택·이동·공격 / 끌기: 지도 이동 / 두 손가락·휠: 확대 / 오른쪽 클릭·Esc: 취소 / 방향키+Enter: 커서 / E: 턴 종료 / D: 위험 범위 / Q: 자동</p>
       <div class="opts"><button class="gold" data-a="ok">확인</button></div>`, cb);
   }
@@ -1481,7 +1478,7 @@
     const render = () => {
       const cards = st.heroes.map((id) => {
         const h = D.HEROES[id], s = save.heroes[id], t = h.tiers[s.tier];
-        const opts = t.troops.map((k) => { const tr = D.TROOPS[k]; return `<button class="${pick[id] === k ? 'on' : ''}" data-h="${id}" data-t="${k}"><img src="${IMG[tr.icon]}"><span>${tr.short} ${kindTag(tr.kind)}<small>체력 ${tr.hp} · 공 ${tr.at} · 방 ${tr.df}</small></span></button>`; }).join('');
+        const opts = t.troops.map((k) => { const tr = D.TROOPS[k]; return `<button class="${pick[id] === k ? 'on' : ''}" data-h="${id}" data-t="${k}"><img src="${IMG[tr.icon]}"><span>${tr.name} ${kindTag(tr.kind)}<small>10명 · 체력 ${tr.hp} · 공 ${tr.at} · 방 ${tr.df} · 이동 ${tr.mov}</small></span></button>`; }).join('');
         return `<div class="hero"><div class="pic" style="background-image:url(${IMG[h.icon]})"></div>
           <div class="nm">${h.full}<small>Lv${s.lv} · ${t.cls}</small></div>
           <div class="st">${heroStatLine(id)}<br>특기: ${t.skills.map((k) => D.SKILLS[k].name).join(', ')}</div>
@@ -1489,7 +1486,7 @@
       }).join('');
       screen(`<div class="scr"><div class="bar"><button id="pBack" class="ghost">◀ 작전 선택</button><h2>${st.idx} 출격 준비 · 병사 배속</h2><span></span></div>
         <div class="tipbox">영웅마다 함께 싸울 병사를 고르세요. 공격받으면 병사가 먼저 피해를 받습니다.<br>
-        승리: <b>${st.goal}</b> · 패배: ${st.lose} · 상성 <b>경장 ▶ 중장 ▶ 기동 ▶ 경장·사격</b>, 비행 ▶ 지상 근접, 사격 ▶ 비행</div>
+        승리: <b>${st.goal}</b> · 패배: ${st.lose} · 상성 <b>보병 ▶ 창병 ▶ 기병 ▶ 보병</b>, 궁병 ▶ 비병 · 이동력은 영웅과 병사 중 느린 쪽</div>
         <div class="heroes">${cards}</div>
         <div class="prepFoot"><button id="pHelp" class="ghost">도움말</button><button id="pGo" class="gold">출격</button></div></div>`);
       $('pBack').onclick = stageSelect;
@@ -1577,7 +1574,10 @@
     AU.play(win ? 'win' : 'fail', 0.8);
     await wait(1700);
     const lines = [];
+    const gain = R.stageExp(st.id - 1, win);
+    lines.push(`참가 영웅 경험치 <b style="color:#f3c969">+${gain}</b> (전원 같은 양)`);
     for (const u of g.units.filter((x) => x.side === 'p')) {
+      R.addExp(u, gain);
       const s = save.heroes[u.key];
       s.lv = u.lv; s.exp = u.exp;
       const before = stageStart.lv[u.key];

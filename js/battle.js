@@ -9,7 +9,7 @@
   let actors = [], fxs = [], tl = [], T = 0, done = null, active = false;
   const tweens = [];
   const el = () => document.getElementById('fight');
-  const MAXF = 9;
+  const MAXF = 10; // 병사 10명
 
   FIGHT.init = function () {
     scene = new THREE.Scene();
@@ -41,13 +41,13 @@
   FIGHT.camera = () => cam;
   FIGHT.active = () => active;
 
-  const figN = (u, thp) => (u.troop && thp > 0.5 ? Math.max(1, Math.ceil((thp / u.troop.hpMax) * MAXF)) : 0);
+  const figN = (u, thp) => RULES.soldiers(u, thp);
   // 랑그릿사 모바일처럼: 영웅은 맨 뒤(바깥쪽), 병사 무리는 영웅 앞(적 쪽)에 3줄 x 3열
   const heroX = (dir) => dir * (VW / 2 - Math.min(1.3, VW * 0.12));
   function soldierSlots(n, side) {
     const dir = side === 'L' ? -1 : 1;
     const front = 0.9, back = VW / 2 - Math.min(1.3, VW * 0.12) - 1.1;
-    const span = Math.min(1.0, Math.max(0.55, (back - front) / 2.4));
+    const span = Math.min(0.95, Math.max(0.5, (back - front) / 3.2));
     const out = [];
     for (let i = 0; i < n; i++) {
       const row = i % 3, col = Math.floor(i / 3); // 앞 열부터 채운다
@@ -59,7 +59,7 @@
   function setBars(cls, u, thp, hp) {
     const s = el().querySelector('.fside.' + cls);
     const tb = s.querySelector('.fhp.t'), hb = s.querySelector('.fhp.h');
-    if (u.troop) { tb.style.visibility = ''; tb.querySelector('i').style.width = Math.max(0, (thp / u.troop.hpMax) * 100) + '%'; tb.querySelector('b').textContent = '병사 ' + Math.max(0, Math.round(thp)); }
+    if (u.troop) { tb.style.visibility = ''; tb.querySelector('i').style.width = Math.max(0, (thp / u.troop.hpMax) * 100) + '%'; tb.querySelector('b').textContent = `병사 ${RULES.soldiers(u, thp)}명`; }
     else tb.style.visibility = 'hidden';
     hb.querySelector('i').style.width = Math.max(0, (hp / u.hpMax) * 100) + '%';
     hb.querySelector('b').textContent = '영웅 ' + Math.max(0, Math.round(hp));

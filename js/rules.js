@@ -3,7 +3,7 @@
 // 화면과 무관한 순수 계산이라 node에서도 돌아간다 (tools/sim.js).
 (function (root) {
   const D = root.DATA;
-  const { TERRAIN, BEATS, SKILLS, HEROES, TIER_LV, MAX_LV, TROOPS, ENEMIES } = D;
+  const { TERRAIN, KIND, REL, SKILLS, HEROES, TIER_LV, MAX_LV, TROOPS, ENEMIES } = D;
 
   const R = {};
   let uid = 0;
@@ -71,14 +71,19 @@
     }
     return out;
   };
-  // 적 무리 i 를 지도에 내보낸다
+  // 적 무리 i 를 지도에 내보낸다 (처음 무리 이후는 증원: 바로 움직인다)
   R.spawnWave = function (G, i) {
     const w = G.stage.waves[i];
     if (!w) return [];
-    G.wave = i;
+    G.wave = Math.max(G.wave, i);
     const spots = R.freeAround(G, w.at[0], w.at[1], 'foot', w.units.length);
-    return w.units.map(([t, lv], k) => spots[k] && R.makeEnemy(G, t, lv, spots[k][0], spots[k][1], { boss: w.boss === t, ai: w.boss === t ? 'guard' : 'charge' })).filter(Boolean);
+    const list = w.units.map(([t, lv], k) => spots[k] && R.makeEnemy(G, t, lv, spots[k][0], spots[k][1], { boss: w.boss === t, ai: w.boss === t ? 'guard' : 'charge' })).filter(Boolean);
+    if (i > 0) list.forEach((u) => { u.awake = true; });
+    return list;
   };
+  // 이 턴에 나올 증원 무리 번호들
+  R.wavesAt = (G, turn) => G.stage.waves.map((w, i) => (i > 0 && (w.turn || 0) === turn ? i : -1)).filter((i) => i >= 0);
+  R.nextWaveTurn = (G) => { const w = G.stage.waves.find((w, i) => i > G.wave && (w.turn || 0) >= G.turn); return w ? w.turn : 0; };
 
   // ── 수치 ───────────────────────────────────────────────
   R.tierOf = (u) => (u.side === 'p' ? u.def.tiers[u.tier] : null);
@@ -101,15 +106,22 @@
   };
   R.atk = (u, part) => (part === 'T' ? R.troopStat(u, 'at') : R.heroStat(u, 'at')) * buffK(u, 'at');
   R.def = (u, part) => (part === 'T' ? R.troopStat(u, 'df') : R.heroStat(u, 'df')) * buffK(u, 'df');
-  R.mov = (u) => Math.max(1, Math.round(R.heroStat(u, 'mov') + u.buffs.reduce((s, b) => s + (b.mov || 0), 0) - (u.slow || 0)));
+  // 이동력 = 영웅과 (살아 있는) 병사 중 낮은 쪽
+  R.mov = (u) => {
+    let m = R.heroStat(u, 'mov');
+    if (R.troopAlive(u)) m = Math.min(m, u.troop.def.mov);
+    return Math.max(1, Math.round(m + u.buffs.reduce((s, b) => s + (b.mov || 0), 0) - (u.slow || 0)));
+  };
+  // 남은 병사 수 (10명 부대)
+  R.SQUAD = 10;
+  R.soldiers = (u, thp = u.troop ? u.troop.hp : 0) => (u.troop && thp > 0.5 ? Math.max(1, Math.ceil((thp / u.troop.hpMax) * R.SQUAD - 1e-6)) : 0);
   R.troopAlive = (u) => !!(u.troop && u.troop.hp > 0);
   R.total = (u) => u.hp + (u.troop ? u.troop.hp : 0);
   R.totalMax = (u) => u.hpMax + (u.troop ? u.troop.hpMax : 0);
   R.skillsOf = (u) => (u.side === 'p' ? u.def.tiers[u.tier].skills : u.def.skills || []);
 
   // ── 이동 범위 ──────────────────────────────────────────
-  // 적 유닛 칸은 지나갈 수 없고, 적과 맞닿은 칸(지배 영역)에 들어가면 그 자리에서 멈춘다. 아군 칸은 지나가기만.
-  R.zoc = (G, u, x, y) => DIRS.some(([dx, dy]) => { const o = R.unitAt(G, x + dx, y + dy); return o && o.side !== u.side; });
+  // 적 칸은 지나갈 수 없고, 아군 칸은 지나가기만 한다 (적과 맞닿아도 멈추지 않는다)
   R.reach = function (G, u, movOverride) {
     const mov = movOverride != null ? movOverride : R.mov(u);
     const best = new Map();
@@ -120,7 +132,6 @@
       q.sort((a, b) => a[2] - b[2]);
       const [x, y, c] = q.shift();
       if (c > best.get(key(x, y)).c) continue;
-      if ((x !== u.x || y !== u.y) && R.zoc(G, u, x, y)) continue;
       for (const [dx, dy] of DIRS) {
         const nx = x + dx, ny = y + dy;
         if (!R.inB(G, nx, ny)) continue;
@@ -147,22 +158,26 @@
   R.targetsFrom = (G, u, x, y) => G.units.filter((o) => o.alive && o.side !== u.side && R.dist(x, y, o.x, o.y) >= 1 && R.dist(x, y, o.x, o.y) <= u.rng);
 
   // ── 전투 ───────────────────────────────────────────────
-  R.ADV = 1.3; R.DISADV = 0.75;
-  R.typeRel = (a, b) => (BEATS[a] && BEATS[a].includes(b) ? 1 : BEATS[b] && BEATS[b].includes(a) ? -1 : 0);
-  const relK = (a, b) => { const r = R.typeRel(a, b); return r > 0 ? R.ADV : r < 0 ? R.DISADV : 1; };
+  // 상성: REL[공격][방어] 만큼 유리(+30% 등), 반대로 불리하면 그만큼 나눈다. 원거리 병종이 붙어서 싸우면 30%만.
+  R.relX = (a, b) => (REL[a] && REL[a][b]) || 0;
+  R.typeRel = (a, b) => (R.relX(a, b) ? 1 : R.relX(b, a) ? -1 : 0);
+  const relK = (a, b) => (R.relX(a, b) ? 1 + R.relX(a, b) : R.relX(b, a) ? 1 / (1 + R.relX(b, a)) : 1);
+  R.relK = relK;
+  R.MELEE_RANGED = 0.3;
+  const isRanged = (k) => !!(KIND[k] && KIND[k].ranged);
   const terrDef = (G, u, x, y) => (u.move === 'fly' ? 0 : R.terr(G, x, y).def);
   // a(상태 sa)가 d(상태 sd)를 한 번 친다. 상태 = { hp, thp, x, y }. 반환: 병사·영웅 피해
   function strike(G, a, sa, d, sd, dist, k, rnd) {
     const front = d.troop && sd.thp > 0 ? 'T' : 'H';
     const dKind = front === 'T' ? d.troop.kind : d.kind;
     const dDef = R.def(d, front) * (1 + terrDef(G, d, sd.x, sd.y));
-    // 피해 = 공격 x 상성 x 공/(공+방) x 1.5 (방어가 높아도 0이 되지 않는다)
-    const part = (A, kind) => A * relK(kind, dKind) * (A / (A + dDef)) * 1.5 * (kind === 'arch' && dist === 1 ? 0.7 : 1);
+    // 피해 = 공격 x 상성 x 공/(공+방) x 1.1 (방어가 높아도 0이 되지 않는다)
+    const part = (A, kind) => A * relK(kind, dKind) * (A / (A + dDef)) * 1.1 * (isRanged(kind) && dist === 1 ? R.MELEE_RANGED : 1);
     let dmg = part(R.atk(a, 'H'), a.kind);
-    if (a.troop && sa.thp > 0) dmg += part(R.atk(a, 'T'), a.troop.kind) * (0.4 + 0.6 * sa.thp / a.troop.hpMax);
+    if (a.troop && sa.thp > 0) dmg += part(R.atk(a, 'T'), a.troop.kind) * (R.soldiers(a, sa.thp) / R.SQUAD); // 남은 병사 수만큼
     dmg *= k * (rnd ? 0.9 + rnd() * 0.2 : 1);
     const toT = front === 'T' ? Math.min(sd.thp, dmg) : 0;
-    const toH = Math.min(sd.hp, (dmg - toT) * (front === 'T' ? 0.8 : 1));
+    const toH = Math.min(sd.hp, dmg - toT); // 병사가 다 쓰러지면 남은 피해는 영웅에게
     return { toT, toH, rel: R.typeRel(a.troop && sa.thp > 0 ? a.troop.kind : a.kind, dKind) };
   }
   // 공격자 a가 (ax, ay)에서 방어자 d를 공격. rnd가 없으면 기댓값(예상치)
@@ -183,6 +198,7 @@
     };
   };
   R.apply = function (u, toT, toH) {
+    if (toT + toH > 0) u.awake = true; // 맞으면 깨어난다
     if (u.troop) u.troop.hp = Math.max(0, u.troop.hp - toT);
     u.hp = Math.max(0, u.hp - toH);
   };
@@ -232,7 +248,7 @@
         const A = R.atk(u, 'H') * s.power, Df = R.def(o, front) * (1 + terrDef(G, o, o.x, o.y));
         const dmg = A * (A / (A + Df)) * 1.8 * (rnd ? 0.9 + rnd() * 0.2 : 1);
         const toT = front === 'T' ? Math.min(o.troop.hp, dmg) : 0;
-        const toH = Math.min(o.hp, (dmg - toT) * (front === 'T' ? 0.8 : 1));
+        const toH = Math.min(o.hp, dmg - toT);
         res.push({ u: o, toT: rnd ? Math.round(toT) : toT, toH: rnd ? Math.round(toH) : toH });
       } else if ((s.heal || s.buff) && o.side === u.side) {
         const hH = s.heal ? Math.min(o.hpMax - o.hp, Math.round(o.hpMax * s.heal)) : 0;
@@ -244,13 +260,8 @@
   };
 
   // ── 경험치 ─────────────────────────────────────────────
-  R.expFor = function (src, tgt, dmg, killed) {
-    if (src.side !== 'p') return 0;
-    const lvK = Math.max(0.4, Math.min(2.5, 1 + (tgt.lv - src.lv) * 0.12));
-    let e = (dmg / R.totalMax(tgt)) * 48 * lvK;
-    if (killed) e += (tgt.boss ? 70 : tgt.def.big ? 36 : 16) * lvK;
-    return Math.round(e);
-  };
+  // 전투가 끝나면 참가자 전원(쓰러진 영웅 포함)이 같은 양을 받는다. 패배하면 절반.
+  R.stageExp = (stageIndex, win) => Math.round((90 + 12 * stageIndex) * (win ? 1 : 0.5));
   R.addExp = function (u, e) {
     if (!u || u.side !== 'p') return 0;
     let ups = 0;
@@ -266,7 +277,7 @@
     if (lead && !lead.alive) return 'lose';
     if (!G.units.some((u) => u.alive && u.side === 'p')) return 'lose';
     if (G.stage.win === 'boss') { const b = G.units.find((u) => u.boss); if (b && !b.alive) return 'win'; }
-    if (!G.units.some((u) => u.alive && u.side === 'e') && G.wave >= G.stage.waves.length - 1) return 'win';
+    if (!G.units.some((u) => u.alive && u.side === 'e')) return 'win'; // 증원 전에 다 잡으면 그대로 승리
     return null;
   };
 
@@ -311,6 +322,11 @@
   // 한 유닛의 할 일: { to:[x,y], act:'attack'|'skill'|'wait', target, skill, tx, ty }
   R.plan = function (G, u, fields) {
     const reach = R.reach(G, u);
+    if (u.side === 'e' && !u.awake) { // 낚기: 아군이 이 적의 공격 범위(이동+사거리)에 들어와야 깨어난다
+      const hit = [...reach.values()].some((t) => t.stop && G.units.some((o) => o.alive && o.side !== u.side && R.dist(t.x, t.y, o.x, o.y) <= u.rng));
+      if (!hit) return { to: [u.x, u.y], act: 'wait' };
+      u.awake = true;
+    }
     const tiles = [...reach.values()].filter((t) => t.stop && (u.ai !== 'guard' || R.dist(t.x, t.y, u.home[0], u.home[1]) <= 2));
     const th = caution(u) ? (fields.threat || (fields.threat = R.threatMap(G, u.side))) : null;
     const risk = (x, y) => (th ? Math.max(0, th[y * G.w + x] - 1) * caution(u) : 0);
