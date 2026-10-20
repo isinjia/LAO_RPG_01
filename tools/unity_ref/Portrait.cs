@@ -26,6 +26,10 @@ public static class RefPortrait
         var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
         var go = (GameObject)Object.Instantiate(prefab);
         go.transform.position = new Vector3(0, 0, 0);
+        // 컷 그림(_Dialog0*)은 프리팹 안의 좌우 반전을 원작 화면에서 쓰지 않는다: 원본 그림 방향으로 되돌린다
+        if (outName.Contains("_Dialog0"))
+            foreach (var t in go.GetComponentsInChildren<Transform>(true))
+                if (t.localScale.x < 0) t.localScale = new Vector3(-t.localScale.x, t.localScale.y, t.localScale.z);
         // 로비용 애니메이터가 붙어 있으면 첫 프레임 자세로
         var animator = go.GetComponentInChildren<Animator>(true);
         if (animator && animator.runtimeAnimatorController)
