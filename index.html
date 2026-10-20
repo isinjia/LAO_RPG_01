@@ -9,6 +9,7 @@
 <title>오르카 전기</title>
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="css/game.css">
+<link rel="stylesheet" href="css/lo.css">
 </head>
 <body>
 <div id="stage"></div>
@@ -43,16 +44,19 @@
 <div id="banner" class="hidden"></div>
 
 <!-- 대화 -->
-<div id="talkBg" class="hidden"><div class="tstage"></div><img class="tcg"></div>
+<div id="talkBg" class="hidden"><div class="tbg"></div><div class="tbg"></div><div class="tstage"></div><img class="tcg" alt=""><div class="tshade"></div><div class="tfx"></div></div>
 <div id="talk" class="hidden">
+  <div class="tplace"><div class="pd"></div><div class="pn"></div></div>
   <div class="tchoices"></div>
-  <div class="tface"><img></div>
-  <div class="tbox">
+  <div class="tbox" data-p="C">
     <div class="tname"></div>
     <div class="ttext"></div>
-    <div class="tnext">▼</div>
+    <div class="ttouch"><i></i></div>
+    <div class="tbar"><button data-k="log" class="hist">HISTORY</button><button data-k="auto">AUTO</button><button data-k="fast">FAST &gt;&gt;</button></div>
+    <button data-k="skip" class="tskip">SKIP ▶</button>
   </div>
-  <button class="tskip" title="건너뛰기"></button>
+  <div class="tlog"><div class="tloghead">HISTORY</div><div class="tloglist"></div><div class="tlogfoot">화면을 누르면 닫힙니다</div></div>
+  <div class="task"><div class="taskbox"><p>대화를 건너뛸까요?</p><div><button data-k="skipY" class="y">건너뛰기</button><button data-k="skipN">계속 보기</button></div></div></div>
 </div>
 
 <!-- 타이틀·스테이지 선택·출격 준비·결과 -->
@@ -69,10 +73,12 @@
 <script src="js/assets.js"></script>
 <script src="js/anim_events.js"></script>
 <script src="js/story.js"></script>
+<script src="js/world.js"></script>
 <script src="js/data.js"></script>
 <script src="js/rules.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/battle.js"></script>
+<script src="js/talk.js"></script>
 <script src="js/game.js"></script>
 </body>
 </html>

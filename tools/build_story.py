@@ -73,6 +73,11 @@ def stand_for(model, expr):
     return d if os.path.exists(os.path.join(STAND, d + '.webp')) else ''
 
 
+def bgm(n):
+    """원작 배경음 파일 이름 -> 게임 이름 (assets/bgm/<이름>.mp3, tools/build_media.py 가 옮긴다)"""
+    return {'07 BGM_Talk_01': 'lo_talk1', '08 BGM_Talk_02': 'lo_talk2', '09 BGM_Talk_03': 'lo_talk3'}.get(n) or ('lo_' + n.split(' ', 1)[-1].replace('BGM_', '').lower() if n else 'lo_talk1')
+
+
 def main():
     S = json.load(open(os.path.join(ROOT, 'tools', 'story_%s.json' % CH), encoding='utf8'))
     story = {}
@@ -89,9 +94,16 @@ def main():
                 nodes.append({'id': n['id'], 'who': n['who'], 'face': face_for(n['model'], n['expr']) if n['who'] else '',
                               't': n['text'], 'bg': bg, 'cg': cg, 'next': n['next'], 'ch': n['choices'],
                               'cast': [c for c in cast if c[1]], 'spk': n.get('spk', '')})
+                # 연출 (있을 때만): 장소 자막, 덧붙임 효과, 화면 효과, 중간 배경음, 등장·퇴장 효과
+                o = nodes[-1]
+                if n.get('place'): o['place'] = n['place']
+                if n.get('fx'): o['fx'] = n['fx']
+                if n.get('scr', 6) != 6: o['scr'] = n['scr']
+                if n.get('bgm'): o['bgm'] = bgm(n['bgm'])
+                if n.get('app'): o['app'] = n['app']
+                if n.get('off'): o['off'] = n['off']
+                if n.get('fade'): o['fade'] = n['fade']
             parts[part] = nodes
-        # 원작 컷신 배경음 -> assets/bgm/lo_*.mp3 (tools/build_media.py)
-        bgm = lambda n: {'07 BGM_Talk_01': 'lo_talk1', '08 BGM_Talk_02': 'lo_talk2', '09 BGM_Talk_03': 'lo_talk3'}.get(n, 'lo_talk1')
         story[s['idx']] = {'name': s['name'], 'desc': s['desc'], 'bgmStart': bgm(s.get('bgm_start')), 'bgmEnd': bgm(s.get('bgm_end')), **parts}
     with open(os.path.join(ROOT, 'js', 'story.js'), 'w', encoding='utf8') as f:
         f.write('// tools/build_story.py 로 생성: 본작 메인 스토리 대본 (선택지 갈래 포함)\nwindow.STORY = Object.assign(window.STORY || {}, ' + json.dumps(story, ensure_ascii=False) + ');\n')

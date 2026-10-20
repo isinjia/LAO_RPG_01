@@ -657,7 +657,7 @@
     placeCamera();
   }, { passive: false });
   addEventListener('keydown', (e) => {
-    if (mode === 'talk') { if (['Enter', 'Space', 'KeyZ'].includes(e.code)) talkNext(); if (e.code === 'Escape') talkSkip(); return; }
+    if (mode === 'talk') { if (['Enter', 'Space', 'KeyZ'].includes(e.code)) TALK.next(); if (e.code === 'Escape') TALK.askSkip(); return; }
     if (mode === 'fight') { if (['Enter', 'Space', 'Escape', 'KeyZ'].includes(e.code)) FIGHT.skip(); return; }
     if (mode !== 'map') return;
     const k = e.code;
@@ -1085,6 +1085,7 @@
     } else await mapClash(a, d, res);
     R.apply(d, res.dT, res.dH);
     R.apply(a, res.aT, res.aH);
+    a.dealt = (a.dealt || 0) + res.dT + res.dH; d.dealt = (d.dealt || 0) + res.aT + res.aH; // 결과 화면의 최우수 (MVP)
     popDmg(d, res.dT, res.dH);
     wait(150).then(() => popDmg(a, res.aT, res.aH));
     refreshView(a); refreshView(d);
@@ -1141,6 +1142,7 @@
     for (const r of R.skillEffect(G, u, sk, tx, ty, Math.random)) {
       if (r.toT != null) {
         R.apply(r.u, r.toT, r.toH);
+        u.dealt = (u.dealt || 0) + r.toT + r.toH;
         popDmg(r.u, r.toT, r.toH);
         if (s.slow) r.u.slowNext = s.slow;
         refreshView(r.u);
@@ -1278,80 +1280,17 @@
     if (v) autoPlayer();
   }
 
-  // ── 대화 (본작 대본: 노드 사슬 + 사령관 선택지) ─────────
-  let talkNodes = null, talkCur = null, talkDone = null;
-  // nodes: js/story.js 노드 배열 [{id, who, face, t, bg, cg, next, ch}]
-  function story(nodes) {
-    return new Promise((res) => {
-      if (!nodes || !nodes.length) { res(); return; }
-      talkNodes = new Map(nodes.map((n) => [n.id, n]));
-      talkDone = res;
-      talk.prev = mode;
-      mode = 'talk';
-      $('talk').classList.remove('hidden');
-      $('talkBg').classList.remove('hidden');
-      $('talkBg').style.backgroundImage = '';
-      $('talkBg').querySelector('.tstage').innerHTML = '';
-      showNode(nodes[0]);
-    });
+  // ── 대화 (본작 대본: 노드 사슬 + 사령관 선택지) → js/talk.js ──
+  async function story(nodes) {
+    if (!nodes || !nodes.length) return;
+    const prev = mode;
+    mode = 'talk';
+    await TALK.play(nodes);
+    mode = prev === 'talk' ? 'map' : prev;
   }
   function talk(lines) { // 간단한 대사 [[화자, 얼굴, 문장]] (도움말 등)
     return story(lines.map(([who, face, t], i) => ({ id: i + 1, who, face, t, bg: '', cg: '', next: i + 2 <= lines.length ? i + 2 : null, ch: [] })));
   }
-  function showNode(n) {
-    talkCur = n;
-    const el = $('talk'), bg = $('talkBg');
-    if (n.bg) bg.style.backgroundImage = `url(assets/story/bg/${n.bg}.webp)`;
-    const cg = bg.querySelector('.tcg');
-    if (n.cg) { if (cg.dataset.k !== n.cg) { cg.src = `assets/story/cg/${n.cg}.webp`; cg.dataset.k = n.cg; } } else { cg.removeAttribute('src'); cg.dataset.k = ''; }
-    bg.classList.toggle('cg', !!n.cg);
-    // 전신 일러스트: 말하는 쪽은 밝게, 나머지는 어둡게 (2 = 회상)
-    const stage = bg.querySelector('.tstage');
-    const want = new Map((n.cast || []).map(([p, s, d]) => [p, [s, d]]));
-    stage.querySelectorAll('.stand').forEach((im) => { if (!want.has(im.dataset.p)) im.remove(); });
-    for (const [p, [s, d]] of want) {
-      let im = stage.querySelector(`.stand[data-p="${p}"]`);
-      if (!im) { im = document.createElement('img'); im.className = 'stand'; im.dataset.p = p; stage.appendChild(im); }
-      if (im.dataset.s !== s) { im.src = `assets/story/stand/${s}.webp`; im.dataset.s = s; }
-      im.classList.toggle('dim', !!n.spk && n.spk !== p && d !== 2);
-      im.classList.toggle('past', d === 2);
-    }
-    if (!n.t && !(n.ch && n.ch.length)) { goNode(n.next); return; } // 화면 전환만 하는 빈 줄
-    const face = el.querySelector('.tface'), img = face.querySelector('img');
-    el.classList.toggle('nar', !n.who);
-    face.classList.toggle('none', !n.face);
-    if (n.face) {
-      const icon = n.face.startsWith('icon:');
-      img.className = icon ? 'icon' : '';
-      img.src = icon ? IMG[n.face.slice(5)] : `assets/story/face/${n.face}.webp`;
-    }
-    el.querySelector('.tname').textContent = n.who || '';
-    el.querySelector('.ttext').textContent = n.t;
-    const ch = el.querySelector('.tchoices');
-    ch.innerHTML = '';
-    if (n.ch && n.ch.length) {
-      for (const [text, next] of n.ch) {
-        const b = document.createElement('button');
-        b.textContent = text;
-        b.onclick = (e) => { e.stopPropagation(); AU.play('click', 0.5); goNode(next); };
-        ch.appendChild(b);
-      }
-    }
-    el.querySelector('.tnext').style.visibility = n.ch && n.ch.length ? 'hidden' : '';
-    AU.play('click', 0.25);
-  }
-  function goNode(id) { const n = id != null && talkNodes.get(id); if (n) showNode(n); else talkEnd(); }
-  function talkNext() { if (!talkCur) return; if (talkCur.ch && talkCur.ch.length) return; goNode(talkCur.next); }
-  function talkEnd() {
-    talkNodes = null; talkCur = null;
-    $('talk').classList.add('hidden');
-    $('talkBg').classList.add('hidden');
-    mode = talk.prev === 'talk' ? 'map' : talk.prev;
-    const cb = talkDone; talkDone = null;
-    if (cb) cb();
-  }
-  function talkSkip() { if (talkCur) talkEnd(); }
-  $('talk').addEventListener('click', (e) => { if (e.target.closest('.tskip')) { talkSkip(); return; } if (e.target.closest('.tchoices')) return; talkNext(); });
 
   // ── 모달 ─────────────────────────────────────────────────
   function modal(html, cb) {
@@ -1450,22 +1389,60 @@
     };
     $('tHelp').onclick = () => help();
   }
+  // 작전 선택: 원작 3D 지역 지도 위 작전 지점 + 오른쪽 작전 정보 (원작 월드맵 조각)
+  let stageSel = -1;
   function stageSelect() {
     leaveMap();
     AU.bgm('lo_talk1');
-    const cards = D.STAGES.map((st, i) => {
+    const pts = (window.WORLD && WORLD.ch01) || [];
+    const last = D.STAGES.length - 1;
+    if (stageSel < 0 || stageSel > Math.min(save.clear, last)) stageSel = Math.min(save.clear, last);
+    const nodes = D.STAGES.map((st, i) => {
+      const [x, y] = pts[i] || [0.2 + i * 0.08, 0.5];
       const lock = i > save.clear, clear = i < save.clear;
-      const S = window.STORY && STORY[st.idx];
-      return `<button class="stg ${lock ? 'lock' : ''} ${clear ? 'clear' : ''}" data-i="${i}" ${lock ? 'disabled' : ''}>
-        <span class="no">${st.idx}</span><span class="tt">${st.title}</span><span class="gl">${S ? S.desc : ''}</span><span class="gl">승리: ${st.goal} · 출격 ${st.heroes.length}명</span></button>`;
+      const col = st.win === 'boss' ? 'Red' : clear ? 'Grn' : 'Yel';
+      return `<button class="wnode ${lock ? 'lock' : ''} ${clear ? 'clear' : ''} c${col}" data-i="${i}" style="left:${x * 100}%;top:${y * 100}%" ${lock ? 'disabled' : ''}>
+        <i class="ol" style="background-image:url(assets/ui/UI_WolrdMap_Chapter_Icon_Selected_OL_${col}.png)"></i>
+        <i class="base" style="background-image:url(assets/ui/UI_WolrdMap_Chapter_Icon_Base_${col}.png)"></i>
+        <i class="ico" style="background-image:url(assets/ui/UI_WolrdMap_Chapter_Icon_${lock ? 'Lock' : 'Main'}_${col}.png)"></i>
+        <b class="tag">${st.idx}</b>${clear ? '<em>CLEAR</em>' : ''}</button>`;
     }).join('');
-    const end = save.clear >= D.STAGES.length ? '<div class="tipbox"><b>1지역을 모두 클리어했습니다!</b> 다시 플레이해 영웅을 더 키울 수 있습니다.</div>' : '';
-    screen(`<div class="scr"><div class="bar"><button id="sBack" class="ghost">◀ 타이틀</button><h2>작전 선택</h2><span></span></div>
-      <div class="chap"><b>1지역</b>지구의 마지막 인간</div>
-      ${end}<div class="stages">${cards}</div>
-      <h2 style="margin-top:22px">영웅</h2><div class="heroes">${heroCards()}</div></div>`);
-    $('sBack').onclick = title;
-    document.querySelectorAll('.stg').forEach((b) => (b.onclick = () => { AU.play('click'); startStage(+b.dataset.i); }));
+    const line = pts.slice(0, Math.min(save.clear + 1, D.STAGES.length)).map(([x, y]) => `${x * 1000},${y * 562.5}`).join(' ');
+    screen(`<div class="wscr">
+      <div class="wmap" style="background-image:url(assets/world/ch01.webp)">
+        <svg viewBox="0 0 1000 562.5" preserveAspectRatio="none"><polyline points="${line}"/></svg>${nodes}</div>
+      <div class="wvig"></div>
+      <div class="whead"><button class="wback" id="sBack" aria-label="뒤로"></button>
+        <div class="wtitle"><small>CHAPTER 01</small><b>지구의 마지막 인간</b></div></div>
+      <div class="wtools"><button class="lo-btn dark" id="sHero">부대 현황</button></div>
+      <div class="winfo" id="sInfo"></div></div>`);
+    $('sBack').onclick = () => { AU.play('lo_click', 0.6); title(); };
+    $('sHero').onclick = () => { AU.play('lo_click', 0.6); heroRoster(); };
+    document.querySelectorAll('.wnode').forEach((b) => (b.onclick = () => { AU.play('lo_pick', 0.6); stageSel = +b.dataset.i; stageInfo(); }));
+    stageInfo();
+  }
+  function stageInfo() {
+    const i = stageSel, st = D.STAGES[i], S = window.STORY && STORY[st.idx];
+    document.querySelectorAll('.wnode').forEach((b) => b.classList.toggle('sel', +b.dataset.i === i));
+    const foes = {};
+    st.waves.forEach((w) => w.units.forEach(([k, lv]) => { const f = foes[k] || (foes[k] = { n: 0, lv: 0 }); f.n++; f.lv = Math.max(f.lv, lv); }));
+    const foeHtml = Object.entries(foes).map(([k, f]) => { const e = D.ENEMIES[k]; return `<div class="wfoe ${e.big ? 'boss' : ''}"><img src="${IMG[e.icon]}" alt=""><span>Lv.${f.lv}</span><small>${e.name}${f.n > 1 ? ' ×' + f.n : ''}</small></div>`; }).join('');
+    const j = joined();
+    const heroHtml = st.heroes.map((id) => { const h = D.HEROES[id]; return `<div class="whero ${j.has(id) ? '' : 'new'}"><img src="${IMG[h.icon]}" alt=""><small>${j.has(id) ? 'Lv.' + save.heroes[id].lv : '합류'}</small></div>`; }).join('');
+    const clear = i < save.clear;
+    $('sInfo').innerHTML = `<div class="wi-top"><span class="wi-no">${st.idx}</span><div class="wi-name">${st.title}${clear ? '<em>CLEAR</em>' : ''}</div></div>
+      <p class="wi-desc">${S ? S.desc : ''}</p>
+      <div class="wi-row"><label>승리 조건</label><span>${st.goal}</span></div>
+      <div class="wi-row"><label>패배 조건</label><span>${st.lose}</span></div>
+      <div class="wi-sub">적 정보 <small>증원 ${st.waves.length - 1}회</small></div><div class="wi-foes">${foeHtml}</div>
+      <div class="wi-sub">출격 인원 <small>${st.heroes.length}명</small></div><div class="wi-heroes">${heroHtml}</div>
+      <div class="wi-sub">보상 <small>참가 영웅 전원</small></div><div class="wi-row"><label>경험치</label><span class="y">+${R.stageExp(i, true)}</span></div>
+      <button class="wgo" id="sGo"><b>작전 개시</b><small>${clear ? '다시 플레이' : 'BATTLE START'}</small></button>`;
+    $('sGo').onclick = () => { AU.play('lo_click', 0.7); startStage(i); };
+  }
+  // 부대 현황: 합류한 영웅 목록
+  function heroRoster() {
+    modal(`<div class="roster"><h3>부대 현황</h3><div class="heroes">${heroCards()}</div><div class="opts"><button class="gold" data-a="ok">닫기</button></div></div>`);
   }
   const joined = () => new Set(D.STAGES.slice(0, Math.min(D.STAGES.length, save.clear + 1)).flatMap((s) => s.heroes));
   function heroStatLine(id) {
@@ -1482,7 +1459,9 @@
     }).join('');
   }
 
-  // 출격 준비: 영웅마다 병사 배속
+  // 출격 준비: 원작 편성 화면처럼 영웅 카드 + 오른쪽 상세(능력치·특기·병사 배속). 고를 때 인물 음성
+  const HERO_STAND = { constantia: '3P_ConstantiaS2_N_Smile', griffon: 'BR_PA00EL_N_Proud', johanna: 'DS_Johanna_N_Smile', lrl: 'PECS_LRL_N_Laugh', pupphead: 'PECS_PuppHead_N', fallen: 'AGS_Fallen_N' };
+  const heroVoice = (id, kind) => AU.voice(id + '_' + kind);
   function prep(si) {
     const st = D.STAGES[si];
     const pick = {};
@@ -1490,26 +1469,62 @@
       const t = D.HEROES[id].tiers[save.heroes[id].tier];
       pick[id] = t.troops.includes(save.troops[id]) ? save.troops[id] : t.troops[0];
     }
+    const j = joined();
+    let cur = st.heroes.find((id) => !j.has(id) || id === 'constantia') || st.heroes[0];
+    // 이번에 처음 합류하는 영웅이 있으면 합류 음성
+    const fresh = st.heroes.find((id) => !(save.joined || []).includes(id));
+    AU.bgm('lo_talk1');
+    const stat = (id) => {
+      const h = D.HEROES[id], s = save.heroes[id], t = h.tiers[s.tier], k = 1 + 0.07 * (s.lv - D.TIER_LV[s.tier]);
+      return { h, s, t, hp: Math.round(t.hp * k), at: Math.round(t.at * k), df: Math.round(t.df * k) };
+    };
+    const card = (id) => {
+      const { h, s, t } = stat(id), tr = D.TROOPS[pick[id]];
+      return `<button class="pcard ${id === cur ? 'sel' : ''}" data-h="${id}">
+        <div class="pimg ${id === 'pupphead' || id === 'fallen' ? 'whole' : ''}" style="background-image:url(assets/story/stand/${HERO_STAND[id]}.webp)"></div>
+        ${h.lead ? '<i class="plead"></i>' : ''}${(save.joined || []).includes(id) ? '' : '<i class="pnew">NEW</i>'}
+        <div class="pfoot"><span class="plv">Lv.${s.lv}</span><b>${h.name}</b><small>${kindTag(h.kind)} · ${t.cls}</small></div>
+        <div class="ptroop"><img src="${IMG[tr.icon]}" alt=""><span>${tr.short} ×${R.SQUAD}</span></div></button>`;
+    };
+    const detail = () => {
+      const id = cur, { h, s, t, hp, at, df } = stat(id);
+      const next = D.TIER_LV[s.tier + 1];
+      const troops = t.troops.map((k) => { const tr = D.TROOPS[k]; return `<button class="ptr ${pick[id] === k ? 'on' : ''}" data-t="${k}"><img src="${IMG[tr.icon]}" alt="">
+        <span><b>${tr.name}</b>${kindTag(tr.kind)}<small>체력 ${tr.hp} · 공격 ${tr.at} · 방어 ${tr.df} · 이동 ${tr.mov}</small></span></button>`; }).join('');
+      return `<div class="pd-head"><b>${h.full}</b><span>${t.cls}</span></div>
+        <div class="pd-lv"><span>Lv.<b>${s.lv}</b></span><div class="pd-exp"><i style="width:${Math.min(100, s.exp)}%"></i></div>${next ? `<small>Lv.${next}에 전직</small>` : '<small>최종 전직</small>'}</div>
+        <div class="pd-stats"><div><label>병종</label>${kindTag(h.kind)}</div><div><label>체력</label><b>${hp}</b></div><div><label>공격</label><b>${at}</b></div>
+          <div><label>방어</label><b>${df}</b></div><div><label>이동</label><b>${t.mov}</b></div><div><label>사거리</label><b>${h.rng}</b></div></div>
+        <div class="wi-sub">특기</div><div class="pd-skills">${t.skills.map((k) => { const sk = D.SKILLS[k]; return `<div><b>${sk.name}</b><small>재사용 ${sk.cd}턴 · ${sk.desc}</small></div>`; }).join('')}</div>
+        <div class="wi-sub">병사 배속 <small>공격받으면 병사가 먼저 피해를 받습니다</small></div><div class="pd-troops">${troops}</div>`;
+    };
     const render = () => {
-      const cards = st.heroes.map((id) => {
-        const h = D.HEROES[id], s = save.heroes[id], t = h.tiers[s.tier];
-        const opts = t.troops.map((k) => { const tr = D.TROOPS[k]; return `<button class="${pick[id] === k ? 'on' : ''}" data-h="${id}" data-t="${k}"><img src="${IMG[tr.icon]}"><span>${tr.name} ${kindTag(tr.kind)}<small>10명 · 체력 ${tr.hp} · 공 ${tr.at} · 방 ${tr.df} · 이동 ${tr.mov}</small></span></button>`; }).join('');
-        return `<div class="hero"><div class="pic" style="background-image:url(${IMG[h.icon]})"></div>
-          <div class="nm">${h.full}<small>Lv${s.lv} · ${t.cls}</small></div>
-          <div class="st">${heroStatLine(id)}<br>특기: ${t.skills.map((k) => D.SKILLS[k].name).join(', ')}</div>
-          <div class="troopPick">${opts}</div></div>`;
-      }).join('');
-      screen(`<div class="scr"><div class="bar"><button id="pBack" class="ghost">◀ 작전 선택</button><h2>${st.idx} 출격 준비 · 병사 배속</h2><span></span></div>
-        <div class="tipbox">영웅마다 함께 싸울 병사를 고르세요. 공격받으면 병사가 먼저 피해를 받습니다.<br>
-        승리: <b>${st.goal}</b> · 패배: ${st.lose} · 상성 <b>보병 ▶ 창병 ▶ 기병 ▶ 보병</b>, 궁병 ▶ 비병 · 이동력은 영웅과 병사 중 느린 쪽</div>
-        <div class="heroes">${cards}</div>
-        <div class="prepFoot"><button id="pHelp" class="ghost">도움말</button><button id="pGo" class="gold">출격</button></div></div>`);
-      $('pBack').onclick = stageSelect;
-      $('pHelp').onclick = () => help();
-      $('pGo').onclick = () => { Object.assign(save.troops, pick); writeSave(); launch(si); };
-      document.querySelectorAll('.troopPick button').forEach((b) => (b.onclick = () => { AU.play('click', 0.4); pick[b.dataset.h] = b.dataset.t; render(); }));
+      screen(`<div class="pscr">
+        <div class="pbg"></div>
+        <div class="whead"><button class="wback" id="pBack" aria-label="뒤로"></button><div class="wtitle"><small>${st.idx} · ${st.title}</small><b>출격 준비</b></div></div>
+        <div class="pcards">${st.heroes.map(card).join('')}</div>
+        <div class="pdetail">${detail()}</div>
+        <div class="pfootbar"><div class="pgoal"><span>승리 <b>${st.goal}</b></span><span>패배 ${st.lose}</span><span class="dim">보병 ▶ 창병 ▶ 기병 ▶ 보병 · 궁병 ▶ 비병</span></div>
+          <button class="lo-btn dark" id="pHelp">도움말</button><button class="wgo pgo" id="pGo"><b>출격</b><small>SORTIE</small></button></div></div>`);
+      $('pBack').onclick = () => { AU.play('lo_click', 0.6); stageSelect(); };
+      $('pHelp').onclick = () => { AU.play('lo_click', 0.6); help(); };
+      $('pGo').onclick = () => {
+        Object.assign(save.troops, pick); writeSave();
+        AU.play('lo_click', 0.8);
+        heroVoice(st.heroes.includes('constantia') ? 'constantia' : st.heroes[0], 'StageStart');
+        launch(si);
+      };
+      document.querySelectorAll('.pcard').forEach((b) => (b.onclick = () => {
+        if (cur === b.dataset.h) return;
+        cur = b.dataset.h; AU.play('lo_pick', 0.5); heroVoice(cur, 'SortiePick'); render();
+      }));
+      document.querySelectorAll('.ptr').forEach((b) => (b.onclick = () => {
+        if (pick[cur] === b.dataset.t) return;
+        pick[cur] = b.dataset.t; AU.play('lo_equip', 0.6); heroVoice(cur, 'SquadJoin'); render();
+      }));
     };
     render();
+    if (fresh) heroVoice(fresh, 'Join'); else heroVoice(cur, 'SortiePick');
   }
 
   async function startStage(si) {
@@ -1581,6 +1596,38 @@
     ui.state = 'idle'; ui.sel = null;
   }
 
+  // 결과: 원작 MISSION COMPLETE 화면 (최우수 인물 전신 + 음성, 영웅별 경험치 막대)
+  function result(st, win, gain, rows, turn) {
+    return new Promise((res) => {
+      const mvp = win ? rows.filter((r) => r.alive).sort((a, b) => b.dealt - a.dealt)[0] || rows[0] : null;
+      const lead = rows.find((r) => r.id === 'constantia') || rows[0];
+      const face = mvp || lead;
+      AU.bgm(null);
+      AU.play(win ? 'lo_win_music' : 'fail', 0.7);
+      const list = rows.map((r, i) => {
+        const up = r.lv1 > r.lv0, h = D.HEROES[r.id];
+        return `<div class="rrow ${r === mvp ? 'mvp' : ''}" style="animation-delay:${0.35 + i * 0.08}s">
+          <img src="${IMG[h.icon]}" alt=""><div class="rinfo"><div class="rname"><b>${r.name}</b>${r === mvp ? '<i>MVP</i>' : ''}${r.alive ? '' : '<small>퇴각</small>'}</div>
+          <div class="rlv">Lv.<b>${r.lv1}</b>${up ? `<span class="rup">LEVEL UP</span>` : ''}<em>+${gain} EXP</em></div>
+          <div class="rbar"><i data-w="${r.exp1}" style="width:${up ? 0 : r.exp0}%"></i></div>${r.notes.map((n) => `<div class="rnote">${n}</div>`).join('')}</div></div>`;
+      }).join('');
+      const si = st.id - 1;
+      screen(`<div class="rscr ${win ? 'win' : 'lose'}"><div class="pbg"></div>
+        <div class="rmvp" style="background-image:url(assets/story/stand/${HERO_STAND[face.id]}.webp)"></div>
+        <div class="rpanel">
+          <div class="rhead">${win ? '<img src="assets/ui/UI_Battle_Main_missionclear_label_2.png" alt="MISSION COMPLETE">' : '<b class="rfail">MISSION FAILED</b>'}
+            <div class="rstage"><span>${st.idx}</span>${st.title}<small>${turn}턴</small></div></div>
+          <div class="rsub">${win ? '참가 영웅 전원이 같은 경험치를 얻었습니다' : '얻은 경험치는 유지됩니다'}</div>
+          <div class="rlist">${list}</div>
+          <div class="rbtns">${win ? '<button class="wgo" id="rOk"><b>확인</b><small>NEXT</small></button>' : '<button class="lo-btn dark" id="rSel">작전 선택</button><button class="wgo" id="rRetry"><b>다시 도전</b><small>RETRY</small></button>'}</div>
+        </div></div>`);
+      wait(700).then(() => AU.voice(face.id + '_' + (win ? (mvp ? 'MVP' : 'SearchEnd') : 'Retreat')));
+      requestAnimationFrame(() => setTimeout(() => document.querySelectorAll('.rbar i').forEach((b) => (b.style.width = b.dataset.w + '%')), 500));
+      if ($('rOk')) $('rOk').onclick = () => { AU.play('lo_click', 0.7); res(); };
+      if ($('rRetry')) $('rRetry').onclick = () => { AU.play('lo_click', 0.7); prep(si); };
+      if ($('rSel')) $('rSel').onclick = () => { AU.play('lo_click', 0.7); stageSel = si; stageSelect(); };
+    });
+  }
   async function endStage(win, why) {
     busy = true;
     const g = G, st = G.stage;
@@ -1589,42 +1636,38 @@
     AU.bgm(null);
     AU.play(win ? 'lo_win' : 'fail', 0.8);
     await wait(1700);
-    const lines = [];
     const gain = R.stageExp(st.id - 1, win);
-    lines.push(`참가 영웅 경험치 <b style="color:#f3c969">+${gain}</b> (전원 같은 양)`);
+    const rows = [];
     for (const u of g.units.filter((x) => x.side === 'p')) {
+      const s = save.heroes[u.key], h = D.HEROES[u.key];
+      const row = { id: u.key, name: u.name, lv0: stageStart.lv[u.key], exp0: s.exp, alive: u.alive, dealt: u.dealt || 0, notes: [] };
       R.addExp(u, gain);
-      const s = save.heroes[u.key];
       s.lv = u.lv; s.exp = u.exp;
-      const before = stageStart.lv[u.key];
-      if (u.lv > before) lines.push(`<span class="lvup">${u.name} Lv${before} → Lv${u.lv}</span>`);
-      const h = D.HEROES[u.key];
+      row.lv1 = u.lv; row.exp1 = u.exp;
       while (s.tier < 2 && s.lv >= D.TIER_LV[s.tier + 1]) {
         const from = h.tiers[s.tier].cls;
         s.tier++;
-        lines.push(`<span class="cc">★ 전직! ${u.name}: ${from} → ${h.tiers[s.tier].cls}</span>`);
+        row.notes.push(`전직 · ${from} → <b>${h.tiers[s.tier].cls}</b>`);
         const prev = h.tiers[s.tier - 1];
         const ns = h.tiers[s.tier].skills.filter((k) => !prev.skills.includes(k)), nt = h.tiers[s.tier].troops.filter((k) => !prev.troops.includes(k));
-        if (ns.length) lines.push(`<span class="cc">　새 특기: ${ns.map((k) => D.SKILLS[k].name).join(', ')}</span>`);
-        if (nt.length) lines.push(`<span class="cc">　새 병사: ${nt.map((k) => D.TROOPS[k].short).join(', ')}</span>`);
+        if (ns.length) row.notes.push(`새 특기 · ${ns.map((k) => D.SKILLS[k].name).join(', ')}`);
+        if (nt.length) row.notes.push(`새 병사 · ${nt.map((k) => D.TROOPS[k].short).join(', ')}`);
       }
+      rows.push(row);
     }
     if (win) save.clear = Math.max(save.clear, st.id);
     window.GAME_LAST = { idx: st.idx, win, turn: g.turn, wave: g.wave + 1, alive: g.units.filter((u) => u.side === 'p').map((u) => u.name + (u.alive ? ':' + Math.round(u.hp) : 'x')).join(' ') };
     writeSave();
     const si = st.id - 1;
-    const next = win && si + 1 < D.STAGES.length;
     leaveMap();
+    await result(st, win, gain, rows, g.turn);
     const S = window.STORY && STORY[st.idx];
     if (win && S) { AU.bgm(S.bgmEnd); await story(S.end); }
-    AU.bgm('lo_talk1');
-    screen(`<div class="scr result"><div class="big ${win ? 'win' : 'lose'}">${win ? '작전 성공' : '작전 실패'}</div>
-      <div class="lines">${st.idx} ${st.title}<br>${win ? '' : '얻은 경험치는 유지됩니다.<br>'}${lines.join('<br>') || '레벨 변화 없음'}</div>
-      <div class="menuBtns">${next ? '<button class="gold" id="rNext">다음 작전으로</button>' : ''}${!win ? '<button class="gold" id="rRetry">다시 도전</button>' : ''}<button id="rSel">작전 선택</button></div>
-      ${win && si === D.STAGES.length - 1 ? '<div class="foot">1지역 「지구의 마지막 인간」 완료. 플레이해 주셔서 감사합니다!</div>' : ''}</div>`);
-    if ($('rNext')) $('rNext').onclick = () => startStage(si + 1);
-    if ($('rRetry')) $('rRetry').onclick = () => prep(si);
-    $('rSel').onclick = stageSelect;
+    if (win) {
+      stageSel = Math.min(si + 1, D.STAGES.length - 1);
+      stageSelect();
+      if (si === D.STAGES.length - 1) modal('<h3>1지역 완료</h3><p>「지구의 마지막 인간」을 모두 마쳤습니다. 플레이해 주셔서 감사합니다!</p><p style="color:#9aa6c4">작전을 다시 플레이해 영웅을 더 키울 수 있습니다.</p><div class="opts"><button class="gold" data-a="ok">확인</button></div>');
+    }
     busy = false;
   }
 
@@ -1650,6 +1693,7 @@
   }
   function step(dt) {
     simT += dt;
+    TALK.update(dt);
     const now = simT * 1000;
     for (let i = timers.length - 1; i >= 0; i--) if (timers[i].t <= simT) { const r = timers[i].r; timers.splice(i, 1); r(); }
     for (let i = anims.length - 1; i >= 0; i--) {
@@ -1714,7 +1758,7 @@
     // 시험용 훅
     window.GAME = {
       get G() { return G; }, get mode() { return mode; }, get ui() { return ui; }, save, R, D,
-      launch, prep, setAuto, startStage, endTurn, onTap, fitCamera, views, camera, cam,
+      launch, prep, setAuto, startStage, endTurn, onTap, fitCamera, views, camera, cam, stageSelect, title,
       // 창이 숨겨져 rAF가 멈춘 상태에서 시험할 때: 시간을 직접 진행하고 한 장 찍어 서버에 저장
       step(sec) { for (let i = 0; i < Math.round(sec * 30); i++) step(1 / 30); },
       // 시간을 진행하면서 약속(Promise)들도 풀리게 한다 (숨은 창에서도 타이머 제한 없이)
@@ -1728,7 +1772,7 @@
         await fetch('/tools/lab/out/' + name + '.json', { method: 'PUT', body: JSON.stringify({ d }) });
         return d.length;
       },
-      skip() { if (FIGHT.active()) FIGHT.skip(); if (talkCur) talkSkip(); },
+      skip() { if (FIGHT.active()) FIGHT.skip(); if (TALK.active) TALK.skip(); },
     };
   }
   boot();

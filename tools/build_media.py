@@ -17,8 +17,21 @@ BGM = {  # 게임 이름 -> 원작 파일
 SFX = {
     'lo_battle_start': 'UI/battle_start.wav', 'lo_win': 'UI/battle_win.wav', 'lo_clear': 'UI/stage_clear.wav',
     'lo_trans_in': 'UI/Trainsition_in.wav', 'lo_trans_out': 'UI/Trainsition_out.wav', 'lo_stage_in': 'UI/stage_in.wav',
-    'lo_pick': 'UI/pick_basic.wav',
+    'lo_pick': 'UI/pick_basic.wav', 'lo_equip': 'UI/equip_basic.wav', 'lo_rank_up': 'UI/Rank_UP.mp3', 'lo_reinforce': 'UI/Reinforce_unit.wav',
+    'lo_win_music': 'UI/battle_win_music.wav', 'lo_join': 'UI/Join_SearchEnd.wav', 'lo_coin': 'UI/collect_coin_03.wav',
+    # 대화 연출 (원작 NovelAddEffect 의 _SoundName)
+    'lo_d_explosion1': 'DialogSfx/Explosion_01.mp3', 'lo_d_explosion3': 'DialogSfx/Explosion_03.mp3', 'lo_d_gunfire': 'DialogSfx/GunFire_01.wav',
+    'lo_d_metal': 'DialogSfx/Metalic_01.wav', 'lo_d_door': 'DialogSfx/DoorOpen_01.mp3', 'lo_d_foot': 'DialogSfx/FootStep_01.mp3',
+    'lo_d_alarm': 'DialogSfx/Alarm_01.mp3', 'lo_d_break': 'DialogSfx/Break_01.mp3', 'lo_d_wind': 'DialogSfx/Wind_01.mp3',
+    'lo_d_rustle': 'Common/foley_cloth_light_fast_movement_05.wav', 'lo_d_inject': 'Common/sci-fi_electric_pulse_hum_02.wav',
+    'lo_d_whiteout': 'DialogSfx/WhiteOut_01.mp3',
 }
+# 원작 단추 소리는 클라이언트 기본 자원에 있다
+SFX_ABS = {'lo_click': O + 'Resources/Sounds/UI/UI_Click.wav'}
+# 인물 음성 (원작 Sounds/Voice/<폴더>/Voice_<모델>_<상황>.mp3) -> assets/voice/<영웅>_<상황>.mp3
+HERO_VOICE = {'constantia': ('ConstantiaS2', '3P_ConstantiaS2'), 'griffon': ('PA00EL', 'BR_PA00EL'), 'johanna': ('Johanna', 'DS_Johanna'),
+              'lrl': ('LRL', 'PECS_LRL_N'), 'pupphead': ('PuppHead', 'PECS_PuppHead'), 'fallen': ('Fallen', 'AGS_Fallen')}
+VOICE_KIND = ['Join', 'SortiePick', 'SquadJoin', 'StageStart', 'MVP', 'Retreat', 'ActionApprove', 'SpSkill', 'BattleFocus', 'Leader', 'Login', 'SearchEnd', 'Reinforce']
 VOICE = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8',
          'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4',
          'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5']
@@ -71,6 +84,14 @@ def main():
         to_mp3(G + 'Sounds/BGM/' + v + '.mp3', os.path.join(A, 'bgm', k + '.mp3'), 128)
     for k, v in SFX.items():
         to_mp3(G + 'Sounds/SFX/' + v, os.path.join(A, 'sfx', k + '.mp3'), 128)
+    for k, v in SFX_ABS.items():
+        to_mp3(v, os.path.join(A, 'sfx', k + '.mp3'), 128)
+    for hero, (folder, model) in HERO_VOICE.items():
+        for kind in VOICE_KIND:
+            src = [f for f in glob.glob(G + 'Sounds/Voice/%s/Voice_*_%s.*' % (folder, kind)) if not f.endswith('.meta')]
+            src = [f for f in src if os.path.basename(f).startswith('Voice_' + model.split('_N')[0])] or src
+            if src:
+                to_mp3(sorted(src, key=len)[0], os.path.join(A, 'voice', '%s_%s.mp3' % (hero, kind)), 96)
     for v in VOICE:
         to_mp3(G + 'Sounds/LogoVoice/' + v + '.mp3', os.path.join(A, 'voice', v + '.mp3'), 96)
     title_images()

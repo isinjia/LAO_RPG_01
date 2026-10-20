@@ -75,7 +75,13 @@ def dialog(group, loc):
             cast[p] = [m, r.get('Char_ImageVarName_' + p) or '', r.get('Char_SCGActivation_' + p) or 0]
         out.append({'id': num(k), 'who': who, 'model': model, 'expr': expr, 'text': clean(loc.get(str(r.get('Script')), '')),
                     'bg': r.get('BG_ImageName') or '', 'cg': cg, 'next': num(r.get('NextDialogScript')), 'choices': ch,
-                    'cast': cast, 'spk': POS[sp] if isinstance(sp, int) and sp < 5 else ''})
+                    'cast': cast, 'spk': POS[sp] if isinstance(sp, int) and sp < 5 else '',
+                    # 연출: 장소 자막, 덧붙임 효과(소리·흔들림 등), 화면 효과, 중간 배경음, 등장·퇴장 효과
+                    'place': [clean(loc.get(str(r.get('BG_Name') or ''), '')), clean(loc.get(str(r.get('BG_Description') or ''), ''))] if r.get('BG_Name') else [],
+                    'fx': r.get('Add_Effect') or '', 'scr': r.get('Screen_Effect') or 6, 'bgm': r.get('Bgm_Sound') or '',
+                    'app': {p: r.get('Char_AppearEffect_' + p) for p in POS if r.get('Char_AppearEffect_' + p) not in (None, 6, 7)},
+                    'off': {p: r.get('Char_OffEffect_' + p) for p in POS if r.get('Char_OffEffect_' + p) not in (None, 6, 7)},
+                    'fade': {p: 1 for p in POS if r.get('Char_AppearEffect_' + p) == 6}})
     return out
 
 
