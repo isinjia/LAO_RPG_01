@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>오르카 전기</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="css/game.css">
+</head>
+<body>
+<div id="stage"></div>
+<div id="pops"></div>
+
+<!-- 지도 전투 화면 -->
+<div id="hud" class="hidden">
+  <div id="top">
+    <div id="turnBox"><span id="turnNo">1</span><small>턴</small><span id="phase" class="p">아군 차례</span></div>
+    <button id="goalBox" class="ghost"></button>
+    <div class="tbtns">
+      <button id="btnDanger" class="ghost" title="적의 공격 범위 (D)">위험</button>
+      <button id="btnAuto" class="ghost" title="자동 전투 (Q)">자동</button>
+      <button id="btnMenu" class="ghost" title="메뉴 (Esc)">메뉴</button>
+      <button id="btnEnd" class="gold" title="턴 종료 (E)">턴 종료</button>
+    </div>
+  </div>
+  <div id="hint"></div>
+  <div id="info" class="hidden"></div>
+  <div id="acts" class="hidden"></div>
+  <div id="forecast" class="hidden"></div>
+</div>
+
+<!-- 전투 연출 화면 -->
+<div id="fight" class="hidden">
+  <div class="fside L"><img class="fimg"><div class="fname"></div><div class="fhp"><i></i><b></b></div><div class="fstat"></div></div>
+  <div class="fvs">⚔<small></small></div>
+  <div class="fside R"><img class="fimg"><div class="fname"></div><div class="fhp"><i></i><b></b></div><div class="fstat"></div></div>
+  <div class="fskip">화면을 누르면 건너뜁니다</div>
+</div>
+
+<div id="banner" class="hidden"></div>
+
+<!-- 대화 -->
+<div id="talk" class="hidden">
+  <div class="tface"><img></div>
+  <div class="tbox">
+    <div class="tname"></div>
+    <div class="ttext"></div>
+    <div class="tnext">▼</div>
+  </div>
+  <button class="tskip ghost">건너뛰기</button>
+</div>
+
+<!-- 타이틀·스테이지 선택·출격 준비·결과 -->
+<div id="screen"></div>
+<div id="modal" class="hidden"></div>
+
+<div id="boot">
+  <div class="logo">오르카 전기<small>라스트오리진 전술 시뮬레이션</small></div>
+  <div id="loadMsg">불러오는 중…</div>
+</div>
+
+<script src="js/vendor/three.min.js"></script>
+<script src="js/sd.js"></script>
+<script src="js/assets.js"></script>
+<script src="js/anim_events.js"></script>
+<script src="js/data.js"></script>
+<script src="js/rules.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/battle.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
