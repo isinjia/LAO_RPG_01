@@ -2,3 +2,6 @@ tools/lab/out/
 __pycache__/
 tools/story_cache.json
 tools/unity_ref/proj/
+tools/unity_ref/*.log
+tools/lab/guid_index.json
+tools/lab/fbx_manifest.json
