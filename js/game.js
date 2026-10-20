@@ -791,7 +791,7 @@
       b.innerHTML = a.label + (a.sub ? `<small>${a.sub}</small>` : '');
       if (a.cls) b.className = a.cls;
       b.disabled = !!a.disabled;
-      b.onclick = (e) => { e.stopPropagation(); AU.play('click', 0.5); a.fn(); };
+      b.onclick = (e) => { e.stopPropagation(); AU.play('lo_click', 0.5); a.fn(); };
       el.appendChild(b);
     }
     el.classList.remove('hidden');
@@ -883,7 +883,7 @@
     setHint(u.side === 'e' ? `${u.name}: 이동·공격 가능 범위` : '');
   }
   function selectUnit(u) {
-    AU.play('click', 0.6);
+    AU.play('lo_click', 0.6);
     ui.sel = u; ui.state = 'move'; ui.from = [u.x, u.y];
     ui.reach = R.reach(G, u);
     const rg = ranges(u, ui.reach);
@@ -935,7 +935,7 @@
         animate(dur, (k) => v.g.position.lerpVectors(from, to, k), () => { u.x = nx; u.y = ny; i++; stepTile(); });
       };
       stepTile();
-      AU.play('click', 0.25);
+      AU.play('lo_click', 0.25);
     });
   }
   function openActions() {
@@ -1285,6 +1285,7 @@
     if (!nodes || !nodes.length) return;
     const prev = mode;
     mode = 'talk';
+    wipe();
     await TALK.play(nodes);
     mode = prev === 'talk' ? 'map' : prev;
   }
@@ -1302,7 +1303,7 @@
       if (!b && e.target !== m) return;
       const a = b ? b.dataset.a : null;
       m.classList.add('hidden'); m.innerHTML = '';
-      AU.play('click', 0.4);
+      AU.play('lo_click', 0.4);
       cb && cb(a, b);
     };
   }
@@ -1351,7 +1352,9 @@
   }
 
   // ── 화면들 ───────────────────────────────────────────────
-  function screen(html) { $('screen').innerHTML = html; mode = 'screen'; }
+  // 화면 전환: 원작처럼 검은 판이 쓸고 지나간다
+  function wipe() { const w = $('wipe'); w.classList.remove('go'); void w.offsetWidth; w.classList.add('go'); }
+  function screen(html) { $('screen').innerHTML = html; mode = 'screen'; wipe(); }
   function hideScreen() { $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
@@ -1380,14 +1383,15 @@
       $('tTouch').classList.add('hidden');
       $('tMenu').classList.remove('hidden');
     };
-    const go = () => { AU.play('lo_trans_in', 0.6); stageSelect(); };
+    const go = () => { AU.play('lo_click', 0.7); AU.play('lo_trans_in', 0.5); stageSelect(); };
     if ($('tCont')) $('tCont').onclick = go;
     $('tNew').onclick = () => {
+      AU.play('lo_click', 0.7);
       const start = () => { save.clear = 0; save.troops = {}; save.joined = []; for (const id in D.HEROES) save.heroes[id] = { lv: 1, exp: 0, tier: 0 }; writeSave(); startStage(0); };
       if (has) modal('<h3>처음부터</h3><p>지금까지의 진행이 지워집니다. 시작할까요?</p><div class="opts"><button class="red" data-a="y">처음부터 시작</button><button data-a="n">취소</button></div>', (a) => { if (a === 'y') start(); });
       else start();
     };
-    $('tHelp').onclick = () => help();
+    $('tHelp').onclick = () => { AU.play('lo_click', 0.7); help(); };
   }
   // 작전 선택: 원작 3D 지역 지도 위 작전 지점 + 오른쪽 작전 정보 (원작 월드맵 조각)
   let stageSel = -1;
@@ -1565,6 +1569,7 @@
     st.waves.forEach((w) => w.units.forEach(([t]) => { const e = D.ENEMIES[t]; rigs.add(e.rig); if (e.troop) rigs.add(D.TROOPS[e.troop].rig); }));
     $('boot').classList.remove('hidden');
     $('boot').querySelector('.logo').classList.add('hidden');
+    $('boot').querySelector('.bstage').innerHTML = `<span>${st.idx}</span>${st.title}<small>승리 조건 · ${st.goal}</small>`;
     let n = 0;
     await Promise.all([...rigs].map((id) => SD.prepare(id).then(() => { $('loadMsg').textContent = `부대 집결 중… ${++n}/${rigs.size}`; })));
     await Promise.all([...new Set(st.map.join('').split('').map((c) => (D.TERRAIN[c] || D.TERRAIN['.']).bg))].map((b) => loadTex('assets/bg/' + b + '.webp')));
@@ -1672,10 +1677,10 @@
   }
 
   // ── 상단 버튼 ───────────────────────────────────────────
-  $('btnEnd').onclick = () => { AU.play('click', 0.5); endTurnAsk(); };
-  $('btnMenu').onclick = () => { AU.play('click', 0.5); if (busy && G && G.side === 'e') return; openMenu(); };
-  $('btnDanger').onclick = () => { AU.play('click', 0.5); toggleDanger(); };
-  $('btnAuto').onclick = () => { AU.play('click', 0.5); setAuto(!autoOn); };
+  $('btnEnd').onclick = () => { AU.play('lo_click', 0.5); endTurnAsk(); };
+  $('btnMenu').onclick = () => { AU.play('lo_click', 0.5); if (busy && G && G.side === 'e') return; openMenu(); };
+  $('btnDanger').onclick = () => { AU.play('lo_click', 0.5); toggleDanger(); };
+  $('btnAuto').onclick = () => { AU.play('lo_click', 0.5); setAuto(!autoOn); };
   $('goalBox').onclick = () => goalInfo();
 
   // ── 애니메이션 도구 ─────────────────────────────────────

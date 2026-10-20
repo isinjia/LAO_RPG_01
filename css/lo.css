@@ -118,11 +118,12 @@
 
 /* 세로 화면: 상자를 화면 폭에 맞추고 인물은 조금 작게 */
 @media (orientation: portrait) {
-  #talk .tbox { height: calc(330 * var(--u)); border-image-width: calc(89 * var(--u)) calc(400 * var(--u)) calc(138 * var(--u)) calc(5 * var(--u)); }
-  #talk .ttext { left: calc(40 * var(--u)); right: calc(40 * var(--u)); font-size: calc(36 * var(--u)); }
-  #talk .ttouch { top: auto; bottom: calc(80 * var(--u)); right: calc(40 * var(--u)); }
+  #talk .tbox { height: calc(440 * var(--u)); border-image-width: calc(89 * var(--u)) calc(400 * var(--u)) calc(138 * var(--u)) calc(5 * var(--u)); }
+  #talk .ttext { left: calc(40 * var(--u)); right: calc(40 * var(--u)); top: calc(40 * var(--u)); font-size: calc(35 * var(--u)); }
+  #talk .ttouch { top: auto; bottom: calc(86 * var(--u)); right: calc(40 * var(--u)); }
+  #talk .tchoices { bottom: calc(470 * var(--u) + var(--safe-b)); }
   #talk .tskip { right: calc(50 * var(--u)); }
-  #talkBg .stand { height: 78vh; max-width: 96vw; bottom: calc(250 * var(--u)); }
+  #talkBg .stand { height: 74vh; max-width: 96vw; bottom: calc(380 * var(--u)); }
   #talkBg .stand[data-p="L"] { left: 30%; } #talkBg .stand[data-p="R"] { left: 70%; }
   #talkBg .stand.cut { height: 62vh; max-width: 70vw; }
   #talk .tplace .pd { font-size: calc(70 * var(--u)); }
@@ -205,10 +206,11 @@
 @keyframes wshine { from { background-position: 150% 0; } to { background-position: -100% 0; } }
 .roster .heroes { max-height: 60vh; overflow-y: auto; }
 @media (orientation: portrait) {
-  .wmap { width: 235vw; height: 132vw; top: calc(40px + var(--safe-t)); transform: translateX(-52%); animation: none; }
+  .wmap { width: 200vw; height: 112.5vw; top: calc(44px + var(--safe-t)); transform: translateX(-52%); animation: none; }
   .wscr { --n: max(0.5px, calc(var(--u) * 1.1)); }
-  .winfo { left: 0; right: 0; top: auto; width: auto; height: 52vh; padding: 22px 16px calc(14px + var(--safe-b)); background: linear-gradient(transparent, rgba(8, 11, 18, .94) 26px); }
-  .wtools { bottom: auto; top: calc(12px + var(--safe-t)); left: auto; right: calc(10px + var(--safe-r)); }
+  .winfo { left: 0; right: 0; top: auto; width: auto; height: 49vh; padding: 22px 16px calc(14px + var(--safe-b)); background: linear-gradient(transparent, rgba(8, 11, 18, .94) 26px); }
+  .wtools { bottom: auto; top: calc(51vh - 58px); left: auto; right: calc(10px + var(--safe-r)); }
+  .wtools .lo-btn { height: 38px; min-width: 100px; font-size: 13px; }
   .wtitle b { font-size: 17px; }
   .wi-no { font-size: 34px; } .wi-name { font-size: 18px; } .wgo { height: 60px; }
 }
@@ -305,3 +307,29 @@
   .rscr::after { background: linear-gradient(transparent 25%, rgba(5, 7, 12, .9) 45%); }
   .rpanel { left: 0; width: auto; top: 36vh; padding: 0 14px calc(14px + var(--safe-b)); }
 }
+
+/* ── 불러오기 · 화면 전환 · 확인 창 (원작 느낌) ─────────────── */
+#boot { background: #05070c url(../assets/ui/squad_bg.webp) center/cover; gap: 0; }
+#boot::before { content: ''; position: absolute; inset: 0; background: rgba(0, 0, 0, .55); }
+#boot > * { position: relative; }
+#boot .logo { width: min(60vw, 560px); height: auto; background: none; filter: drop-shadow(0 0 20px rgba(255, 190, 90, .3)); }
+#boot .bstage { display: none; text-align: center; color: #fff; font: 30px 'LO_B', sans-serif; letter-spacing: 2px; }
+#boot .bstage span { display: block; color: var(--lo-y); font-size: 46px; }
+#boot .bstage small { display: block; margin-top: 10px; color: #aab2c4; font: 14px 'LO_M', sans-serif; letter-spacing: 0; }
+#boot .logo.hidden + .bstage { display: block; }
+#boot .bload { position: absolute; right: calc(24px + var(--safe-r)); bottom: calc(20px + var(--safe-b)); display: flex; align-items: center; gap: 10px; color: #dfe4ee; font: 14px 'LO_B', sans-serif; letter-spacing: 1px; }
+#boot .bload i { width: 22px; height: 22px; border: 3px solid var(--lo-y); border-right-color: transparent; border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+#wipe { position: fixed; inset: 0; z-index: 45; pointer-events: none; transform: translateX(-110%); background: linear-gradient(100deg, #05070c 0 88%, var(--lo-y) 88% 89%, transparent 89%); }
+#wipe.go { animation: wipe .55s cubic-bezier(.6, 0, .3, 1) both; }
+@keyframes wipe { 0% { transform: translateX(0); } 100% { transform: translateX(115%); } }
+
+.mbox { background: rgba(14, 18, 27, .97); border: 0; border-top: 3px solid var(--lo-y); border-radius: 0; padding: 20px 20px 18px; box-shadow: 0 12px 50px #000;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%); animation: ap-fade .2s both; }
+.mbox h3 { display: flex; align-items: center; gap: 10px; color: #fff; font-size: 19px; margin-bottom: 12px; }
+.mbox h3::before { content: ''; width: 5px; height: 18px; background: var(--lo-y); transform: skewX(-20deg); }
+.mbox .opts button, .mbox button { border-radius: 0; background: rgba(255, 255, 255, .06); border: 1px solid var(--lo-line); color: #fff; }
+.mbox .opts button b { color: var(--lo-y); }
+.mbox button.gold { background: var(--lo-y); border-color: var(--lo-y); color: #111; text-align: center; }
+.mbox button.red { background: rgba(255, 59, 92, .14); border-color: rgba(255, 59, 92, .6); color: #ff8da0; }
+.mbox p b { color: var(--lo-y); }
