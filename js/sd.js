@@ -806,6 +806,8 @@
         }
       }
       if (dt > 0) {
+        // 섞는 중: 새 동작이 움직이지 않는 뼈가 섞인 자세로 굳지 않게 기본 자세에서 다시 얹는다
+        if (this.fadeD) { const t = this.tpl; this.T.set(t.restT); this.Q.set(t.restQ); this.S.set(t.restS); }
         this.apply();
         if (this.fadeD) { this.fadeT += dt; this.blend(); }
         this._dt = dt * this.speed;
