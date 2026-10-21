@@ -5,6 +5,8 @@
     on: true,
     vol: 0.55,
     bgmVol: 0.32,
+    voiceVol: 0.77,
+    blipOn: true,
     bgmEl: null,
     bgmName: '',
     last: {},
@@ -33,12 +35,12 @@
       if (!this.on || !name) return;
       if (this.vEl) this.vEl.pause();
       this.vEl = new Audio('assets/voice/' + name + '.mp3');
-      this.vEl.volume = Math.min(1, this.vol * 1.4 * vol);
+      this.vEl.volume = Math.min(1, this.voiceVol * vol);
       this.vEl.play().catch(() => {});
     },
     // 글자 소리 (역전재판식 삑삑): 파일 없이 짧은 사각파를 만든다. freq = 화자마다 다른 높이
     blip(freq = 600, vol = 1) {
-      if (!this.on) return;
+      if (!this.on || !this.blipOn) return;
       try {
         const ctx = this.actx || (this.actx = new (window.AudioContext || window.webkitAudioContext)());
         if (ctx.state === 'suspended') ctx.resume();
@@ -54,6 +56,11 @@
         o.connect(f); f.connect(g); g.connect(ctx.destination);
         o.start(t); o.stop(t + 0.06);
       } catch (e) { /* 소리 장치 없음 */ }
+    },
+    // 옵션의 소리 크기 (0~1): 배경음·효과음·음성
+    setVolume(bgm, sfx, voice) {
+      this.bgmVol = 0.45 * bgm; this.vol = 0.69 * sfx; this.voiceVol = Math.min(1, 0.86 * voice);
+      if (this.bgmEl) this.bgmEl.volume = this.bgmVol;
     },
     setOn(v) {
       this.on = v;

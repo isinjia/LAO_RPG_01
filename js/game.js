@@ -76,15 +76,24 @@
   function loadSave() {
     let s = null;
     try { s = JSON.parse(localStorage.getItem('orca_srpg_save2') || 'null'); } catch (e) { s = null; }
-    const def = { clear: 0, heroes: {}, troops: {}, opts: { fight: true, fast: false, sound: true, autoEnd: true } };
+    const def = { clear: 0, heroes: {}, troops: {}, opts: { fight: true, fast: false, sound: true, autoEnd: true, bgmV: 70, sfxV: 80, voiceV: 90, blip: true, textSpd: 1 } };
+    const defOpts = def.opts;
     s = Object.assign(def, s || {});
-    s.opts = Object.assign(def.opts, s.opts || {});
+    s.opts = Object.assign({}, defOpts, s.opts || {}); // 예전 저장 기록에 없는 옵션은 기본값으로
     for (const id in D.HEROES) if (!s.heroes[id]) s.heroes[id] = { lv: 1, exp: 0, tier: 0 };
     return s;
   }
   function writeSave() { try { localStorage.setItem('orca_srpg_save2', JSON.stringify(save)); } catch (e) { /* 저장 불가 환경 */ } }
-  AU.on = save.opts.sound;
-  speedK = save.opts.fast ? 2 : 1;
+  // 옵션 적용: 소리 크기(배경음·효과음·음성), 글자 소리, 글자 속도, 빠른 진행
+  function applyOpts() {
+    const o = save.opts;
+    AU.setOn(o.sound);
+    AU.setVolume(o.bgmV / 100, o.sfxV / 100, o.voiceV / 100);
+    AU.blipOn = o.blip;
+    if (window.TALK) TALK.speed = [26, 42, 80][o.textSpd] || 42;
+    speedK = o.fast ? 2 : 1;
+  }
+  applyOpts();
 
   // ── SD 리그 래퍼 ─────────────────────────────────────────
   // 발밑 중앙을 기준점으로 두고 키를 맞춘다. native: 원작 리그가 보는 방향 (아군 +1 오른쪽, 철충 -1 왼쪽)
@@ -1303,7 +1312,7 @@
       <button data-a="fight">전투 장면: <b>${onoff(o.fight)}</b></button>
       <button data-a="fast">빠른 진행: <b>${onoff(o.fast)}</b></button>
       <button data-a="autoEnd">모두 행동하면 자동 턴 종료: <b>${onoff(o.autoEnd)}</b></button>
-      <button data-a="sound">소리: <b>${onoff(o.sound)}</b></button>
+      <button data-a="opts">옵션 (소리·대화·전투)</button>
       <button data-a="help">도움말 (규칙·조작)</button>
       <button data-a="goal">승리·패배 조건</button>
       <button data-a="retry">처음부터 다시</button>
@@ -1313,10 +1322,38 @@
         o[a] = !o[a]; writeSave();
         speedK = o.fast ? 2 : 1; AU.setOn(o.sound);
         openMenu();
-      } else if (a === 'help') help();
+      } else if (a === 'opts') options(openMenu);
+      else if (a === 'help') help();
       else if (a === 'goal') goalInfo();
       else if (a === 'retry') { const st = G.stage; leaveMap(); prep(st); }
       else if (a === 'quit') { leaveMap(); stageSelect(); }
+    });
+  }
+  // 옵션 창: 소리 크기는 밀대로 바로 바뀌고, 켜기/끄기·속도는 누를 때마다 바뀐다. back: 닫은 뒤 돌아갈 곳
+  function options(back) {
+    const o = save.opts;
+    const onoff = (v) => (v ? '켜짐' : '꺼짐');
+    const slider = (k, label) => `<label class="oslide"><span>${label}</span><input type="range" min="0" max="100" step="5" value="${o[k]}" data-k="${k}"><b>${o[k]}</b></label>`;
+    modal(`<h3>옵션</h3><div class="osec">소리</div>
+      <div class="opts"><button data-a="sound">소리 전체: <b>${onoff(o.sound)}</b></button></div>
+      ${slider('bgmV', '배경음')}${slider('sfxV', '효과음')}${slider('voiceV', '음성')}
+      <div class="osec">대화</div><div class="opts">
+      <button data-a="blip">글자 소리: <b>${onoff(o.blip)}</b></button>
+      <button data-a="textSpd">글자 나오는 속도: <b>${['느리게', '보통', '빠르게'][o.textSpd]}</b></button></div>
+      <div class="osec">전투</div><div class="opts">
+      <button data-a="fight">전투 장면: <b>${onoff(o.fight)}</b></button>
+      <button data-a="fast">빠른 진행: <b>${onoff(o.fast)}</b></button>
+      <button data-a="autoEnd">모두 행동하면 자동 턴 종료: <b>${onoff(o.autoEnd)}</b></button>
+      <button data-a="close" class="gold">닫기</button></div>`, (a) => {
+      if (['sound', 'blip', 'fight', 'fast', 'autoEnd'].includes(a)) o[a] = !o[a];
+      else if (a === 'textSpd') o.textSpd = (o.textSpd + 1) % 3;
+      else { writeSave(); if (back) back(); return; }
+      writeSave(); applyOpts(); options(back);
+    });
+    // 밀대: 움직이는 동안 바로 적용, 효과음은 크기를 들려준다
+    document.querySelectorAll('#modal input[type=range]').forEach((r) => {
+      r.oninput = () => { o[r.dataset.k] = +r.value; r.nextElementSibling.textContent = r.value; applyOpts(); };
+      r.onchange = () => { writeSave(); if (r.dataset.k === 'sfxV') AU.play('lo_click', 1); if (r.dataset.k === 'voiceV') AU.voice('constantia_SortiePick'); };
     });
   }
   function goalInfo() {
@@ -1365,6 +1402,7 @@
       <div class="tmenu hidden" id="tMenu">
         ${has ? '<button id="tCont">이어하기</button>' : ''}
         <button id="tNew">처음부터</button>
+        <button id="tOpt">옵션</button>
         <button id="tHelp">도움말</button>
       </div>
       <div class="tver">Ver ${GAME_VERSION}</div></div>`);
@@ -1387,6 +1425,7 @@
       else start();
     };
     $('tHelp').onclick = () => { AU.play('lo_click', 0.7); help(); };
+    $('tOpt').onclick = () => { AU.play('lo_click', 0.7); options(); };
   }
   // ── 월드맵 (창세기전식): 원작 3D 지역 지도 위 지점을 눌러 부대가 길을 따라 이동한다 ──
   // 지점 = 본편 작전 장소 8곳 + 마을(등대 아래 비밀기지). 아직 깨지 않은 본편 지점에 가면 이야기 전투,
@@ -1474,6 +1513,7 @@
       if (moving) return;
       const to = b.dataset.n === WT ? WT : +b.dataset.n;
       AU.play('lo_pick', 0.6);
+      $('sInfo').classList.remove('on'); // 이동하는 동안은 메뉴를 닫는다
       if (to !== save.node) {
         moving = true;
         const path = nodePath(save.node, to), tok = $('wTok');
@@ -1489,10 +1529,22 @@
         moving = false;
       }
       stageSel = save.node;
-      nodeInfo();
+      nodeInfo(); // 도착하면 그 지점 옆에 할 일 메뉴
     }));
     stageSel = here;
-    nodeInfo();
+    document.querySelectorAll('.wnode').forEach((b) => b.classList.toggle('sel', b.dataset.n === String(here)));
+  }
+  // 도착한 지점 옆에 메뉴를 띄운다 (가로 화면: 지점 좌우 중 넓은 쪽 / 세로 화면: 아래쪽 판)
+  function placeInfo() {
+    const box = $('sInfo'), nb = document.querySelector(`.wnode[data-n="${save.node}"]`);
+    if (!box || !nb) return;
+    box.classList.add('on');
+    if (innerWidth < innerHeight) { box.style.left = box.style.top = ''; return; }
+    const r = nb.getBoundingClientRect(), w = box.offsetWidth, h = box.offsetHeight;
+    const cx = r.left + r.width / 2, cy = r.top + r.height * 0.6;
+    const left = cx > innerWidth / 2 ? cx - w - 40 : cx + 40;
+    box.style.left = Math.max(10, Math.min(innerWidth - w - 10, left)) + 'px';
+    box.style.top = Math.max(10, Math.min(innerHeight - h - 10, cy - h / 2)) + 'px';
   }
   // 오른쪽 정보 창: 지점의 종류에 따라 할 수 있는 일
   function nodeInfo() {
@@ -1500,11 +1552,12 @@
     document.querySelectorAll('.wnode').forEach((b) => b.classList.toggle('sel', b.dataset.n === String(id)));
     if (id === WT) {
       const nw = sideNew();
-      $('sInfo').innerHTML = `<div class="wi-top"><span class="wi-no wi-town">TOWN</span><div class="wi-name">${TOWN.name}<em class="town">${TOWN.sub}</em></div></div>
+      $('sInfo').innerHTML = `<button class="wclose" onclick="this.parentElement.classList.remove('on')">✕</button><div class="wi-top"><span class="wi-no wi-town">TOWN</span><div class="wi-name">${TOWN.name}<em class="town">${TOWN.sub}</em></div></div>
         <p class="wi-desc">등대 아래에 숨겨진 옛 비밀기지. 오르카의 임시 거점이다.\n동료들과 이야기하고, 들어온 의뢰를 받을 수 있다.</p>
         ${nw.length ? `<div class="wi-sub">새 의뢰 <small>${nw.length}건</small></div><div class="wi-list">${nw.map((s) => `<div><b>${s.title}</b><small>${s.desc}</small></div>`).join('')}</div>` : ''}
         <button class="wgo" id="sTown"><b>마을로 들어가기</b><small>ENTER</small></button>`;
       $('sTown').onclick = () => { AU.play('lo_click', 0.7); AU.play('lo_trans_in', 0.5); enterTown(); };
+      placeInfo();
       return;
     }
     const st = D.STAGES[id], S = window.STORY && STORY[st.idx];
@@ -1530,12 +1583,13 @@
         ${S ? '<button class="wact dim" id="sStory"><b>이야기 다시 보기</b><small>이 작전의 앞뒤 대화를 다시 본다.</small></button>' : ''}
         ${done.map((s) => `<div class="wdone">완료한 의뢰 · ${s.title}</div>`).join('')}</div>`;
     }
-    $('sInfo').innerHTML = `<div class="wi-top"><span class="wi-no">${st.idx}</span><div class="wi-name">${st.title}${clear ? '<em>CLEAR</em>' : ''}</div></div>
+    $('sInfo').innerHTML = `<button class="wclose" onclick="this.parentElement.classList.remove('on')">✕</button><div class="wi-top"><span class="wi-no">${st.idx}</span><div class="wi-name">${st.title}${clear ? '<em>CLEAR</em>' : ''}</div></div>
       <p class="wi-desc">${S ? S.desc : ''}</p>${acts}`;
     if ($('sGo')) $('sGo').onclick = () => { AU.play('lo_click', 0.7); startStage(id); };
     if ($('sRep')) $('sRep').onclick = () => { AU.play('lo_click', 0.7); prep(repeatStage(id)); };
     if ($('sStory')) $('sStory').onclick = async () => { AU.play('lo_click', 0.7); hideScreen(); AU.bgm(S.bgmStart); await story(S.start); AU.bgm(S.bgmEnd); await story(S.end); stageSelect(); };
     document.querySelectorAll('.wact.side').forEach((b) => (b.onclick = () => { AU.play('lo_click', 0.7); prep(sideStage(b.dataset.side)); }));
+    placeInfo();
   }
   function stageInfo() { nodeInfo(); }
 

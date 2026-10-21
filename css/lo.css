@@ -400,3 +400,21 @@
 .pd-sortie { display: block; width: 100%; padding: 10px; font: 14px 'LO_B', sans-serif; color: #fff; background: rgba(255,255,255,.07); border: 1px solid var(--lo-line); border-radius: 0; text-align: center; }
 .pd-sortie.on { background: rgba(255, 204, 0, .16); border-color: var(--lo-y); color: var(--lo-y); }
 .pd-sortie.lead { color: #8bf03a; }
+
+/* 옵션 창 */
+.mbox .osec { margin: 12px 0 6px; font: 13px 'LO_B', sans-serif; color: var(--lo-y); letter-spacing: 1px; }
+.mbox .oslide { display: grid; grid-template-columns: 64px 1fr 34px; align-items: center; gap: 10px; padding: 6px 4px; font-size: 14px; color: #fff; }
+.mbox .oslide input { width: 100%; accent-color: #ffcc00; }
+.mbox .oslide b { text-align: right; color: var(--lo-y); font: 14px 'LO_B', sans-serif; }
+
+/* 월드맵 메뉴: 도착한 지점 옆에 뜨는 작은 창 (도착 전에는 숨김) */
+.wscr .winfo { display: none; right: auto; bottom: auto; width: min(360px, 40vw); max-height: 82vh; padding: 16px 16px 14px; background: rgba(8, 11, 18, .95);
+  border-top: 3px solid var(--lo-y); box-shadow: 0 10px 40px #000; clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%); }
+.wscr .winfo.on { display: flex; animation: wpop .22s ease-out both; }
+@keyframes wpop { from { opacity: 0; transform: scale(.94); } }
+.wscr .winfo .wgo { margin-top: 10px; }
+.wclose { position: absolute; right: 8px; top: 6px; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 0; background: none; color: #aab2c4; font-size: 18px; }
+.wclose:hover { color: #fff; }
+@media (orientation: portrait) {
+  .wscr .winfo { left: 0 !important; right: 0; top: auto !important; bottom: 0; width: auto; max-height: 52vh; }
+}
