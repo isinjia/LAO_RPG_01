@@ -76,7 +76,8 @@
   // 적 무리 i 를 지도에 내보낸다 (처음 무리 이후는 증원: 바로 움직인다)
   R.spawnWave = function (G, i) {
     const w = G.stage.waves[i];
-    if (!w) return [];
+    if (!w || (G.spawned && G.spawned.has(i))) return [];
+    (G.spawned || (G.spawned = new Set())).add(i);
     G.wave = Math.max(G.wave, i);
     const spots = R.freeAround(G, w.at[0], w.at[1], 'foot', w.units.length);
     const list = w.units.map(([t, lv], k) => spots[k] && R.makeEnemy(G, t, lv, spots[k][0], spots[k][1], { boss: w.boss === t, ai: w.boss === t ? 'guard' : 'charge' })).filter(Boolean);
@@ -84,8 +85,11 @@
     return list;
   };
   // 이 턴에 나올 증원 무리 번호들
-  R.wavesAt = (G, turn) => G.stage.waves.map((w, i) => (i > 0 && (w.turn || 0) === turn ? i : -1)).filter((i) => i >= 0);
-  R.nextWaveTurn = (G) => { const w = G.stage.waves.find((w, i) => i > G.wave && (w.turn || 0) >= G.turn); return w ? w.turn : 0; };
+  const spawned = (G, i) => !!(G.spawned && G.spawned.has(i));
+  R.wavesAt = (G, turn) => G.stage.waves.map((w, i) => (i > 0 && !spawned(G, i) && (w.turn || 0) === turn ? i : -1)).filter((i) => i >= 0);
+  R.nextWaveTurn = (G) => { const w = G.stage.waves.find((w, i) => i > 0 && !spawned(G, i) && (w.turn || 0) >= G.turn); return w ? w.turn : 0; };
+  // 아직 나오지 않은 다음 증원 무리 번호 (없으면 -1)
+  R.pendingWave = (G) => G.stage.waves.findIndex((w, i) => i > 0 && !spawned(G, i));
 
   // ── 수치 ───────────────────────────────────────────────
   R.tierOf = (u) => (u.side === 'p' ? u.def.tiers[u.tier] : null);
@@ -337,6 +341,9 @@
   // ── 경험치 ─────────────────────────────────────────────
   // 전투가 끝나면 참가자 전원(쓰러진 영웅 포함)이 같은 양을 받는다. 패배하면 절반.
   R.stageExp = (stageIndex, win) => Math.round((90 + 12 * stageIndex) * (win ? 1 : 0.5));
+  // 그 작전 적 평균 레벨보다 높은 영웅은 레벨 차이만큼 덜 받는다 (원작 적 레벨을 앞질러 너무 쉬워지지 않게)
+  R.foeLv = (stage) => { const l = stage.waves.flatMap((w) => w.units.map((u) => u[1])); return l.length ? l.reduce((a, b) => a + b, 0) / l.length : 1; };
+  R.expFor = (lv, foeLv, gain) => Math.round(gain * Math.max(0.1, Math.min(1, 1 - (lv - foeLv - 1) * 0.25)));
   R.addExp = function (u, e) {
     if (!u || u.side !== 'p') return 0;
     let ups = 0;
@@ -352,7 +359,8 @@
     if (lead && !lead.alive) return 'lose';
     if (!G.units.some((u) => u.alive && u.side === 'p')) return 'lose';
     if (G.stage.win === 'boss') { const b = G.units.find((u) => u.boss); if (b && !b.alive) return 'win'; }
-    if (!G.units.some((u) => u.alive && u.side === 'e')) return 'win'; // 증원 전에 다 잡으면 그대로 승리
+    // 지도 위 적을 다 잡았는데 아직 나오지 않은 증원이 있으면 그 무리를 바로 부른다 (늘린 증원을 건너뛰고 이기지 않게)
+    if (!G.units.some((u) => u.alive && u.side === 'e')) return R.pendingWave(G) >= 0 ? 'wave' : 'win';
     return null;
   };
 

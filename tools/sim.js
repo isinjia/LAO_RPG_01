@@ -7,11 +7,11 @@ for (const st of STAGES) {
   st.map.forEach((r, i) => { if (r.length !== w) { console.log(`${st.idx} ${i}행 길이 ${r.length} != ${w}`); bad++; } });
   const G = R.newGame(st);
   st.starts.forEach(([x, y], i) => {
-    const id = st.heroes[i];
-    if (!R.inB(G, x, y) || R.terr(G, x, y).cost[HEROES[id].move] >= 99 || R.unitAt(G, x, y)) { console.log(`${st.idx} ${id} 시작 칸 문제 ${x},${y}`); bad++; }
+    const id = st.heroes[i] || 'constantia'; // 8곳까지: 남는 칸은 걷는 영웅 기준으로 검사
+    if (!R.inB(G, x, y) || R.terr(G, x, y).cost.foot >= 99 || R.unitAt(G, x, y)) { console.log(`${st.idx} ${i + 1}번 시작 칸 문제 ${x},${y}`); bad++; }
     R.makeHero(G, id, { lv: 1, exp: 0, tier: 0 }, null, x, y);
   });
-  if (st.starts.length !== st.heroes.length) { console.log(`${st.idx} 시작 칸 수 불일치`); bad++; }
+  if (st.starts.length < Math.max(8, st.heroes.length)) { console.log(`${st.idx} 시작 칸 ${st.starts.length}곳 (8곳 필요)`); bad++; }
   st.waves.forEach((wv, i) => {
     const n = R.spawnWave(G, i).length;
     if (n !== wv.units.length) { console.log(`${st.idx} ${i + 1}무리 배치 ${n}/${wv.units.length}`); bad++; }

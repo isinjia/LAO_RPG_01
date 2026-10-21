@@ -56,12 +56,12 @@
       stage: {
         idx: '1-6 IF', title: '다리 위의 사투', bgm: 'lo_battle2', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
         heroes: ['constantia', 'griffon', 'johanna', 'lrl', 'pupphead', 'fallen'],
-        starts: [[6, 8], [6, 9], [6, 7], [7, 7], [6, 10], [5, 10]],
+        starts: [[8, 10], [8, 11], [8, 9], [9, 9], [8, 12], [7, 12]],
         waves: [
-          { turn: 1, at: [6, 4], units: [C('shielder', 7), C('chick', 8), C('shielder', 7), C('launcher', 8), C('chick', 8)] },
-          { turn: 1, at: [6, 12], units: [C('shielder', 7), C('chick', 8), C('launcher', 7), C('chick', 8)] },
-          { turn: 3, at: [8, 1], units: [C('chick', 8), C('shielder', 8), C('launcher', 8), C('chick', 8)] },
-          { turn: 5, at: [9, 12], units: [C('shielder', 8), C('chick', 8), C('launcher', 8), C('launcher', 8), C('shielder', 8)] },
+          { turn: 1, at: [8, 6], units: [C('shielder', 7), C('chick', 8), C('shielder', 7), C('launcher', 8), C('chick', 8)] },
+          { turn: 1, at: [8, 14], units: [C('shielder', 7), C('chick', 8), C('launcher', 7), C('chick', 8)] },
+          { turn: 3, at: [10, 3], units: [C('chick', 8), C('shielder', 8), C('launcher', 8), C('chick', 8)] },
+          { turn: 5, at: [11, 14], units: [C('shielder', 8), C('chick', 8), C('launcher', 8), C('launcher', 8), C('shielder', 8)] },
         ],
       },
       outro: scene(9150, 'BG_1_6_3', [
@@ -127,10 +127,10 @@
         idx: '2-6 IF', title: '정면 돌파', bgm: 'lo_battle2', goal: '프레데터 격파', lose: '콘스탄챠 퇴각', win: 'boss',
         heroes: ['constantia', 'amy', 'griffon', 'lrl', 'johanna', 'fallen'],
         waves: [
-          { turn: 1, at: [6, 4], units: [C('scout', 14), C('shielder', 20), C('scout', 18), C('chick', 18), C('scout', 14)] },
-          { turn: 2, at: [11, 1], units: [C('cannon', 18), C('harvester', 18), C('chick', 19), C('launcher', 19), C('cannon', 18)] },
-          { turn: 3, at: [2, 1], units: [C('launcher', 19), C('scout', 19), C('shielder', 19), C('cannon', 19), C('launcher', 19), C('scout', 19)] },
-          { turn: 4, at: [6, 1], boss: 'predator', units: [C('predator', 22)] },
+          { turn: 1, at: [8, 6], units: [C('scout', 14), C('shielder', 20), C('scout', 18), C('chick', 18), C('scout', 14)] },
+          { turn: 2, at: [13, 3], units: [C('cannon', 18), C('harvester', 18), C('chick', 19), C('launcher', 19), C('cannon', 18)] },
+          { turn: 3, at: [4, 3], units: [C('launcher', 19), C('scout', 19), C('shielder', 19), C('cannon', 19), C('launcher', 19), C('scout', 19)] },
+          { turn: 4, at: [8, 3], boss: 'predator', units: [C('predator', 22)] },
         ],
       },
       outro: scene(9350, 'BG_Ruin', [
@@ -190,11 +190,11 @@
         idx: '3-2 IF', title: '고립된 돌파', bgm: 'lo_battle2', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
         heroes: ['constantia', 'marie', 'griffon', 'amy', 'coco', 'lrl'],
         waves: [
-          { turn: 1, at: [6, 4], units: [C('launcher', 27), C('legion', 26), C('shielderx', 26), C('scout', 28), C('legion', 26)] },
-          { turn: 2, at: [6, 1], units: [C('launcher', 27), C('chick', 27), C('legion', 26), C('cannon', 27), C('launcher', 27), C('chick', 27)] },
-          { turn: 3, at: [12, 3], units: [C('scout', 25), C('cannon', 26), C('legion', 27), C('zapper', 27), C('scout', 25), C('cannon', 26)] },
-          { turn: 5, at: [1, 3], units: [C('legion', 28), C('phalanx', 22), C('legion', 28), C('zapper', 28), C('harvester', 28)] },
-          { turn: 7, at: [6, 0], units: [C('centurion', 30), C('legion', 28), C('legion', 28), C('phalanx', 24)] },
+          { turn: 1, at: [7, 5], units: [C('launcher', 27), C('legion', 26), C('shielderx', 26), C('scout', 28), C('legion', 26)] },
+          { turn: 2, at: [7, 2], units: [C('launcher', 27), C('chick', 27), C('legion', 26), C('cannon', 27), C('launcher', 27), C('chick', 27)] },
+          { turn: 3, at: [13, 4], units: [C('scout', 25), C('cannon', 26), C('legion', 27), C('zapper', 27), C('scout', 25), C('cannon', 26)] },
+          { turn: 5, at: [2, 4], units: [C('legion', 28), C('phalanx', 22), C('legion', 28), C('zapper', 28), C('harvester', 28)] },
+          { turn: 7, at: [7, 1], units: [C('centurion', 30), C('legion', 28), C('legion', 28), C('phalanx', 24)] },
         ],
       },
       outro: scene(9900, 'BG_3_2_2', [
@@ -259,10 +259,10 @@
         heroes: ['constantia', 'marie', 'griffon', 'amy', 'coco', 'lrl'],
         mapFrom: 25, // 4-2 지하수로 지도
         waves: [
-          { turn: 1, at: [10, 9], units: [C('sniper', 43), C('legion', 43), C('detector', 43), C('shielderx', 43), C('scout', 43), C('legion', 43)] },
-          { turn: 3, at: [11, 2], units: [C('phalanx', 43), C('sniper', 43), C('shielderx', 44), C('chemical', 43), C('sniper', 43)] },
-          { turn: 5, at: [2, 1], units: [C('scout', 44), C('legion', 44), C('phalanx', 43), C('sniper', 44), C('chick', 44), C('legion', 44)] },
-          { turn: 7, at: [6, 5], units: [C('wasp', 44), C('scarab', 44), C('wasp', 44), C('heavyscout', 44), C('scarab', 44)] },
+          { turn: 1, at: [11, 10], units: [C('sniper', 43), C('legion', 43), C('detector', 43), C('shielderx', 43), C('scout', 43), C('legion', 43)] },
+          { turn: 3, at: [12, 3], units: [C('phalanx', 43), C('sniper', 43), C('shielderx', 44), C('chemical', 43), C('sniper', 43)] },
+          { turn: 5, at: [3, 2], units: [C('scout', 44), C('legion', 44), C('phalanx', 43), C('sniper', 44), C('chick', 44), C('legion', 44)] },
+          { turn: 7, at: [7, 6], units: [C('wasp', 44), C('scarab', 44), C('wasp', 44), C('heavyscout', 44), C('scarab', 44)] },
         ],
       },
       outro: scene(9550, 'BG_4_2_2', [
@@ -325,10 +325,10 @@
         heroes: ['constantia', 'marie', 'griffon', 'amy', 'coco', 'lrl'],
         mapFrom: 33, // 5-2 시설 통로 지도
         waves: [
-          { turn: 1, at: [6, 5], units: [C('g_rampart', 52), C('g_pupphead', 52), C('g_amg', 52), C('g_stinger', 52), C('g_rampart', 52)] },
-          { turn: 2, at: [11, 2], units: [C('g_drone', 52), C('g_stinger', 52), C('g_amg', 52), C('g_fallen', 52), C('g_drone', 52)] },
-          { turn: 4, at: [2, 2], units: [C('g_gigantes', 53), C('g_amg', 52), C('g_seljuq', 53), C('g_pupphead', 52), C('g_rampart', 52)] },
-          { turn: 6, at: [6, 1], units: [C('g_gigantes', 54), C('g_seljuq', 54), C('g_fallen', 53), C('g_stinger', 53)] },
+          { turn: 1, at: [7, 6], units: [C('g_rampart', 52), C('g_pupphead', 52), C('g_amg', 52), C('g_stinger', 52), C('g_rampart', 52)] },
+          { turn: 2, at: [12, 3], units: [C('g_drone', 52), C('g_stinger', 52), C('g_amg', 52), C('g_fallen', 52), C('g_drone', 52)] },
+          { turn: 4, at: [3, 3], units: [C('g_gigantes', 53), C('g_amg', 52), C('g_seljuq', 53), C('g_pupphead', 52), C('g_rampart', 52)] },
+          { turn: 6, at: [7, 2], units: [C('g_gigantes', 54), C('g_seljuq', 54), C('g_fallen', 53), C('g_stinger', 53)] },
         ],
       },
       outro: scene(10050, 'BG_5_2_3', [
@@ -364,10 +364,10 @@
         heroes: ['constantia', 'marie', 'griffon', 'amy', 'coco', 'lrl'],
         mapFrom: 34, // 5-3 서버실 지도
         waves: [
-          { turn: 1, at: [6, 5], units: [C('g_rampart', 57), C('g_pupphead', 57), C('g_amg', 57), C('g_seljuq', 57), C('g_rampart', 57)] },
-          { turn: 2, at: [11, 1], units: [C('g_drone', 57), C('g_stinger', 57), C('g_amg', 57), C('g_drone', 57), C('g_stinger', 57)] },
-          { turn: 4, at: [2, 1], units: [C('g_gigantes', 58), C('g_pupphead', 58), C('g_seljuq', 58), C('g_rampart', 58), C('g_fallen', 58)] },
-          { turn: 6, at: [6, 1], units: [C('g_pupphead', 58), C('g_amg', 58), C('g_gigantes', 58), C('g_stinger', 58), C('g_seljuq', 58), C('g_drone', 58)] },
+          { turn: 1, at: [8, 7], units: [C('g_rampart', 57), C('g_pupphead', 57), C('g_amg', 57), C('g_seljuq', 57), C('g_rampart', 57)] },
+          { turn: 2, at: [13, 3], units: [C('g_drone', 57), C('g_stinger', 57), C('g_amg', 57), C('g_drone', 57), C('g_stinger', 57)] },
+          { turn: 4, at: [4, 3], units: [C('g_gigantes', 58), C('g_pupphead', 58), C('g_seljuq', 58), C('g_rampart', 58), C('g_fallen', 58)] },
+          { turn: 6, at: [8, 3], units: [C('g_pupphead', 58), C('g_amg', 58), C('g_gigantes', 58), C('g_stinger', 58), C('g_seljuq', 58), C('g_drone', 58)] },
         ],
       },
       outro: scene(9650, 'BG_5_3_3', [

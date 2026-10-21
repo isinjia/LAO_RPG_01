@@ -1605,8 +1605,18 @@
   async function afterAction() {
     if (!G) return false;
     const r = R.check(G);
+    if (r === 'wave') { await reinforce(R.pendingWave(G)); return true; } // 적을 다 잡으면 다음 증원이 앞당겨 나온다
     if (r) { await endStage(r === 'win'); return false; }
     return true;
+  }
+  async function reinforce(i) {
+    const list = R.spawnWave(G, i);
+    LOHUD.caution('철충 증원!', `${list.length}기 출현`);
+    AU.play('reinforce', 0.7);
+    for (const u of list) { addView(u); fxAt(u.x, u.y, 'spawn'); }
+    if (list[0]) panTo(list[0].x, list[0].y, true);
+    setTop();
+    await wait(1000);
   }
 
   // ── 차례 진행 ───────────────────────────────────────────
@@ -1637,15 +1647,7 @@
     }
     if (healed) { AU.play('energy', 0.4); await wait(500); }
     if (side === 'e') { // 정해진 턴의 적 차례에 증원
-      for (const i of R.wavesAt(G, G.turn)) {
-        const list = R.spawnWave(G, i);
-        LOHUD.caution('철충 증원!', `${list.length}기 출현`);
-        AU.play('reinforce', 0.7);
-        for (const u of list) { addView(u); fxAt(u.x, u.y, 'spawn'); }
-        if (list[0]) panTo(list[0].x, list[0].y, true);
-        setTop();
-        await wait(1000);
-      }
+      for (const i of R.wavesAt(G, G.turn)) await reinforce(i);
     }
     G.units.forEach(refreshView);
     updateDanger();
@@ -1992,7 +1994,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.49';
+  const GAME_VERSION = '0.50';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2674,7 +2676,7 @@
         const up = r.lv1 > r.lv0, h = D.HEROES[r.id];
         return `<div class="rrow ${r === mvp ? 'mvp' : ''}" style="animation-delay:${0.35 + i * 0.08}s">
           <img src="${IMG[iconOf(r.id)]}" alt=""><div class="rinfo"><div class="rname"><b>${r.name}</b>${r === mvp ? '<i>MVP</i>' : ''}${r.alive ? '' : '<small>퇴각</small>'}</div>
-          <div class="rlv">Lv.<b>${r.lv1}</b>${up ? `<span class="rup">LEVEL UP</span>` : ''}<em>+${gain} EXP</em></div>
+          <div class="rlv">Lv.<b>${r.lv1}</b>${up ? `<span class="rup">LEVEL UP</span>` : ''}<em>+${r.gain} EXP</em></div>
           <div class="rbar"><i data-w="${r.exp1}" style="width:${up ? 0 : r.exp0}%"></i></div>${r.notes.map((n) => `<div class="rnote">${n}</div>`).join('')}</div></div>`;
       }).join('');
       screen(`<div class="rscr ${win ? 'win' : 'lose'}"><div class="pbg"></div>
@@ -2710,7 +2712,8 @@
     for (const u of g.units.filter((x) => x.side === 'p')) {
       const s = save.heroes[u.key], h = D.HEROES[u.key];
       const row = { id: u.key, name: u.name, lv0: stageStart.lv[u.key], exp0: s.exp, alive: u.alive, dealt: u.dealt || 0, notes: [] };
-      R.addExp(u, gain);
+      row.gain = st.kind ? gain : R.expFor(u.lv, R.foeLv(st), gain);
+      R.addExp(u, row.gain);
       s.lv = u.lv; s.exp = u.exp;
       row.lv1 = u.lv; row.exp1 = u.exp;
       // 전직은 랑그릿사처럼 직접 고른다: 레벨이 되면 알려 주기만 (출격 준비·부대 현황의 전직 버튼)
