@@ -1353,16 +1353,31 @@
       <div class="rel">${rel}${near} · 적 지형 ${terrName(d.x, d.y)}${d.move !== 'fly' && terr.def ? ` ${terr.def > 0 ? '+' : ''}${Math.round(terr.def * 100)}%` : ''}${p.dDead ? ' · <span class="good">격파 예상</span>' : ''}</div>
       <div class="btns"><button class="gold" id="fcGo">공격</button><button id="fcNo">취소</button></div>`;
     el.classList.remove('hidden');
-    { const sp = toScreen(new THREE.Vector3(d.x + 0.5, d.def.big ? 2.1 : 1.6, d.y + 0.5)); LOHUD.target(sp.x, sp.y, 'r'); // 원작 TARGET 표지
-      const sa = toScreen(new THREE.Vector3(a.x + 0.5, 1.2, a.y + 0.5));
-      el.classList.remove('low');
-      const r = el.getBoundingClientRect();
-      if (Math.min(sp.y, sa.y) - 30 < r.bottom) el.classList.add('low'); } // 목표·공격자가 예상 창에 가리면 아래로
+    { const sp = toScreen(new THREE.Vector3(d.x + 0.5, d.def.big ? 2.1 : 1.6, d.y + 0.5)); LOHUD.target(sp.x, sp.y, 'r'); } // 원작 TARGET 표지
+    placeForecast();
     $('fcGo').onclick = () => confirmAttack();
     $('fcNo').onclick = () => backToTarget();
     showInfo(d);
     showActs(null);
     setHint('같은 적을 한 번 더 누르면 공격합니다');
+  }
+  // 예상 창 자리. 가로 화면(PC): 화면 세로 가운데, 공격자·목표가 없는 쪽 절반의 가운데 (눈길·마우스 가까이, 둘 다 가리지 않게)
+  // 세로 화면: 위에 두되 목표·공격자를 가리면 아래로
+  function placeForecast() {
+    const el = $('forecast'), a = ui.sel, d = ui.target;
+    if (!a || !d || el.classList.contains('hidden')) return;
+    const sp = toScreen(new THREE.Vector3(d.x + 0.5, 1.2, d.y + 0.5)), sa = toScreen(new THREE.Vector3(a.x + 0.5, 1.2, a.y + 0.5));
+    if (innerWidth > innerHeight) {
+      el.classList.add('pc'); el.classList.remove('low');
+      const mid = (sp.x + sa.x) / 2, half = el.offsetWidth * 1.15 / 2 + 12;
+      const x = mid > innerWidth / 2 ? innerWidth * 0.25 : innerWidth * 0.75;
+      el.style.left = Math.max(half, Math.min(innerWidth - half, x)) + 'px';
+      return;
+    }
+    el.classList.remove('pc'); el.style.left = '';
+    el.classList.remove('low');
+    const r = el.getBoundingClientRect();
+    if (Math.min(sp.y, sa.y) - 30 < r.bottom) el.classList.add('low'); // 목표·공격자가 예상 창에 가리면 아래로
   }
   function backToTarget() { $('forecast').classList.add('hidden'); LOHUD.target(null); ui.target = null; openActions(); }
   async function confirmAttack() {
@@ -1960,7 +1975,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.41';
+  const GAME_VERSION = '0.42';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2743,6 +2758,7 @@
     if (ui.state === 'forecast' && ui.target && mode === 'map' && !busy) { // TARGET 표지는 카메라가 움직여도 목표를 따라간다
       const d = ui.target, sp = toScreen(new THREE.Vector3(d.x + 0.5, d.def.big ? 2.1 : 1.6, d.y + 0.5));
       LOHUD.target(sp.x, sp.y, 'r');
+      if (cam.tx != null) placeForecast(); // 카메라가 움직이는 동안 자리도 다시
     }
     if (skPre.length) placeSkillPreview();
     const sv = ui.sel && views.get(ui.sel.uid);
