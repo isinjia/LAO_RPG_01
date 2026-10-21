@@ -93,7 +93,7 @@
 #talk .tplace .pn::before, #talk .tplace .pn::after { content: ''; display: inline-block; vertical-align: middle; width: calc(80 * var(--u)); height: 1px; margin: 0 calc(18 * var(--u)); background: var(--lo-y); opacity: .7; }
 
 /* 선택지 */
-#talk .tchoices { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(300 * var(--u) + var(--safe-b)); display: flex; flex-direction: column; gap: calc(16 * var(--u)); width: min(calc(900 * var(--u)), 94vw); }
+#talk .tchoices { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(440 * var(--u) + var(--safe-b)); display: flex; flex-direction: column; gap: calc(16 * var(--u)); width: min(calc(900 * var(--u)), 94vw); }
 #talk .tchoices:empty { display: none; }
 #talk .tchoices button { height: max(44px, calc(70 * var(--u))); padding: 0 56px 0 52px; font: max(15px, calc(28 * var(--u))) 'LO_B', sans-serif; color: #fff; text-align: left; border-radius: 0; background: none;
   border: 0 solid transparent; border-image: url(../assets/ui/UI_Dialog_Main_CharDialog_Frame_CharName_4.png) 0 39 0 46 fill; border-image-width: 0 58px 0 68px; animation: ap-fade .3s both; }
