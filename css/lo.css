@@ -388,7 +388,7 @@
 #talkBg.see { background: transparent; }
 #talkBg.see .tbg, #talkBg.see .tshade { display: none; }
 /* 월드맵: 부대 표지, 의뢰 표시, 마을 지점, 할 일 목록 */
-.wtoken { position: absolute; z-index: 3; width: calc(64 * var(--n)); height: calc(64 * var(--n)); min-width: 38px; min-height: 38px; transform: translate(-50%, -150%); transition: left .4s linear, top .4s linear; pointer-events: none; }
+.wtoken { position: absolute; z-index: 2000; /* 지점 표지(깊이 순서로 1000 안팎)보다 늘 위 */ width: calc(64 * var(--n)); height: calc(64 * var(--n)); min-width: 38px; min-height: 38px; transform: translate(-50%, -150%); transition: left .4s linear, top .4s linear; pointer-events: none; }
 .wtoken img { width: 100%; height: 100%; border-radius: 50%; border: 3px solid var(--lo-y); box-shadow: 0 0 14px rgba(255, 204, 0, .7); background: #1b2130; object-fit: cover; }
 .wtoken::after { content: ''; position: absolute; left: 50%; bottom: -10px; transform: translateX(-50%); border: 7px solid transparent; border-top-color: var(--lo-y); }
 .wnode .wq { position: absolute; left: 50%; bottom: calc(118 * var(--n)); transform: translateX(-50%); font: 900 max(18px, calc(34 * var(--n))) 'LO_B', sans-serif; color: var(--lo-y); text-shadow: 0 0 6px #000, 0 2px 0 #3a2a00; animation: wbob 1.2s ease-in-out infinite; }
@@ -432,3 +432,29 @@
   background: var(--lo-y); box-shadow: 0 6px 20px #0008; opacity: 0; pointer-events: none; clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%); }
 #toast.on { animation: toast 2.4s ease both; }
 @keyframes toast { 0% { opacity: 0; transform: translate(-50%, -10px); } 10%, 80% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; } }
+
+/* 전투 피해 숫자 (랑그릿사식): 굵고 기울어진 은빛 숫자가 크게 튀어나왔다가 떠오르며 사라진다. 영웅이 맞으면 금빛 */
+#fight .fnums { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 3; }
+#fight .fnum { position: absolute; transform: translate(-50%, -100%); font: italic calc(28px + 3.8vh) 'LO_B', sans-serif; letter-spacing: -1px; line-height: 1;
+  background: linear-gradient(180deg, #fff 0 42%, #9aa3b2 52%, #e9edf3 78%, #fff); -webkit-background-clip: text; background-clip: text; color: transparent;
+  -webkit-text-stroke: 2px #2a2e36; filter: drop-shadow(0 3px 0 #15181d) drop-shadow(0 0 4px rgba(0, 0, 0, .6)); animation: fnum .95s cubic-bezier(.2, .8, .3, 1) forwards; }
+#fight .fnum.hero { font-size: calc(34px + 4.8vh); background-image: linear-gradient(180deg, #fffbe0 0 40%, #ffb400 55%, #ffe680 80%, #fff6c8); -webkit-text-stroke-color: #4a2a00; }
+@keyframes fnum {
+  0% { transform: translate(-50%, -100%) scale(2.2); opacity: 0; }
+  12% { transform: translate(-50%, -100%) scale(.88); opacity: 1; }
+  22% { transform: translate(-50%, -100%) scale(1.05); }
+  30% { transform: translate(-50%, -100%) scale(1); }
+  70% { opacity: 1; }
+  100% { transform: translate(-50%, calc(-100% - 5vh)) scale(1); opacity: 0; }
+}
+/* 그 편이 받은 피해 합계: 정보판 위에 별 모양으로, 늘 때마다 통 튄다 (주황 테두리 별 위에 흰 별) */
+#fight .ftot { position: absolute; bottom: calc(100% - 6px); left: 70px; z-index: 2; display: none; padding: 14px 34px 12px; pointer-events: none; transform-origin: 50% 70%; isolation: isolate; }
+#fight .fside.R .ftot { left: auto; right: 70px; }
+#fight .ftot.on { display: block; }
+#fight .ftot.pop { animation: ftot .3s cubic-bezier(.2, 1.6, .4, 1); }
+#fight .ftot::before, #fight .ftot::after { content: ''; position: absolute; inset: 0; clip-path: polygon(0% 30%, 12% 22%, 8% 0%, 26% 14%, 38% 2%, 48% 16%, 62% 0%, 70% 16%, 88% 4%, 86% 24%, 100% 26%, 90% 44%, 100% 60%, 86% 66%, 94% 92%, 72% 80%, 60% 100%, 50% 82%, 34% 98%, 28% 80%, 6% 90%, 12% 68%, 0% 56%, 8% 44%); }
+#fight .ftot::before { z-index: -2; background: #ff9a00; transform: scale(1.1); }
+#fight .ftot::after { z-index: -1; background: #fff; }
+#fight .ftot b { position: relative; display: block; font: italic calc(20px + 1.8vh) 'LO_B', sans-serif; line-height: 1; letter-spacing: -1px;
+  background: linear-gradient(180deg, #8ff4ff 0 40%, #18a8d8 60%, #5fe0ff); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-stroke: 1.5px #0b3a52; }
+@keyframes ftot { 0% { transform: scale(1.35); } 100% { transform: scale(1); } }

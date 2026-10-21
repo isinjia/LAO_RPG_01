@@ -117,9 +117,12 @@
 
   // ── 카메라: 위에서 비스듬히 내려다보는 쿼터뷰 고정. 끌어서 돌리고, 휠·두 손가락으로 당기고 민다 ──
   // 처음 방향은 원작 지도 카메라(전체 둘러보기 클립의 첫 자세)가 보던 쪽. 돌린 방향·거리는 다시 들어와도 그대로
+  // 화면 가운데에는 늘 부대(setFocus 로 받은 자리)가 온다. 부대가 걸으면 지도가 따라 움직인다
   const camera = new THREE.PerspectiveCamera(45, 16 / 9, 0.3, 1000);
   const PITCH = (45 * Math.PI) / 180, DIST = 1.5, DMIN = 0.6, DMAX = 2.6;
   const orbit = { yaw: null, dist: DIST };
+  let focus = null; // 카메라가 바라보는 3D 자리 (부대 위치 배열을 그대로 물고 있어 걸으면 같이 바뀐다)
+  const _c = new THREE.Vector3();
   const _p = new THREE.Vector3();
   function initYaw() {
     const c = cur.clips[cur.S.overview].d; // 첫 표본: 위치 3 + 회전 4
@@ -127,7 +130,7 @@
     orbit.yaw = Math.atan2(-f.x, -f.z); // 카메라가 서는 쪽(보는 방향의 반대)
   }
   function updateCamera() {
-    const d = orbit.dist * distK, c = cur.center;
+    const d = orbit.dist * distK, c = focus ? _c.fromArray(focus) : cur.center;
     camera.position.set(c.x + Math.sin(orbit.yaw) * Math.cos(PITCH) * d, c.y + Math.sin(PITCH) * d, c.z + Math.cos(orbit.yaw) * Math.cos(PITCH) * d);
     camera.lookAt(c);
     camera.updateMatrixWorld();
@@ -213,7 +216,7 @@
     load,
     // 지도 화면 안 el 에 그림판을 붙이고 그리기 시작. 그림판이 화면에서 빠지면 저절로 멈춘다
     async mount(el, ch) {
-      host = el; frameCbs = []; marker = null;
+      host = el; frameCbs = []; marker = null; focus = null;
       if (!R) {
         canvas = document.createElement('canvas');
         canvas.className = 'w3d';
@@ -237,6 +240,8 @@
     // 작전 지점 표시를 그 자리(3D)에. null 이면 끈다
     setMarker(p) { marker = p; if (cur) { cur.marker.visible = !!p; if (p) cur.marker.position.set(p[0], p[1] + 0.012, p[2]); } },
     onFrame(cb) { frameCbs.push(cb); },
+    // 카메라가 따라갈 자리 [x, y, z] (배열을 바꾸면 다음 그림부터 따라간다). null 이면 지도 한가운데
+    setFocus(p) { focus = p; },
     // 3D 자리 → 지도 칸 안 화면 좌표(px). 카메라 뒤면 null
     project(p) {
       _p.set(p[0], p[1], p[2]);

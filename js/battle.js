@@ -1,7 +1,8 @@
 // 전투 연출 (랑그릿사 모바일식): 영웅은 뒤(바깥쪽), 배속 병사는 영웅 앞(적 쪽)에 늘어선다.
 // 양쪽이 동시에 싸운다: RULES.combat 의 접전(rounds)마다 두 부대가 함께 공격하고, 그 접전의 피해가 동시에 들어간다.
 // 근접은 두 부대가 함께 돌진해 맞붙고, 원거리(2칸 이상)는 화면을 둘로 나눠 탄이 가운데 경계를 넘어 오간다.
-// 쓰러진 병사는 맞은 반대쪽 위로 튕겨 올라 빙글 돌며 떨어지다 사라진다. 아군은 항상 왼쪽, 적은 오른쪽.
+// 쓰러진 병사는 하얗게 질려 맞은 반대쪽 하늘 높이 솟구쳤다가 빙글 돌며 떨어져 사라진다. 아군은 항상 왼쪽, 적은 오른쪽.
+// 맞을 때마다 맞은 병사 머리 위에 피해 숫자가 튀어 오르고, 정보판 위 별 모양에 그 편이 받은 피해 합계가 쌓인다.
 (function () {
   const FIGHT = {};
   let scene, cam, bgMesh, bgMat;
@@ -139,6 +140,9 @@
         s.querySelector('.fstat').textContent = `${DATA.KIND[u.troop && st[u.uid].thp > 0 ? u.troop.kind : u.kind].name} · Lv${u.lv}`;
         setBars(cls, u, st[u.uid].thp, st[u.uid].hp);
       };
+      ui.querySelector('.fnums').innerHTML = '';
+      ui.querySelectorAll('.ftot').forEach((e) => { e.classList.remove('on', 'pop'); e.querySelector('b').textContent = ''; });
+      tot = { L: 0, R: 0 };
       ui.querySelector('.fvs small').textContent = res.rel > 0 ? `${a.name} 상성 우위` : res.rel < 0 ? `${a.name} 상성 열세` : '';
       setSide('L', L); setSide('R', Rr);
 
@@ -239,8 +243,16 @@
           const heroF = s.to.find((f) => f.hero);
           // 맞는 쪽: 병사 몇 명과 (병사가 없거나 영웅 피해가 있으면) 영웅이 번쩍
           const pool = soldiers.slice().sort(() => Math.random() - 0.5).slice(0, 3);
+          const nS = pool.length;
           if (dH > 0 || !pool.length) pool.push(heroF);
-          pool.forEach((v, k) => hitFx(s.from.find((f) => f.alive) || s.from[0], v, s.au, far, k === 0));
+          pool.forEach((v, k) => {
+            if (!v || !v.alive) return;
+            hitFx(s.from.find((f) => f.alive) || s.from[0], v, s.au, far, k === 0);
+            // 피해 숫자: 병사 피해는 맞은 병사들이 나눠 받고, 영웅은 영웅 피해(병사가 없으면 전부)
+            const n = v.hero ? (dH > 0 ? dH : dT) : dT / nS;
+            if (n > 0.05) dmgNum(v, n);
+          });
+          addTotal(s.toSide, dT + dH);
           const keep = figN(s.du, S.thp);
           while (s.to.filter((f) => !f.hero && f.alive).length > keep) die(s.to.filter((f) => !f.hero && f.alive).sort((p, q) => Math.abs(p.x) - Math.abs(q.x))[0]);
           setBars(s.toSide, s.du, S.thp, S.hp);
@@ -254,15 +266,43 @@
 
   const isRanged = (src, au) => { const kind = src.hero ? au.kind : au.troop && au.troop.kind; return au.rng > 1 || kind === 'arch'; };
 
-  // 쓰러질 때 (랑그릿사식): 맞은 반대쪽 위로 튕겨 올라 빙글 돌며 떨어지다 사라진다
+  // 쓰러질 때 (랑그릿사식): 하얗게 질려 맞은 반대쪽 하늘 높이 솟구쳤다가, 빙글 돌며 원래 서 있던 높이까지 떨어지면 사라진다
+  const FLY_G = 22; // 날아오른 몸에 걸리는 중력
   function die(f) {
     if (!f || !f.alive) return;
     f.alive = false;
     if (f.shadow) f.shadow.visible = false;
-    const away = f.side === 'L' ? -1 : 1, k = f.hero ? 0.6 : 1;
-    f.fly = { vx: away * (2.4 + Math.random() * 2.6) * k, vy: (5 + Math.random() * 2.5) * k, w: -away * (6 + Math.random() * 6) * k, t: 0 };
+    const away = f.side === 'L' ? -1 : 1, k = f.hero ? 0.8 : 1;
+    f.fly = { vx: away * (1.4 + Math.random() * 1.8) * k, vy: (10 + Math.random() * 2.6) * k, w: -away * (5 + Math.random() * 5), t: 0, y0: f.rig.g.position.y, land: 0 };
     f.rig.c.speed = 0.25; // 자세는 맞은 순간에서 거의 멈춘다
     f.rig.c.mesh.renderOrder += 60; // 날아가는 동안 다른 병사 앞에
+    f.flashT = null; f.rig.c.setFlash(1); // 하얀 실루엣
+  }
+
+  // 피해 숫자: 맞은 몸 머리 위에서 크게 튀어나왔다가 위로 떠오르며 사라진다 (화면 좌표로 옮겨 HTML 글자로)
+  let tot = { L: 0, R: 0 };
+  function toScreen(x, y, side) {
+    const W = innerWidth, H = innerHeight;
+    let c = cam, x0 = 0, w = W;
+    if (split) { const hw = Math.floor(W / 2); c = side === 'L' ? camL : camR; x0 = side === 'L' ? 0 : hw; w = side === 'L' ? hw : W - hw; }
+    return [x0 + ((x - c.left) / (c.right - c.left)) * w, ((c.top - y) / (c.top - c.bottom)) * H];
+  }
+  function dmgNum(f, n) {
+    const p = f.rig.g.position, [sx, sy] = toScreen(p.x + (Math.random() - 0.5) * 0.3, p.y + lift(f) + (f.hero ? 2.3 : 1.4) + Math.random() * 0.3, f.side);
+    const e = document.createElement('div');
+    e.className = 'fnum' + (f.hero ? ' hero' : '');
+    e.textContent = Math.max(1, Math.round(n));
+    e.style.left = sx + 'px'; e.style.top = sy + 'px';
+    el().querySelector('.fnums').appendChild(e);
+    setTimeout(() => e.remove(), 1000);
+  }
+  // 그 편이 받은 피해 합계 (정보판 위 별 모양)
+  function addTotal(side, n) {
+    if (n <= 0) return;
+    tot[side] += n;
+    const e = el().querySelector('.fside.' + side + ' .ftot');
+    e.querySelector('b').textContent = Math.round(tot[side]);
+    e.classList.add('on'); e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop');
   }
 
   // 분할 화면을 건너는 탄: 쏜 쪽 화면 끝으로 사라졌다가 맞는 쪽 화면에서 날아든다
@@ -323,6 +363,7 @@
     for (const f of actors) { scene.remove(f.rig.g); f.rig.dispose(); }
     for (const x of fxs) { scene.remove(x.m); x.m.material.dispose(); if (x.beam) x.m.geometry.dispose(); }
     actors = []; fxs = []; tl = []; tweens.length = 0;
+    el().querySelector('.fnums').innerHTML = '';
     split = false;
     el().classList.remove('split');
     el().classList.add('hidden');
@@ -347,12 +388,18 @@
       f.rig.update(dt);
       if (f.air && f.alive) f.rig.c.root.position.y = f.by0 + lift(f);
       if (f.flashT != null) { const k = (T - f.flashT) / 0.18; f.rig.c.setFlash(k >= 1 ? 0 : k < 0.3 ? 1 : (1 - k) / 0.7); if (k >= 1) f.flashT = null; }
-      if (f.fly) { // 튕겨 날아가 떨어지기
+      if (f.fly) { // 솟구쳤다 떨어지기: 원래 높이까지 떨어지면 바닥에 닿은 채 금세 사라진다
         const q = f.fly, g = f.rig.g;
-        q.t += dt; q.vy -= 18 * dt;
-        g.position.x += q.vx * dt; g.position.y += q.vy * dt; g.rotation.z += q.w * dt;
-        f.rig.c.setOpacity(Math.max(0, Math.min(1, (1.1 - q.t) / 0.45)));
-        if (q.t > 1.15) { g.visible = false; f.fly = null; }
+        q.t += dt;
+        if (!q.land) {
+          q.vy -= FLY_G * dt;
+          g.position.x += q.vx * dt; g.position.y += q.vy * dt; g.rotation.z += q.w * dt;
+          if (q.vy < 0 && g.position.y <= q.y0) { g.position.y = q.y0; q.land = q.t; }
+        } else {
+          const k = (q.t - q.land) / 0.25;
+          f.rig.c.setOpacity(Math.max(0, 1 - k));
+          if (k >= 1) { g.visible = false; f.fly = null; }
+        }
       }
     }
     for (let i = fxs.length - 1; i >= 0; i--) {
