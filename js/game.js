@@ -654,6 +654,19 @@
     placeCamera();
   }, { passive: false });
   addEventListener('keydown', (e) => {
+    // ESC = 뒤로: 창 닫기 → 정보 창 닫기 → 앞 화면으로
+    if (e.code === 'Escape' && mode !== 'talk' && mode !== 'fight') {
+      const m = $('modal');
+      if (!m.classList.contains('hidden')) { e.preventDefault(); m.click(); return; }
+      if (mode === 'town') { const out = document.querySelector('#townHud .tn-out'); if (out) out.click(); return; }
+      if (mode === 'screen') {
+        const info = $('screen').querySelector('.wscr .winfo.on'); // 전환용으로 복제해 둔 옛 화면(#wipeOld)은 빼고
+        if (info) { info.classList.remove('on'); return; }
+        const back = $('screen').querySelector('#pBack, #sBack');
+        if (back) { e.preventDefault(); back.click(); }
+        return;
+      }
+    }
     if (mode === 'talk') { if (['Enter', 'Space', 'KeyZ'].includes(e.code)) TALK.next(); if (e.code === 'Escape') TALK.askSkip(); return; }
     if (mode === 'fight') { if (['Enter', 'Space', 'Escape', 'KeyZ'].includes(e.code)) FIGHT.skip(); return; }
     if (mode !== 'map') return;
@@ -1414,7 +1427,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.03';
+  const GAME_VERSION = '0.04';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -1537,7 +1550,7 @@
     $('sHero').onclick = () => { AU.play('lo_click', 0.6); heroRoster(); };
     // 지도 어디든 누르면 부대가 그 자리까지 걸어간다. 지점 근처를 누르면 그 지점에 붙어 멈추고, 도착하면 정보 창
     let moving = 0;
-    const map = document.querySelector('.wscr .wmap'), tok = $('wTok');
+    const map = $('screen').querySelector('.wscr .wmap'), tok = $('screen').querySelector('#wTok');
     const SPEED = 0.32; // 지도 너비 비율 / 초
     async function walkTo(x, y, node) {
       const my = ++moving;
@@ -1584,7 +1597,7 @@
       }, 50);
     }
     stageSel = here;
-    document.querySelectorAll('.wnode').forEach((b) => b.classList.toggle('sel', b.dataset.n === String(here)));
+    $('screen').querySelectorAll('.wnode').forEach((b) => b.classList.toggle('sel', b.dataset.n === String(here)));
   }
   // 도착한 지점의 정보 창을 오른쪽에 띄운다 (도착 전에는 숨김)
   function placeInfo() {
@@ -1596,7 +1609,7 @@
   // 오른쪽 정보 창: 지점의 종류에 따라 할 수 있는 일
   function nodeInfo() {
     const id = save.node;
-    document.querySelectorAll('.wnode').forEach((b) => b.classList.toggle('sel', b.dataset.n === String(id)));
+    $('screen').querySelectorAll('.wnode').forEach((b) => b.classList.toggle('sel', b.dataset.n === String(id)));
     if (id === WT) {
       const nw = sideNew();
       $('sInfo').innerHTML = `<button class="wclose" onclick="this.parentElement.classList.remove('on')">✕</button><div class="wi-top"><span class="wi-no wi-town">TOWN</span><div class="wi-name">${TOWN.name}<em class="town">${TOWN.sub}</em></div></div>
