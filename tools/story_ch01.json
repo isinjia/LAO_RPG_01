@@ -3686,6 +3686,844 @@
  {
   "bgm_start": "07 BGM_Talk_01",
   "bgm_end": "07 BGM_Talk_01",
+  "key": "Ch01Stage01Ex",
+  "idx": "1-1Ex",
+  "name": "싸이클롭스의 보물",
+  "desc": "LRL은 자신의 숨겨진 유실물을 찾아달라고 부탁한다.",
+  "start": [
+   {
+    "id": 1,
+    "who": "LRL",
+    "model": "PECS_LRL_N",
+    "expr": "PECS_LRL_N_Idle",
+    "text": "크흠... 크흠... 크윽! 이런 불찰이라니...\n원숭이도 나무에 떨어지는 건가?",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 2,
+    "choices": [],
+    "cast": {
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      1
+     ]
+    },
+    "spk": "C",
+    "place": [
+     "함교",
+     "그리폰과 LRL의 언쟁"
+    ],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {
+     "C": 1
+    }
+   },
+   {
+    "id": 2,
+    "who": "LRL",
+    "model": "PECS_LRL_N",
+    "expr": "PECS_LRL_N_Anger",
+    "text": "잠깐, 나의 권속이여. 왜 아무런 말을 하지 않는 건가?\n진조가 이리 고민을 하는데?",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 3,
+    "choices": [],
+    "cast": {
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Anger",
+      1
+     ]
+    },
+    "spk": "C",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 3,
+    "who": "P/A-00 그리폰",
+    "model": "BR_PA00EL_N",
+    "expr": "BR_PA00EL_N_Blunt",
+    "text": "응? 야! 여기 있었냐?\n이번엔 인간을 괴롭히고 있어? 이리 와! 그냥 아주 혼나야 하지?",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 4,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {
+     "L": 1
+    },
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 4,
+    "who": "LRL",
+    "model": "PECS_LRL_N",
+    "expr": "PECS_LRL_N_Anger",
+    "text": "이씨! 왜? 내가 권속한테 부탁하는데 네가 무슨 상관인데?",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 5,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Anger",
+      1
+     ]
+    },
+    "spk": "C",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 5,
+    "who": "P/A-00 그리폰",
+    "model": "BR_PA00EL_N",
+    "expr": "BR_PA00EL_N_Anger",
+    "text": "쓸 데 없는 걸로 인간한테 징징거리면 안된다고 콘스탄챠가 말했을 텐데?\n응? 이걸 그냥 콱!",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 6,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Anger",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 6,
+    "who": "LRL",
+    "model": "PECS_LRL_N",
+    "expr": "PECS_LRL_N_Scare",
+    "text": "히익! 때, 때리기만 해봐! 나도 가만히 안 있을 거니까!",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": null,
+    "choices": [
+     [
+      "무슨 일인데?",
+      7
+     ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Scare",
+      1
+     ]
+    },
+    "spk": "C",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 7,
+    "who": "P/A-00 그리폰",
+    "model": "BR_PA00EL_N",
+    "expr": "BR_PA00EL_N_Blunt",
+    "text": "아, 별 거 아냐. 그냥 자기 일기장을 등대 근처에 두고 왔는데 \n혼자 가기 무서우니까 징징거리는 거야.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 8,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 8,
+    "who": "LRL",
+    "model": "PECS_LRL_N",
+    "expr": "PECS_LRL_N_Anger",
+    "text": "일기장 아니거든? 억겁의 고대의 잊혀진 기록이거든?",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 9,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Anger",
+      1
+     ]
+    },
+    "spk": "C",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 9,
+    "who": "P/A-00 그리폰",
+    "model": "BR_PA00EL_N",
+    "expr": "BR_PA00EL_N_Blunt",
+    "text": "일기장 아니면 맨날 쓰는 망상장이겠지. \n어쨌든 안돼! 전투가 애들 장난이냐?",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 10,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 10,
+    "who": "LRL",
+    "model": "PECS_LRL_N",
+    "expr": "PECS_LRL_N_Sulk",
+    "text": "... 일기장만 있는 거 아니거든?\n라비아타가 꼭 가지고 있으라고 한 지도 데이터도 거기에 끼워놨거든?",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 11,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Sulk",
+      1
+     ]
+    },
+    "spk": "C",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 11,
+    "who": "P/A-00 그리폰",
+    "model": "BR_PA00EL_N",
+    "expr": "BR_PA00EL_N_Embarrass",
+    "text": "뭐? 진짜야?\n흥, 어차피 거짓말이지? 그 일기장을 가지러 가고 싶으니까...",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 12,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 12,
+    "who": "LRL",
+    "model": "PECS_LRL_N",
+    "expr": "PECS_LRL_N_Anger",
+    "text": "거짓말 아냐! 라비아타가 그거 위험한 적 위치 기록해 놓은 거라고 \n콘스탄챠한테 꼭 전달하라고 했단 말야.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 13,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Anger",
+      1
+     ]
+    },
+    "spk": "C",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 13,
+    "who": "P/A-00 그리폰",
+    "model": "BR_PA00EL_N",
+    "expr": "BR_PA00EL_N_Disappoint",
+    "text": "... 그럼 왜 그 이야기를 안 한 건데?\n그 이야기를 해야 할 거 아냐.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 14,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Disappoint",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 14,
+    "who": "LRL",
+    "model": "PECS_LRL_N",
+    "expr": "PECS_LRL_N_Sulk",
+    "text": "씨잉... 이야기 하기도 전에 머리 때렸잖아!\n어쨌든 그거 가지러 가야 해. 권속, 응?",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 15,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Sulk",
+      1
+     ]
+    },
+    "spk": "C",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 15,
+    "who": "P/A-00 그리폰",
+    "model": "BR_PA00EL_N",
+    "expr": "BR_PA00EL_N_Embarrass",
+    "text": "하아... 인간, 거짓말은 아닌 것 같은데 어떻게 해야 해?\n아무래도 출동을 해야 하겠지?",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": null,
+    "choices": [
+     [
+      "그런 자료가 있다면 출동해야겠지.",
+      16
+     ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 16,
+    "who": "P/A-00 그리폰",
+    "model": "BR_PA00EL_N",
+    "expr": "BR_PA00EL_N_Blunt",
+    "text": "그래. 그럼 애들한테 출진 준비를 시킬게. \n그럼 지휘를 부탁해.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": null,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Idle",
+      0
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   }
+  ],
+  "mid": [],
+  "end": [
+   {
+    "id": 1,
+    "who": "LRL",
+    "model": "PECS_LRL_N",
+    "expr": "PECS_LRL_N_M2",
+    "text": "큭큭... 삼라만상의 비밀이 담긴 고서가 내 손에 들어 왔도다.",
+    "bg": "BG_LightTower",
+    "cg": "",
+    "next": 2,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_M2",
+      1
+     ]
+    },
+    "spk": "C",
+    "place": [
+     "등대 앞",
+     "등대 외곽 창고의 한쪽 구석에서"
+    ],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {
+     "L": 1,
+     "C": 1
+    }
+   },
+   {
+    "id": 2,
+    "who": "P/A-00 그리폰",
+    "model": "BR_PA00EL_N",
+    "expr": "BR_PA00EL_N_Blunt",
+    "text": "뭐, 삼라만상은 됐고 라비아타가 맡긴 지도나 내 놓으시지?",
+    "bg": "BG_LightTower",
+    "cg": "",
+    "next": 3,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_M2",
+      0
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 3,
+    "who": "LRL",
+    "model": "PECS_LRL_N",
+    "expr": "PECS_LRL_N_Laugh",
+    "text": "크크큭. 역시 어리석은 자... 이 비밀 앞에서도 속된 지식만을 탐하다니.\n그렇다면 넘겨주지.",
+    "bg": "BG_LightTower",
+    "cg": "",
+    "next": 4,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Laugh",
+      1
+     ]
+    },
+    "spk": "C",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 4,
+    "who": "P/A-00 그리폰",
+    "model": "BR_PA00EL_N",
+    "expr": "BR_PA00EL_N_Blunt",
+    "text": "하아... 나도 지친다. 그러시든지.\n이 메모리야?",
+    "bg": "BG_LightTower",
+    "cg": "",
+    "next": 5,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Laugh",
+      0
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 5,
+    "who": "LRL",
+    "model": "PECS_LRL_N",
+    "expr": "PECS_LRL_N_Smile",
+    "text": "그런 하찮은 것은 아무래도 좋다.\n크큭.",
+    "bg": "BG_LightTower",
+    "cg": "",
+    "next": 6,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_Smile",
+      1
+     ]
+    },
+    "spk": "C",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 6,
+    "who": "LRL",
+    "model": "PECS_LRL_N",
+    "expr": "PECS_LRL_N_M2",
+    "text": "진혈의 사이클롭스 프린세스의 기록이 계속되겠군.\n세계의 멸망의 서를 계속할 수 있겠어.",
+    "bg": "BG_LightTower",
+    "cg": "",
+    "next": null,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ],
+     "C": [
+      "PECS_LRL_N",
+      "PECS_LRL_N_M2",
+      1
+     ]
+    },
+    "spk": "C",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   }
+  ],
+  "waves": [
+   [
+    [
+     "MOB_MP_NightChickMEX_TU",
+     20,
+     "강화형 칙 런쳐"
+    ],
+    [
+     "MOB_MP_NightChickEX_TU",
+     20,
+     "강화형 나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickEX_TU",
+     20,
+     "강화형 나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickMEX_TU",
+     20,
+     "강화형 칙 런쳐"
+    ],
+    [
+     "MOB_MP_NightChickEX_TU",
+     20,
+     "강화형 나이트 칙"
+    ]
+   ],
+   [
+    [
+     "MOB_MP_NightChickMEX_TU",
+     20,
+     "강화형 칙 런쳐"
+    ],
+    [
+     "MOB_MP_NightChickDE_TU2",
+     20,
+     "나이트 칙 디텍터"
+    ],
+    [
+     "MOB_MP_NightChickSI_TU2",
+     20,
+     "나이트 칙 실더 개"
+    ],
+    [
+     "MOB_MP_NightChickEX_TU",
+     20,
+     "강화형 나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickMEX_TU",
+     20,
+     "강화형 칙 런쳐"
+    ],
+    [
+     "MOB_MP_NightChickDE_TU2",
+     20,
+     "나이트 칙 디텍터"
+    ]
+   ],
+   [
+    [
+     "MOB_MP_NightChickSI_TU2",
+     20,
+     "나이트 칙 실더 개"
+    ],
+    [
+     "MOB_MP_NightChickMEX_TU",
+     20,
+     "강화형 칙 런쳐"
+    ],
+    [
+     "MOB_MP_NightChickDE_TU2",
+     20,
+     "나이트 칙 디텍터"
+    ],
+    [
+     "MOB_MP_NightChickMEX_TU",
+     20,
+     "강화형 칙 런쳐"
+    ],
+    [
+     "MOB_MP_NightChickSI_TU2",
+     20,
+     "나이트 칙 실더 개"
+    ],
+    [
+     "MOB_MP_NightChickMEX_TU",
+     20,
+     "강화형 칙 런쳐"
+    ]
+   ],
+   [
+    [
+     "MOB_MP_NightChickMEX_TU",
+     20,
+     "강화형 칙 런쳐"
+    ],
+    [
+     "MOB_MP_NightChickEX_TU",
+     20,
+     "강화형 나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickSI_TU2",
+     20,
+     "나이트 칙 실더 개"
+    ],
+    [
+     "MOB_MP_NightChickEX_TU",
+     20,
+     "강화형 나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickDE_TU2",
+     20,
+     "나이트 칙 디텍터"
+    ],
+    [
+     "MOB_MP_NightChickMEX_TU",
+     20,
+     "강화형 칙 런쳐"
+    ],
+    [
+     "MOB_MP_NightChickEX_TU",
+     20,
+     "강화형 나이트 칙"
+    ]
+   ]
+  ]
+ },
+ {
+  "bgm_start": "07 BGM_Talk_01",
+  "bgm_end": "07 BGM_Talk_01",
   "key": "Ch01Stage02",
   "idx": "1-2",
   "name": "등대로!",
@@ -5016,6 +5854,476 @@
      "MOB_MP_NightChickM_N",
      2,
      "나이트 칙 런처"
+    ]
+   ]
+  ]
+ },
+ {
+  "bgm_start": "07 BGM_Talk_01",
+  "bgm_end": "07 BGM_Talk_01",
+  "key": "Ch01Stage02Ex",
+  "idx": "1-2Ex",
+  "name": "또 다른 괴물",
+  "desc": "그리폰과 요안나는 또 다른 빅칙의 위치를 찾고 그 빅칙을 파괴할 것을 건의한다.",
+  "start": [
+   {
+    "id": 1,
+    "who": "P/A-00 그리폰",
+    "model": "BR_PA00EL_N",
+    "expr": "BR_PA00EL_N_Resolve",
+    "text": "그렇지? 요안나? 이거 빅 칙에 대한 거 맞지?\n봐! 내 말이 맞다니까?",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 2,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Resolve",
+      1
+     ],
+     "R": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Serious",
+      0
+     ]
+    },
+    "spk": "L",
+    "place": [
+     "함교",
+     "지도 데이터 논쟁 중인 요안나와 그리폰"
+    ],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {
+     "L": 1,
+     "R": 1
+    }
+   },
+   {
+    "id": 2,
+    "who": "프레스터 요안나",
+    "model": "DS_Johanna_N",
+    "expr": "DS_Johanna_N_Serious",
+    "text": "아무래도 그렇군. 빅 칙이 한 대가 아니었다니.\n게다가 이 위치는...",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": null,
+    "choices": [
+     [
+      "무슨 이야기를 심각하게 하고 있어?",
+      3
+     ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Resolve",
+      0
+     ],
+     "R": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Serious",
+      1
+     ]
+    },
+    "spk": "R",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 3,
+    "who": "프레스터 요안나",
+    "model": "DS_Johanna_N",
+    "expr": "DS_Johanna_N_Question",
+    "text": "아, 주군이신가? 그러지 않아도 이 일을 보고하기 위해 찾고 있었네.\n아무래도 LRL이 준 위치가 위협적인 철충의 위치를 표시한 것 같네.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 4,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Resolve",
+      0
+     ],
+     "R": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Question",
+      1
+     ]
+    },
+    "spk": "R",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 4,
+    "who": "P/A-00 그리폰",
+    "model": "BR_PA00EL_N",
+    "expr": "BR_PA00EL_N_Blunt",
+    "text": "빅 칙이라고 한 번 싸워봤지?\n그 커다란 철충. 그 자식이 이 근처에 숨어 있는 모양이야.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 5,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Question",
+      0
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 5,
+    "who": "P/A-00 그리폰",
+    "model": "BR_PA00EL_N",
+    "expr": "BR_PA00EL_N_Blunt",
+    "text": "라비아타가 노리고 있었나 본데...\n뭐 일단 본부 쪽은 흩어졌으니까 우리가 처리해야 할 것 같아.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 6,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Question",
+      0
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 6,
+    "who": "P/A-00 그리폰",
+    "model": "BR_PA00EL_N",
+    "expr": "BR_PA00EL_N_Blunt",
+    "text": "어때? 인간? \n빨리 처리하고 이 근처를 안전하게 만들어야 할 것 같은데?",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": null,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ],
+     "R": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Question",
+      0
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   }
+  ],
+  "mid": [],
+  "end": [
+   {
+    "id": 1,
+    "who": "프레스터 요안나",
+    "model": "DS_Johanna_N",
+    "expr": "DS_Johanna_N_Smile",
+    "text": "언제나처럼 인상적인 지휘였네. 주군.\n저런 위협적인 적을 가볍게 이기긴 힘들지.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 2,
+    "choices": [],
+    "cast": {
+     "R": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ]
+    },
+    "spk": "R",
+    "place": [
+     "함교",
+     "전투가 끝난 후, 찾아온 요안나"
+    ],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {
+     "R": 1
+    }
+   },
+   {
+    "id": 2,
+    "who": "프레스터 요안나",
+    "model": "DS_Johanna_N",
+    "expr": "DS_Johanna_N_Smile",
+    "text": "아닐세. 과거에 우리만 있을 때는 이렇게 연전연승을 하진 못했다네.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 3,
+    "choices": [],
+    "cast": {
+     "R": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ]
+    },
+    "spk": "R",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 3,
+    "who": "프레스터 요안나",
+    "model": "DS_Johanna_N",
+    "expr": "DS_Johanna_N_Serious",
+    "text": "처음엔 주군이 우리에게 철충을 완전히 파괴하라는 명령만 내려줘도\n충분하다고 생각했었는데...",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 4,
+    "choices": [],
+    "cast": {
+     "R": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Serious",
+      1
+     ]
+    },
+    "spk": "R",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 4,
+    "who": "프레스터 요안나",
+    "model": "DS_Johanna_N",
+    "expr": "DS_Johanna_N_Smile",
+    "text": "주군의 체계적인 지휘와 전술을 보면 \n과거의 우리가 제대로 한 게 맞는지 의문이 들 때가 많다네.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 5,
+    "choices": [],
+    "cast": {
+     "R": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ]
+    },
+    "spk": "R",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 5,
+    "who": "프레스터 요안나",
+    "model": "DS_Johanna_N",
+    "expr": "DS_Johanna_N_Shy",
+    "text": "언제나 고맙네. 주군. \n앞으로도 우릴 잘 이끌어 주게.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": null,
+    "choices": [],
+    "cast": {
+     "R": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Shy",
+      1
+     ]
+    },
+    "spk": "R",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   }
+  ],
+  "waves": [
+   [
+    [
+     "MOB_MP_NightChickEX_TU",
+     22,
+     "강화형 나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickMEX_TU",
+     22,
+     "강화형 칙 런쳐"
+    ],
+    [
+     "MOB_MP_NightChickSP_N",
+     22,
+     "칙 스나이퍼"
+    ],
+    [
+     "MOB_MP_NightChickEX_TU",
+     22,
+     "강화형 나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickMEX_TU",
+     22,
+     "강화형 칙 런쳐"
+    ]
+   ],
+   [
+    [
+     "MOB_MP_NightChickSI_TU2",
+     22,
+     "나이트 칙 실더 개"
+    ],
+    [
+     "MOB_MP_NightChickSP_N",
+     22,
+     "칙 스나이퍼"
+    ],
+    [
+     "MOB_MP_NightChickMEX_TU",
+     22,
+     "강화형 칙 런쳐"
+    ],
+    [
+     "MOB_MP_NightChickDE_TU2",
+     22,
+     "나이트 칙 디텍터"
+    ],
+    [
+     "MOB_MP_NightChickSI_TU2",
+     22,
+     "나이트 칙 실더 개"
+    ],
+    [
+     "MOB_MP_NightChickEX_TU",
+     22,
+     "강화형 나이트 칙"
+    ]
+   ],
+   [
+    [
+     "MOB_MP_NightChickMEX_TU",
+     22,
+     "강화형 칙 런쳐"
+    ],
+    [
+     "MOB_MP_NightChickEX_TU",
+     22,
+     "강화형 나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickSI_TU2",
+     22,
+     "나이트 칙 실더 개"
+    ],
+    [
+     "MOB_MP_NightChickDE_TU2",
+     22,
+     "나이트 칙 디텍터"
+    ],
+    [
+     "MOB_MP_NightChickSP_N",
+     22,
+     "칙 스나이퍼"
+    ],
+    [
+     "MOB_MP_NightChickEX_TU",
+     22,
+     "강화형 나이트 칙"
+    ]
+   ],
+   [
+    [
+     "MOB_MP_NightChickMEX_TU",
+     22,
+     "강화형 칙 런쳐"
+    ],
+    [
+     "MOB_MP_NightChickDE_TU2",
+     22,
+     "나이트 칙 디텍터"
+    ],
+    [
+     "MOB_MP_NightChickSI_TU2",
+     22,
+     "나이트 칙 실더 개"
+    ],
+    [
+     "MOB_MP_BigChickEX_TU",
+     25,
+     "시작형 빅 칙"
+    ],
+    [
+     "MOB_MP_NightChickMEX_TU",
+     22,
+     "강화형 칙 런쳐"
+    ],
+    [
+     "MOB_MP_NightChickDE_TU2",
+     22,
+     "나이트 칙 디텍터"
     ]
    ]
   ]
@@ -7409,6 +8717,805 @@
   ]
  },
  {
+  "bgm_start": "07 BGM_Talk_01",
+  "bgm_end": "07 BGM_Talk_01",
+  "key": "Ch01Stage03B",
+  "idx": "1-3B",
+  "name": "포츈의 의뢰 I",
+  "desc": "포츈은 흩어진 바이오로이드들을 찾기 위한 전투를 부탁한다.",
+  "start": [
+   {
+    "id": 1,
+    "who": "포츈",
+    "model": "PECS_Fortune_N",
+    "expr": "PECS_Fortune_N_Idle",
+    "text": "응? 사령관님 왔어? 사령관님, 포츈 누나가 부탁이 좀 있거든?",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": null,
+    "choices": [
+     [
+      "무슨 부탁?",
+      2
+     ]
+    ],
+    "cast": {
+     "L": [
+      "PECS_Fortune_N",
+      "PECS_Fortune_N_Idle",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [
+     "함교",
+     "포츈의 면담 요청"
+    ],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {
+     "L": 1
+    }
+   },
+   {
+    "id": 2,
+    "who": "포츈",
+    "model": "PECS_Fortune_N",
+    "expr": "PECS_Fortune_N_Worry",
+    "text": "우리 메인 베이스가 습격을 당한 건 알고 있지?\n아무래도 흩어진 바이오로이드들이 좀 많을 거거든?",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 3,
+    "choices": [],
+    "cast": {
+     "L": [
+      "PECS_Fortune_N",
+      "PECS_Fortune_N_Worry",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 3,
+    "who": "포츈",
+    "model": "PECS_Fortune_N",
+    "expr": "PECS_Fortune_N_Worry",
+    "text": "휴... 그래서 걔네들이 다치거나 하기 전에 얼른 다시 여기로라도 합류를 했으면 \n좋겠거든?",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": null,
+    "choices": [
+     [
+      "내가 해 줘야 할 일이 있어?",
+      4
+     ]
+    ],
+    "cast": {
+     "L": [
+      "PECS_Fortune_N",
+      "PECS_Fortune_N_Worry",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 4,
+    "who": "포츈",
+    "model": "PECS_Fortune_N",
+    "expr": "PECS_Fortune_N_Smile",
+    "text": "역시 사령관님. 사실 포츈 누나가 그 이야기를 하려고 말을 꺼낸 거거든?\n동생들이 다시 합류하려면 통신이 일단 원활해야 할 테니까.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 5,
+    "choices": [],
+    "cast": {
+     "L": [
+      "PECS_Fortune_N",
+      "PECS_Fortune_N_Smile",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 5,
+    "who": "포츈",
+    "model": "PECS_Fortune_N",
+    "expr": "PECS_Fortune_N_Idle",
+    "text": "우리 등대에 통신기를 좀 설치해 줬으면 좋겠거든?\n아무래도 대형 신호 발신기를 설치할 높은 데가 많진 않으니까.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": null,
+    "choices": [
+     [
+      "알았어.",
+      6
+     ]
+    ],
+    "cast": {
+     "L": [
+      "PECS_Fortune_N",
+      "PECS_Fortune_N_Idle",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 6,
+    "who": "포츈",
+    "model": "PECS_Fortune_N",
+    "expr": "PECS_Fortune_N_Smile",
+    "text": "후후. 역시 사령관님. 누나 완전 감동...\n그럼 아이들에게 출전 준비를 하라고 말할게. 완전 고마워. 사령관님.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": null,
+    "choices": [],
+    "cast": {
+     "L": [
+      "PECS_Fortune_N",
+      "PECS_Fortune_N_Smile",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   }
+  ],
+  "mid": [],
+  "end": [
+   {
+    "id": 1,
+    "who": "포츈",
+    "model": "PECS_Fortune_N",
+    "expr": "PECS_Fortune_N_Smile",
+    "text": "좋아! 여기가 딱 좋은 자리거든? \n여기에 신호기를 가져와서 달면 문제 없는 거야.",
+    "bg": "BG_LightTower",
+    "cg": "",
+    "next": 2,
+    "choices": [],
+    "cast": {
+     "L": [
+      "PECS_Fortune_N",
+      "PECS_Fortune_N_Smile",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [
+     "등대 인근",
+     "전투가 끝난 후"
+    ],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {
+     "L": 1
+    }
+   },
+   {
+    "id": 2,
+    "who": "포츈",
+    "model": "PECS_Fortune_N",
+    "expr": "PECS_Fortune_N_Idle",
+    "text": "누나 완전 안심했거든.\n사령관님, 고마워.",
+    "bg": "BG_LightTower",
+    "cg": "",
+    "next": null,
+    "choices": [
+     [
+      "또 해 줄 게 있어?",
+      3
+     ]
+    ],
+    "cast": {
+     "L": [
+      "PECS_Fortune_N",
+      "PECS_Fortune_N_Idle",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 3,
+    "who": "포츈",
+    "model": "PECS_Fortune_N",
+    "expr": "PECS_Fortune_N_Smile",
+    "text": "헤헤. 사실 다음 일이 있긴 하거든? \n다른 곳에도 신호기를 설치할 곳이 좀 있어서...",
+    "bg": "BG_LightTower",
+    "cg": "",
+    "next": 4,
+    "choices": [],
+    "cast": {
+     "L": [
+      "PECS_Fortune_N",
+      "PECS_Fortune_N_Smile",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 4,
+    "who": "포츈",
+    "model": "PECS_Fortune_N",
+    "expr": "PECS_Fortune_N_Temptation",
+    "text": "앞으로도 잘 부탁해. 사령관님.",
+    "bg": "BG_LightTower",
+    "cg": "",
+    "next": null,
+    "choices": [],
+    "cast": {
+     "L": [
+      "PECS_Fortune_N",
+      "PECS_Fortune_N_Temptation",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   }
+  ],
+  "waves": [
+   [
+    [
+     "MOB_MP_NightChickS_N",
+     4,
+     "나이트 칙 실더"
+    ],
+    [
+     "MOB_MP_NightChickM_TU",
+     5,
+     "나이트 칙 런처"
+    ],
+    [
+     "MOB_MP_NightChick_TU",
+     4,
+     "나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickS_N",
+     4,
+     "나이트 칙 실더"
+    ],
+    [
+     "MOB_MP_NightChickM_TU",
+     5,
+     "나이트 칙 런처"
+    ]
+   ],
+   [
+    [
+     "MOB_MP_NightChickM_TU",
+     5,
+     "나이트 칙 런처"
+    ],
+    [
+     "MOB_MP_NightChickS_N",
+     4,
+     "나이트 칙 실더"
+    ],
+    [
+     "MOB_MP_NightChickDE_N",
+     5,
+     "나이트 칙 디텍터"
+    ],
+    [
+     "MOB_MP_NightChick_TU",
+     5,
+     "나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickM_TU",
+     5,
+     "나이트 칙 런처"
+    ]
+   ],
+   [
+    [
+     "MOB_MP_NightChickS_N",
+     5,
+     "나이트 칙 실더"
+    ],
+    [
+     "MOB_MP_NightChick_TU",
+     4,
+     "나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickDE_N",
+     5,
+     "나이트 칙 디텍터"
+    ],
+    [
+     "MOB_MP_NightChick_TU",
+     4,
+     "나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickS_N",
+     5,
+     "나이트 칙 실더"
+    ],
+    [
+     "MOB_MP_NightChick_TU",
+     4,
+     "나이트 칙"
+    ]
+   ]
+  ]
+ },
+ {
+  "bgm_start": "07 BGM_Talk_01",
+  "bgm_end": "07 BGM_Talk_01",
+  "key": "Ch01Stage03Ex",
+  "idx": "1-3Ex",
+  "name": "표본 수집",
+  "desc": "포츈은 철충의 감염 프로세스를 연구하기 위해 그 표본을 구해달라고 부탁한다.",
+  "start": [
+   {
+    "id": 1,
+    "who": "포츈",
+    "model": "PECS_Fortune_N",
+    "expr": "",
+    "text": "하아... 사령관님? 저번에 로봇 부품 구해다 준 거 있잖아. \n덕분에 포츈 누나가 그걸로 공부 좀 했거든?",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 2,
+    "choices": [],
+    "cast": {
+     "L": [
+      "PECS_Fortune_N",
+      "",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [
+     "함교",
+     "면담 요청을 한 포츈"
+    ],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {
+     "L": 1
+    }
+   },
+   {
+    "id": 2,
+    "who": "포츈",
+    "model": "PECS_Fortune_N",
+    "expr": "",
+    "text": "철충이 로봇을 감염시키는 문제 말야.\n제일 큰 문제가 그거잖아?",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 3,
+    "choices": [],
+    "cast": {
+     "L": [
+      "PECS_Fortune_N",
+      "",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 3,
+    "who": "포츈",
+    "model": "PECS_Fortune_N",
+    "expr": "",
+    "text": "로봇은 강력하긴 한데... 철충한테 감염이 되니까...\n누난 안타깝기도 하고 슬프기도 하거든... 누나 로봇 좋아하잖아.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 4,
+    "choices": [],
+    "cast": {
+     "L": [
+      "PECS_Fortune_N",
+      "",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 4,
+    "who": "포츈",
+    "model": "PECS_Fortune_N",
+    "expr": "",
+    "text": "그래서 그걸 좀 막고 싶은데 누나가 연구를 조금 하고 싶거든?\n누날 좀 도와줄 수 있을까?",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": null,
+    "choices": [
+     [
+      "어떻게 도와주면 될까?",
+      5
+     ]
+    ],
+    "cast": {
+     "L": [
+      "PECS_Fortune_N",
+      "",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 5,
+    "who": "포츈",
+    "model": "PECS_Fortune_N",
+    "expr": "",
+    "text": "누나가 감염 메커니즘 연구 때문에 구하고 싶은 부품이 좀 있거든?\n그걸 구해다 줄 수 있을까? 사령관님?",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 6,
+    "choices": [],
+    "cast": {
+     "L": [
+      "PECS_Fortune_N",
+      "",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 6,
+    "who": "포츈",
+    "model": "PECS_Fortune_N",
+    "expr": "",
+    "text": "그게 있으면 확실히 도움이 될 거야.\n일단 지휘 콘솔에 부품에 대한 정보는 넣어 놓을게. 부탁해용~!",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": null,
+    "choices": [],
+    "cast": {
+     "L": [
+      "PECS_Fortune_N",
+      "",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   }
+  ],
+  "mid": [],
+  "end": [
+   {
+    "id": 1,
+    "who": "포츈",
+    "model": "PECS_Fortune_N",
+    "expr": "PECS_Fortune_N_Idle",
+    "text": "아... 나 눈물이 날 것 같아.\n로봇 아가들의 시신을 보면 누나 너무 슬프거든?",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 2,
+    "choices": [],
+    "cast": {
+     "L": [
+      "PECS_Fortune_N",
+      "PECS_Fortune_N_Idle",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [
+     "함교",
+     "전투 이후 감사 인사를 위해 찾아온 포츈"
+    ],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {
+     "L": 1
+    }
+   },
+   {
+    "id": 2,
+    "who": "포츈",
+    "model": "PECS_Fortune_N",
+    "expr": "PECS_Fortune_N_Idle",
+    "text": "그래도 안돼. 마음을 굳게 먹어야 이 아이들의 복수를 해주지.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 3,
+    "choices": [],
+    "cast": {
+     "L": [
+      "PECS_Fortune_N",
+      "PECS_Fortune_N_Idle",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 3,
+    "who": "포츈",
+    "model": "PECS_Fortune_N",
+    "expr": "PECS_Fortune_N_Idle",
+    "text": "그리고 사령관 님, 정말 고마워. \n누나가 어떻게든 이 감염 메커니즘을 알아낼게.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 4,
+    "choices": [],
+    "cast": {
+     "L": [
+      "PECS_Fortune_N",
+      "PECS_Fortune_N_Idle",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 4,
+    "who": "포츈",
+    "model": "PECS_Fortune_N",
+    "expr": "PECS_Fortune_N_Idle",
+    "text": "로봇 아기들과 사령관 님을 위해서 말야.\n언젠간 로봇의 감염을 막아낼 수 있을 거야. 언젠간 말야.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": null,
+    "choices": [],
+    "cast": {
+     "L": [
+      "PECS_Fortune_N",
+      "PECS_Fortune_N_Idle",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   }
+  ],
+  "waves": [
+   [
+    [
+     "MOB_MP_NightChickSP_N",
+     24,
+     "칙 스나이퍼"
+    ],
+    [
+     "MOB_MP_NightChickMEX_TU",
+     24,
+     "강화형 칙 런쳐"
+    ],
+    [
+     "MOB_MP_NightChickSI_TU2",
+     24,
+     "나이트 칙 실더 개"
+    ],
+    [
+     "MOB_MP_NightChickMEX_TU",
+     24,
+     "강화형 칙 런쳐"
+    ],
+    [
+     "MOB_MP_NightChickSP_N",
+     24,
+     "칙 스나이퍼"
+    ],
+    [
+     "MOB_MP_NightChickMEX_TU",
+     24,
+     "강화형 칙 런쳐"
+    ]
+   ],
+   [
+    [
+     "MOB_MP_NightChickMEX_TU",
+     24,
+     "강화형 칙 런쳐"
+    ],
+    [
+     "MOB_MP_NightChickDE_TU2",
+     24,
+     "나이트 칙 디텍터"
+    ],
+    [
+     "MOB_MP_NightChickEX_TU",
+     24,
+     "강화형 나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickSP_N",
+     24,
+     "칙 스나이퍼"
+    ],
+    [
+     "MOB_MP_NightChickEX_TU",
+     24,
+     "강화형 나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickDE_TU2",
+     24,
+     "나이트 칙 디텍터"
+    ]
+   ],
+   [
+    [
+     "MOB_MP_NightChickSI_TU2",
+     24,
+     "나이트 칙 실더 개"
+    ],
+    [
+     "MOB_MP_NightChickEX_TU",
+     24,
+     "강화형 나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickDE_TU2",
+     24,
+     "나이트 칙 디텍터"
+    ],
+    [
+     "MOB_MP_NightChickEX_TU",
+     24,
+     "강화형 나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickSI_TU2",
+     24,
+     "나이트 칙 실더 개"
+    ],
+    [
+     "MOB_MP_NightChickEX_TU",
+     24,
+     "강화형 나이트 칙"
+    ]
+   ],
+   [
+    [
+     "MOB_MP_BigChickM_TU",
+     26,
+     "빅 칙 런쳐"
+    ],
+    [
+     "MOB_MP_BigChickEX_TU",
+     26,
+     "시작형 빅 칙"
+    ],
+    [
+     "MOB_MP_BigChickEX_TU",
+     26,
+     "시작형 빅 칙"
+    ],
+    [
+     "MOB_MP_BigChickM_TU",
+     26,
+     "빅 칙 런쳐"
+    ]
+   ]
+  ]
+ },
+ {
   "bgm_start": "09 BGM_Talk_03",
   "bgm_end": "07 BGM_Talk_01",
   "key": "Ch01Stage04",
@@ -8229,6 +10336,888 @@
      "MOB_MP_NightChick_TU",
      4,
      "나이트 칙"
+    ]
+   ]
+  ]
+ },
+ {
+  "bgm_start": "07 BGM_Talk_01",
+  "bgm_end": "07 BGM_Talk_01",
+  "key": "Ch01Stage04B",
+  "idx": "1-4B",
+  "name": "포츈의 의뢰 II",
+  "desc": "포츈은 흩어진 자매들을 찾기 위해 소형 신호 발생기 설치를 부탁한다.",
+  "start": [
+   {
+    "id": 1,
+    "who": "포츈",
+    "model": "PECS_Fortune_N",
+    "expr": "PECS_Fortune_N_Idle",
+    "text": "사실 우리 메인 베이스가 공격 받으면서 지침이 이거였거든?\n최대한 흩어져서 철충을 피하고 숨어라.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 2,
+    "choices": [],
+    "cast": {
+     "C": [
+      "PECS_Fortune_N",
+      "PECS_Fortune_N_Idle",
+      1
+     ]
+    },
+    "spk": "C",
+    "place": [
+     "함교",
+     "포츈의 면담 요청"
+    ],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {
+     "C": 1
+    }
+   },
+   {
+    "id": 2,
+    "who": "포츈",
+    "model": "PECS_Fortune_N",
+    "expr": "PECS_Fortune_N_Worry",
+    "text": "물론 고생은 좀 하겠지만... 적어도 그럼 죽진 않거든?\n포츈 누난 너무 가슴이 아픈 고야... 고생을 많이 하는게.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 3,
+    "choices": [],
+    "cast": {
+     "C": [
+      "PECS_Fortune_N",
+      "PECS_Fortune_N_Worry",
+      1
+     ]
+    },
+    "spk": "C",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 3,
+    "who": "포츈",
+    "model": "PECS_Fortune_N",
+    "expr": "PECS_Fortune_N_Idle",
+    "text": "그래서 사령관님에게 부탁을 하고 싶은 거거든?",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": null,
+    "choices": [
+     [
+      "부담 없이 부탁해.",
+      4
+     ]
+    ],
+    "cast": {
+     "C": [
+      "PECS_Fortune_N",
+      "PECS_Fortune_N_Idle",
+      1
+     ]
+    },
+    "spk": "C",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 4,
+    "who": "포츈",
+    "model": "PECS_Fortune_N",
+    "expr": "PECS_Fortune_N_Idle",
+    "text": "저번 등대에 설치한 신호 발생기는 완전 대형이라서 잘 잡아 내긴 하거든?\n하지만 신호를 방해하는 후미진 곳에는 전파가 닿지 않는단 말야.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 5,
+    "choices": [],
+    "cast": {
+     "C": [
+      "PECS_Fortune_N",
+      "PECS_Fortune_N_Idle",
+      1
+     ]
+    },
+    "spk": "C",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 5,
+    "who": "포츈",
+    "model": "PECS_Fortune_N",
+    "expr": "PECS_Fortune_N_Brave",
+    "text": "그래서 그런 사각 지대에도 소형 신호 발생기를 좀 설치했으면 좋겠거든?",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 6,
+    "choices": [],
+    "cast": {
+     "C": [
+      "PECS_Fortune_N",
+      "PECS_Fortune_N_Brave",
+      1
+     ]
+    },
+    "spk": "C",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 6,
+    "who": "포츈",
+    "model": "PECS_Fortune_N",
+    "expr": "PECS_Fortune_N_Temptation",
+    "text": "사령관님, 포츈 누나의 부탁을 들어줄고야?",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": null,
+    "choices": [],
+    "cast": {
+     "C": [
+      "PECS_Fortune_N",
+      "PECS_Fortune_N_Temptation",
+      1
+     ]
+    },
+    "spk": "C",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   }
+  ],
+  "mid": [],
+  "end": [
+   {
+    "id": 1,
+    "who": "포츈",
+    "model": "PECS_Fortune_N",
+    "expr": "PECS_Fortune_N_Brave",
+    "text": "자자, 모두들 여기거든? \n여기에다 설치를 하면 되는 거거든?",
+    "bg": "BG_CoastCity",
+    "cg": "",
+    "next": 2,
+    "choices": [],
+    "cast": {
+     "L": [
+      "PECS_Fortune_N",
+      "PECS_Fortune_N_Brave",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [
+     "도시 폐허 외곽",
+     "전투가 끝난 후"
+    ],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {
+     "L": 1
+    }
+   },
+   {
+    "id": 2,
+    "who": "P/A-00 그리폰",
+    "model": "BR_PA00EL_N",
+    "expr": "BR_PA00EL_N_Blunt",
+    "text": "아, 되게 무겁네... 포츈, 이거 효과는 확실한 거지?",
+    "bg": "BG_CoastCity",
+    "cg": "",
+    "next": 3,
+    "choices": [],
+    "cast": {
+     "L": [
+      "PECS_Fortune_N",
+      "PECS_Fortune_N_Brave",
+      0
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ]
+    },
+    "spk": "R",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {
+     "R": 3
+    },
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 3,
+    "who": "포츈",
+    "model": "PECS_Fortune_N",
+    "expr": "PECS_Fortune_N_Brave",
+    "text": "훗, 포츈 언니의 실력을 무시하면 안 되거든?\n덕분에 더 많은 바이오로이드들이 잠수함 기지로 찾아올 거거든?",
+    "bg": "BG_CoastCity",
+    "cg": "",
+    "next": 4,
+    "choices": [],
+    "cast": {
+     "L": [
+      "PECS_Fortune_N",
+      "PECS_Fortune_N_Brave",
+      1
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 4,
+    "who": "P/A-00 그리폰",
+    "model": "BR_PA00EL_N",
+    "expr": "BR_PA00EL_N_Question",
+    "text": "뭐, 그렇다면 불만은 없지만...",
+    "bg": "BG_CoastCity",
+    "cg": "",
+    "next": 5,
+    "choices": [],
+    "cast": {
+     "L": [
+      "PECS_Fortune_N",
+      "PECS_Fortune_N_Brave",
+      0
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Question",
+      1
+     ]
+    },
+    "spk": "R",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 5,
+    "who": "포츈",
+    "model": "PECS_Fortune_N",
+    "expr": "PECS_Fortune_N_Smile",
+    "text": "불만이 없으면 얼른 일을 해야지.\n자, 이제 조금만 더 하면 끝나거든? 열심히 하자! 응?",
+    "bg": "BG_CoastCity",
+    "cg": "",
+    "next": null,
+    "choices": [],
+    "cast": {
+     "L": [
+      "PECS_Fortune_N",
+      "PECS_Fortune_N_Smile",
+      1
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Question",
+      0
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   }
+  ],
+  "waves": [
+   [
+    [
+     "MOB_MP_NightChick_TU",
+     6,
+     "나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickS_N",
+     6,
+     "나이트 칙 실더"
+    ],
+    [
+     "MOB_MP_NightChickM_TU",
+     6,
+     "나이트 칙 런처"
+    ],
+    [
+     "MOB_MP_NightChick_TU",
+     6,
+     "나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChick_TU",
+     6,
+     "나이트 칙"
+    ]
+   ],
+   [
+    [
+     "MOB_MP_NightChickM_TU",
+     6,
+     "나이트 칙 런처"
+    ],
+    [
+     "MOB_MP_NightChickDE_N",
+     6,
+     "나이트 칙 디텍터"
+    ],
+    [
+     "MOB_MP_NightChickS_N",
+     6,
+     "나이트 칙 실더"
+    ],
+    [
+     "MOB_MP_NightChick_TU",
+     6,
+     "나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickM_TU",
+     6,
+     "나이트 칙 런처"
+    ],
+    [
+     "MOB_MP_NightChickDE_N",
+     6,
+     "나이트 칙 디텍터"
+    ]
+   ],
+   [
+    [
+     "MOB_MP_NightChick_TU",
+     6,
+     "나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickDE_N",
+     6,
+     "나이트 칙 디텍터"
+    ],
+    [
+     "MOB_MP_NightChickM_TU",
+     6,
+     "나이트 칙 런처"
+    ],
+    [
+     "MOB_MP_NightChickDE_N",
+     6,
+     "나이트 칙 디텍터"
+    ],
+    [
+     "MOB_MP_NightChick_TU",
+     6,
+     "나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickDE_N",
+     6,
+     "나이트 칙 디텍터"
+    ]
+   ]
+  ]
+ },
+ {
+  "bgm_start": "07 BGM_Talk_01",
+  "bgm_end": "07 BGM_Talk_01",
+  "key": "Ch01Stage04Ex",
+  "idx": "1-4Ex",
+  "name": "잔당 처치",
+  "desc": "그리폰은 스토커의 남은 친위대를 파괴해 이 지역에 대한 위협을 완전히 종식시키자는 부탁을 한다.",
+  "start": [
+   {
+    "id": 1,
+    "who": "P/A-00 그리폰",
+    "model": "BR_PA00EL_N",
+    "expr": "BR_PA00EL_N_Blunt",
+    "text": "아, 인간. 궁금한 게 있는데... 지금 시간 괜찮아?",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": null,
+    "choices": [
+     [
+      "무슨 일이야?",
+      2
+     ]
+    ],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [
+     "함교",
+     "그리폰의 제안"
+    ],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {
+     "L": 1
+    }
+   },
+   {
+    "id": 2,
+    "who": "P/A-00 그리폰",
+    "model": "BR_PA00EL_N",
+    "expr": "BR_PA00EL_N_Blunt",
+    "text": "그 다른 게 아니라 우리 그때 스토커랑 싸움 했었잖아?",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 3,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 3,
+    "who": "P/A-00 그리폰",
+    "model": "BR_PA00EL_N",
+    "expr": "BR_PA00EL_N_Proud",
+    "text": "스토커만 딱 데리고 나와서 처리한 건 정말 좋았어.\n그런데 아직 스토커가 데리고 다니던 철충 녀석들은 그대로 남았단 말야.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 4,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Proud",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 4,
+    "who": "P/A-00 그리폰",
+    "model": "BR_PA00EL_N",
+    "expr": "BR_PA00EL_N_Blunt",
+    "text": "이 자식들을 최대한 빠르게 처리를 해야 할 것 같거든?\n내버려두면 분명히 그 자식들 우리 정찰조를 공격할 거란 말이지?",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 5,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 5,
+    "who": "P/A-00 그리폰",
+    "model": "BR_PA00EL_N",
+    "expr": "BR_PA00EL_N_Smile",
+    "text": "그럴 바엔 우리가 먼저 공격을 하자고.\n인간, 어때? 내 생각이? 처리 명령을 내려 줄 거지?",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": null,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Smile",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   }
+  ],
+  "mid": [],
+  "end": [
+   {
+    "id": 1,
+    "who": "P/A-00 그리폰",
+    "model": "BR_PA00EL_N",
+    "expr": "BR_PA00EL_N_Smile",
+    "text": "좋았어. 이제 깔끔하게 정리했지?",
+    "bg": "BG_Cliff",
+    "cg": "",
+    "next": 2,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Smile",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      0
+     ]
+    },
+    "spk": "L",
+    "place": [
+     "해안 절벽",
+     "전투 이후의 환담"
+    ],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {
+     "L": 1,
+     "R": 1
+    }
+   },
+   {
+    "id": 2,
+    "who": "콘스탄챠 S2",
+    "model": "3P_ConstantiaS2_N",
+    "expr": "3P_ConstantiaS2_N_Expressionless",
+    "text": "일단, 이쪽 영역의 철충은 정리가 된 것 같아.",
+    "bg": "BG_Cliff",
+    "cg": "",
+    "next": 3,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Smile",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Expressionless",
+      1
+     ]
+    },
+    "spk": "R",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 3,
+    "who": "콘스탄챠 S2",
+    "model": "3P_ConstantiaS2_N",
+    "expr": "3P_ConstantiaS2_N_Worry",
+    "text": "물론 모두 처리하려면 시간이 좀 걸리겠지만.",
+    "bg": "BG_Cliff",
+    "cg": "",
+    "next": 4,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Smile",
+      0
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      1
+     ]
+    },
+    "spk": "R",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 4,
+    "who": "P/A-00 그리폰",
+    "model": "BR_PA00EL_N",
+    "expr": "BR_PA00EL_N_Embarrass",
+    "text": "뭐야? 그 얼굴은.\n우리 이긴 날이잖아. 웃으라고.",
+    "bg": "BG_Cliff",
+    "cg": "",
+    "next": 5,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Embarrass",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 5,
+    "who": "P/A-00 그리폰",
+    "model": "BR_PA00EL_N",
+    "expr": "BR_PA00EL_N_Smile",
+    "text": "이렇게 계속 이기다 보면 언젠가 철충 녀석들을 싹 쓸어버릴 수 있을 테니까.\n그런 표정 지을 일도 없을 거야.",
+    "bg": "BG_Cliff",
+    "cg": "",
+    "next": 6,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Smile",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 6,
+    "who": "P/A-00 그리폰",
+    "model": "BR_PA00EL_N",
+    "expr": "BR_PA00EL_N_Shy",
+    "text": "... 인간이 지휘해 주면... 언젠간 될 거야.",
+    "bg": "BG_Cliff",
+    "cg": "",
+    "next": null,
+    "choices": [],
+    "cast": {
+     "L": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Shy",
+      1
+     ],
+     "R": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Worry",
+      0
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   }
+  ],
+  "waves": [
+   [
+    [
+     "MOB_MP_NightChickEX_TU",
+     26,
+     "강화형 나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickSP_N",
+     26,
+     "칙 스나이퍼"
+    ],
+    [
+     "MOB_MP_NightChickDE_TU2",
+     26,
+     "나이트 칙 디텍터"
+    ],
+    [
+     "MOB_MP_BigChickEX_TU",
+     28,
+     "시작형 빅 칙"
+    ],
+    [
+     "MOB_MP_NightChickEX_TU",
+     26,
+     "강화형 나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickEX_TU",
+     26,
+     "강화형 나이트 칙"
+    ]
+   ],
+   [
+    [
+     "MOB_MP_NightChickMEX_TU",
+     26,
+     "강화형 칙 런쳐"
+    ],
+    [
+     "MOB_MP_NightChickSP_N",
+     26,
+     "칙 스나이퍼"
+    ],
+    [
+     "MOB_MP_NightChickMEX_TU",
+     26,
+     "강화형 칙 런쳐"
+    ],
+    [
+     "MOB_MP_BigChickM_TU",
+     28,
+     "빅 칙 런쳐"
+    ],
+    [
+     "MOB_MP_NightChickMEX_TU",
+     26,
+     "강화형 칙 런쳐"
+    ],
+    [
+     "MOB_MP_NightChickSP_N",
+     26,
+     "칙 스나이퍼"
+    ]
+   ],
+   [
+    [
+     "MOB_MP_NightChickSI_TU2",
+     26,
+     "나이트 칙 실더 개"
+    ],
+    [
+     "MOB_MP_NightChickMEX_TU",
+     26,
+     "강화형 칙 런쳐"
+    ],
+    [
+     "MOB_MP_NightChickEX_TU",
+     26,
+     "강화형 나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickSI_TU2",
+     16,
+     "나이트 칙 실더 개"
+    ],
+    [
+     "MOB_MP_Stalker_TU2",
+     32,
+     "스토커"
+    ],
+    [
+     "MOB_MP_NightChickSI_TU2",
+     26,
+     "나이트 칙 실더 개"
+    ],
+    [
+     "MOB_MP_NightChickMEX_TU",
+     26,
+     "강화형 칙 런쳐"
+    ],
+    [
+     "MOB_MP_NightChickSP_N",
+     26,
+     "칙 스나이퍼"
     ]
    ]
   ]
@@ -9839,6 +12828,371 @@
      "MOB_MP_NightChickM_TU",
      7,
      "나이트 칙 런처"
+    ]
+   ]
+  ]
+ },
+ {
+  "bgm_start": "07 BGM_Talk_01",
+  "bgm_end": "07 BGM_Talk_01",
+  "key": "Ch01Stage05B",
+  "idx": "1-5B",
+  "name": "부품 수거",
+  "desc": "요안나는 부서진 로봇의 부품 수거를 통해 자원 확충을 건의한다.",
+  "start": [
+   {
+    "id": 1,
+    "who": "프레스터 요안나",
+    "model": "DS_Johanna_N",
+    "expr": "DS_Johanna_N_Smile",
+    "text": "아, 주군이신가? 잘 됐군.\n그러지 않아도 주군께 건의하고 싶은 일이 있었다네.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 2,
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [
+     "함교",
+     "요안나의 요청"
+    ],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {
+     "L": 1
+    }
+   },
+   {
+    "id": 2,
+    "who": "프레스터 요안나",
+    "model": "DS_Johanna_N",
+    "expr": "DS_Johanna_N_Smile",
+    "text": "혹시 시간이 괜찮으신가?",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": null,
+    "choices": [
+     [
+      "문제 없어.",
+      3
+     ]
+    ],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 3,
+    "who": "프레스터 요안나",
+    "model": "DS_Johanna_N",
+    "expr": "DS_Johanna_N_Serious",
+    "text": "주군께서도 알다시피 며칠 전 철충과 AGS 로봇들 간에 큰 전투가 있었지.\n덕분에 우리도 이득을 좀 봤고.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 4,
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Serious",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 4,
+    "who": "프레스터 요안나",
+    "model": "DS_Johanna_N",
+    "expr": "DS_Johanna_N_Serious",
+    "text": "그때, AGS 로봇들이 많이 파괴되면서 부서진 무기 부품들이 여기저기 널려져 \n있다네.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 5,
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Serious",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 5,
+    "who": "프레스터 요안나",
+    "model": "DS_Johanna_N",
+    "expr": "DS_Johanna_N_Smile",
+    "text": "그 부품을 수거할 수 있도록 전장을 정리하면 어떤가?\n확실히 도움이 될 거라네.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": null,
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   }
+  ],
+  "mid": [],
+  "end": [
+   {
+    "id": 1,
+    "who": "콘스탄챠 S2",
+    "model": "3P_ConstantiaS2_N",
+    "expr": "3P_ConstantiaS2_N_Smile",
+    "text": "전투 지휘 고생하셨어요. \n그럼 이제 저곳에 있는 부품들을 수거하면 되는 거겠죠?",
+    "bg": "BG_CoastCity",
+    "cg": "",
+    "next": 2,
+    "choices": [],
+    "cast": {
+     "L": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [
+     "도시 폐허 외곽",
+     "전투가 끝난 후"
+    ],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {
+     "L": 1
+    }
+   },
+   {
+    "id": 2,
+    "who": "콘스탄챠 S2",
+    "model": "3P_ConstantiaS2_N",
+    "expr": "3P_ConstantiaS2_N_Embarrass",
+    "text": "휴, 그래도 다행이에요. 아무래도 바다 속에서 식량이나 에너지는 어떻게든 \n구할 수 있지만 부품은 재활용만으론 한계가 있으니까요.",
+    "bg": "BG_CoastCity",
+    "cg": "",
+    "next": 3,
+    "choices": [],
+    "cast": {
+     "L": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Embarrass",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 3,
+    "who": "콘스탄챠 S2",
+    "model": "3P_ConstantiaS2_N",
+    "expr": "3P_ConstantiaS2_N_Surprised",
+    "text": "얼른 부품 수거 분대를 움직여야겠네요.\n다시 적들이 몰려오기 전에요.",
+    "bg": "BG_CoastCity",
+    "cg": "",
+    "next": 4,
+    "choices": [],
+    "cast": {
+     "L": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Surprised",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 4,
+    "who": "콘스탄챠 S2",
+    "model": "3P_ConstantiaS2_N",
+    "expr": "3P_ConstantiaS2_N_Smile",
+    "text": "그럼 주인님 전 이만 일을 하러 가겠습니다.",
+    "bg": "BG_CoastCity",
+    "cg": "",
+    "next": null,
+    "choices": [],
+    "cast": {
+     "L": [
+      "3P_ConstantiaS2_N",
+      "3P_ConstantiaS2_N_Smile",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   }
+  ],
+  "waves": [
+   [
+    [
+     "MOB_MP_NightChickM_TU",
+     7,
+     "나이트 칙 런처"
+    ],
+    [
+     "MOB_MP_NightChick_TU",
+     7,
+     "나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickM_TU",
+     7,
+     "나이트 칙 런처"
+    ],
+    [
+     "MOB_MP_NightChickDE_N",
+     7,
+     "나이트 칙 디텍터"
+    ],
+    [
+     "MOB_MP_NightChickM_TU",
+     7,
+     "나이트 칙 런처"
+    ],
+    [
+     "MOB_MP_NightChick_TU",
+     7,
+     "나이트 칙"
+    ]
+   ],
+   [
+    [
+     "MOB_MP_NightChickS_N",
+     7,
+     "나이트 칙 실더"
+    ],
+    [
+     "MOB_MP_NightChickM_TU",
+     7,
+     "나이트 칙 런처"
+    ],
+    [
+     "MOB_MP_NightChickDE_N",
+     7,
+     "나이트 칙 디텍터"
+    ],
+    [
+     "MOB_MP_NightChickM_TU",
+     7,
+     "나이트 칙 런처"
+    ],
+    [
+     "MOB_MP_NightChickS_N",
+     7,
+     "나이트 칙 실더"
+    ],
+    [
+     "MOB_MP_NightChickM_TU",
+     7,
+     "나이트 칙 런처"
+    ]
+   ],
+   [
+    [
+     "MOB_MP_NightChickS_N",
+     7,
+     "나이트 칙 실더"
+    ],
+    [
+     "MOB_MP_NightChick_TU",
+     7,
+     "나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickM_TU",
+     7,
+     "나이트 칙 런처"
+    ],
+    [
+     "MOB_MP_NightChickM_TU",
+     7,
+     "나이트 칙 런처"
+    ],
+    [
+     "MOB_MP_NightChickDE_N",
+     7,
+     "나이트 칙 디텍터"
+    ],
+    [
+     "MOB_MP_NightChickS_N",
+     7,
+     "나이트 칙 실더"
+    ],
+    [
+     "MOB_MP_NightChick_TU",
+     7,
+     "나이트 칙"
     ]
    ]
   ]
@@ -12299,6 +15653,491 @@
      "MOB_MP_NightChickS_N",
      8,
      "나이트 칙 실더"
+    ],
+    [
+     "MOB_MP_NightChick_TU",
+     8,
+     "나이트 칙"
+    ]
+   ]
+  ]
+ },
+ {
+  "bgm_start": "07 BGM_Talk_01",
+  "bgm_end": "07 BGM_Talk_01",
+  "key": "Ch01Stage06B",
+  "idx": "1-6B",
+  "name": "독안에 든 쥐",
+  "desc": "요안나는 고립된 스토커의 부하들을 섬멸해 섬을 차지할 것을 건의한다.",
+  "start": [
+   {
+    "id": 1,
+    "who": "프레스터 요안나",
+    "model": "DS_Johanna_N",
+    "expr": "DS_Johanna_N_Smile",
+    "text": "아, 주군이시군. 잠시 의논할 게 있어서 들렀다네.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 2,
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [
+     "함교",
+     "요안나의 요청"
+    ],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {
+     "L": 1
+    }
+   },
+   {
+    "id": 2,
+    "who": "프레스터 요안나",
+    "model": "DS_Johanna_N",
+    "expr": "DS_Johanna_N_Serious",
+    "text": "주군, \n얼마 전 스토커가 우리를 고립시키기 위해 다리를 부쉈던 전투를 기억하는가?",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": null,
+    "choices": [
+     [
+      "응. 기억하지.",
+      3
+     ]
+    ],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Serious",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 3,
+    "who": "프레스터 요안나",
+    "model": "DS_Johanna_N",
+    "expr": "DS_Johanna_N_Serious",
+    "text": "스토커 녀석은 우리를 고립시키기 위해서 다리를 부쉈겠지만 \n덕분에 다른 철충들도 다리 맞은 편의 섬에 갇히고 말았다네.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": null,
+    "choices": [
+     [
+      "그 말은?",
+      4
+     ]
+    ],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Serious",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 4,
+    "who": "프레스터 요안나",
+    "model": "DS_Johanna_N",
+    "expr": "DS_Johanna_N_Smile",
+    "text": "전략적으로 기회라는 걸세.\n철충들은 바다를 두려워하니 지원이 오거나 하진 못할 걸세.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": 5,
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 5,
+    "who": "프레스터 요안나",
+    "model": "DS_Johanna_N",
+    "expr": "DS_Johanna_N_Serious",
+    "text": "당연히 도망을 가지도 못할 거고.\n그리고 섬에 있는 철충을 소탕할 수 있다면 섬은 안전한 기지가 되는 것이지.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": null,
+    "choices": [
+     [
+      "해볼 만 하네.",
+      6
+     ]
+    ],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Serious",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 6,
+    "who": "프레스터 요안나",
+    "model": "DS_Johanna_N",
+    "expr": "DS_Johanna_N_Smile",
+    "text": "물론이네. 사령관이 괜찮다면 다른 자매들에게도 이야기를 해놓겠네.\n섬을 탈환할 준비를.",
+    "bg": "BG_Lobby",
+    "cg": "",
+    "next": null,
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   }
+  ],
+  "mid": [],
+  "end": [
+   {
+    "id": 1,
+    "who": "프레스터 요안나",
+    "model": "DS_Johanna_N",
+    "expr": "DS_Johanna_N_Smile",
+    "text": "좋아. 일단 이곳의 철충은 다 정리된 모양이군.",
+    "bg": "BG_Cliff",
+    "cg": "",
+    "next": 2,
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Blunt",
+      0
+     ]
+    },
+    "spk": "L",
+    "place": [
+     "외딴 섬",
+     "철충의 정리가 끝난 후"
+    ],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {
+     "L": 1,
+     "R": 1
+    }
+   },
+   {
+    "id": 2,
+    "who": "P/A-00 그리폰",
+    "model": "BR_PA00EL_N",
+    "expr": "BR_PA00EL_N_Sorry",
+    "text": "햐... 엄청 힘들었어.",
+    "bg": "BG_Cliff",
+    "cg": "",
+    "next": 3,
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      0
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Sorry",
+      1
+     ]
+    },
+    "spk": "R",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 3,
+    "who": "프레스터 요안나",
+    "model": "DS_Johanna_N",
+    "expr": "DS_Johanna_N_Smile",
+    "text": "후후, 힘을 내게 그리폰 양.\n이렇게 이 섬을 확보해 놓으면 언제 기회가 올 지 모르네.",
+    "bg": "BG_Cliff",
+    "cg": "",
+    "next": 4,
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Smile",
+      1
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Sorry",
+      0
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 4,
+    "who": "프레스터 요안나",
+    "model": "DS_Johanna_N",
+    "expr": "DS_Johanna_N_Serious",
+    "text": "지금은 함선으로도 우릴 수용할 수 있지만...\n우리 세력이 커지면 언젠가 이런 섬들이 필요할 걸세.",
+    "bg": "BG_Cliff",
+    "cg": "",
+    "next": 5,
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Serious",
+      1
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Sorry",
+      0
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   },
+   {
+    "id": 5,
+    "who": "프레스터 요안나",
+    "model": "DS_Johanna_N",
+    "expr": "DS_Johanna_N_Serious",
+    "text": "언젠가는 말일세.",
+    "bg": "BG_Cliff",
+    "cg": "",
+    "next": null,
+    "choices": [],
+    "cast": {
+     "L": [
+      "DS_Johanna_N",
+      "DS_Johanna_N_Serious",
+      1
+     ],
+     "R": [
+      "BR_PA00EL_N",
+      "BR_PA00EL_N_Sorry",
+      0
+     ]
+    },
+    "spk": "L",
+    "place": [],
+    "fx": "",
+    "scr": 6,
+    "bgm": "",
+    "app": {},
+    "off": {},
+    "fade": {}
+   }
+  ],
+  "waves": [
+   [
+    [
+     "MOB_MP_NightChickS_N",
+     8,
+     "나이트 칙 실더"
+    ],
+    [
+     "MOB_MP_NightChick_TU",
+     8,
+     "나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickDE_N",
+     8,
+     "나이트 칙 디텍터"
+    ],
+    [
+     "MOB_MP_NightChickM_TU",
+     8,
+     "나이트 칙 런처"
+    ],
+    [
+     "MOB_MP_NightChickS_N",
+     8,
+     "나이트 칙 실더"
+    ],
+    [
+     "MOB_MP_NightChick_TU",
+     8,
+     "나이트 칙"
+    ]
+   ],
+   [
+    [
+     "MOB_MP_NightChickS_N",
+     8,
+     "나이트 칙 실더"
+    ],
+    [
+     "MOB_MP_NightChick_TU",
+     8,
+     "나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickS_N",
+     8,
+     "나이트 칙 실더"
+    ],
+    [
+     "MOB_MP_NightChick_TU",
+     8,
+     "나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickS_N",
+     8,
+     "나이트 칙 실더"
+    ],
+    [
+     "MOB_MP_NightChick_TU",
+     8,
+     "나이트 칙"
+    ]
+   ],
+   [
+    [
+     "MOB_MP_NightChick_TU",
+     8,
+     "나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickM_TU",
+     8,
+     "나이트 칙 런처"
+    ],
+    [
+     "MOB_MP_NightChickDE_N",
+     8,
+     "나이트 칙 디텍터"
+    ],
+    [
+     "MOB_MP_NightChickM_TU",
+     8,
+     "나이트 칙 런처"
+    ],
+    [
+     "MOB_MP_NightChick_TU",
+     8,
+     "나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickM_TU",
+     8,
+     "나이트 칙 런처"
+    ]
+   ],
+   [
+    [
+     "MOB_MP_NightChickM_TU",
+     8,
+     "나이트 칙 런처"
+    ],
+    [
+     "MOB_MP_NightChick_TU",
+     8,
+     "나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickS_N",
+     8,
+     "나이트 칙 실더"
+    ],
+    [
+     "MOB_MP_NightChickDE_N",
+     8,
+     "나이트 칙 디텍터"
+    ],
+    [
+     "MOB_MP_NightChick_TU",
+     8,
+     "나이트 칙"
+    ],
+    [
+     "MOB_MP_NightChickM_TU",
+     8,
+     "나이트 칙 런처"
     ],
     [
      "MOB_MP_NightChick_TU",

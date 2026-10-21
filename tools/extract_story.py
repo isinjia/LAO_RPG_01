@@ -96,7 +96,11 @@ def main():
     if not stages:  # 키 형식이 다르면 StageIdxString으로
         n = int(CHAPTER[2:])
         stages = [s for s in M['Table_MapStage'] if re.match(r'^%d-\d+$' % n, str(s.get('StageIdxString', ''))) and str(s.get('StageSubType', '0')) in ('0', '')]
-    stages.sort(key=lambda s: int(str(s['StageIdxString']).split('-')[1]))
+    # 곁가지 작전 (B: 의뢰, Ex: 고난도) 도 함께: 마을 이벤트로 쓴다
+    side = [s for s in M['Table_MapStage'] if re.match(r'^%sStage\d\d(B|Ex)$' % CHAPTER, str(s.get('Key', '')))]
+    stages += side
+    order = lambda s: (int(re.match(r'\d+-(\d+)', str(s['StageIdxString'])).group(1)), str(s['StageIdxString']))
+    stages.sort(key=order)
     res = []
     for s in stages:
         def cs(field):
