@@ -240,6 +240,7 @@
   function end() {
     gen++;
     const cb = done;
+    if (window.WIPE) WIPE.keep(); // 다음 화면이 이 대화 화면을 선을 따라 덮을 수 있게 지금 모습을 떠 둔다
     nodes = null; cur = null; done = null; typing = null; busy = false;
     bgEl.style.transform = '';
     root.classList.add('hidden'); bgEl.classList.add('hidden');
