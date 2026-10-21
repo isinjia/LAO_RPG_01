@@ -400,11 +400,34 @@
     }
     const tiles = [...reach.values()].filter((t) => t.stop && (u.ai !== 'guard' || R.dist(t.x, t.y, u.home[0], u.home[1]) <= 2));
     const th = caution(u) ? (fields.threat || (fields.threat = R.threatMap(G, u.side))) : null;
-    // 상성 위험: 나(병사가 살아 있으면 병사 병종)를 상성으로 이기는 적이 다음 차례에 닿을 수 있는 칸은 피한다
+    // 받을 피해 예상: 다음 차례에 이 칸에 닿는 적들이 저마다 나를 친다고 치고 잃을 몫을 점수로 뺀다
+    // (상성이 불리한 적일수록 크게 잡힌다). 우리 편 자동 진행은 그대로, 적은 덜 겁내게 0.4배
+    const foes = G.units.filter((o) => o.alive && o.side !== u.side && (o.side === 'p' || o.awake || o.ai !== 'guard'));
+    const myMax0 = R.totalMax(u), fear = u.side === 'p' ? 2 : 0.4, riskMemo = new Map();
     const myKind = R.troopAlive(u) ? u.troop.kind : u.kind;
-    const foes = G.units.filter((o) => o.alive && o.side !== u.side && R.relX(R.troopAlive(o) ? o.troop.kind : o.kind, myKind));
-    const relRisk = (x, y) => foes.reduce((n, o) => n + (R.dist(o.x, o.y, x, y) <= R.mov(o) + o.rng ? 2.2 : 0), 0);
-    const risk = (x, y) => (th ? Math.max(0, th[y * G.w + x] - 1) * caution(u) : 0) + relRisk(x, y);
+    // advOnly: 상성으로 나를 이기는 적만 센다 (그냥 이동할 때). 아니면 닿는 적 모두 (공격·특기를 하러 설 칸)
+    const relRisk = (x, y, advOnly) => {
+      const k = y * G.w + x + (advOnly ? 1e6 : 0);
+      if (riskMemo.has(k)) return riskMemo.get(k);
+      const ox = u.x, oy = u.y; u.x = x; u.y = y;
+      let n = 0, sum = 0;
+      for (const o of foes) {
+        if (R.dist(o.x, o.y, x, y) > R.mov(o) + o.rng) continue;
+        if (advOnly && !R.relX(R.troopAlive(o) ? o.troop.kind : o.kind, myKind)) continue;
+        // 적이 칠 자리: 이 칸에서 적 쪽으로 한 칸씩 걸어 나가 적 사거리만큼 떨어진 칸
+        let ax = x, ay = y;
+        while (R.dist(ax, ay, x, y) < Math.min(o.rng, R.dist(o.x, o.y, x, y))) { if (Math.abs(o.x - ax) >= Math.abs(o.y - ay)) ax += Math.sign(o.x - ax); else ay += Math.sign(o.y - ay); }
+        const e = R.combat(G, o, u, ax, ay);
+        sum += e.dT + e.dH;
+        n += ((e.dT + e.dH * 1.6) / myMax0) * 10 * value(u) * fear;
+      }
+      if (sum >= R.total(u) * 0.5) n += 10 * value(u) * fear; // 여러 적이 몰려 치면 부대가 무너질 칸
+      u.x = ox; u.y = oy;
+      riskMemo.set(k, n);
+      return n;
+    };
+    const risk = (x, y) => (th ? Math.max(0, th[y * G.w + x] - 1) * caution(u) : 0) + relRisk(x, y, false);
+    const moveRisk = (x, y) => (th ? Math.max(0, th[y * G.w + x] - 1) * caution(u) : 0) + relRisk(x, y, true) * 0.5;
     const myMax = R.totalMax(u);
     let best = null;
     const consider = (sc, p) => { if (!best || sc > best.sc) best = { sc, ...p }; };
@@ -435,6 +458,7 @@
             if (r.hH != null) sc += ((r.hH * 1.6 + r.hT) / R.totalMax(r.u)) * 9 * value(r.u) + (r.buff ? 0.8 : 0);
           }
           if (s.buff && !G.units.some((o) => o.alive && o.side !== u.side && R.dist(o.x, o.y, t.x, t.y) <= 6)) sc = 0;
+          if (sc <= 0) continue; // 아무 효과 없는 특기는 쓰지 않는다 (재사용 대기만 낭비)
           consider(sc - 0.5 - risk(t.x, t.y) - (t.x !== ox || t.y !== oy ? 0.2 : 0), { to: [t.x, t.y], act: 'skill', skill: sk, tx, ty });
         }
       }
@@ -448,7 +472,7 @@
       let sc = f[t.y * G.w + t.x];
       if (u.hp < u.hpMax * 0.35 && u.side === 'p') sc = -sc * 0.3;
       sc -= terrDef(G, u, t.x, t.y) * 0.5;
-      sc += risk(t.x, t.y) * 1.5;
+      sc += moveRisk(t.x, t.y) * 1.5;
       if (!mv || sc < mv.sc) mv = { sc, t };
     }
     return mv ? { to: [mv.t.x, mv.t.y], act: 'wait' } : { to: [u.x, u.y], act: 'wait' };

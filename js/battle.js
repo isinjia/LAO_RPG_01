@@ -29,8 +29,8 @@
   };
   FIGHT.resize = function (w, h) {
     const a = w / h;
-    if (a < 1) { VW = 8.2; VH = VW / a; } // 세로 화면: 병사를 크게 else { VH = Math.max(8.4, 12.5 / a); VW = VH * a; }
-    const cy = a < 1 ? 1.2 : 0.6;
+    if (a < 1) { VW = 7.2; VH = VW / a; } // 세로 화면: 병사를 크게 else { VH = Math.max(8.4, 12.5 / a); VW = VH * a; }
+    const cy = a < 1 ? -0.4 : 0.6; // 세로 화면: 부대가 화면 가운데쯤 오게
     cam.left = -VW / 2; cam.right = VW / 2; cam.top = VH / 2 + cy; cam.bottom = -VH / 2 + cy;
     cam.updateProjectionMatrix();
     fitBg();
@@ -99,7 +99,7 @@
   const heroX = (dir) => dir * (VW / 2 - EDGE());
   function soldierSlots(n, side) {
     const dir = side === 'L' ? -1 : 1;
-    const front = 0.9, back = VW / 2 - EDGE() - 1.1;
+    const front = 1.25, back = VW / 2 - EDGE() - 1.1; // 앞줄은 가운데에서 떨어뜨려 맞붙어도 틈이 남게
     const span = Math.min(0.95, Math.max(0.5, (back - front) / 3.2));
     const out = [];
     for (let i = 0; i < n; i++) {
@@ -300,14 +300,14 @@
     if (!f || !f.alive) return;
     f.alive = false;
     { const p = f.rig.g.position; // 원작 효과: 철충은 폭발, 바이오로이드는 쓰러지는 먼지
-      if (f.u.side === 'e') fx(f.hero && f.u.def.big ? 'explosion_big' : 'explosion_small', p.x, p.y + lift(f) + (f.hero ? 0.9 : 0.5), { k: f.hero ? 1 : 0.75, renderOrder: 540 });
+      if (f.u.side === 'e') fx(f.hero && f.u.def.big ? 'explosion_big' : 'explosion_small', p.x, p.y + lift(f) + (f.hero ? 0.9 : 0.5), { k: f.hero ? 1 : 0.55, renderOrder: 540 });
       else fx('dust_fall', p.x, p.y + 0.15, { k: f.hero ? 1 : 0.8, renderOrder: 95 }); }
     if (f.shadow) f.shadow.visible = false;
     const away = f.side === 'L' ? -1 : 1, k = f.hero ? 0.8 : 1;
     f.fly = { vx: away * (1.4 + Math.random() * 1.8) * k, vy: (10 + Math.random() * 2.6) * k, w: -away * (5 + Math.random() * 5), t: 0, y0: f.rig.g.position.y, land: 0 };
     f.rig.c.speed = 0.25; // 자세는 맞은 순간에서 거의 멈춘다
     f.rig.c.mesh.renderOrder += 60; // 날아가는 동안 다른 병사 앞에
-    f.flashT = null; f.rig.c.setFlash(1); // 하얀 실루엣
+    f.flashT = null; f.rig.c.setFlash(0.85); f.rig.c.setOpacity(0.8); // 하얀 실루엣 (부대를 덮지 않게 조금 옅게)
   }
 
   // 피해 숫자: 맞은 몸 머리 위에서 크게 튀어나왔다가 위로 떠오르며 사라진다 (화면 좌표로 옮겨 HTML 글자로)

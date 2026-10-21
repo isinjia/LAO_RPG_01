@@ -30,7 +30,7 @@
     demon: { name: '마물', color: '#d07aff' },
     water: { name: '수병', color: '#6fd8ff' },
     mage: { name: '법사', color: '#ff9ad5', ranged: true },
-    assassin: { name: '암살자', color: '#b0b0c8', ranged: true },
+    assassin: { name: '암살자', color: '#b0b0c8' }, // 칼을 쓰는 근접 암살자 (붙어 싸워도 손해가 없다)
   };
   const REL = { inf: { pike: 0.3 }, pike: { cav: 0.3 }, cav: { inf: 0.3 }, arch: { fly: 0.4 }, fly: { inf: 0.2, mage: 0.3 }, mage: { pike: 0.3 }, assassin: { arch: 0.3, mage: 0.3 }, priest: { demon: 0.8 } };
   // 비병은 보병·법사를 위에서 덮치고, 법사는 창병의 굳은 대열을 깨며, 암살자는 뒤에 선 궁병·법사를 노린다
@@ -79,6 +79,8 @@
     raider: { name: '실피드 기병', short: '기병', rig: 'sylphid', icon: 'c_BR_Sylphid_N', kind: 'cav', hp: 76, at: 20, df: 12, mov: 5, sfx: 'gun' },
     gunner: { name: '레프리콘 궁병', short: '궁병', rig: 'leprechaun', icon: 'c_BR_Leprechaun_N', kind: 'arch', hp: 62, at: 18, df: 8, mov: 3, sfx: 'mg' },
     flyer: { name: '하르페이아 비병', short: '비병', rig: 'harpy', icon: 'c_BR_Harpy_N', kind: 'fly', hp: 70, at: 20, df: 10, mov: 5, sfx: 'missile' },
+    hacker: { name: '나이트 엔젤 전자전병', short: '법사', rig: 'nightangel', icon: 'c_BR_NightAngel_N', kind: 'mage', hp: 58, at: 21, df: 8, mov: 3, sfx: 'elec' },
+    blade: { name: '토모 검사', short: '암살자', rig: 'tomoe', icon: 'c_BR_Tomoe_N', kind: 'assassin', hp: 62, at: 22, df: 9, mov: 4, sfx: 'slash' },
     // 철충 병사
     e_chick: { name: '나이트 칙 무리', short: '나이트 칙', rig: 'e_NightChick_N', icon: 'e_NightChick_N', kind: 'inf', hp: 52, at: 12, df: 8, mov: 3, sfx: 'gun' },
     e_launcher: { name: '나이트 칙 런처 무리', short: '런처', rig: 'e_NightChickM_N', icon: 'e_NightChickM_N', kind: 'arch', hp: 44, at: 13, df: 6, mov: 3, sfx: 'cannon' },
@@ -120,7 +122,7 @@
       tiers: [
         { cls: '기동공격 바이오로이드', hp: 80, at: 25, df: 11, mov: 5, troops: ['flyer', 'raider'], skills: ['missile'] },
         { cls: '강습 비행대장', hp: 92, at: 29, df: 13, mov: 5, troops: ['flyer', 'raider'], skills: ['missile', 'jet'] },
-        { cls: '하늘의 그리폰', hp: 106, at: 33, df: 15, mov: 5, troops: ['flyer', 'raider', 'gunner'], skills: ['missile', 'jet'] },
+        { cls: '하늘의 그리폰', hp: 106, at: 33, df: 15, mov: 5, troops: ['flyer', 'raider', 'gunner', 'hacker'], skills: ['missile', 'jet'] },
       ],
       bio: '기동공격용 바이오로이드. 비병이라 지형을 무시하고 날아다니지만 궁병에 약합니다.',
     },
@@ -144,7 +146,7 @@
       tiers: [
         { cls: '등대 근무 바이오로이드', hp: 101, at: 28, df: 15, mov: 3, troops: ['guard', 'shield'], skills: ['beam'] },
         { cls: '심연의 공주', hp: 115, at: 32, df: 17, mov: 3, troops: ['guard', 'shield', 'raider'], skills: ['beam', 'abyss'] },
-        { cls: '싸이클롭스 프린세스', hp: 131, at: 37, df: 19, mov: 3, troops: ['guard', 'shield', 'raider'], skills: ['beam', 'abyss'] },
+        { cls: '싸이클롭스 프린세스', hp: 131, at: 37, df: 19, mov: 3, troops: ['guard', 'shield', 'raider', 'blade'], skills: ['beam', 'abyss'] },
       ],
       bio: '등대 근무용 바이오로이드. 스스로를 싸이클롭스 프린세스라 부르는 강력한 경장 공격수.',
     },
@@ -168,7 +170,7 @@
       tiers: [
         { cls: '지원 포격 AGS', hp: 97, at: 27, df: 13, mov: 3, troops: ['gunner', 'shield'], skills: ['barrage'] },
         { cls: '중포병', hp: 110, at: 31, df: 15, mov: 3, troops: ['gunner', 'shield'], skills: ['barrage'] },
-        { cls: '요새 포대', hp: 126, at: 36, df: 18, mov: 3, troops: ['gunner', 'shield', 'guard'], skills: ['barrage'] },
+        { cls: '요새 포대', hp: 126, at: 36, df: 18, mov: 3, troops: ['gunner', 'shield', 'guard', 'hacker'], skills: ['barrage'] },
       ],
       bio: '언어 모듈이 고장 난 AGS 포격 로봇. 사거리 2의 포격과 넓은 범위 포격 특기를 씁니다.',
     },
@@ -193,8 +195,8 @@
       kind: 'inf', move: 'foot', rng: 1, // 최초의 바이오로이드: 맨주먹으로 적을 부순다
       tiers: [
         { cls: '최초의 바이오로이드', hp: 140, at: 36, df: 22, mov: 3, troops: ['guard', 'shield', 'raider'], skills: ['proto'] },
-        { cls: '바이오로이드의 맏언니', hp: 160, at: 41, df: 25, mov: 3, troops: ['guard', 'shield', 'raider', 'gunner'], skills: ['proto', 'sister'] },
-        { cls: '라비아타 프로토타입', hp: 184, at: 47, df: 29, mov: 3, troops: ['guard', 'shield', 'raider', 'gunner'], skills: ['proto', 'sister'] },
+        { cls: '바이오로이드의 맏언니', hp: 160, at: 41, df: 25, mov: 3, troops: ['guard', 'shield', 'raider', 'gunner', 'blade'], skills: ['proto', 'sister'] },
+        { cls: '라비아타 프로토타입', hp: 184, at: 47, df: 29, mov: 3, troops: ['guard', 'shield', 'raider', 'gunner', 'blade'], skills: ['proto', 'sister'] },
       ],
       bio: '삼안 산업이 만든 최초의 바이오로이드. 모든 자매의 맏언니로, 가상 현실의 기억을 쫓다 오르카에 합류합니다.',
     },
@@ -205,9 +207,9 @@
       passives: [{ tier: 0, name: '역해킹', rangeCounter: 1, desc: '멀리서 공격받아도 반격한다' }, { tier: 1, name: '네트워크 장악', troopUp: 0.15, desc: '병사 공격 +15%' }], // 수동 특기 (tier 단계에 풀림)
       kind: 'mage', move: 'foot', rng: 2, // 전자전 전문가: 멀리서 해킹으로 적을 묶는다
       tiers: [
-        { cls: '전자전 전문가', hp: 84, at: 27, df: 11, mov: 3, troops: ['gunner', 'guard'], skills: ['hack'] },
-        { cls: '사이버 워페어', hp: 96, at: 31, df: 13, mov: 3, troops: ['gunner', 'guard', 'flyer'], skills: ['hack', 'emp'] },
-        { cls: '네트워크의 여왕', hp: 110, at: 36, df: 15, mov: 3, troops: ['gunner', 'guard', 'flyer'], skills: ['hack', 'emp'] },
+        { cls: '전자전 전문가', hp: 84, at: 27, df: 11, mov: 3, troops: ['gunner', 'guard', 'hacker'], skills: ['hack'] },
+        { cls: '사이버 워페어', hp: 96, at: 31, df: 13, mov: 3, troops: ['gunner', 'guard', 'flyer', 'hacker'], skills: ['hack', 'emp'] },
+        { cls: '네트워크의 여왕', hp: 110, at: 36, df: 15, mov: 3, troops: ['gunner', 'guard', 'flyer', 'hacker'], skills: ['hack', 'emp'] },
       ],
       bio: '블랙 리버의 전자전 전문가. 떨어진 비행기에서 구출되어 합류했습니다. 해킹으로 적을 공격하고 발을 묶습니다.',
     },
@@ -219,8 +221,8 @@
       kind: 'cav', move: 'horse', rng: 1, // 군사용 첩보 유닛: 빠른 발로 파고들어 교란한다
       tiers: [
         { cls: '군사용 첩보 유닛', hp: 86, at: 25, df: 13, mov: 5, troops: ['raider', 'guard'], skills: ['intel'] },
-        { cls: '그림자 첩보원', hp: 99, at: 29, df: 15, mov: 5, troops: ['raider', 'guard', 'flyer'], skills: ['intel', 'raid'] },
-        { cls: '레이저 에이전트', hp: 113, at: 33, df: 17, mov: 5, troops: ['raider', 'guard', 'flyer'], skills: ['intel', 'raid'] },
+        { cls: '그림자 첩보원', hp: 99, at: 29, df: 15, mov: 5, troops: ['raider', 'guard', 'flyer', 'blade'], skills: ['intel', 'raid'] },
+        { cls: '레이저 에이전트', hp: 113, at: 33, df: 17, mov: 5, troops: ['raider', 'guard', 'flyer', 'blade'], skills: ['intel', 'raid'] },
       ],
       bio: '블랙 리버의 군사용 첩보 유닛. 지형 정보에 밝고 빠른 기동으로 적진을 흔듭니다. 사령관을 자기라고 부릅니다.',
     },
@@ -255,7 +257,7 @@
     // 3지역
     shielderx: { name: '나이트 칙 실더 개', rig: 'e_NightChickSI_N', icon: 'e_NightChickSI_N', kind: 'pike', move: 'foot', rng: 1, hp: 66, at: 12, df: 19, mov: 3, troop: 'e_shielder', sfx: 'gun' },
     legion: { name: '레기온', rig: 'e_Legion_N', icon: 'e_Legion_N', kind: 'inf', move: 'foot', rng: 1, hp: 64, at: 17, df: 13, mov: 3, troop: 'e_legion', sfx: 'rifle' },
-    zapper: { name: '재퍼', rig: 'e_Zapper_N', icon: 'e_Zapper_N', kind: 'arch', move: 'foot', rng: 2, hp: 46, at: 18, df: 8, mov: 3, troop: 'e_launcher', sfx: 'elec' },
+    zapper: { name: '재퍼', rig: 'e_Zapper_N', icon: 'e_Zapper_N', kind: 'mage', move: 'foot', rng: 2, hp: 46, at: 18, df: 8, mov: 3, troop: 'e_launcher', sfx: 'elec' },
     phalanx: { name: '팔랑스', rig: 'e_Phalangites_N', icon: 'e_Phalangites_N', kind: 'pike', move: 'foot', rng: 1, hp: 110, at: 21, df: 24, mov: 3, troop: 'e_shielder', sfx: 'cannon' },
     centurion: { name: '센츄리온', rig: 'e_Centurion_N', icon: 'e_Centurion_N', kind: 'inf', move: 'foot', rng: 1, hp: 150, at: 24, df: 19, mov: 3, troop: 'e_legion', skills: ['shell'], big: true, sfx: 'expM' },
     heavyscout: { name: '헤비 스카우트', rig: 'e_Scout_V2', icon: 'e_Scout_V2', kind: 'cav', move: 'horse', rng: 1, hp: 62, at: 18, df: 12, mov: 5, troop: 'e_scout', sfx: 'gun' },

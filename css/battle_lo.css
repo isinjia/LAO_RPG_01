@@ -236,3 +236,11 @@
 #fight .fbar b { font-size: 18px; }
 #fight .fbar b small { font-size: 13px; margin-left: 1px; }
 #fight .fname b { font-size: 18px; }
+/* 세로 화면: 예상 창 숫자가 화살표와 한 줄에, 결과 제목이 잘리지 않게 */
+#forecast .side .h { white-space: nowrap; }
+@media (orientation: portrait) {
+  #forecast .side .h { font-size: 13px !important; }
+  #forecast .side .n { font-size: 12px; }
+  #forecast .side img { width: 38px; height: 38px; }
+  .rhead img { max-width: 92vw; height: auto; max-height: 5vh; }
+}

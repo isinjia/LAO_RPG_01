@@ -1322,7 +1322,7 @@
     const near = p.dist === 1 && [aK, a.kind].some((k) => D.KIND[k].ranged) ? ' · <span class="bad">원거리 병종 근접전 (피해 30%)</span>' : '';
     const terr = R.terr(G, d.x, d.y);
     const sa0 = { hp: a.hp, thp: a.troop ? a.troop.hp : 0 }, sd0 = { hp: d.hp, thp: d.troop ? d.troop.hp : 0 };
-    const tA = R.activeTraits(a, d, true, p.dist, sa0, sd0, R.troopAlive(d) ? 'T' : 'H'), tD = [...R.guardTraits(d, R.troopAlive(d) ? 'T' : 'H'), ...(p.counter ? R.activeTraits(d, a, false, p.dist, sd0, sa0, R.troopAlive(a) ? 'T' : 'H') : [])];
+    const tA = [...R.activeTraits(a, d, true, p.dist, sa0, sd0, R.troopAlive(d) ? 'T' : 'H'), ...(p.counter ? R.guardTraits(a, R.troopAlive(a) ? 'T' : 'H') : [])], tD = [...R.guardTraits(d, R.troopAlive(d) ? 'T' : 'H'), ...(p.counter ? R.activeTraits(d, a, false, p.dist, sd0, sa0, R.troopAlive(a) ? 'T' : 'H') : [])];
     const auA = R.auraK(G, a, 'at') > 1.001, auD = R.auraK(G, d, 'df') > 1.001;
     const traitLine = [...tA.map((n) => `<span class="good">${n}</span>`), ...(auA ? ['<span class="good">지휘 공격 강화</span>'] : []), ...tD.map((n) => `<span class="bad">적 ${n}</span>`), ...(auD ? ['<span class="bad">적 지휘 방어 강화</span>'] : [])].join(' · ');
     const side = (u, t, h, cls) => `<div class="side ${cls}"><img src="${IMG[u.icon]}"><div><div class="n">${u.name}</div>
@@ -1509,7 +1509,11 @@
     fxAt(u.x, u.y, s.power ? 'charge' : 'cast', 300); // 시전자 둘레에 원작 기 모으기 효과
     AU.play('charge', 0.5);
     await wait(950);
-    if (v && v.rig.c.has('skill')) v.rig.once('skill', Math.max(1, v.rig.dur('skill') / 1.6) * speedK);
+    if (v) { // 특기 몸동작: 전용 동작이 없으면 공격 동작을 빠르게 한 번 + 병사들도 함께
+      if (v.rig.c.has('skill')) v.rig.once('skill', Math.max(1, v.rig.dur('skill') / 1.6) * speedK);
+      else v.rig.once('atk', Math.max(1.3, v.rig.dur('atk') / 0.8) * speedK);
+      v.soldiers.forEach((x) => x.bb.visible && x.rig.once('atk', 1.4 * speedK));
+    }
     OV.area = R.skillArea(G, u, sk, tx, ty); drawOverlay();
     await wait(500);
     AU.play(s.sfx, 0.8);
