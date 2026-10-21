@@ -1491,11 +1491,21 @@
     const g0 = G; // 도중에 작전이 바뀌면(포기·재시작) 멈춘다
     const near = (u) => Math.min(99, ...G.units.filter((o) => o.alive && o.side !== side).map((o) => R.dist(o.x, o.y, u.x, u.y)));
     const list = G.units.filter((u) => u.alive && u.side === side && !u.acted).sort((a, b) => (a.lead || a.boss ? 1 : 0) - (b.lead || b.boss ? 1 : 0) || near(a) - near(b));
-    for (const u of list) {
+    // 매번 남은 유닛 중 이번에 가장 좋은 수(격파·큰 피해·특기)를 가진 유닛부터 움직인다 (협공으로 마무리하도록).
+    // 공격할 것이 없는 유닛은 원래 순서(가까운 유닛부터)대로 뒤에 움직인다
+    const left = list.slice();
+    while (left.length) {
       if (G !== g0 || mode === 'screen') return false;
-      if (!u.alive) continue;
       if (side === 'p' && !autoOn) return true;
-      const plan = R.plan(G, u, fields);
+      let pick = 0, plan = null, best = -Infinity;
+      left.forEach((o, i) => {
+        if (!o.alive) return;
+        const p = R.plan(G, o, fields);
+        const sc = p.act === 'wait' ? -1e9 - i : p.sc + (p.act === 'attack' && p.target && R.combat(G, o, p.target, p.to[0], p.to[1]).dDead ? 5 : 0);
+        if (sc > best) { best = sc; pick = i; plan = p; }
+      });
+      const u = left.splice(pick, 1)[0];
+      if (!u.alive || !plan) continue;
       u.acted = true;
       const moved = plan.to[0] !== u.x || plan.to[1] !== u.y;
       if (!moved && plan.act === 'wait') { refreshView(u); continue; }
