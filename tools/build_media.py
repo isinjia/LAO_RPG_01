@@ -12,6 +12,7 @@ A = os.path.join(ROOT, 'assets')
 
 BGM = {  # 게임 이름 -> 원작 파일
     'lo_title': '01 BGM_Title', 'lo_lobby': '02 BGM_Lobby', 'lo_talk1': '07 BGM_Talk_01', 'lo_talk2': '08 BGM_Talk_02', 'lo_talk3': '09 BGM_Talk_03',
+    'lo_talk_04': '10 BGM_Talk_04',  # 5지역 원작 대본이 쓰는 대화 배경음
     'lo_battle1': '03 BGM_Battle_01', 'lo_battle2': '05 BGM_Battle_02', 'lo_battle3': '12 BGM_Battle_03', 'lo_boss1': '04 BGM_Battle_Boss_01',
 }
 SFX = {

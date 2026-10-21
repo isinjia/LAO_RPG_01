@@ -1590,7 +1590,8 @@
     if (!S || !S[part] || !S[part].length) return null;
     const d = !st.kind && ifList().find((x) => x.idx === st.idx && x.part === part);
     if (!d) { await story(S[part]); return null; }
-    const nodes = S[part].map((n) => (n.id === d.node ? Object.assign({}, n, { ch: n.ch.concat([[d.text, d.scene[0].id]]), must: true }) : n)).concat(d.scene);
+    // 선택지가 없던 줄이면 원래 흐름으로 가는 선택지(keep)를 먼저 둔다 (원래 대사는 그대로)
+    const nodes = S[part].map((n) => (n.id === d.node ? Object.assign({}, n, { ch: (n.ch && n.ch.length ? n.ch : [[d.keep, n.next]]).concat([[d.text, d.scene[0].id]]), next: n.ch && n.ch.length ? n.next : null, must: true }) : n)).concat(d.scene);
     const r = await story(nodes);
     return r && r.flags.includes('if:' + d.id) ? d : null;
   }
@@ -1771,7 +1772,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.31';
+  const GAME_VERSION = '0.36';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
