@@ -1,5 +1,5 @@
 """유니티에서 뽑은 원작 3D 지역 지도(tools/unity_ref/proj/worldmap3d, RefWorldMap3D.Run) -> assets/world/<장>/scene.json + scene.bin + 그림
-python tools/build_world3d.py [유니티 참조 프로젝트 경로]   (기본: tools/unity_ref/proj)
+python tools/build_world3d.py [ch02 ch03 ...] [유니티 참조 프로젝트 경로]   (기본: 모든 장, tools/unity_ref/proj)
 
 scene.json: 물체(모델·그림 조각), 재질 값, 작전 지점 8곳과 마을의 3D 위치, 작전별 카메라 클립(bin 안의 위치)
 scene.bin : Float32 꼭짓점·uv, Uint16 삼각형, Float32 카메라 표본(초당 15번: 위치 3 + 회전 4)
@@ -7,10 +7,12 @@ scene.bin : Float32 꼭짓점·uv, Uint16 삼각형, Float32 카메라 표본(�
 import json, os, shutil, struct, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PROJ = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, 'tools', 'unity_ref', 'proj')
+CHS = [a for a in sys.argv[1:] if a.startswith('ch')]
+_rest = [a for a in sys.argv[1:] if not a.startswith('ch')]
+PROJ = _rest[0] if _rest else os.path.join(ROOT, 'tools', 'unity_ref', 'proj')
 SRC = os.path.join(PROJ, 'worldmap3d')
 MATDIR = os.path.join(PROJ, 'Assets', 'Ref', 'AssetBundleResourceSub', 'BG', 'World map', 'Materials')
-MAPS = {'ch01': '3D_worldmap_A1_1'}
+MAPS = {'ch%02d' % n: '3D_worldmap_A%d_1' % n for n in range(1, 7)}
 # 작전 n(0부터) -> 애니메이터 상태 이름, 마을·처음 화면은 전체 둘러보기
 STAGE_STATE = ['S_%02d' % (8 + i) for i in range(8)]
 OVERVIEW = 'S_Default'
@@ -84,17 +86,8 @@ def build(ch, name):
                 clips[s['name']] = {'len': s['len'], 'cam': B.put('f', s['cam'])}
     stages = [{'pos': points[i + 1], 'clip': STAGE_STATE[i]} for i in range(len(STAGE_STATE))]
 
-    # 마을(등대 아래 비밀기지): 옛 지도 사진 위 자리를 작전 지점들로 맞춘 평면 변환으로 3D에 옮긴다
-    old = json.load(open(os.path.join(ROOT, 'tools', 'world_old_ch01.json'), encoding='utf8'))
-    town2d = old['town']
-    pts2d = old['points']
-    import numpy as np
-    A = np.array([[x, y, 1] for x, y in pts2d])
-    X = np.array([points[i + 1][0] for i in range(8)]); Z = np.array([points[i + 1][2] for i in range(8)])
-    cx = np.linalg.lstsq(A, X, rcond=None)[0]; cz = np.linalg.lstsq(A, Z, rcond=None)[0]
-    tv = np.array([town2d[0], town2d[1], 1])
-    near = points[3]
-    town = [round(float(tv @ cx), 4), near[1], round(float(tv @ cz), 4)]
+    # 마을(등대 아래 비밀기지)은 1장에만: 옛 지도 사진 위 자리를 작전 지점들로 맞춘 평면 변환으로 3D에 옮긴다
+    town = town_pos(points) if ch == 'ch01' else None
 
     scene = {'objs': objs, 'cam': {'fov': cam['fov'], 'near': cam['near'], 'far': cam['far'], 'bg': cam['bg']},
              'fps': FPS, 'clips': clips, 'overview': OVERVIEW, 'stages': stages, 'town': town, 'marker': 'map_point',
@@ -111,6 +104,20 @@ def build(ch, name):
     print(ch, 'objs', len(objs), 'clips', sorted(clips), 'bin', len(B.b), 'tex', sorted(texs), 'town', town)
 
 
+def town_pos(points):
+    old = json.load(open(os.path.join(ROOT, 'tools', 'world_old_ch01.json'), encoding='utf8'))
+    town2d = old['town']
+    pts2d = old['points']
+    import numpy as np
+    A = np.array([[x, y, 1] for x, y in pts2d])
+    X = np.array([points[i + 1][0] for i in range(8)]); Z = np.array([points[i + 1][2] for i in range(8)])
+    cx = np.linalg.lstsq(A, X, rcond=None)[0]; cz = np.linalg.lstsq(A, Z, rcond=None)[0]
+    tv = np.array([town2d[0], town2d[1], 1])
+    near = points[3]
+    return [round(float(tv @ cx), 4), near[1], round(float(tv @ cz), 4)]
+
+
 if __name__ == '__main__':
     for ch, name in MAPS.items():
-        build(ch, name)
+        if not CHS or ch in CHS:
+            build(ch, name)

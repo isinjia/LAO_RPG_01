@@ -14,7 +14,12 @@ VOICE = r'E:/LAO_Google_QA/Assets/AssetBundleResource/Sounds/Voice/'
 HEROES = {'constantia': ('LobbyScript_3P_ConstantiaS2', 'ConstantiaS2'), 'griffon': ('LobbyScript_BR_PA00EL', 'PA00EL'),
           'johanna': ('LobbyScript_DS_Johanna', 'Johanna'), 'lrl': ('LobbyScript_PECS_LRL', 'LRL'),
           'pupphead': ('LobbyScript_PECS_PuppHead', 'PuppHead'), 'fallen': ('LobbyScript_AGS_Fallen', 'Fallen'),
-          'fortune': ('LobbyScript_PECS_Fortune', 'Fortune')}
+          'fortune': ('LobbyScript_PECS_Fortune', 'Fortune'),
+          # 2~6지역 합류
+          'amy': ('LobbyScript_BR_Amy', 'Amy'), 'coco': ('LobbyScript_PECS_CoCoWhiteShell', 'CoCoWhiteShell'), 'marie': ('LobbyScript_BR_Marie', 'Marie'),
+          'aeda': ('LobbyScript_AGS_Aeda', 'Aeda'), 'tomoe': ('LobbyScript_BR_Tomoe', 'Tomoe'), 'vanilla': ('LobbyScript_3P_Vanilla', 'Vanilla'),
+          'labiata': ('LobbyScript_3P_Labiata', 'Labiata'), 'scathy': ('LobbyScript_BR_Scathy', 'Scathy'), 'may': ('LobbyScript_BR_May', 'May'),
+          'nightangel': ('LobbyScript_BR_NightAngel', 'NightAngel'), 'daika': ('LobbyScript_BR_Daika', 'Daika')}
 
 
 def clean(s):
@@ -44,7 +49,10 @@ def main():
                 src = next((VOICE + folder + '/' + v + ext for ext in ('.mp3', '.wav') if v and os.path.exists(VOICE + folder + '/' + v + ext)), None)
                 if src:
                     to_mp3(src, os.path.join(ROOT, 'assets', 'voice', v + '.mp3'), 96)
-                lines.append({'t': t, 'f': faces[i] if i < len(faces) else '', 'v': v if src else ''})
+                f = faces[i] if i < len(faces) else ''
+                if f and not os.path.exists(os.path.join(ROOT, 'assets', 'story', 'stand', f + '.webp')):
+                    f = ''  # 전신 그림이 없는 표정은 게임 쪽 기본 그림으로
+                lines.append({'t': t, 'f': f, 'v': v if src else ''})
         out[hero] = lines
         print(hero, len(lines), '줄')
     with open(os.path.join(ROOT, 'js', 'lobby.js'), 'w', encoding='utf8') as f:
