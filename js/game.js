@@ -1342,7 +1342,13 @@
   // ── 화면들 ───────────────────────────────────────────────
   // 화면 전환: 원작처럼 검은 판이 쓸고 지나간다
   function wipe() { const w = $('wipe'); w.classList.remove('go'); void w.offsetWidth; w.classList.add('go'); }
-  function screen(html) { $('screen').innerHTML = html; mode = 'screen'; wipe(); }
+  // 같은 화면을 새로 그릴 때(출격 준비에서 영웅·병사 고르기 등)는 전환 효과 없이
+  function screen(html) {
+    const kind = (html.match(/class="([\w-]+)/) || [])[1];
+    const same = kind && $('screen').firstElementChild && $('screen').firstElementChild.classList.contains(kind);
+    $('screen').innerHTML = html; mode = 'screen';
+    if (!same) wipe();
+  }
   function hideScreen() { $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
   const GAME_VERSION = '0.01';
@@ -1461,7 +1467,7 @@
   }
 
   // 출격 준비: 원작 편성 화면처럼 영웅 카드 + 오른쪽 상세(능력치·특기·병사 배속). 고를 때 인물 음성
-  const HERO_STAND = { constantia: '3P_ConstantiaS2_N_Smile', griffon: 'BR_PA00EL_N_Proud', johanna: 'DS_Johanna_N_Smile', lrl: 'PECS_LRL_N_Laugh', pupphead: 'PECS_PuppHead_N', fallen: 'AGS_Fallen_N' };
+  const HERO_STAND = { constantia: '3P_ConstantiaS2_N_Smile', griffon: 'BR_PA00EL_N_Smile', johanna: 'DS_Johanna_N_Smile', lrl: 'PECS_LRL_N_Laugh', pupphead: 'PECS_PuppHead_N', fallen: 'AGS_Fallen_N' };
   const heroVoice = (id, kind) => AU.voice(id + '_' + kind);
   // 화면 안의 일러스트 캔버스(data-stand)를 움직이는 일러스트로 (js/portrait.js). 화면이 바뀌면 알아서 정리된다
   function liveCards() {
@@ -1526,12 +1532,26 @@
       liveCards();
       document.querySelectorAll('.pcard').forEach((b) => (b.onclick = () => {
         if (cur === b.dataset.h) return;
-        cur = b.dataset.h; AU.play('lo_pick', 0.5); heroVoice(cur, 'SortiePick'); render();
+        cur = b.dataset.h; AU.play('lo_pick', 0.5); heroVoice(cur, 'SortiePick'); refresh();
       }));
-      document.querySelectorAll('.ptr').forEach((b) => (b.onclick = () => {
-        if (pick[cur] === b.dataset.t) return;
-        pick[cur] = b.dataset.t; AU.play('lo_equip', 0.6); heroVoice(cur, 'SquadJoin'); render();
-      }));
+      bindTroops();
+    };
+    // 고를 때는 화면 전체를 다시 그리지 않고 바뀐 곳만 (움직이는 일러스트가 처음부터 다시 시작하지 않게)
+    const bindTroops = () => document.querySelectorAll('.ptr').forEach((b) => (b.onclick = () => {
+      if (pick[cur] === b.dataset.t) return;
+      pick[cur] = b.dataset.t; AU.play('lo_equip', 0.6); heroVoice(cur, 'SquadJoin'); refresh();
+    }));
+    const refresh = () => {
+      document.querySelectorAll('.pcard').forEach((b) => {
+        b.classList.toggle('sel', b.dataset.h === cur);
+        const tr = D.TROOPS[pick[b.dataset.h]];
+        b.querySelector('.ptroop').innerHTML = `<img src="${IMG[tr.icon]}" alt=""><span>${tr.short} ×${R.SQUAD}</span>`;
+      });
+      const pd = document.querySelector('.pdetail');
+      const top = pd.scrollTop;
+      pd.innerHTML = detail();
+      pd.scrollTop = top;
+      bindTroops();
     };
     render();
     if (fresh) heroVoice(fresh, 'Join'); else heroVoice(cur, 'SortiePick');

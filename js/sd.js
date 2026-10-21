@@ -8,6 +8,11 @@
   const FPS = 24;
 
   // Unity-convention math (left-handed space, same formulas as UnityEngine.Quaternion)
+  // 캐트멀-롬 곡선: p1 → p2 사이 (p0, p3 는 앞뒤 표본)
+  const cr = (p0, p1, p2, p3, t) => {
+    const t2 = t * t, t3 = t2 * t;
+    return 0.5 * (2 * p1 + (p2 - p0) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 + (3 * p1 - p0 - 3 * p2 + p3) * t3);
+  };
   const U = {
     mul: (a, b) => [
       a[3] * b[0] + a[0] * b[3] + a[1] * b[2] - a[2] * b[1],
@@ -814,23 +819,34 @@
       if (!c) return;
       const fpos = Math.min(c.n - 1, this.time * FPS);
       const f0 = Math.min(c.n - 1, Math.floor(fpos + 1e-4)), f1 = Math.min(c.n - 1, f0 + 1), a = Math.max(0, fpos - f0);
+      // 곡선 보간용 앞뒤 표본 (반복 움직임은 끝과 처음이 이어진다)
+      const rep = this.clipName === 'idle' || this.clipName === 'move' || this.loop || c.loop;
+      const fm = f0 > 0 ? f0 - 1 : rep ? Math.max(0, c.n - 2) : 0, f2 = f1 < c.n - 1 ? f1 + 1 : rep ? Math.min(c.n - 1, 1) : f1;
       const T = this.T, Q = this.Q, S = this.S, rb = this.tpl.rendByNode;
       for (const t of c.tracks) {
         const i = t.i, d = t.d;
         switch (t.k) {
           case 'q': {
-            let i0 = 0, i1 = 0;
-            if (d.length > 4) { i0 = f0 * 4; i1 = f1 * 4; }
-            let x = d[i0] + (d[i1] - d[i0]) * a, y = d[i0 + 1] + (d[i1 + 1] - d[i0 + 1]) * a;
-            let z = d[i0 + 2] + (d[i1 + 2] - d[i0 + 2]) * a, w = d[i0 + 3] + (d[i1 + 3] - d[i0 + 3]) * a;
+            let x, y, z, w;
+            if (d.length > 4) {
+              // 곡선 보간 (캐트멀-롬): 미리 뽑은 1/24초 간격 사이를 속도가 이어지게 잇는다
+              const i0 = f0 * 4, i1 = f1 * 4, im = fm * 4, i2 = f2 * 4;
+              const sm = d[i0] * d[im] + d[i0 + 1] * d[im + 1] + d[i0 + 2] * d[im + 2] + d[i0 + 3] * d[im + 3] < 0 ? -1 : 1;
+              const s1 = d[i0] * d[i1] + d[i0 + 1] * d[i1 + 1] + d[i0 + 2] * d[i1 + 2] + d[i0 + 3] * d[i1 + 3] < 0 ? -1 : 1;
+              const s2 = d[i0] * d[i2] + d[i0 + 1] * d[i2 + 1] + d[i0 + 2] * d[i2 + 2] + d[i0 + 3] * d[i2 + 3] < 0 ? -1 : 1;
+              x = cr(d[im] * sm, d[i0], d[i1] * s1, d[i2] * s2, a); y = cr(d[im + 1] * sm, d[i0 + 1], d[i1 + 1] * s1, d[i2 + 1] * s2, a);
+              z = cr(d[im + 2] * sm, d[i0 + 2], d[i1 + 2] * s1, d[i2 + 2] * s2, a); w = cr(d[im + 3] * sm, d[i0 + 3], d[i1 + 3] * s1, d[i2 + 3] * s2, a);
+            } else { x = d[0]; y = d[1]; z = d[2]; w = d[3]; }
             const l = 1 / (Math.hypot(x, y, z, w) || 1);
             Q[i * 4] = -x * l; Q[i * 4 + 1] = -y * l; Q[i * 4 + 2] = z * l; Q[i * 4 + 3] = w * l;
             break;
           }
           case 't': case 's': {
-            let i0 = 0, i1 = 0;
-            if (d.length > 3) { i0 = f0 * 3; i1 = f1 * 3; }
-            const x = d[i0] + (d[i1] - d[i0]) * a, y = d[i0 + 1] + (d[i1 + 1] - d[i0 + 1]) * a, z = d[i0 + 2] + (d[i1 + 2] - d[i0 + 2]) * a;
+            let x, y, z;
+            if (d.length > 3) {
+              const i0 = f0 * 3, i1 = f1 * 3, im = fm * 3, i2 = f2 * 3;
+              x = cr(d[im], d[i0], d[i1], d[i2], a); y = cr(d[im + 1], d[i0 + 1], d[i1 + 1], d[i2 + 1], a); z = cr(d[im + 2], d[i0 + 2], d[i1 + 2], d[i2 + 2], a);
+            } else { x = d[0]; y = d[1]; z = d[2]; }
             if (t.k === 't') { T[i * 3] = x; T[i * 3 + 1] = y; T[i * 3 + 2] = -z; } else { S[i * 3] = x; S[i * 3 + 1] = y; S[i * 3 + 2] = z; }
             break;
           }
@@ -966,8 +982,9 @@
         if (!st) return;
         const P = st.p;
         for (const p of P) { p.tp = this.posU(p.i); p.lp = this.localPosU(p.i); }
+        // 화면이 60장일 때 거의 매 틀 한 번씩: 내림 대신 반올림 (계산을 건너뛰는 틀이 생기면 머리카락이 떨린다)
         st.acc += dt;
-        let loop = Math.floor(st.acc * db.rate);
+        let loop = Math.round(st.acc * db.rate);
         st.acc -= loop / db.rate;
         if (loop > 3) { loop = 3; st.acc = 0; }
         for (let s = 0; s < loop; s++) { this.dynStep1(db, P); this.dynStep2(db, P); }

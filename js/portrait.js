@@ -10,13 +10,14 @@
     for (const m in MODELS) if (stand === m || stand.startsWith(m + '_')) return MODELS[m];
     return null;
   };
-  let R3 = null, scene = null;
+  let R3 = null, scene = null, glW = 0, glH = 0;
   const live = new Set(); // {el, ctx, uid, stand, c, frame, still}
   const frames = {}; // uid -> {box} (한 번 재서 고정: 숨쉬기에 따라 화면이 흔들리지 않게)
 
   function renderer() {
     if (R3) return R3;
     R3 = new THREE.WebGLRenderer({ alpha: true, antialias: true, premultipliedAlpha: false });
+    R3.setPixelRatio(1);
     R3.setClearColor(0x000000, 0);
     scene = new THREE.Scene();
     return R3;
@@ -108,8 +109,10 @@
         const nodes = p.c.tpl.data.nodes;
         const fi = nodes.findIndex((n) => n.n === 'face');
         f.fx = fi >= 0 ? Math.max(0.15, Math.min(0.85, (p.c.posU(fi)[0] - f.box.min.x) / f.box.w)) : 0.5;
+        f.fy = fi >= 0 ? Math.max(0.03, Math.min(0.6, (f.box.max.y - p.c.posU(fi)[1]) / f.box.h)) : 0.25; // 위에서부터 얼굴 높이
       }
       el.style.setProperty('--fx', f.fx.toFixed(3));
+      el.style.setProperty('--fy', f.fy.toFixed(3));
       draw(p);
     });
     return p;
@@ -134,7 +137,8 @@
   function draw(p) {
     const r = renderer(), f = frames[p.uid];
     const b = f.box, W = p.el.width, H = p.el.height;
-    r.setSize(W, H, false);
+    if (W > glW || H > glH) { glW = Math.max(glW, W); glH = Math.max(glH, H); r.setSize(glW, glH, false); }
+    r.setViewport(0, 0, W, H);
     setFace(p); // 움직임을 다시 시작하면 기본 표정으로 돌아가므로 그릴 때마다 끼운다
     const cam = new THREE.OrthographicCamera(b.min.x, b.max.x, b.max.y, b.min.y, -1000, 1000);
     cam.position.z = 100;
@@ -142,20 +146,16 @@
     r.render(scene, cam);
     scene.remove(p.c.root);
     p.ctx.clearRect(0, 0, W, H);
-    p.ctx.drawImage(r.domElement, 0, 0);
+    p.ctx.drawImage(r.domElement, 0, glH - H, W, H, 0, 0, W, H); // 그림판 왼쪽 아래 W×H
   }
 
-  let acc = 0;
+  // 화면 갱신마다 (초당 60장): 움직임을 줄이지 않는다
   function update(dt) {
-    if (!live.size) return;
-    acc += dt;
-    if (acc < 1 / 30) return; // 30장/초면 충분
-    const step = acc;
-    acc = 0;
+    if (!live.size || dt <= 0) return;
     for (const p of live) {
       if (!p.el.isConnected) { detach(p.el); continue; }
       if (!p.c) continue;
-      p.c.update(step);
+      p.c.update(dt);
       draw(p);
     }
   }

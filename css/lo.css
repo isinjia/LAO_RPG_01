@@ -350,7 +350,8 @@
 #talkBg canvas.stand { width: auto; max-width: none; }
 
 /* 움직이는 일러스트: 출격 준비 카드 (정지 그림 때의 확대·위치와 같게) */
-.pcard .pimg canvas { position: absolute; left: 50%; top: -5%; height: 190%; width: auto; transform: translateX(calc(var(--fx, 0.5) * -100%)); }
+/* 눈높이 맞추기: 얼굴(--fy, 그림 위에서부터 비율)이 카드 위에서 26% 선에 오게 */
+.pcard .pimg canvas { position: absolute; left: 50%; top: calc(26% - var(--fy, 0.16) * 190%); height: 190%; width: auto; transform: translateX(calc(var(--fx, 0.5) * -100%)); }
 .pcard .pimg.whole canvas { top: 6%; height: 92%; }
 /* 결과 화면 최우수 인물 */
 .rmvp { background: none; display: flex; align-items: flex-end; justify-content: center; }
