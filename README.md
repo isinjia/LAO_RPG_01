@@ -55,7 +55,7 @@ python tools/serve.py 8795
 | `js/talk.js` | 원작 노벨 대화창: 배경 교차 전환, 인물 등장·퇴장 효과, 장소 자막, 화면 효과·덧붙임 효과(소리), AUTO / FAST / SKIP / HISTORY |
 | `css/lo.css` | 원작 화면 모양: 대화, 작전 선택(3D 지역 지도), 출격 준비(편성 화면), 결과(MISSION COMPLETE), 불러오기·화면 전환·확인 창 |
 | `js/story.js` | 본작 대본 (`tools/build_story.py`로 생성, 연출 값 포함) |
-| `js/world.js` | 지역 지도 위 작전 지점 (`tools/build_world.py`로 생성) |
+| `js/worldmap3d.js` | 월드맵: 원작 3D 지역 지도와 원작 셰이더, 쿼터뷰 고정 카메라(끌어서 돌리기·휠·두 손가락 확대) (`assets/world/<장>/`, `tools/build_world3d.py`로 생성) |
 | `js/sd/*` | 변환된 리그 |
 | `assets/story/` | 대화 배경·컷 그림·표정 얼굴 (원본 텍스처에서 변환) |
 
@@ -72,7 +72,8 @@ python tools/serve.py 8795
 
 - UI 조각: `python tools/extract_ui.py <아틀라스>` → `tools/ui_src`, 쓰는 것만 `python tools/copy_ui.py` → `assets/ui`
 - 전투 지도 바닥 질감·소품: `python tools/build_tiles.py` → `assets/tiles` (원작 전투 배경 손그림에서 이음매 없는 질감과 소품을 오려 냄)
-- 지역 지도: `python tools/unity_ref/setup_worldmap.py` → 유니티 `-executeMethod RefWorldMap.Run` (그래픽 켠 채로) → `python tools/build_world.py`
+- 지역 지도(3D): `python tools/unity_ref/setup_worldmap.py` → 유니티 `-executeMethod RefWorldMap3D.Run` (그래픽 켠 채로, `-nographics` 없이) → `python tools/build_world3d.py`
+  (모델·재질 값·그림, 작전 지점 3D 자리, 애니메이터 상태 S_08~S_15 = 작전 1~8 카메라 클립, S_Default = 전체 둘러보기. 마을 자리는 `tools/world_old_ch01.json`의 옛 사진 위 자리를 3D로 옮김)
 - 움직이는 대화 일러스트: `python tools/unity_ref/setup.py portraits` → 유니티 `RefMesh.Run` → `python tools/build_sd.py portraits` → `js/sd/p_<영웅>.*`
   (원작 2DModel 프리팹 + 로비 움직임 + 원작 표정 그림 + 원작 흔들림 뼈 설정. `js/portrait.js` 가 대화·출격 준비·결과 화면에서 재생,
   흔들림 뼈 계산은 `js/sd.js` 의 runDyn. 불러오는 동안은 정지 그림)

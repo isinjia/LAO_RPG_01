@@ -66,6 +66,33 @@
   };
 
   const figN = (u, thp) => RULES.soldiers(u, thp);
+  // 발밑 그림자: 비병은 몸만 떠 있고 그림자는 땅에 남는다 (랑그릿사처럼)
+  let shadowGeo = null, shadowMat = null;
+  function addShadow(f) {
+    if (!shadowGeo) {
+      const c = document.createElement('canvas');
+      c.width = 128; c.height = 64;
+      const g = c.getContext('2d');
+      const gr = g.createRadialGradient(64, 32, 0, 64, 32, 64);
+      gr.addColorStop(0, 'rgba(0,0,0,0.75)'); gr.addColorStop(0.55, 'rgba(0,0,0,0.5)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+      g.setTransform(1, 0, 0, 0.5, 0, 16);
+      g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
+      shadowGeo = new THREE.PlaneGeometry(1, 0.5);
+      shadowMat = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthTest: false, depthWrite: false, opacity: 0.55 });
+    }
+    const m = new THREE.Mesh(shadowGeo, shadowMat);
+    const w = (f.hero ? 1.25 : 0.8) * (f.air ? 0.8 : 1);
+    m.scale.set(w, w * 0.6, 1);
+    m.position.set(0, 0.02, 0);
+    m.renderOrder = 5; // 배경 위, 모든 유닛 아래
+    f.rig.g.add(m);
+    f.shadow = m;
+    // 비병: 리그만 들어 올리고 천천히 오르내린다
+    f.by0 = f.rig.c.root.position.y;
+    f.bob = Math.random() * Math.PI * 2;
+  }
+  const isAir = (u, hero) => (hero ? u.kind : u.troop && u.troop.kind) === 'fly';
+  const lift = (f) => (f.air ? f.air + Math.sin(T * 3 + f.bob) * 0.07 : 0);
   // 랑그릿사 모바일처럼: 영웅은 맨 뒤(바깥쪽), 병사 무리는 영웅 앞(적 쪽)에 3줄
   const heroX = (dir) => dir * (VW / 2 - Math.min(1.3, VW * 0.12));
   function soldierSlots(n, side) {
@@ -132,7 +159,8 @@
         hero.order = 140;
         scene.add(hero.g);
         hero.loop('move');
-        list.push({ rig: hero, side, x: hx, y: hy, u, hero: true, alive: true });
+        list.push({ rig: hero, side, x: hx, y: hy, u, hero: true, alive: true, air: isAir(u, true) ? 0.85 : 0 });
+        addShadow(list[list.length - 1]);
         soldierSlots(figN(u, st[u.uid].thp), side).forEach(([x0, y, row], i) => {
           const x = x0 + dir * off;
           const r = new K.Rig(u.troop.rig, 1.5, native);
@@ -142,7 +170,8 @@
           scene.add(r.g);
           r.loop('move');
           r.c.time = Math.random();
-          list.push({ rig: r, side, x, y, u, hero: false, alive: true });
+          list.push({ rig: r, side, x, y, u, hero: false, alive: true, air: isAir(u, false) ? 0.6 : 0 });
+          addShadow(list[list.length - 1]);
         });
         actors.push(...list);
         return list;
@@ -242,11 +271,12 @@
   function die(f) {
     if (!f || !f.alive) return;
     f.alive = false;
+    if (f.shadow) f.shadow.visible = false;
     const away = f.side === 'L' ? -1 : 1, k = f.hero ? 0.8 : 1;
     f.fly = { vx: away * (1.4 + Math.random() * 1.8) * k, vy: (10 + Math.random() * 2.6) * k, w: -away * (5 + Math.random() * 5), t: 0, y0: f.rig.g.position.y, land: 0 };
     f.rig.c.speed = 0.25; // 자세는 맞은 순간에서 거의 멈춘다
     f.rig.c.mesh.renderOrder += 60; // 날아가는 동안 다른 병사 앞에
-    f.tintT = 0; f.rig.c.setTint(6, 6, 6); // 하얀 실루엣
+    f.flashT = null; f.rig.c.setFlash(1); // 하얀 실루엣
   }
 
   // 피해 숫자: 맞은 몸 머리 위에서 크게 튀어나왔다가 위로 떠오르며 사라진다 (화면 좌표로 옮겨 HTML 글자로)
@@ -258,7 +288,7 @@
     return [x0 + ((x - c.left) / (c.right - c.left)) * w, ((c.top - y) / (c.top - c.bottom)) * H];
   }
   function dmgNum(f, n) {
-    const p = f.rig.g.position, [sx, sy] = toScreen(p.x + (Math.random() - 0.5) * 0.3, p.y + (f.hero ? 2.3 : 1.4) + Math.random() * 0.3, f.side);
+    const p = f.rig.g.position, [sx, sy] = toScreen(p.x + (Math.random() - 0.5) * 0.3, p.y + lift(f) + (f.hero ? 2.3 : 1.4) + Math.random() * 0.3, f.side);
     const e = document.createElement('div');
     e.className = 'fnum' + (f.hero ? ' hero' : '');
     e.textContent = Math.max(1, Math.round(n));
@@ -280,12 +310,12 @@
     const tex = window.KIT.tex('fx_spark');
     const s = src.rig.g.position, dir = src.side === 'L' ? 1 : -1;
     const targets = to.filter((f) => f.alive);
-    const d = (targets[Math.floor(Math.random() * targets.length)] || to[0]).rig.g.position;
+    const tf = targets[Math.floor(Math.random() * targets.length)] || to[0], d = tf.rig.g.position;
     const col = au.side === 'p' ? 0x9fd8ff : 0xff9a7a;
     const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, color: col, transparent: true, depthTest: false, blending: THREE.AdditiveBlending }));
     m.renderOrder = 520;
     m.scale.set(0.6, 0.6, 1);
-    const x0 = s.x + dir * 0.4, y0 = s.y + (src.hero ? 1.2 : 0.7), x1 = d.x + (Math.random() - 0.5) * 0.4, y1 = d.y + 0.5 + Math.random() * 0.4;
+    const x0 = s.x + dir * 0.4, y0 = s.y + lift(src) + (src.hero ? 1.2 : 0.7), x1 = d.x + (Math.random() - 0.5) * 0.4, y1 = d.y + lift(tf) + 0.5 + Math.random() * 0.4;
     m.position.set(x0, y0, 1);
     scene.add(m);
     fxs.push({ m, t: 0, life: TRAVEL * (0.9 + Math.random() * 0.2), path: [x0, y0, x1, y1] });
@@ -295,16 +325,15 @@
   function hitFx(src, dst, au, far, snd) {
     const K = window.KIT;
     if (!dst || !dst.alive) return;
-    const p = dst.rig.g.position;
+    const p = dst.rig.g.position, up = lift(dst);
     const h = dst.hero ? 1.3 : 0.7;
     const ranged = isRanged(src, au);
     if (ranged && !far && src.alive) {
       const s = src.rig.g.position;
-      beam(s.x + (src.side === 'L' ? 0.4 : -0.4), s.y + (src.hero ? 1.2 : 0.7), p.x, p.y + h * 0.6, au.side === 'p' ? 0x9fd8ff : 0xff9a7a);
+      beam(s.x + (src.side === 'L' ? 0.4 : -0.4), s.y + lift(src) + (src.hero ? 1.2 : 0.7), p.x, p.y + up + h * 0.6, au.side === 'p' ? 0x9fd8ff : 0xff9a7a);
     }
-    spark(p.x + (Math.random() - 0.5) * 0.4, p.y + h * (0.4 + Math.random() * 0.5), ranged);
-    dst.rig.c.setTint(1.6, 1.3, 1.3);
-    dst.tintT = T + 0.09;
+    spark(p.x + (Math.random() - 0.5) * 0.4, p.y + up + h * (0.4 + Math.random() * 0.5), ranged);
+    dst.flashT = T; // 맞으면 하얗게 번쩍 (랑그릿사처럼)
     if (snd) K.AU.play(far ? 'expS' : src.hero ? au.def.sfx : (au.troop ? au.troop.def.sfx : au.def.sfx), far ? 0.35 : 0.6);
   }
   function spark(x, y, ranged) {
@@ -357,7 +386,8 @@
     }
     for (const f of actors) {
       f.rig.update(dt);
-      if (f.tintT && T >= f.tintT) { f.tintT = 0; f.rig.c.setTint(1, 1, 1); }
+      if (f.air && f.alive) f.rig.c.root.position.y = f.by0 + lift(f);
+      if (f.flashT != null) { const k = (T - f.flashT) / 0.18; f.rig.c.setFlash(k >= 1 ? 0 : k < 0.3 ? 1 : (1 - k) / 0.7); if (k >= 1) f.flashT = null; }
       if (f.fly) { // 솟구쳤다 떨어지기: 원래 높이까지 떨어지면 바닥에 닿은 채 금세 사라진다
         const q = f.fly, g = f.rig.g;
         q.t += dt;

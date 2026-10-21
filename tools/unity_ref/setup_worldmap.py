@@ -1,5 +1,5 @@
 """원작 3D 지역 지도 프리팹을 유니티 참조 프로젝트로 복사하고 worldmap_jobs.txt 를 쓴다.
-python tools/unity_ref/setup_worldmap.py 3D_worldmap_A1_1   그다음 Unity -executeMethod RefWorldMap.Run (그래픽 켠 채로)
+python tools/unity_ref/setup_worldmap.py 3D_worldmap_A1_1   그다음 Unity -executeMethod RefWorldMap3D.Run (그래픽 켠 채로)
 """
 import os, shutil, sys
 
@@ -12,7 +12,7 @@ import setup as S  # noqa: E402
 def main():
     names = sys.argv[1:] or ['3D_worldmap_A1_1']
     os.makedirs(os.path.join(S.PROJ, 'Assets', 'Editor'), exist_ok=True)
-    shutil.copyfile(os.path.join(HERE, 'WorldMap.cs'), os.path.join(S.PROJ, 'Assets', 'Editor', 'RefWorldMap.cs'))
+    shutil.copyfile(os.path.join(HERE, 'WorldMap3D.cs'), os.path.join(S.PROJ, 'Assets', 'Editor', 'RefWorldMap3D.cs'))
     copied, jobs = set(), []
     for n in names:
         rel = S.copy_asset(S.SRC_ROOT + '/AssetBundleResource/BG/World map/%s.prefab' % n, copied)

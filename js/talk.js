@@ -264,7 +264,7 @@
     }
     if (!cur) return;
     if (typing) {
-      const cps = fastOn ? 400 : 42;
+      const cps = fastOn ? 400 : TALK.speed || 42; // 옵션의 글자 속도
       const before = Math.floor(typing.n);
       typing.n = Math.min(typing.full.length, typing.n + dt * cps);
       const shown = Math.floor(typing.n);
