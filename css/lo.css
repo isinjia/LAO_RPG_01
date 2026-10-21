@@ -348,3 +348,10 @@
 
 /* 움직이는 일러스트 캔버스: 그림 비율 그대로 화면 높이에 맞춘다 */
 #talkBg canvas.stand { width: auto; max-width: none; }
+
+/* 움직이는 일러스트: 출격 준비 카드 (정지 그림 때의 확대·위치와 같게) */
+.pcard .pimg canvas { position: absolute; left: 50%; top: -5%; height: 190%; width: auto; transform: translateX(calc(var(--fx, 0.5) * -100%)); }
+.pcard .pimg.whole canvas { top: 6%; height: 92%; }
+/* 결과 화면 최우수 인물 */
+.rmvp { background: none; display: flex; align-items: flex-end; justify-content: center; }
+.rmvp canvas { height: 100%; width: auto; max-width: 100%; object-fit: contain; object-position: bottom; }

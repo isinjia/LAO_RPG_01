@@ -74,7 +74,8 @@ python tools/serve.py 8795
 - 전투 지도 바닥 질감·소품: `python tools/build_tiles.py` → `assets/tiles` (원작 전투 배경 손그림에서 이음매 없는 질감과 소품을 오려 냄)
 - 지역 지도: `python tools/unity_ref/setup_worldmap.py` → 유니티 `-executeMethod RefWorldMap.Run` (그래픽 켠 채로) → `python tools/build_world.py`
 - 움직이는 대화 일러스트: `python tools/unity_ref/setup.py portraits` → 유니티 `RefMesh.Run` → `python tools/build_sd.py portraits` → `js/sd/p_<영웅>.*`
-  (원작 2DModel 프리팹 + 로비 움직임 + 원작 표정 그림. `js/portrait.js` 가 대화 화면에서 재생, 불러오는 동안은 정지 그림)
+  (원작 2DModel 프리팹 + 로비 움직임 + 원작 표정 그림 + 원작 흔들림 뼈 설정. `js/portrait.js` 가 대화·출격 준비·결과 화면에서 재생,
+  흔들림 뼈 계산은 `js/sd.js` 의 runDyn. 불러오는 동안은 정지 그림)
 - 대화 전신 그림·컷 그림: `tools/unity_ref/setup_portrait.py` → `RefPortrait.Run` (컷 그림은 프리팹 안 좌우 반전을 되돌림)
 - 배경음·효과음·타이틀 콜·인물 음성(합류·출격 선택·편성·작전 개시·최우수·퇴각)·글꼴: `python tools/build_media.py`
 

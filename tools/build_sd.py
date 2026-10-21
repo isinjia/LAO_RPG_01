@@ -243,6 +243,7 @@ def build_prefab(path, atlas):
             "s": [round(num(s["x"]), 5), round(num(s["y"]), 5), round(num(s["z"]), 5)],
             "a": int(g.get("m_IsActive", 1)),
             "path": path,
+            "_tid": str(tid), "_gid": str(t["m_GameObject"]["fileID"]),
         }
         is_bone = any(c == 114 and (d.get("m_Script") or {}).get("guid") == BONE_SCRIPT
                       for c, d in comps.get(str(t["m_GameObject"]["fileID"]), []))
@@ -616,10 +617,47 @@ def resolve_skins(nodes, atlas, manifest):
     return missing
 
 
-def prune(nodes, clips):
+DYNBONE_SCRIPT = "f9ac8d30c6a0d9642a11e5be4c440740"  # DynamicBone (흔들림 뼈)
+DYNCOL_SCRIPT = "baedd976e12657241bf7ff2d1c685342"  # DynamicBoneCollider
+
+
+def dynamic_bones(prefab, nodes):
+    """원작 흔들림 뼈(DynamicBone)와 충돌체 설정 -> [{r: 뿌리 경로, d, e, s, i, rad, el, eo, g, f, c: [충돌체], x: [제외 경로], fz}]"""
+    docs = load_docs(prefab)
+    by_tid = {n["_tid"]: n["path"] for n in nodes}
+    by_gid = {n["_gid"]: n["path"] for n in nodes}
+    v3 = lambda d: [num((d or {}).get(k, 0)) for k in "xyz"]
+    out = []
+    for fid, (c, d) in docs.items():
+        if c != 114 or (d.get("m_Script") or {}).get("guid") != DYNBONE_SCRIPT or not int(d.get("m_Enabled", 1)):
+            continue
+        root = by_tid.get(str((d.get("m_Root") or {}).get("fileID")))
+        if not root:
+            continue
+        cols = []
+        for ref in d.get("m_Colliders") or []:
+            cd = docs.get(str((ref or {}).get("fileID")))
+            if not cd or cd[0] != 114:
+                continue
+            cd = cd[1]
+            path = by_gid.get(str((cd.get("m_GameObject") or {}).get("fileID")))
+            if path:
+                cols.append({"n": path, "c": v3(cd.get("m_Center")), "r": num(cd.get("m_Radius", 0.5)), "h": num(cd.get("m_Height", 0)),
+                             "dir": int(cd.get("m_Direction", 0)), "b": int(cd.get("m_Bound", 0))})
+        out.append({"r": root, "rate": num(d.get("m_UpdateRate", 60)), "d": num(d.get("m_Damping", 0.1)), "e": num(d.get("m_Elasticity", 0.1)),
+                    "s": num(d.get("m_Stiffness", 0.1)), "i": num(d.get("m_Inert", 0)), "rad": num(d.get("m_Radius", 0)),
+                    "el": num(d.get("m_EndLength", 0)), "eo": v3(d.get("m_EndOffset")), "g": v3(d.get("m_Gravity")), "f": v3(d.get("m_Force")),
+                    "c": cols, "x": [by_tid[str(x.get("fileID"))] for x in d.get("m_Exclusions") or [] if str(x.get("fileID")) in by_tid],
+                    "fz": int(d.get("m_FreezeAxis", 0)), "w": num(d.get("m_Weight", 1))})
+    return out
+
+
+def prune(nodes, clips, extra=()):
     """Drop transforms that never render anything (UI anchors, empty groups)."""
     keep = set()
     for i, n in enumerate(nodes):
+        if n["path"] in extra:
+            keep.add(i)
         if (n.get("sr") and n["sr"].get("s")) or isinstance(n.get("skin"), dict) or n.get("mesh"):
             keep.add(i)
             for m in n.get("mesh") or []:
@@ -962,7 +1000,14 @@ def build(uid):
                 face_node["sr"]["s"] = faces[dflt]
                 face_node["sr"]["e"] = 1
                 clips["faces"] = {"dur": round(1.0 / FPS, 4), "n": 1, "loop": 0, "tracks": [{"p": face_node["path"], "k": "sp", "d": list(faces.values())}]}
-    nodes = prune(nodes, clips)
+    dyn = dynamic_bones(prefab, nodes) if uid.startswith("p_") else []
+    extra = set()
+    for db in dyn:
+        extra |= {n["path"] for n in nodes if n["path"] == db["r"] or n["path"].startswith(db["r"] + "/")}
+        extra |= {cc["n"] for cc in db["c"]}
+    nodes = prune(nodes, clips, extra)
+    for n in nodes:
+        n.pop("_tid", None); n.pop("_gid", None)
     quantize_clips(clips)
     atlas_meta, atlas_files = packed_atlas([p for _, p, _, _ in atlas.textures], uid in hires_ids() or uid.startswith("p_"),
                                            PORTRAIT_ATLAS if uid.startswith("p_") else None)
@@ -972,6 +1017,8 @@ def build(uid):
     }
     if faces:
         data["faces"] = faces
+    if dyn:
+        data["dyn"] = dyn
     # Unity's own sprite meshes (tight sheets would bleed neighbouring sprites through a full-rect quad)
     mpath = os.path.join(UNITY_MESH, uid + ".json")
     if os.path.exists(mpath):

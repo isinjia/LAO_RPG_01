@@ -71,7 +71,9 @@
   }
 
   function sizeCanvas(p, aspect) {
-    const H = Math.round(Math.min(1500, window.innerHeight * Math.min(2, window.devicePixelRatio || 1)));
+    // 그릴 높이: 지정(카드 등) 또는 화면 높이, 화소 밀도 2배까지
+    const base = p.h || window.innerHeight;
+    const H = Math.round(Math.min(1500, base * Math.min(2, window.devicePixelRatio || 1)));
     const W = Math.max(8, Math.round(H * aspect));
     if (p.el.width !== W || p.el.height !== H) { p.el.width = W; p.el.height = H; }
   }
@@ -84,9 +86,10 @@
     p.ctx.drawImage(p.still, 0, 0, p.el.width, p.el.height);
   }
 
-  function attach(el, stand) {
+  // opts.h: 화면에 그려질 대략의 높이(px). 작은 카드는 작게 그려 부담을 줄인다
+  function attach(el, stand, opts) {
     const uid = rigOf(stand);
-    const p = { el, ctx: el.getContext('2d'), uid, stand, c: null };
+    const p = { el, ctx: el.getContext('2d'), uid, stand, c: null, h: opts && opts.h };
     el._portrait = p;
     live.add(p);
     p.still = new Image();
@@ -100,6 +103,13 @@
       setFace(p);
       const f = measure(p);
       sizeCanvas(p, f.box.w / f.box.h);
+      // 얼굴 가로 위치 (0~1): 좁은 카드에서 얼굴이 가운데 오게 CSS 변수로 넘긴다
+      if (f.fx == null) {
+        const nodes = p.c.tpl.data.nodes;
+        const fi = nodes.findIndex((n) => n.n === 'face');
+        f.fx = fi >= 0 ? Math.max(0.15, Math.min(0.85, (p.c.posU(fi)[0] - f.box.min.x) / f.box.w)) : 0.5;
+      }
+      el.style.setProperty('--fx', f.fx.toFixed(3));
       draw(p);
     });
     return p;

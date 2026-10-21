@@ -505,6 +505,15 @@
     });
     const iks = gcs.reduce((a, g) => a.concat(g.iks), []);
     const tpl = { id, data, atlas, rendsOfNode, iks, gcs, gcByNode, end, N, parent, restT, restQ, restS, restA, sprites, rends, rendByNode, V, index, groups, hasSo };
+    // 흔들림 뼈 (대화 일러스트): 경로 -> 노드 번호, 자식 목록
+    if (data.dyn && data.dyn.length) {
+      tpl.kids = {};
+      for (let i = 0; i < N; i++) if (parent[i] >= 0) (tpl.kids[parent[i]] = tpl.kids[parent[i]] || []).push(i);
+      tpl.dyn = data.dyn.map((db) => Object.assign({}, db, {
+        root: pathIx[db.r], excl: new Set((db.x || []).map((x) => pathIx[x]).filter((x) => x != null)),
+        cols: db.c.map((c) => Object.assign({}, c, { node: pathIx[c.n] })),
+      }));
+    }
     if (SD.pinRoot) pinRoot(tpl);
     measure(tpl);
     templates[id] = tpl;
@@ -794,7 +803,9 @@
       if (dt > 0) {
         this.apply();
         if (this.fadeD) { this.fadeT += dt; this.blend(); }
+        this._dt = dt * this.speed;
         this.render();
+        this._dt = 0;
       }
     }
 
@@ -945,6 +956,126 @@
         -(W[o + 2] * x + W[o + 5] * y + W[o + 8] * z + W[o + 11])];
     }
 
+    // ── 흔들림 뼈 (원작 DynamicBone 와 같은 계산, 유니티 좌표) ──
+    // 애니메이션이 정한 자세를 기준으로 뼈 끝을 입자로 흔들고, 결과를 뼈 회전·위치에 되돌려 준다
+    runDyn(dt) {
+      const tp = this.tpl;
+      if (!this.dynP) this.dynP = tp.dyn.map((db) => this.dynInit(db));
+      tp.dyn.forEach((db, k) => {
+        const st = this.dynP[k];
+        if (!st) return;
+        const P = st.p;
+        for (const p of P) { p.tp = this.posU(p.i); p.lp = this.localPosU(p.i); }
+        st.acc += dt;
+        let loop = Math.floor(st.acc * db.rate);
+        st.acc -= loop / db.rate;
+        if (loop > 3) { loop = 3; st.acc = 0; }
+        for (let s = 0; s < loop; s++) { this.dynStep1(db, P); this.dynStep2(db, P); }
+        if (!loop) this.dynSkip(P);
+        this.dynApply(P);
+      });
+    }
+    // 흔들림이 바꾼 뼈를 원래 자세로 (원작 InitTransforms): 이번 움직임이 직접 움직이는 뼈는 apply() 가 이미 새로 썼다
+    dynReset() {
+      if (this.dynClip !== this.clip) {
+        this.dynClip = this.clip;
+        this.dynAnim = new Set((this.clip ? this.clip.tracks : []).filter((t) => t.k === 'q' || t.k === 't').map((t) => t.i));
+      }
+      const tp = this.tpl, T = this.T, Q = this.Q;
+      for (const st of this.dynP) {
+        if (!st) continue;
+        for (const p of st.p) {
+          if (this.dynAnim.has(p.i)) continue;
+          const i = p.i;
+          T[i * 3] = tp.restT[i * 3]; T[i * 3 + 1] = tp.restT[i * 3 + 1]; T[i * 3 + 2] = tp.restT[i * 3 + 2];
+          Q[i * 4] = tp.restQ[i * 4]; Q[i * 4 + 1] = tp.restQ[i * 4 + 1]; Q[i * 4 + 2] = tp.restQ[i * 4 + 2]; Q[i * 4 + 3] = tp.restQ[i * 4 + 3];
+        }
+      }
+    }
+    localPosU(i) { const T = this.T; return [T[i * 3], T[i * 3 + 1], -T[i * 3 + 2]]; }
+    dynInit(db) {
+      const tp = this.tpl, P = [];
+      if (db.root == null) return null;
+      const kids = tp.kids;
+      const add = (i, parent) => {
+        if (db.excl.has(i)) return;
+        const pos = this.posU(i);
+        P.push({ i, parent, pos: pos.slice(), prev: pos.slice(), tp: pos, lp: this.localPosU(i), kids: (kids[i] || []).length });
+        const me = P.length - 1;
+        for (const c of kids[i] || []) add(c, me);
+      };
+      add(db.root, -1);
+      return { p: P, acc: 0 };
+    }
+    dynStep1(db, P) {
+      const f = [db.g[0] + db.f[0], db.g[1] + db.f[1], db.g[2] + db.f[2]];
+      for (const p of P) {
+        if (p.parent >= 0) {
+          const v0 = p.pos[0] - p.prev[0], v1 = p.pos[1] - p.prev[1], v2 = p.pos[2] - p.prev[2];
+          p.prev = p.pos.slice();
+          const k = 1 - db.d;
+          p.pos = [p.pos[0] + v0 * k + f[0], p.pos[1] + v1 * k + f[1], p.pos[2] + v2 * k + f[2]];
+        } else { p.prev = p.pos.slice(); p.pos = p.tp.slice(); }
+      }
+    }
+    dynStep2(db, P) {
+      for (let n = 1; n < P.length; n++) {
+        const p = P[n], p0 = P[p.parent];
+        if (p0 == null) continue;
+        const restLen = U.dist(p0.tp, p.tp);
+        if (db.s > 0 || db.e > 0) {
+          // 부모 뼈 자세에서 이 뼈가 있어야 할 곳 (부모의 현재 입자 위치 기준)
+          const w = this.transformPointU(p0.i, p.lp), o = p0.tp;
+          const rest = [w[0] - o[0] + p0.pos[0], w[1] - o[1] + p0.pos[1], w[2] - o[2] + p0.pos[2]];
+          let d = U.sub(rest, p.pos);
+          p.pos = [p.pos[0] + d[0] * db.e, p.pos[1] + d[1] * db.e, p.pos[2] + d[2] * db.e];
+          if (db.s > 0) {
+            d = U.sub(rest, p.pos);
+            const len = Math.hypot(d[0], d[1], d[2]), maxlen = restLen * (1 - db.s) * 2;
+            if (len > maxlen && len > 0) { const k = (len - maxlen) / len; p.pos = [p.pos[0] + d[0] * k, p.pos[1] + d[1] * k, p.pos[2] + d[2] * k]; }
+          }
+        }
+        // 충돌체 (구 / 캡슐): 밖으로 밀어낸다 (b = 1 이면 안쪽에 가둔다)
+        for (const c of db.cols) {
+          if (c.node == null) continue;
+          const W = this.W, o = c.node * 12;
+          const sc = Math.max(Math.hypot(W[o], W[o + 1], W[o + 2]), Math.hypot(W[o + 3], W[o + 4], W[o + 5]));
+          const r = c.r * sc + db.rad;
+          const h = c.h * 0.5 - c.r;
+          let a = this.transformPointU(c.node, c.c), b = a;
+          if (h > 0) {
+            const off = [0, 0, 0]; off[c.dir] = h;
+            a = this.transformPointU(c.node, [c.c[0] - off[0], c.c[1] - off[1], c.c[2] - off[2]]);
+            b = this.transformPointU(c.node, [c.c[0] + off[0], c.c[1] + off[1], c.c[2] + off[2]]);
+          }
+          const ab = U.sub(b, a), ap = U.sub(p.pos, a), L2 = ab[0] * ab[0] + ab[1] * ab[1] + ab[2] * ab[2];
+          const tt = L2 > 0 ? Math.max(0, Math.min(1, (ap[0] * ab[0] + ap[1] * ab[1] + ap[2] * ab[2]) / L2)) : 0;
+          const q = [a[0] + ab[0] * tt, a[1] + ab[1] * tt, a[2] + ab[2] * tt];
+          const dv = U.sub(p.pos, q), len = Math.hypot(dv[0], dv[1], dv[2]);
+          if (!c.b && len < r && len > 0) p.pos = [q[0] + dv[0] * (r / len), q[1] + dv[1] * (r / len), q[2] + dv[2] * (r / len)];
+          else if (c.b && len > r && len > 0) p.pos = [q[0] + dv[0] * (r / len), q[1] + dv[1] * (r / len), q[2] + dv[2] * (r / len)];
+        }
+        // 뼈 길이 유지
+        const dd = U.sub(p0.pos, p.pos), leng = Math.hypot(dd[0], dd[1], dd[2]);
+        if (leng > 0) { const k = (leng - restLen) / leng; p.pos = [p.pos[0] + dd[0] * k, p.pos[1] + dd[1] * k, p.pos[2] + dd[2] * k]; }
+      }
+    }
+    dynSkip(P) { // 이번 틀에 계산할 차례가 아니면 뿌리만 자세를 따른다
+      for (const p of P) if (p.parent < 0) { p.prev = p.pos.slice(); p.pos = p.tp.slice(); }
+    }
+    dynApply(P) {
+      for (let n = 1; n < P.length; n++) {
+        const p = P[n], p0 = P[p.parent];
+        if (p0.kids <= 1) {
+          // 부모 뼈를 돌려 이 뼈가 입자 쪽을 향하게
+          const a = U.sub(this.transformPointU(p0.i, p.lp), this.posU(p0.i));
+          const b = U.sub(p.pos, p0.pos);
+          if (Math.hypot(a[0], a[1], a[2]) > 1e-6 && Math.hypot(b[0], b[1], b[2]) > 1e-6) this.setRotU(p0.i, U.mul(U.fromTo(U.norm3(a), U.norm3(b)), this.rotU(p0.i)));
+        }
+        this.setPosU(p.i, p.pos);
+      }
+    }
+
     // Puppet2D_GlobalControl.Run() — ported from the original scripts
     runPuppet() {
       this.tpl.gcs.forEach((g, gi) => {
@@ -1046,8 +1177,10 @@
     // evaluate the rig and write the vertex buffer
     render() {
       if (this.tpl.hasSo) this.resort();
+      if (this.dynP) this.dynReset();
       this.worldPass();
       if (this.tpl.gcs.length) this.runPuppet();
+      if (this.tpl.dyn && this.tpl.dyn.length && SD.dynamics) this.runDyn(this._dt || 0);
       // root motion authored on the pelvis (with IK targets following it): the pose plays untouched and the
       // whole rig is shifted back by the pelvis' travel since the clip started (SD.pinRoot)
       const pb = this.tpl.pinBone && this.tpl.pinBone[this.clipName];
@@ -1247,6 +1380,7 @@
     pinSkip: null, // { rigId: [clip names] }: clips whose root motion is kept
     pinRange: 0, // rig units of root travel kept (softly) by pinned clips
     pinRanges: null, // { rigId: rig units }: a tighter range for some rigs (units that dash to their target)
+    dynamics: true, // 흔들림 뼈 계산 (대화 일러스트의 머리카락·치마·리본)
     prepare,
     create(id) { const t = templates[id]; return t ? new SDChar(t) : null; },
     // pooled instances for short-lived rigs (enemies): no typed arrays / materials / textures per spawn

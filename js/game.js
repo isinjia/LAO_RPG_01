@@ -1463,6 +1463,14 @@
   // 출격 준비: 원작 편성 화면처럼 영웅 카드 + 오른쪽 상세(능력치·특기·병사 배속). 고를 때 인물 음성
   const HERO_STAND = { constantia: '3P_ConstantiaS2_N_Smile', griffon: 'BR_PA00EL_N_Proud', johanna: 'DS_Johanna_N_Smile', lrl: 'PECS_LRL_N_Laugh', pupphead: 'PECS_PuppHead_N', fallen: 'AGS_Fallen_N' };
   const heroVoice = (id, kind) => AU.voice(id + '_' + kind);
+  // 화면 안의 일러스트 캔버스(data-stand)를 움직이는 일러스트로 (js/portrait.js). 화면이 바뀌면 알아서 정리된다
+  function liveCards() {
+    document.querySelectorAll('canvas[data-stand]').forEach((cv) => {
+      if (cv._portrait) return;
+      const box = cv.parentElement.getBoundingClientRect();
+      PORTRAIT.attach(cv, cv.dataset.stand, { h: Math.max(200, box.height * (cv.parentElement.classList.contains('whole') ? 1 : 1.9)) });
+    });
+  }
   function prep(si) {
     const st = D.STAGES[si];
     const pick = {};
@@ -1482,7 +1490,7 @@
     const card = (id) => {
       const { h, s, t } = stat(id), tr = D.TROOPS[pick[id]];
       return `<button class="pcard ${id === cur ? 'sel' : ''}" data-h="${id}">
-        <div class="pimg ${id === 'pupphead' || id === 'fallen' ? 'whole' : ''}" style="background-image:url(assets/story/stand/${HERO_STAND[id]}.webp)"></div>
+        <div class="pimg ${id === 'pupphead' || id === 'fallen' ? 'whole' : ''}"><canvas class="pcv" data-stand="${HERO_STAND[id]}"></canvas></div>
         ${h.lead ? '<i class="plead"></i>' : ''}${(save.joined || []).includes(id) ? '' : '<i class="pnew">NEW</i>'}
         <div class="pfoot"><span class="plv">Lv.${s.lv}</span><b>${h.name}</b><small>${kindTag(h.kind)} · ${t.cls}</small></div>
         <div class="ptroop"><img src="${IMG[tr.icon]}" alt=""><span>${tr.short} ×${R.SQUAD}</span></div></button>`;
@@ -1515,6 +1523,7 @@
         heroVoice(st.heroes.includes('constantia') ? 'constantia' : st.heroes[0], 'StageStart');
         launch(si);
       };
+      liveCards();
       document.querySelectorAll('.pcard').forEach((b) => (b.onclick = () => {
         if (cur === b.dataset.h) return;
         cur = b.dataset.h; AU.play('lo_pick', 0.5); heroVoice(cur, 'SortiePick'); render();
@@ -1615,7 +1624,7 @@
       }).join('');
       const si = st.id - 1;
       screen(`<div class="rscr ${win ? 'win' : 'lose'}"><div class="pbg"></div>
-        <div class="rmvp" style="background-image:url(assets/story/stand/${HERO_STAND[face.id]}.webp)"></div>
+        <div class="rmvp"><canvas data-stand="${HERO_STAND[face.id]}"></canvas></div>
         <div class="rpanel">
           <div class="rhead">${win ? '<img src="assets/ui/UI_Battle_Main_missionclear_label_2.png" alt="MISSION COMPLETE">' : '<b class="rfail">MISSION FAILED</b>'}
             <div class="rstage"><span>${st.idx}</span>${st.title}<small>${turn}턴</small></div></div>
@@ -1623,6 +1632,7 @@
           <div class="rlist">${list}</div>
           <div class="rbtns">${win ? '<button class="wgo" id="rOk"><b>확인</b><small>NEXT</small></button>' : '<button class="lo-btn dark" id="rSel">작전 선택</button><button class="wgo" id="rRetry"><b>다시 도전</b><small>RETRY</small></button>'}</div>
         </div></div>`);
+      liveCards();
       wait(700).then(() => AU.voice(face.id + '_' + (win ? (mvp ? 'MVP' : 'SearchEnd') : 'Retreat')));
       requestAnimationFrame(() => setTimeout(() => document.querySelectorAll('.rbar i').forEach((b) => (b.style.width = b.dataset.w + '%')), 500));
       if ($('rOk')) $('rOk').onclick = () => { AU.play('lo_click', 0.7); res(); };
