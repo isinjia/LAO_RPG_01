@@ -55,7 +55,7 @@ python tools/serve.py 8795
 | `js/talk.js` | 원작 노벨 대화창: 배경 교차 전환, 인물 등장·퇴장 효과, 장소 자막, 화면 효과·덧붙임 효과(소리), AUTO / FAST / SKIP / HISTORY |
 | `css/lo.css` | 원작 화면 모양: 대화, 작전 선택(3D 지역 지도), 출격 준비(편성 화면), 결과(MISSION COMPLETE), 불러오기·화면 전환·확인 창 |
 | `js/story.js` | 본작 대본 (`tools/build_story.py`로 생성, 연출 값 포함) |
-| `js/worldmap3d.js` | 월드맵: 원작 3D 지역 지도와 원작 셰이더, 작전별 원작 카메라 클립 (`assets/world/<장>/`, `tools/build_world3d.py`로 생성) |
+| `js/worldmap3d.js` | 월드맵: 원작 3D 지역 지도와 원작 셰이더, 쿼터뷰 고정 카메라(끌어서 돌리기·휠·두 손가락 확대) (`assets/world/<장>/`, `tools/build_world3d.py`로 생성) |
 | `js/sd/*` | 변환된 리그 |
 | `assets/story/` | 대화 배경·컷 그림·표정 얼굴 (원본 텍스처에서 변환) |
 

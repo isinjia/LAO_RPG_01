@@ -1475,7 +1475,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.10';
+  const GAME_VERSION = '0.11';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -1521,9 +1521,8 @@
   const WT = 'T'; // 마을 지점 id
   const nodeIds = () => D.STAGES.map((_, i) => i).concat([WT]);
   const nodeOpen = (id) => (id === WT ? save.clear >= TOWN.unlock : id <= Math.min(save.clear, D.STAGES.length - 1));
-  // 지점의 3D 자리와 그 지점에서 돌릴 원작 카메라 클립 (마을은 전체 둘러보기)
+  // 지점의 3D 자리
   const nodePos = (id) => (id === WT ? WM3D.data.town : WM3D.data.stages[id]);
-  const nodeClip = (id) => (id === WT ? WM3D.data.S.overview : WM3D.data.S.stages[id].clip);
   const sideList = () => (window.SIDE || []);
   const sideState = (idx) => (save.side || {})[idx];
   // 마을에서 받을 수 있는 의뢰 (아직 받지 않은 것)
@@ -1595,13 +1594,12 @@
       if (!ok) return;
       if (!save.wpos3) save.wpos3 = nodePos(here).slice();
       tokPos = save.wpos3.slice();
-      WM3D.setClip(nodeClip(here), true);
       WM3D.setMarker(here === WT ? null : nodePos(here));
       WM3D.onFrame(place);
       place();
       map.classList.add('ready');
     });
-    // 지도 어디든 누르면 부대가 그 자리까지 걸어간다. 지점 근처를 누르면 그 지점에 붙어 멈추고, 도착하면 정보 창과 그 작전의 카메라
+    // 지도 어디든 누르면 부대가 그 자리까지 걸어간다. 지점 근처를 누르면 그 지점에 붙어 멈추고, 도착하면 정보 창 (끌면 지도를 돌린다)
     async function walkTo(p, node) {
       const my = ++moving;
       $('sInfo').classList.remove('on'); // 걷는 동안은 정보 창을 닫는다
@@ -1621,7 +1619,7 @@
       if (my !== moving || !tok.isConnected) return;
       tok.classList.remove('walk');
       save.wpos3 = p.slice();
-      if (node != null) { save.node = node; WM3D.setClip(nodeClip(node)); WM3D.setMarker(node === WT ? null : nodePos(node)); }
+      if (node != null) { save.node = node; WM3D.setMarker(node === WT ? null : nodePos(node)); }
       writeSave();
       moving = 0;
       if (node != null) { stageSel = node; nodeInfo(); }
