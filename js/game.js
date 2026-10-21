@@ -1517,25 +1517,13 @@
   // ── 월드맵 (창세기전식): 원작 3D 지역 지도 위 지점을 눌러 부대가 길을 따라 이동한다 ──
   // 지점 = 본편 작전 장소 8곳 + 마을(등대 아래 비밀기지). 아직 깨지 않은 본편 지점에 가면 이야기 전투,
   // 지나온 지점에서는 소탕전과 받아 둔 의뢰 전투, 마을 지점에서는 마을로 들어간다.
-  const TOWN = { name: '등대 아래 비밀기지', sub: '오르카 임시 거점', pos: [0.255, 0.655], near: 2, unlock: 3 };
+  const TOWN = { name: '등대 아래 비밀기지', sub: '오르카 임시 거점', unlock: 3 };
   const WT = 'T'; // 마을 지점 id
   const nodeIds = () => D.STAGES.map((_, i) => i).concat([WT]);
   const nodeOpen = (id) => (id === WT ? save.clear >= TOWN.unlock : id <= Math.min(save.clear, D.STAGES.length - 1));
-  const nodePos = (id) => (id === WT ? TOWN.pos : ((window.WORLD && WORLD.ch01) || [])[id] || [0.2 + id * 0.08, 0.5]);
-  const nodeLinks = (id) => (id === WT ? [TOWN.near] : [id - 1, id + 1, id === TOWN.near ? WT : null].filter((x) => x != null && (x === WT || (x >= 0 && x < D.STAGES.length))));
-  // 열린 지점만 지나는 가장 짧은 길
-  function nodePath(a, b) {
-    const prev = new Map([[a, null]]), q = [a];
-    while (q.length) {
-      const n = q.shift();
-      if (n === b) break;
-      for (const m of nodeLinks(n)) if (!prev.has(m) && nodeOpen(m)) { prev.set(m, n); q.push(m); }
-    }
-    if (!prev.has(b)) return [a];
-    const out = [];
-    for (let n = b; n != null; n = prev.get(n)) out.unshift(n);
-    return out;
-  }
+  // 지점의 3D 자리와 그 지점에서 돌릴 원작 카메라 클립 (마을은 전체 둘러보기)
+  const nodePos = (id) => (id === WT ? WM3D.data.town : WM3D.data.stages[id]);
+  const nodeClip = (id) => (id === WT ? WM3D.data.S.overview : WM3D.data.S.stages[id].clip);
   const sideList = () => (window.SIDE || []);
   const sideState = (idx) => (save.side || {})[idx];
   // 마을에서 받을 수 있는 의뢰 (아직 받지 않은 것)
@@ -1564,7 +1552,7 @@
     const here = save.node;
     // 깼거나 지금 갈 수 있는 지점만 보이고, 나머지는 숨긴다
     const pins = nodeIds().filter(nodeOpen).map((id) => {
-      const [x, y] = nodePos(id), town = id === WT;
+      const town = id === WT;
       const st = town ? null : D.STAGES[id];
       const clear = !town && id < save.clear;
       const col = town ? 'Grn' : st.win === 'boss' ? 'Red' : clear ? 'Grn' : 'Yel';
@@ -1572,24 +1560,15 @@
       const mark = town ? (sideNew().length ? '<b class="wq">!</b>' : '') : sides.length ? '<b class="wq s">!</b>' : '';
       const tag = town ? TOWN.name : st.idx;
       const em = town ? '<em class="town">TOWN</em>' : clear ? '<em>CLEAR</em>' : id === save.clear ? '<em class="new">NEW</em>' : '';
-      return `<button class="wnode ${clear ? 'clear' : ''} ${town ? 'town' : ''} c${col}" data-n="${id}" style="left:${x * 100}%;top:${y * 100}%">
+      return `<button class="wnode ${clear ? 'clear' : ''} ${town ? 'town' : ''} c${col}" data-n="${id}">
         <i class="ol" style="background-image:url(assets/ui/UI_WolrdMap_Chapter_Icon_Selected_OL_${col}.png)"></i>
         <i class="base" style="background-image:url(assets/ui/UI_WolrdMap_Chapter_Icon_Base_${col}.png)"></i>
         <i class="ico" style="background-image:url(assets/ui/${town ? 'UI_WolrdMap_Chapter_Icon_Story_WH' : `UI_WolrdMap_Chapter_Icon_Main_${col}`}.png)"></i>
         <b class="tag">${tag}</b>${em}${mark}</button>`;
     }).join('');
-    // 길: 열린 지점끼리 점선
-    const seg = [];
-    for (const id of nodeIds()) for (const m of nodeLinks(id)) if (String(id) < String(m) && nodeOpen(id) && nodeOpen(m)) {
-      const [x0, y0] = nodePos(id), [x1, y1] = nodePos(m);
-      seg.push(`<line x1="${x0 * 1000}" y1="${y0 * 562.5}" x2="${x1 * 1000}" y2="${y1 * 562.5}"/>`);
-    }
-    if (!save.wpos) save.wpos = nodePos(here).slice();
-    const [tx, ty] = save.wpos;
     screen(`<div class="wscr">
-      <div class="wmap" style="background-image:url(assets/world/ch01.webp)">
-        <svg viewBox="0 0 1000 562.5" preserveAspectRatio="none">${seg.join('')}</svg>${pins}
-        <div class="wtoken" id="wTok" style="left:${tx * 100}%;top:${ty * 100}%"><img src="${IMG[D.HEROES.constantia.icon]}" alt=""></div></div>
+      <div class="wmap">${pins}
+        <div class="wtoken" id="wTok"><img src="${IMG[D.HEROES.constantia.icon]}" alt=""></div></div>
       <div class="wvig"></div>
       <div class="whead"><button class="wback" id="sBack" aria-label="뒤로"></button>
         <div class="wtitle"><small>CHAPTER 01</small><b>지구의 마지막 인간</b></div></div>
@@ -1597,41 +1576,69 @@
       <div class="winfo" id="sInfo"></div></div>`);
     $('sBack').onclick = () => { AU.play('lo_click', 0.6); title(); };
     $('sHero').onclick = () => { AU.play('lo_click', 0.6); heroRoster(); };
-    // 지도 어디든 누르면 부대가 그 자리까지 걸어간다. 지점 근처를 누르면 그 지점에 붙어 멈추고, 도착하면 정보 창
-    let moving = 0;
+    // 원작 3D 지도를 깔고, 지점 단추와 부대 말은 매 순간 3D 자리를 화면에 비춰 붙인다
+    let moving = 0, tokPos = null;
     const map = $('screen').querySelector('.wscr .wmap'), tok = $('screen').querySelector('#wTok');
-    const SPEED = 0.32; // 지도 너비 비율 / 초
-    async function walkTo(x, y, node) {
+    const pinEls = [...map.querySelectorAll('.wnode')];
+    const SPEED = 0.35; // 지도 단위 / 초
+    function place() {
+      for (const b of pinEls) {
+        const s = WM3D.project(nodePos(b.dataset.n === WT ? WT : +b.dataset.n));
+        b.style.visibility = s ? '' : 'hidden';
+        if (s) { b.style.left = s.x + 'px'; b.style.top = s.y + 'px'; b.style.zIndex = Math.round(1000 - s.d * 100); }
+      }
+      const s = tokPos && WM3D.project(tokPos);
+      tok.style.visibility = s ? '' : 'hidden';
+      if (s) { tok.style.left = s.x + 'px'; tok.style.top = s.y + 'px'; }
+    }
+    WM3D.mount(map, 'ch01').then((ok) => {
+      if (!ok) return;
+      if (!save.wpos3) save.wpos3 = nodePos(here).slice();
+      tokPos = save.wpos3.slice();
+      WM3D.setClip(nodeClip(here), true);
+      WM3D.setMarker(here === WT ? null : nodePos(here));
+      WM3D.onFrame(place);
+      place();
+      map.classList.add('ready');
+    });
+    // 지도 어디든 누르면 부대가 그 자리까지 걸어간다. 지점 근처를 누르면 그 지점에 붙어 멈추고, 도착하면 정보 창과 그 작전의 카메라
+    async function walkTo(p, node) {
       const my = ++moving;
       $('sInfo').classList.remove('on'); // 걷는 동안은 정보 창을 닫는다
-      const [x0, y0] = save.wpos || nodePos(save.node);
-      const d = Math.hypot(x - x0, (y - y0) * 0.5625), dur = Math.max(0.15, d / SPEED);
-      tok.style.transitionDuration = dur + 's';
-      tok.style.left = x * 100 + '%'; tok.style.top = y * 100 + '%';
+      const a = tokPos.slice(), dur = Math.max(0.15, Math.hypot(p[0] - a[0], p[2] - a[2]) / SPEED), t0 = performance.now();
       tok.classList.add('walk');
-      for (let t = 0; t < dur; t += 0.32) { AU.play('lo_d_foot', 0.3); await wait(320); if (my !== moving || !$('wTok')) return; }
-      if (my !== moving || !$('wTok')) return;
+      let foot = 0;
+      await new Promise((done) => {
+        const step = () => {
+          if (my !== moving || !tok.isConnected) return done();
+          const now = performance.now(), k = Math.min(1, (now - t0) / 1000 / dur);
+          for (let i = 0; i < 3; i++) tokPos[i] = a[i] + (p[i] - a[i]) * k;
+          if (now >= foot && k < 1) { AU.play('lo_d_foot', 0.3); foot = now + 320; }
+          if (k < 1) requestAnimationFrame(step); else done();
+        };
+        step();
+      });
+      if (my !== moving || !tok.isConnected) return;
       tok.classList.remove('walk');
-      save.wpos = [x, y];
-      if (node != null) save.node = node;
+      save.wpos3 = p.slice();
+      if (node != null) { save.node = node; WM3D.setClip(nodeClip(node)); WM3D.setMarker(node === WT ? null : nodePos(node)); }
       writeSave();
       moving = 0;
       if (node != null) { stageSel = node; nodeInfo(); }
     }
-    // 누른 곳 → 지도 비율 좌표 (지도는 천천히 움직이므로 매번 실제 위치로 잰다)
     map.addEventListener('click', (ev) => {
-      const r = map.getBoundingClientRect();
-      const x = (ev.clientX - r.left) / r.width, y = (ev.clientY - r.top) / r.height;
-      if (x < 0 || y < 0 || x > 1 || y > 1) return;
+      if (!WM3D.ready || !tokPos) return;
+      const r = map.getBoundingClientRect(), x = ev.clientX - r.left, y = ev.clientY - r.top;
       // 가까운 지점에 붙는다 (지점 단추를 직접 눌러도 같음)
-      let best = null, bd = 0.045;
-      for (const id of nodeIds().filter(nodeOpen)) { const [nx, ny] = nodePos(id); const dd = Math.hypot(nx - x, (ny - y) * 0.5625); if (dd < bd) { bd = dd; best = id; } }
+      let best = null, bd = 0.045 * Math.max(r.width, r.height * 16 / 9);
+      for (const id of nodeIds().filter(nodeOpen)) { const s = WM3D.project(nodePos(id)); if (!s) continue; const dd = Math.hypot(s.x - x, s.y - y); if (dd < bd) { bd = dd; best = id; } }
       const btn = ev.target.closest('.wnode');
       if (btn) best = btn.dataset.n === WT ? WT : +btn.dataset.n;
+      if (best == null) { const p = WM3D.pick(x, y); if (p) { AU.play('lo_pick', 0.5); walkTo(p, null); } return; }
       AU.play('lo_pick', 0.5);
-      if (best == null) { walkTo(x, y, null); return; }
-      if (best === save.node && !moving && save.wpos && Math.hypot(save.wpos[0] - nodePos(best)[0], save.wpos[1] - nodePos(best)[1]) < 1e-3) { stageSel = best; nodeInfo(); return; }
-      walkTo(...nodePos(best), best);
+      const np = nodePos(best);
+      if (best === save.node && !moving && Math.hypot(tokPos[0] - np[0], tokPos[2] - np[2]) < 1e-3) { stageSel = best; nodeInfo(); return; }
+      walkTo(np.slice(), best);
     });
     stageSel = here;
     $('screen').querySelectorAll('.wnode').forEach((b) => b.classList.toggle('sel', b.dataset.n === String(here)));
@@ -2101,6 +2108,7 @@
     $('boot').classList.add('hidden');
     requestAnimationFrame(frame);
     title();
+    WM3D.load('ch01').catch(() => {}); // 월드맵 3D 자료는 타이틀 동안 미리 받아 둔다
     // 첫 터치에서 배경음 시작 (모바일 정책)
     const kick = () => { AU.bgm(AU.bgmName || 'lo_title'); removeEventListener('pointerdown', kick); };
     addEventListener('pointerdown', kick);
