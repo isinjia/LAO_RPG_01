@@ -84,6 +84,7 @@
     return s;
   }
   function writeSave() { try { localStorage.setItem('orca_srpg_save2', JSON.stringify(save)); } catch (e) { /* 저장 불가 환경 */ } }
+  const spdOf = (o) => o.spd || (o.fast ? 2 : 1); // 배속 1·2·3 (예전 저장의 '빠른 진행'은 2배)
   // 옵션 적용: 소리 크기(배경음·효과음·음성), 글자 소리, 글자 속도, 빠른 진행
   function applyOpts() {
     const o = save.opts;
@@ -91,7 +92,7 @@
     AU.setVolume(o.bgmV / 100, o.sfxV / 100, o.voiceV / 100);
     AU.blipOn = o.blip;
     if (window.TALK) TALK.speed = [26, 42, 80][o.textSpd] || 42;
-    speedK = o.fast ? 2 : 1;
+    speedK = spdOf(o);
   }
   applyOpts();
 
@@ -544,6 +545,7 @@
     const k = u.troop && u.troop.hp > 0 ? (u.troop.hp / u.troop.hpMax > 0.5 ? 2 : 1) : 0;
     v.soldiers.forEach((s, i) => { s.bb.visible = i < k; });
     for (const r of [v.rig, ...v.soldiers.map((s) => s.rig)]) r.c.setTint(dim ? 0.5 : 1, dim ? 0.5 : 1, dim ? 0.58 : 1);
+    if (u.side === 'p') renderRoster();
   }
   function removeView(u) {
     const v = views.get(u.uid);
@@ -783,11 +785,13 @@
     else if (k === 'KeyE') endTurnAsk();
     else if (k === 'KeyD') toggleDanger();
     else if (k === 'KeyQ') setAuto(!autoOn);
+    else if (k === 'KeyV') cycleSpd();
+    else if (k === 'KeyF') toggleFight();
   });
   let kcur = null;
 
   // ── 겹침 판 그리기 ───────────────────────────────────────
-  const OV = { move: null, atk: null, aura: null, skill: null, area: null, danger: null, path: null, targets: null };
+  const OV = { move: null, atk: null, aura: null, skill: null, area: null, danger: null, path: null, targets: null, ghost: null };
   function drawOverlay() {
     if (!world) return;
     const OS = 32, g = world.oc.getContext('2d');
@@ -812,8 +816,9 @@
         if (!set.has((x + 1) + ',' + y)) { g.beginPath(); g.moveTo(x * OS + OS - 1, y * OS); g.lineTo(x * OS + OS - 1, y * OS + OS); g.stroke(); }
       }
     }
-    fillTiles(OV.atk, 'rgba(255,70,70,.32)', 'rgba(255,120,120,.6)');
-    fillTiles(OV.move, 'rgba(70,150,255,.38)', 'rgba(160,210,255,.75)');
+    fillTiles(OV.ghost, 'rgba(70,150,255,.18)', 'rgba(160,210,255,.45)');
+    fillTiles(OV.atk, 'rgba(255,50,60,.42)', 'rgba(255,150,150,.85)');
+    fillTiles(OV.move, 'rgba(40,130,255,.55)', 'rgba(200,230,255,.95)');
     fillTiles(OV.skill, 'rgba(150,70,255,.42)', 'rgba(220,180,255,.9)');
     fillTiles(OV.area, 'rgba(255,150,50,.55)', 'rgba(255,220,150,.95)');
     fillTiles(OV.targets, 'rgba(255,40,40,.5)', 'rgba(255,200,200,.95)');
@@ -928,6 +933,7 @@
     const nt = R.nextWaveTurn(G);
     $('goalBox').innerHTML = `${st.idx} ${st.title} · 승리: <b>${st.goal}</b>${nt ? ` · 증원 ${nt}턴` : ''} · 패배: ${st.lose}`;
     $('btnEnd').disabled = G.side !== 'p' || busy;
+    syncQuick(); renderRoster();
   }
 
   // ── 플레이어 조작 ───────────────────────────────────────
@@ -967,14 +973,21 @@
         if (u) inspect(u); else showInfo(null, [x, y]);
         break;
       }
-      case 'target':
-        if (u && u.side === 'e' && R.dist(ui.sel.x, ui.sel.y, u.x, u.y) <= ui.sel.rng) showForecast(u);
+      case 'menu': case 'target': case 'forecast': {
+        const a = ui.sel;
+        if (ui.state === 'forecast' && u === ui.target) { confirmAttack(); return; }
+        if (u && u.side === 'e') {
+          if (R.dist(a.x, a.y, u.x, u.y) <= a.rng) { showForecast(u); return; } // 지금 자리에서 칠 수 있으면 예상
+          const spot = bestSpot(a, u);
+          if (spot) { reMove(spot[0], spot[1], u); return; } // 아니면 칠 수 있는 칸으로 다시 옮겨서
+          inspect(u); return;
+        }
+        if (u === a) { if (ui.state !== 'menu') backToTarget(); return; }
+        const n = ui.reach && ui.reach.get(ui.reach.key(x, y));
+        if (n && n.stop && !u) { reMove(x, y); return; }
+        if (u && u.side === 'p' && !u.acted) { restoreSel(); selectUnit(u); return; }
         break;
-      case 'forecast':
-        if (u === ui.target) confirmAttack();
-        else if (u && u.side === 'e' && R.dist(ui.sel.x, ui.sel.y, u.x, u.y) <= ui.sel.rng) showForecast(u);
-        else backToTarget();
-        break;
+      }
       case 'skill': {
         if (!(OV.skill && OV.skill.some(([a, b]) => a === x && b === y))) return;
         if (ui.skillTile && ui.skillTile[0] === x && ui.skillTile[1] === y) { doSkill(); return; }
@@ -998,6 +1011,7 @@
   }
   function selectUnit(u) {
     AU.play('lo_click', 0.6);
+    $('forecast').classList.add('hidden');
     ui.sel = u; ui.state = 'move'; ui.from = [u.x, u.y];
     ui.reach = R.reach(G, u);
     const rg = ranges(u, ui.reach);
@@ -1006,11 +1020,13 @@
     showInfo(u);
     showActs([{ label: '제자리', sub: '이동 안 함', fn: openActions }, { label: '취소', fn: deselect }]);
     setHint('파란 칸: 이동 · 빨간 칸의 적을 누르면 다가가 공격');
+    renderRoster();
   }
   function deselect() {
     ui.sel = null; ui.state = 'idle'; ui.reach = null; ui.target = null;
     clearOv(); showActs(null); setHint(''); $('forecast').classList.add('hidden');
     showInfo(null);
+    renderRoster();
   }
   // 적 u를 칠 수 있는 칸 중 가장 좋은 곳 (지금 자리 > 반격 안 받는 거리 > 방어 지형 > 가까운 칸)
   function bestSpot(a, u) {
@@ -1056,6 +1072,7 @@
     const u = ui.sel;
     ui.state = 'menu';
     OV.move = null; OV.atk = null; OV.path = null; OV.aura = null;
+    OV.ghost = ui.reach ? ranges(u, ui.reach).mv : null; // 다른 파란 칸을 누르면 다시 옮긴다
     const tg = R.targetsFrom(G, u, u.x, u.y);
     OV.targets = tg.map((o) => [o.x, o.y]);
     drawOverlay();
@@ -1066,7 +1083,7 @@
     acts.push({ label: '대기', fn: () => finishAct(u) });
     acts.push({ label: '취소', fn: cancel });
     showActs(acts);
-    setHint(tg.length ? '공격할 수 있는 적이 있습니다' : '');
+    setHint(tg.length ? '빨간 적을 누르면 예상 · 다른 파란 칸을 누르면 다시 이동' : '다른 파란 칸을 누르면 다시 이동');
   }
   function openSkills() {
     const u = ui.sel;
@@ -1392,6 +1409,66 @@
     setTop();
     if (autoOn) endTurn();
   }
+  // 랑그릿사 모바일처럼 위쪽에서 바로 바꾸는 배속·전투 장면
+  function syncQuick() {
+    const o = save.opts;
+    $('btnSpd').textContent = '×' + spdOf(o);
+    $('btnSpd').classList.toggle('on', spdOf(o) > 1);
+    $('btnFight').innerHTML = '연출<span class="lg">' + (o.fight ? ' 켬' : ' 끔') + '</span>';
+    $('btnFight').classList.toggle('on', !!o.fight);
+  }
+  function cycleSpd() {
+    const o = save.opts;
+    o.spd = spdOf(o) >= 3 ? 1 : spdOf(o) + 1; o.fast = o.spd > 1;
+    speedK = o.spd; writeSave(); syncQuick();
+    toast(`진행 속도 ×${o.spd}`);
+  }
+  function toggleFight() {
+    const o = save.opts;
+    o.fight = !o.fight; writeSave(); syncQuick();
+    toast(o.fight ? '전투 장면 켬' : '전투 장면 끔 (지도에서 바로 싸움)');
+  }
+  // 영웅 목록: 눌러서 바로 고르고, 행동을 마친 영웅은 어둡게
+  function renderRoster() {
+    const el = $('roster');
+    if (!G) { el.innerHTML = ''; return; }
+    const list = G.units.filter((u) => u.side === 'p' && u.alive);
+    el.innerHTML = '';
+    for (const u of list) {
+      const b = document.createElement('button');
+      b.className = 'rh' + (u.acted ? ' done' : '') + (ui.sel === u ? ' sel' : '');
+      const hp = u.hp / u.hpMax, tp = u.troop ? u.troop.hp / u.troop.hpMax : 0;
+      b.innerHTML = `<img src="${IMG[u.icon]}"><i class="t" style="width:${tp * 100}%"></i><i class="h" style="width:${hp * 100}%"></i>${u.acted ? '<em>완료</em>' : ''}`;
+      b.title = u.name;
+      b.onclick = (e) => { e.stopPropagation(); rosterPick(u); };
+      el.appendChild(b);
+    }
+  }
+  function rosterPick(u) {
+    if (busy || !G || G.side !== 'p' || mode !== 'map') return;
+    AU.play('lo_click', 0.5);
+    if (ui.sel && ui.sel !== u) restoreSel();
+    panTo(u.x, u.y, true);
+    if (u.acted) { deselect(); inspect(u); return; }
+    selectUnit(u);
+  }
+  // 고른 영웅이 움직였다면 제자리로 (행동하기 전에는 언제든 되돌릴 수 있다)
+  function restoreSel() {
+    const u = ui.sel;
+    if (!u || !ui.from) return;
+    if (u.x !== ui.from[0] || u.y !== ui.from[1]) {
+      u.x = ui.from[0]; u.y = ui.from[1];
+      const v = views.get(u.uid);
+      if (v) v.g.position.copy(tilePos(u.x, u.y));
+    }
+  }
+  // 이동한 뒤에도 다른 파란 칸을 누르면 다시 옮긴다 (랑그릿사 모바일처럼)
+  async function reMove(x, y, thenTarget) {
+    $('forecast').classList.add('hidden');
+    restoreSel();
+    ui.state = 'move';
+    await moveSel(x, y, thenTarget);
+  }
   function setAuto(v) {
     autoOn = v;
     $('btnAuto').classList.toggle('on', v);
@@ -1441,7 +1518,8 @@
       <button data-a="close" class="gold">닫기</button></div>`, (a) => {
       if (['fight', 'fast', 'autoEnd', 'sound'].includes(a)) {
         o[a] = !o[a]; writeSave();
-        speedK = o.fast ? 2 : 1; AU.setOn(o.sound);
+        if (a === 'fast') delete o.spd;
+        speedK = spdOf(o); AU.setOn(o.sound); syncQuick();
         openMenu();
       } else if (a === 'opts') options(openMenu);
       else if (a === 'help') help();
@@ -1466,7 +1544,7 @@
       <button data-a="fast">빠른 진행: <b>${onoff(o.fast)}</b></button>
       <button data-a="autoEnd">모두 행동하면 자동 턴 종료: <b>${onoff(o.autoEnd)}</b></button>
       <button data-a="close" class="gold">닫기</button></div>`, (a) => {
-      if (['sound', 'blip', 'fight', 'fast', 'autoEnd'].includes(a)) o[a] = !o[a];
+      if (['sound', 'blip', 'fight', 'fast', 'autoEnd'].includes(a)) { o[a] = !o[a]; if (a === 'fast') delete o.spd; }
       else if (a === 'textSpd') o.textSpd = (o.textSpd + 1) % 3;
       else { writeSave(); if (back) back(); return; }
       writeSave(); applyOpts(); options(back);
@@ -2089,6 +2167,8 @@
   $('btnMenu').onclick = () => { AU.play('lo_click', 0.5); if (busy && G && G.side === 'e') return; openMenu(); };
   $('btnDanger').onclick = () => { AU.play('lo_click', 0.5); toggleDanger(); };
   $('btnAuto').onclick = () => { AU.play('lo_click', 0.5); setAuto(!autoOn); };
+  $('btnSpd').onclick = () => { AU.play('lo_click', 0.5); cycleSpd(); };
+  $('btnFight').onclick = () => { AU.play('lo_click', 0.5); toggleFight(); };
   $('goalBox').onclick = () => goalInfo();
 
   // ── 애니메이션 도구 ─────────────────────────────────────

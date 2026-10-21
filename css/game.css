@@ -289,3 +289,36 @@ button, h2, h3, .tname, #banner, #turnNo, .nm, .stg .tt, .result .big, #fight .f
 .title2 .tmenu button:hover { border-image-source: url(../assets/ui/UI_Dialog_Main_CharDialog_Frame_CharName_4_on.png); border-image-slice: 0 48 0 47 fill; color: #ffd76a; filter: none; }
 .title2 .tcopy { position: absolute; left: 0; right: 0; bottom: calc(10px + var(--safe-b)); text-align: center; font-size: 11px; color: #fff8; }
 @media (orientation: portrait) { .title2 .tcenter { top: 34%; width: 90vw; } .title2 .tmenu { top: calc(34% + 14vw + 30px); } }
+
+/* ── 빠른 버튼(배속·연출)과 영웅 목록 (랑그릿사 모바일식) ── */
+#btnSpd.on { background: linear-gradient(#2c5a8a, #15304a); border-color: #8ac8ff; }
+#btnFight.on { background: linear-gradient(#6a4a1c, #3a280c); border-color: #ffd27a; }
+#roster { position: fixed; z-index: 5; left: calc(8px + var(--safe-l)); top: calc(58px + var(--safe-t)); display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
+#roster .rh { pointer-events: auto; position: relative; width: 52px; height: 52px; padding: 0; border-radius: 12px; overflow: hidden; border: 2px solid #4aa8ff; background: #0b1324; box-shadow: 0 3px 10px #0008; }
+#roster .rh img { width: 100%; height: 100%; object-fit: cover; display: block; }
+#roster .rh i { position: absolute; left: 0; height: 4px; }
+#roster .rh i.t { bottom: 4px; background: #5aa8ff; }
+#roster .rh i.h { bottom: 0; background: #5ae08a; }
+#roster .rh.sel { border-color: var(--gold); box-shadow: 0 0 0 2px #ffd27a88, 0 3px 10px #0008; }
+#roster .rh.done { border-color: #55607a; }
+#roster .rh.done img { filter: grayscale(1) brightness(.5); }
+#roster .rh em { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 12px; font-weight: 800; color: #dfe7ff; text-shadow: 0 1px 3px #000; }
+@media (orientation: portrait) {
+  #roster { top: calc(54px + var(--safe-t)); gap: 5px; }
+  #roster .rh { width: 44px; height: 44px; }
+  #hint { top: calc(54px + var(--safe-t)); left: 58%; max-width: 70vw; overflow: hidden; text-overflow: ellipsis; }
+}
+@media (max-height: 430px) and (orientation: landscape) {
+  #roster .rh { width: 42px; height: 42px; }
+}
+@media (orientation: portrait) {
+  .tbtns { gap: 4px; }
+  .tbtns button { white-space: nowrap; padding: 6px 7px; font-size: 12px; }
+  #btnFight .lg { display: none; }
+  #turnBox { padding: 4px 8px; }
+  #turnNo { font-size: 18px; }
+  #turnBox small { display: none; }
+  #phase { font-size: 12px; white-space: nowrap; }
+  #top { gap: 5px; }
+  #hint { top: calc(50px + var(--safe-t)); }
+}
