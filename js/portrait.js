@@ -5,7 +5,7 @@
 (function () {
   // 대본의 그림 이름 앞부분(모델) -> 리그
   const MODELS = { '3P_ConstantiaS2_N': 'p_constantia', BR_PA00EL_N: 'p_griffon', DS_Johanna_N: 'p_johanna', PECS_LRL_N: 'p_lrl', PECS_PuppHead_N: 'p_pupphead', AGS_Fallen_N: 'p_fallen',
-    BR_Amy_N: 'p_amy', PECS_CoCoWhiteShell_N: 'p_coco', BR_Marie_N: 'p_marie', BR_Scathy_N: 'p_scathy' };
+    BR_Amy_N: 'p_amy', PECS_CoCoWhiteShell_N: 'p_coco', BR_Marie_N: 'p_marie', BR_Scathy_N: 'p_scathy', '3P_Labiata_N': 'p_labiata' };
   const rigOf = (stand) => {
     if (!stand || stand.includes('_Dialog0')) return null; // 도입부 컷 그림은 정지 그림
     for (const m in MODELS) if (stand === m || stand.startsWith(m + '_')) return MODELS[m];

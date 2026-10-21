@@ -1702,7 +1702,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.28';
+  const GAME_VERSION = '0.29';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2007,7 +2007,7 @@
 
   // 출격 준비: 원작 편성 화면처럼 영웅 카드 + 오른쪽 상세(능력치·특기·병사 배속). 고를 때 인물 음성
   const HERO_STAND = { constantia: '3P_ConstantiaS2_N_Smile', griffon: 'BR_PA00EL_N_Smile', johanna: 'DS_Johanna_N_Smile', lrl: 'PECS_LRL_N_Laugh', pupphead: 'PECS_PuppHead_N', fallen: 'AGS_Fallen_N',
-    amy: 'BR_Amy_N_Smile', coco: 'PECS_CoCoWhiteShell_N_Smile', marie: 'BR_Marie_N_Smile', scathy: 'BR_Scathy_N_Smile' };
+    amy: 'BR_Amy_N_Smile', coco: 'PECS_CoCoWhiteShell_N_Smile', marie: 'BR_Marie_N_Smile', scathy: 'BR_Scathy_N_Smile', labiata: '3P_Labiata_N_Smile' };
   const heroVoice = (id, kind) => AU.voice(id + '_' + kind);
   // 화면 안의 일러스트 캔버스(data-stand)를 움직이는 일러스트로 (js/portrait.js). 화면이 바뀌면 알아서 정리된다
   function liveCards() {

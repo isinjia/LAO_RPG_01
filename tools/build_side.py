@@ -16,10 +16,15 @@ MOB = [(r'Stalker', 'stalker'), (r'Predator', 'predator'), (r'Kidnapper', 'trick
        (r'UnderWatcherArm', 'uw_arm'), (r'UnderWatcherGenerator', 'uw_gen'), (r'UnderWatcherSensor', 'uw_sensor'), (r'UnderWatcher', 'underwatcher'),
        (r'Model_MP_Fallen', 'g_fallen'), (r'Model_MP_Rampart', 'g_rampart'), (r'Model_MP_Drone', 'g_drone'), (r'AMG11', 'g_amg'),
        (r'Model_MP_PuppHead', 'g_pupphead'), (r'Stinger', 'g_stinger'), (r'Gigantes', 'g_gigantes'), (r'Seljuq', 'g_seljuq'),
+       (r'NightChickQM', 'quarter'), (r'LegionSP', 'legionsp'), (r'Tortoise', 'tortoise'), (r'CenturionCF', 'chieftain'),
+       (r'ProgramMobTS', 'pm_ts'), (r'ProgramMobTN', 'pm_tn'), (r'ProgramMobMT', 'pm_mt'), (r'ProgramMobTT', 'pm_tt'), (r'ProgramMobMN', 'pm_mn'),
+       (r'ProgramMobMS', 'pm_ms'), (r'ProgramMobAS', 'pm_as'), (r'ProgramMobAN', 'pm_an'), (r'ProgramMobAT', 'pm_at'),
+       (r'ExpGoblinA', 'goblina'), (r'ExpGoblin', 'goblin'), (r'ExpGenerator', 'expgen'), (r'ExecutionerLB', 'exe_lb'), (r'ExecutionerRB', 'exe_rb'),
+       (r'Executioner', 'executioner'), (r'EmperorChick', 'bigchick'), (r'Spector', 'legionsp'),
        (r'Scout', 'scout'), (r'Harvester', 'harvester'), (r'NightChickC_|NightChickCEX', 'cannon'), (r'NightChickSI', 'shielderx'),
        (r'NightChickM|NightChickSP', 'launcher'), (r'NightChickS', 'shielder'), (r'NightChick', 'chick')]
 GIVER = {'콘스탄챠': 'constantia', '그리폰': 'griffon', '요안나': 'johanna', 'LRL': 'lrl', '포츈': 'fortune', '펍 헤드': 'pupphead', '폴른': 'fallen',
-         '에이미': 'amy', '코코': 'coco', '마리': 'marie', '에이다': 'constantia', '스카디': 'scathy'}
+         '에이미': 'amy', '코코': 'coco', '마리': 'marie', '에이다': 'constantia', '스카디': 'scathy', '라비아타': 'labiata'}
 MODEL = {m['Key']: m['MonsterModelID'] for m in json.load(open(os.path.join(ROOT, 'tools', 'story_cache.json'), encoding='utf8'))['Table_Monster']}
 
 
