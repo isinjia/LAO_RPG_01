@@ -25,6 +25,8 @@ SFX = {
     'lo_d_alarm': 'DialogSfx/Alarm_01.mp3', 'lo_d_break': 'DialogSfx/Break_01.mp3', 'lo_d_wind': 'DialogSfx/Wind_01.mp3',
     'lo_d_rustle': 'Common/foley_cloth_light_fast_movement_05.wav', 'lo_d_inject': 'Common/sci-fi_electric_pulse_hum_02.wav',
     'lo_d_whiteout': 'DialogSfx/WhiteOut_01.mp3',
+    # 월드맵 부대 걷는 소리 (한 걸음짜리 흙길 발소리)
+    'lo_walk': 'Common/Move/Walk/footstep_dirt_walk_run_01.wav',
 }
 # 원작 단추 소리는 클라이언트 기본 자원에 있다
 SFX_ABS = {'lo_click': O + 'Resources/Sounds/UI/UI_Click.wav'}
