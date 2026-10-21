@@ -583,7 +583,12 @@
   // 피해 표시: 병사(주황)·영웅(빨강)
   function popDmg(u, t, h) {
     if (t > 0) { const lost = R.soldiers(u, u.troop.hp + t) - R.soldiers(u); pop(u.x, u.y, lost > 0 ? `병사 -${lost}명` : '병사 -' + Math.round(t), 'tdmg', 1.15); }
-    if (h > 0) wait(140).then(() => pop(u.x, u.y, '-' + Math.round(h), 'dmg', 0.8));
+    if (h > 0) wait(140).then(() => popNum(u.x, u.y, h, u.side === 'p' ? 'me' : 'base', 0.8));
+  }
+  // 원작 피해 숫자 글꼴로 띄우기 (kind: base 적이 받은 피해 · me 아군이 받은 피해 · heal 회복 · cri 강한 일격)
+  function popNum(x, y, n, kind, dy = 0.9) {
+    const s = toScreen(new THREE.Vector3(x + 0.5, dy, y + 0.5));
+    LOHUD.float(LOHUD.num(n, kind, kind === 'heal' ? 30 : 36, kind === 'heal' ? '+' : ''), s.x, s.y, kind === 'cri' ? 'big' : '');
   }
 
   // 지도 위 이펙트
@@ -894,7 +899,13 @@
       }
     };
     if (OV.danger) fillTiles(OV.danger, 'rgba(255,60,70,.22)', 'rgba(255,90,90,.35)');
-    if (OV.aura) {
+    fillTiles(OV.ghost, 'rgba(70,150,255,.18)', 'rgba(160,210,255,.45)');
+    fillTiles(OV.atk, 'rgba(255,50,60,.42)', 'rgba(255,150,150,.85)');
+    fillTiles(OV.move, 'rgba(40,130,255,.55)', 'rgba(200,230,255,.95)');
+    fillTiles(OV.skill, 'rgba(150,70,255,.42)', 'rgba(220,180,255,.9)');
+    fillTiles(OV.area, 'rgba(255,150,50,.55)', 'rgba(255,220,150,.95)');
+    fillTiles(OV.targets, 'rgba(255,40,40,.5)', 'rgba(255,200,200,.95)');
+    if (OV.aura) { // 지휘 재능 범위: 이동 칸 위에 노란 테두리
       const set = new Set(OV.aura.map(([x, y]) => x + ',' + y));
       g.fillStyle = 'rgba(255,214,100,.16)';
       for (const [x, y] of OV.aura) g.fillRect(x * OS, y * OS, OS, OS);
@@ -906,12 +917,6 @@
         if (!set.has((x + 1) + ',' + y)) { g.beginPath(); g.moveTo(x * OS + OS - 1, y * OS); g.lineTo(x * OS + OS - 1, y * OS + OS); g.stroke(); }
       }
     }
-    fillTiles(OV.ghost, 'rgba(70,150,255,.18)', 'rgba(160,210,255,.45)');
-    fillTiles(OV.atk, 'rgba(255,50,60,.42)', 'rgba(255,150,150,.85)');
-    fillTiles(OV.move, 'rgba(40,130,255,.55)', 'rgba(200,230,255,.95)');
-    fillTiles(OV.skill, 'rgba(150,70,255,.42)', 'rgba(220,180,255,.9)');
-    fillTiles(OV.area, 'rgba(255,150,50,.55)', 'rgba(255,220,150,.95)');
-    fillTiles(OV.targets, 'rgba(255,40,40,.5)', 'rgba(255,200,200,.95)');
     if (OV.path && OV.path.length > 1) {
       g.strokeStyle = 'rgba(255,240,180,.95)'; g.lineWidth = 5; g.lineCap = 'round'; g.lineJoin = 'round';
       g.beginPath();
@@ -976,13 +981,14 @@
       el.classList.remove('hidden'); syncInfoH(); return;
     }
     const t = R.terr(G, u.x, u.y);
-    const pct = (k) => { const b = R.buffK(u, k); return b > 1.001 ? ` <span class="up">(+${Math.round((b - 1) * 100)}%)</span>` : ''; };
+    const pct = (k) => { const b = R.buffK(u, k) * R.auraK(G, u, k); return b > 1.001 ? ` <span class="up">(+${Math.round((b - 1) * 100)}%)</span>` : ''; };
     const sk = R.skillsOf(u).map((s) => D.SKILLS[s].name + (u.cd[s] > 0 ? `<span class="cd">(${u.cd[s]})</span>` : '')).join(', ') || '없음';
     const troopLine = u.troop ? `<div class="tline"><img src="${IMG[u.troop.icon]}">${u.troop.name} ${kindTag(u.troop.kind)} 공격 <b>${Math.round(R.atk(u, 'T'))}</b> · 방어 <b>${Math.round(R.def(u, 'T'))}</b></div>` : '<div class="tline">병사 없음</div>';
     el.innerHTML = `<div class="pic ${u.side}" style="background-image:url(${IMG[u.icon]})"><span class="lv">Lv${u.lv}</span></div>
       <div class="nm">${u.name}${kindTag(u.kind)}<small>${u.cls}</small></div>
       ${bars(u)}
-      <div class="st">공격 <b>${Math.round(R.atk(u, 'H'))}</b>${pct('at')} · 방어 <b>${Math.round(R.def(u, 'H'))}</b>${pct('df')} · 이동 <b>${R.mov(u)}</b> · 사거리 <b>${u.rng}</b></div>
+      <div class="st">공격 <b>${Math.round(R.atk(u, 'H') * R.auraK(G, u, 'at'))}</b>${pct('at')} · 방어 <b>${Math.round(R.def(u, 'H') * R.auraK(G, u, 'df'))}</b>${pct('df')} · 이동 <b>${R.mov(u)}</b> · 사거리 <b>${u.rng}</b></div>
+      ${R.talentOf(u) ? `<div class="tal"><b>재능 · ${R.talentOf(u).name}</b> ${R.talentOf(u).desc}</div>` : ''}
       <div class="ex">${troopLine}특기: ${sk}${u.side === 'p' ? ` · 경험치 <b>${u.exp}</b>/100` : ''} · 지형 ${t.name}${u.move !== 'fly' && t.def ? ` (${t.def > 0 ? '+' : ''}${Math.round(t.def * 100)}%)` : ''}</div>`;
     el.classList.remove('hidden');
     syncInfoH();
@@ -1094,12 +1100,20 @@
       default: break;
     }
   }
+  // 지휘 재능(주변 아군 강화)의 범위: 노란 테두리
+  function auraTiles(u) {
+    const t = R.talentOf(u);
+    if (!t || !t.aura) return null;
+    const out = [];
+    for (let y = 0; y < G.h; y++) for (let x = 0; x < G.w; x++) if (R.dist(u.x, u.y, x, y) <= t.aura.r) out.push([x, y]);
+    return out;
+  }
   function inspect(u) {
     showInfo(u);
     const rg = ranges(u, R.reach(G, u));
     OV.move = u.side === 'e' ? null : rg.mv;
     OV.atk = u.side === 'e' ? [...rg.mv, ...rg.atk] : rg.atk;
-    OV.aura = null; OV.path = null; OV.targets = null; OV.skill = null; OV.area = null;
+    OV.aura = auraTiles(u); OV.path = null; OV.targets = null; OV.skill = null; OV.area = null;
     drawOverlay();
     setHint(u.side === 'e' ? `${u.name}: 이동·공격 가능 범위` : '');
   }
@@ -1109,7 +1123,7 @@
     ui.sel = u; ui.state = 'move'; ui.from = [u.x, u.y];
     ui.reach = R.reach(G, u);
     const rg = ranges(u, ui.reach);
-    OV.move = rg.mv; OV.atk = rg.atk; OV.aura = null; OV.path = null; OV.targets = null;
+    OV.move = rg.mv; OV.atk = rg.atk; OV.aura = auraTiles(u); OV.path = null; OV.targets = null;
     drawOverlay();
     showInfo(u);
     showActs([{ label: '제자리', sub: '이동 안 함', fn: openActions }, { label: '취소', fn: deselect }]);
@@ -1118,7 +1132,7 @@
   }
   function deselect() {
     ui.sel = null; ui.state = 'idle'; ui.reach = null; ui.target = null;
-    clearOv(); showActs(null); setHint(''); $('forecast').classList.add('hidden');
+    clearOv(); showActs(null); setHint(''); $('forecast').classList.add('hidden'); LOHUD.target(null);
     showInfo(null);
     renderRoster();
   }
@@ -1243,17 +1257,18 @@
       <div class="rel">${rel}${near} · 적 지형 ${terr.name}${d.move !== 'fly' && terr.def ? ` ${terr.def > 0 ? '+' : ''}${Math.round(terr.def * 100)}%` : ''}${p.dDead ? ' · <span class="good">격파 예상</span>' : ''}</div>
       <div class="btns"><button class="gold" id="fcGo">공격</button><button id="fcNo">취소</button></div>`;
     el.classList.remove('hidden');
+    { const sp = toScreen(new THREE.Vector3(d.x + 0.5, d.def.big ? 2.1 : 1.6, d.y + 0.5)); LOHUD.target(sp.x, sp.y, 'r'); } // 원작 TARGET 표지
     $('fcGo').onclick = () => confirmAttack();
     $('fcNo').onclick = () => backToTarget();
     showInfo(d);
     showActs(null);
     setHint('같은 적을 한 번 더 누르면 공격합니다');
   }
-  function backToTarget() { $('forecast').classList.add('hidden'); ui.target = null; openActions(); }
+  function backToTarget() { $('forecast').classList.add('hidden'); LOHUD.target(null); ui.target = null; openActions(); }
   async function confirmAttack() {
     const a = ui.sel, d = ui.target;
     if (!a || !d) return;
-    $('forecast').classList.add('hidden');
+    $('forecast').classList.add('hidden'); LOHUD.target(null);
     busy = true; showActs(null); clearOv(); setHint('');
     await attack(a, d);
     busy = false;
@@ -1262,7 +1277,7 @@
   }
   function cancel() {
     if (busy) return;
-    $('forecast').classList.add('hidden');
+    $('forecast').classList.add('hidden'); LOHUD.target(null);
     switch (ui.state) {
       case 'move': deselect(); break;
       case 'menu': {
@@ -1359,11 +1374,12 @@
     faceTo(u, tx);
     const v = views.get(u.uid);
     panTo(tx, ty);
-    banner(s.name, u.name, u.side === 'e' ? 'e' : 'gold');
-    if (v && v.rig.c.has('skill')) v.rig.once('skill', Math.max(1, v.rig.dur('skill') / 1.6) * speedK);
+    LOHUD.cutin(u, s.name, speedK); // 원작식 특기 컷인
     AU.play('charge', 0.5);
+    await wait(950);
+    if (v && v.rig.c.has('skill')) v.rig.once('skill', Math.max(1, v.rig.dur('skill') / 1.6) * speedK);
     OV.area = R.skillArea(G, u, sk, tx, ty); drawOverlay();
-    await wait(800);
+    await wait(500);
     AU.play(s.sfx, 0.8);
     OV.area.forEach(([x, y], i) => fxAt(x, y, s.fx, i * 40));
     await wait(350);
@@ -1379,7 +1395,7 @@
       } else {
         if (r.hH || r.hT) {
           r.u.hp += r.hH; if (r.u.troop) r.u.troop.hp += r.hT;
-          pop(r.u.x, r.u.y, '+' + Math.round(r.hH + r.hT), 'heal');
+          popNum(r.u.x, r.u.y, r.hH + r.hT, 'heal');
         }
         if (r.buff) {
           r.u.buffs = r.u.buffs.filter((b) => !Object.keys(s.buff).some((k) => b[k]));
@@ -1414,7 +1430,7 @@
     }
     clearOv(); setTop();
     if (side === 'p' && G.stage.turnLimit && G.turn > G.stage.turnLimit) { await endStage(false, '제한 턴을 넘겼습니다'); return; }
-    banner(side === 'p' ? `${G.turn}턴 · 아군 차례` : '적 차례', side === 'p' && G.stage.turnLimit ? `제한 ${G.stage.turnLimit}턴` : '', side === 'e' ? 'e' : '');
+    LOHUD.phase(side, G.turn, side === 'p' && G.stage.turnLimit ? `제한 ${G.stage.turnLimit}턴` : '', speedK);
     AU.play(side === 'p' ? 'start' : 'warning', 0.5);
     await wait(900);
     let healed = false;
@@ -1425,13 +1441,13 @@
       const a = Math.min(u.hpMax - u.hp, Math.round(u.hpMax * h)), b = u.troop ? Math.min(u.troop.hpMax - u.troop.hp, Math.round(u.troop.hpMax * h)) : 0;
       if (a + b <= 0) continue;
       u.hp += a; if (u.troop) u.troop.hp += b;
-      pop(u.x, u.y, '+' + (a + b), 'heal'); healed = true;
+      popNum(u.x, u.y, a + b, 'heal'); healed = true;
     }
     if (healed) { AU.play('energy', 0.4); await wait(500); }
     if (side === 'e') { // 정해진 턴의 적 차례에 증원
       for (const i of R.wavesAt(G, G.turn)) {
         const list = R.spawnWave(G, i);
-        banner('철충 증원!', `${list.length}기 출현`, 'e');
+        LOHUD.caution('철충 증원!', `${list.length}기 출현`);
         AU.play('reinforce', 0.7);
         for (const u of list) { addView(u); fxAt(u.x, u.y, 'spawn'); }
         if (list[0]) panTo(list[0].x, list[0].y, true);
@@ -1667,6 +1683,8 @@
       <p><b>적의 움직임</b> · 적은 아군이 자기 공격 범위(위험 범위)에 들어와야 움직이기 시작합니다. 「위험」 단추로 범위를 확인하고 하나씩 끌어내세요. 증원은 정해진 턴에 나타나며, 그 전에 적을 모두 쓰러뜨리면 승리합니다.</p>
       <p><b>경험치</b> · 전투가 끝나면 참가한 영웅 전원이 같은 양을 받습니다.</p>
       <p><b>특기</b> · 쓰고 나면 정해진 턴 동안 다시 쓸 수 없습니다(괄호 안 숫자).</p>
+      <p><b>지배 영역</b> · 적과 맞닿는 칸에 들어서면 그 자리에서 멈춥니다. 적 사이를 빠져나갈 수 없으니 길목을 막아 지키세요 (적도 마찬가지).</p>
+      <p><b>재능</b> · 영웅마다 늘 켜져 있는 고유 재능이 있습니다 (지휘 범위 강화, 선제공격 강화, 피해 감소 등). 영웅 정보에서 확인하세요.</p>
       <p><b>지형</b> · 숲 +20%, 산·언덕·기지 +10%, 폐허·마을 +5% 방어. 기병은 숲·산에서 느려지고, 비병은 지형의 영향을 받지 않습니다. 적 칸은 지나갈 수 없습니다.</p>
       <p><b>조작</b> · 누르기: 선택·이동·공격 / 끌기: 지도 이동 / 두 손가락·휠: 확대 / 오른쪽 클릭·Esc: 취소 / 키보드: 방향키 커서 · Enter 결정 · Esc 취소 · Tab 다음 영웅 · A 공격 · W 대기 · E 턴 종료 (전체 목록은 전투 중 H)</p>
       <div class="opts"><button class="gold" data-a="ok">확인</button></div>`, cb);
@@ -2202,6 +2220,8 @@
     setTop();
     if (st.id === 1 && !st.kind && !save.tutSeen) { save.tutSeen = true; writeSave(); await new Promise((r) => help(r)); }
     AU.play('lo_battle_start', 0.7);
+    LOHUD.start(`${st.idx} ${st.title}`, `승리 조건 · ${st.goal}`);
+    await wait(1900);
     await startPhase('p');
   }
   function leaveMap() {
@@ -2212,7 +2232,7 @@
     mapFx.length = 0;
     G = null;
     $('hud').classList.add('hidden');
-    $('forecast').classList.add('hidden');
+    $('forecast').classList.add('hidden'); LOHUD.target(null);
     showActs(null);
     $('info').classList.add('hidden');
     $('modal').classList.add('hidden');
@@ -2257,7 +2277,7 @@
     busy = true;
     const g = G, st = G.stage;
     await wait(400);
-    banner(win ? '작전 성공!' : '작전 실패', why || (win ? st.goal + ' 달성' : '콘스탄챠가 퇴각했습니다'), win ? 'gold' : 'e');
+    LOHUD.result(win, why || (win ? st.goal + ' 달성' : '콘스탄챠가 퇴각했습니다'));
     AU.bgm(null);
     AU.play(win ? 'lo_win' : 'fail', 0.8);
     await wait(1700);

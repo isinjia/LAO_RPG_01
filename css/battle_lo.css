@@ -1,0 +1,179 @@
+/* 지도 전투 화면을 원작 라스트오리진 전투 UI 결로: 짙은 회색 판 + 모서리 깎기 + 노란 선, LO 글꼴, 원작 전투 아틀라스 조각.
+   game.css 의 기본 배치는 그대로 두고 모양만 덮어쓴다. 연출 조각(js/lohud.js)의 모양도 여기. */
+:root { --lb-bg: linear-gradient(180deg, rgba(38, 42, 52, .96), rgba(20, 22, 28, .96)); --lb-cut: 10px; --lb-red: #ff3b5c; --lb-blue: #3fb4ff; }
+.lo-cut { clip-path: polygon(var(--lb-cut) 0, 100% 0, 100% calc(100% - var(--lb-cut)), calc(100% - var(--lb-cut)) 100%, 0 100%, 0 var(--lb-cut)); }
+
+/* ── 상단 ── */
+#top { gap: 10px; }
+#turnBox { position: relative; background: none; border: 0; border-radius: 0; padding: 0 16px 0 0; gap: 10px; align-items: center; }
+#turnNo { position: relative; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; font: 24px 'LO_B', sans-serif; color: #fff;
+  background: radial-gradient(circle, rgba(10, 12, 16, .92) 58%, transparent 60%), url(../assets/ui/UI_Battle_round_circle_2.png) center/100% 100% no-repeat; text-shadow: 0 0 8px #000; }
+#turnNo::after { content: 'TURN'; position: absolute; bottom: 7px; font: 8px 'LO_B', sans-serif; color: var(--lo-y); letter-spacing: 1px; }
+#turnBox small { display: none; }
+#phase { position: relative; display: flex; flex-direction: column; padding: 4px 22px 5px 12px; font: 15px 'LO_B', sans-serif; letter-spacing: 1px; color: #fff;
+  background: linear-gradient(90deg, rgba(20, 22, 28, .95), rgba(20, 22, 28, .7)); clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 100%, 0 100%); border-left: 4px solid var(--lo-y); }
+#phase::before { font: 9px 'LO_B', sans-serif; letter-spacing: 2px; color: var(--lo-y); margin-bottom: 1px; }
+#phase.p::before { content: 'PLAYER PHASE'; }
+#phase.e { border-left-color: var(--lb-red); } #phase.e::before { content: 'ENEMY PHASE'; color: var(--lb-red); }
+#phase.p, #phase.e { color: #fff; }
+#goalBox { position: relative; padding: 9px 14px 9px 40px; border: 0; border-radius: 0; background: rgba(16, 18, 24, .82); color: #b7bfd0; font: 13px 'LO_M', sans-serif;
+  clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%); }
+#goalBox::before { content: ''; position: absolute; left: 14px; top: 50%; width: 18px; height: 18px; transform: translateY(-50%); background: url(../assets/ui/Icon_mission.png) center/contain no-repeat; }
+#goalBox::after { content: ''; position: absolute; left: 10px; right: 10px; bottom: 0; height: 2px; background: linear-gradient(90deg, var(--lo-y), transparent 70%); }
+#goalBox b { color: var(--lo-y); font-family: 'LO_B', sans-serif; font-weight: normal; }
+.tbtns { gap: 5px; }
+.tbtns button { position: relative; padding: 8px 12px 7px; border: 0; border-radius: 0; font: 13px 'LO_B', sans-serif; letter-spacing: 1px; color: #d8deea;
+  background: linear-gradient(180deg, #3a3f4b, #23262e); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12);
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); }
+.tbtns button::after { content: ''; position: absolute; left: 8px; right: 8px; bottom: 0; height: 2px; background: rgba(255, 255, 255, .15); }
+.tbtns button.on, #btnAuto.on, #btnDanger.on { color: #111; background: linear-gradient(180deg, #ffe066, #f5b800); box-shadow: none; }
+#btnDanger.on { color: #fff; background: linear-gradient(180deg, #ff5c76, #c2163a); }
+#btnEnd { color: #111 !important; background: linear-gradient(180deg, #ffe066, #f5b800) !important; padding-left: 18px; padding-right: 18px; box-shadow: 0 0 14px rgba(255, 204, 0, .45) !important; }
+#btnEnd:disabled { background: #3a3f4b !important; color: #777 !important; box-shadow: none !important; }
+#hint { top: calc(66px + var(--safe-t)); border-radius: 0; padding: 5px 22px; background: linear-gradient(90deg, transparent, rgba(12, 14, 18, .9) 12%, rgba(12, 14, 18, .9) 88%, transparent);
+  font: 13px 'LO_M', sans-serif; color: #e7ebf3; border-top: 1px solid rgba(255, 204, 0, .5); }
+
+/* ── 왼쪽 영웅 목록 ── */
+#roster { top: calc(70px + var(--safe-t)); }
+#roster .rh { border: 0; border-radius: 0; background: #14161b; box-shadow: inset 0 0 0 2px #3fb4ff, 0 3px 10px #0008;
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%); }
+#roster .rh.sel { box-shadow: inset 0 0 0 3px var(--lo-y), 0 0 12px rgba(255, 204, 0, .6); }
+#roster .rh.done { box-shadow: inset 0 0 0 2px #4a505e; }
+#roster .rh em { font: 11px 'LO_B', sans-serif; letter-spacing: 1px; background: rgba(0, 0, 0, .55); }
+
+/* ── 유닛 정보 (원작 적 정보 창 결) ── */
+#info { border: 0; border-radius: 0; background: var(--lb-bg); box-shadow: 0 8px 24px rgba(0, 0, 0, .55);
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px)); padding: 12px 14px 12px 16px; }
+#info::before { content: ''; position: absolute; left: 0; top: 0; bottom: 14px; width: 4px; background: var(--lo-y); }
+#info .pic { border: 0; border-radius: 0; box-shadow: inset 0 0 0 2px var(--lb-blue); clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 0 100%); }
+#info .pic.e { box-shadow: inset 0 0 0 2px var(--lb-red); }
+#info .pic .lv { left: 0; bottom: 0; border-radius: 0; font: 11px 'LO_B', sans-serif; color: #111; background: var(--lo-y); padding: 1px 5px; }
+#info .nm { font: 17px 'LO_B', sans-serif; font-weight: normal; letter-spacing: .5px; }
+#info .nm small { font: 11px 'LO_M', sans-serif; color: #8d95a8; }
+#info .kind { border-radius: 0; font: 10px 'LO_B', sans-serif; padding: 2px 7px 1px; background: rgba(0, 0, 0, .5); }
+#info .st b { font-family: 'LO_B', sans-serif; font-weight: normal; }
+#info .ex { border-top: 1px solid rgba(255, 255, 255, .1); }
+#info .ex b { color: var(--lo-y); }
+#info .tal { padding: 4px 8px; background: linear-gradient(90deg, rgba(63, 180, 255, .16), transparent); border-left: 2px solid var(--lb-blue); }
+#info .tal b { font-family: 'LO_B', sans-serif; font-weight: normal; }
+/* 막대: 원작 전투의 얇은 사선 막대 */
+.bars2 .bar2 { border-radius: 0 !important; clip-path: polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%); background: rgba(0, 0, 0, .55) !important; }
+.bars2 .bar2 i { border-radius: 0 !important; }
+.bars2 .bar2 b { font: 11px 'LO_B', sans-serif !important; letter-spacing: .5px; }
+
+/* ── 행동 메뉴 (원작 버튼: 짙은 판 + 노란 결정 버튼) ── */
+#acts button { position: relative; border: 0; border-radius: 0; font: 16px 'LO_B', sans-serif; font-weight: normal; letter-spacing: 1px; color: #e8ecf4; text-align: left;
+  padding: 11px 18px 10px 20px; background: linear-gradient(180deg, #3a3f4b, #1f2229); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14), 0 4px 12px rgba(0, 0, 0, .5);
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); }
+#acts button::before { content: ''; position: absolute; left: 0; top: 10px; bottom: 0; width: 3px; background: rgba(255, 255, 255, .25); }
+#acts button.gold { color: #111; background: linear-gradient(180deg, #ffe066, #f5b800); box-shadow: 0 0 16px rgba(255, 204, 0, .4); }
+#acts button.gold::before { background: #111; opacity: .5; }
+#acts button small { font: 11px 'LO_M', sans-serif; color: #9aa3b5; letter-spacing: 0; }
+#acts button.gold small { color: #4a3a00; }
+#acts button kbd { position: absolute; right: 8px; top: 6px; font: 9px 'LO_B', sans-serif; opacity: .55; }
+
+/* ── 전투 예상 ── */
+#forecast { border: 0; border-radius: 0; background: var(--lb-bg); padding: 26px 14px 12px; box-shadow: 0 10px 34px rgba(0, 0, 0, .65);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 0 calc(100% - 14px)); }
+#forecast::before { content: 'BATTLE PREDICTION'; position: absolute; left: 0; right: 0; top: 0; height: 18px; line-height: 19px; text-align: center; font: 10px 'LO_B', sans-serif;
+  letter-spacing: 3px; color: #111; background: var(--lo-y); }
+#forecast .side img { border: 0; border-radius: 0; box-shadow: inset 0 0 0 2px var(--lb-blue); clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%); }
+#forecast .side.R img { box-shadow: inset 0 0 0 2px var(--lb-red); }
+#forecast .side .n { font: 14px 'LO_B', sans-serif; font-weight: normal; }
+#forecast .side .h { font-family: 'LO_B', sans-serif; font-weight: normal; }
+#forecast .mid b { font-family: 'LO_B', sans-serif; color: var(--lo-y); }
+#forecast .btns button { border: 0; border-radius: 0; font: 15px 'LO_B', sans-serif; letter-spacing: 2px; background: linear-gradient(180deg, #3a3f4b, #1f2229);
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%); }
+#forecast .btns button.gold { color: #111; background: linear-gradient(180deg, #ffe066, #f5b800); }
+
+/* ── 떠오르는 글자 (지도) ── */
+.pop { font-family: 'LO_B', sans-serif; font-weight: normal; letter-spacing: .5px; -webkit-text-stroke: 1px rgba(0, 0, 0, .7); }
+.pop.info { color: var(--lo-y); }
+.pop.tdmg { color: #ffb15a; font-size: 15px; }
+
+/* ── 연출 층 ── */
+#lofx { position: fixed; inset: 0; z-index: 21; pointer-events: none; overflow: hidden; }
+.dnum { display: inline-flex; align-items: flex-end; white-space: nowrap; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .6)); }
+.dnum i { display: block; flex: none; background-repeat: no-repeat; }
+.dnum b { font: italic 900 1em 'LO_B', sans-serif; color: #7dffa0; -webkit-text-stroke: 2px #0a3a18; margin-right: 2px; align-self: center; }
+.lofloat { position: absolute; transform: translate(-50%, -100%); animation: lofloat 1.1s cubic-bezier(.2, .8, .3, 1) forwards; pointer-events: none; }
+.lofloat.big { animation-name: lofloatBig; }
+@keyframes lofloat { 0% { opacity: 0; transform: translate(-50%, -60%) scale(1.8); } 12% { opacity: 1; transform: translate(-50%, -100%) scale(.92); }
+  22% { transform: translate(-50%, -100%) scale(1); } 70% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -190%) scale(1); } }
+@keyframes lofloatBig { 0% { opacity: 0; transform: translate(-50%, -60%) scale(2.6) rotate(-6deg); } 14% { opacity: 1; transform: translate(-50%, -100%) scale(.9) rotate(0); }
+  24% { transform: translate(-50%, -100%) scale(1.05); } 75% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -170%) scale(1); } }
+.loword { display: block; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .8)); }
+
+/* 배너: 화면을 가로지르는 사선 띠 */
+.lobanner { position: absolute; left: 0; right: 0; top: 42%; height: 128px; transform: translateY(-50%); animation: lbOut .25s ease-in forwards; animation-delay: calc(var(--d, 1.3s)); }
+.lobanner.phase { --d: 1.3s; } .lobanner.start { --d: 1.8s; } .lobanner.caution { --d: 1.45s; }
+.lobanner .lb-band { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(8, 9, 12, 0), rgba(8, 9, 12, .9) 18%, rgba(8, 9, 12, .9) 82%, rgba(8, 9, 12, 0));
+  animation: lbBand .35s cubic-bezier(.2, .8, .3, 1) both; }
+.lobanner .lb-band::before, .lobanner .lb-band::after { content: ''; position: absolute; left: 0; right: 0; height: 3px; background: var(--lb-c, var(--lo-y)); box-shadow: 0 0 12px var(--lb-c, var(--lo-y)); }
+.lobanner .lb-band::before { top: 0; } .lobanner .lb-band::after { bottom: 0; }
+.lobanner .lb-line { position: absolute; top: -40px; bottom: -40px; left: 18%; width: 54px; background: var(--lb-c, var(--lo-y)); transform: skewX(-24deg); opacity: .9;
+  animation: lbSweep .9s cubic-bezier(.2, .8, .3, 1) both; mix-blend-mode: screen; }
+.lobanner .lb-in { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; animation: lbIn .45s cubic-bezier(.2, .9, .3, 1.2) .08s both; }
+.lobanner .lb-in small { font: 13px 'LO_B', sans-serif; letter-spacing: 6px; color: var(--lb-c, var(--lo-y)); }
+.lobanner .lb-in b { font: italic 54px/1 'LO_B', sans-serif; letter-spacing: 4px; color: #fff; text-shadow: 0 0 18px var(--lb-c, var(--lo-y)), 0 3px 0 #000; margin: 2px 0 4px; }
+.lobanner .lb-in span { font: 15px 'LO_M', sans-serif; color: #d6dbe6; letter-spacing: 1px; }
+.lobanner .lb-in em { font: 12px 'LO_M', sans-serif; font-style: normal; color: var(--lo-y); margin-top: 3px; }
+.lobanner .lb-in img { height: 56px; margin-bottom: 4px; filter: drop-shadow(0 0 12px rgba(255, 204, 0, .6)); }
+.lobanner.e { --lb-c: var(--lb-red); }
+.lobanner.caution { --lb-c: #ff9d00; }
+.lobanner.caution .lb-grid { position: absolute; inset: 0; background: url(../assets/ui/UI_Battle_Warning_grid.png) repeat; opacity: .18; animation: lbBand .35s both; }
+.lobanner.caution .lb-in b { font-size: 30px; font-style: normal; }
+@keyframes lbBand { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes lbSweep { from { left: -12%; opacity: 0; } 30% { opacity: .9; } to { left: 112%; opacity: 0; } }
+@keyframes lbIn { from { opacity: 0; transform: translateX(-60px) skewX(-10deg); } to { opacity: 1; transform: none; } }
+@keyframes lbOut { to { opacity: 0; transform: translateY(-50%) scaleY(.2); } }
+
+/* 특기 컷인 */
+.lobanner.cutin { top: 46%; height: 220px; --d: calc(1.05s / var(--sp, 1)); }
+.lobanner.cutin .lc-band { position: absolute; inset: 0; overflow: hidden; background: linear-gradient(90deg, rgba(10, 12, 16, .2), rgba(10, 12, 16, .92) 25%, rgba(10, 12, 16, .92) 75%, rgba(10, 12, 16, .2));
+  clip-path: polygon(0 18%, 100% 0, 100% 82%, 0 100%); animation: lcBand .3s cubic-bezier(.2, .8, .3, 1) both; }
+.lobanner.cutin .lc-band::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(-24deg, transparent 0 22px, rgba(255, 255, 255, .03) 22px 24px); }
+.lobanner.cutin.p .lc-band { box-shadow: inset 0 3px 0 var(--lo-y), inset 0 -3px 0 var(--lo-y); }
+.lobanner.cutin.e .lc-band { box-shadow: inset 0 3px 0 var(--lb-red), inset 0 -3px 0 var(--lb-red); }
+.lobanner.cutin .lc-stand { position: absolute; left: 14%; top: -2%; height: 250%; animation: lcStand 1.2s cubic-bezier(.15, .85, .3, 1) both; filter: drop-shadow(0 0 20px rgba(0, 0, 0, .6)); }
+.lobanner.cutin .lc-icon { position: absolute; left: 22%; top: 50%; width: 150px; height: 150px; transform: translateY(-50%); object-fit: cover; border: 3px solid var(--lb-red);
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%); animation: lcStand 1.2s cubic-bezier(.15, .85, .3, 1) both; }
+.lobanner.cutin .lc-flash { position: absolute; inset: -20% 0; background: #fff; mix-blend-mode: overlay; animation: lcFlash .35s ease-out both; pointer-events: none; }
+.lobanner.cutin .lc-txt { position: absolute; right: 12%; top: 50%; transform: translateY(-50%); text-align: right; animation: lcTxt .5s cubic-bezier(.2, .9, .3, 1.15) .1s both; }
+.lobanner.cutin .lc-txt small { display: block; font: 12px 'LO_B', sans-serif; letter-spacing: 5px; color: var(--lo-y); }
+.lobanner.cutin.e .lc-txt small { color: var(--lb-red); }
+.lobanner.cutin .lc-txt b { display: block; font: italic 46px/1.1 'LO_B', sans-serif; color: #fff; text-shadow: 0 0 16px rgba(255, 204, 0, .55), 0 3px 0 #000; }
+.lobanner.cutin.e .lc-txt b { text-shadow: 0 0 16px rgba(255, 59, 92, .6), 0 3px 0 #000; }
+.lobanner.cutin .lc-txt span { display: inline-block; margin-top: 6px; padding: 2px 12px; font: 13px 'LO_B', sans-serif; color: #111; background: var(--lo-y); }
+.lobanner.cutin.e .lc-txt span { background: var(--lb-red); color: #fff; }
+@keyframes lcBand { from { transform: scaleY(0) skewY(-4deg); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes lcStand { from { transform: translateX(-28vw); opacity: 0; } 30% { transform: translateX(2vw); opacity: 1; } to { transform: translateX(5vw); opacity: 1; } }
+.lobanner.cutin .lc-icon { --ty: -50%; }
+@keyframes lcFlash { from { opacity: .9; } to { opacity: 0; } }
+@keyframes lcTxt { from { opacity: 0; transform: translate(80px, -50%) skewX(-12deg); } to { opacity: 1; transform: translate(0, -50%); } }
+
+/* 목표 표지 */
+.lotarget { position: absolute; transform: translate(-50%, -100%); animation: lotgt .9s ease-in-out infinite; }
+.lotarget img { height: 34px; display: block; filter: drop-shadow(0 0 6px rgba(255, 60, 80, .8)); }
+.lotarget.g img { filter: drop-shadow(0 0 6px rgba(160, 255, 80, .8)); }
+@keyframes lotgt { 50% { transform: translate(-50%, -112%); } }
+
+@media (orientation: portrait) {
+  .lobanner .lb-in b { font-size: 34px; }
+  .lobanner.cutin .lc-txt { right: 6%; } .lobanner.cutin .lc-txt b { font-size: 30px; }
+  .lobanner.cutin .lc-stand { left: -6%; }
+  #turnNo { width: 44px; height: 44px; font-size: 20px; }
+}
+
+/* 재능 발동 판 (원작 패시브 표시 결) */
+#fight .lopassive { position: absolute; top: 20%; padding: 5px 18px 6px 14px; background: linear-gradient(90deg, rgba(12, 14, 18, .92), rgba(12, 14, 18, .6)); border-left: 4px solid var(--lo-y);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 100%, 0 100%); animation: lopas 1.7s cubic-bezier(.2, .8, .3, 1) both; z-index: 4; }
+#fight .lopassive.L { left: 3%; } #fight .lopassive.R { right: 3%; border-left: 0; border-right: 4px solid var(--lb-red); text-align: right; clip-path: polygon(0 0, 100% 0, 100% 100%, 12px 100%); padding: 5px 14px 6px 18px; }
+#fight .lopassive small { display: block; font: 9px 'LO_B', sans-serif; letter-spacing: 3px; color: var(--lo-y); }
+#fight .lopassive.R small { color: var(--lb-red); }
+#fight .lopassive b { font: 17px 'LO_B', sans-serif; color: #fff; font-weight: normal; }
+@keyframes lopas { 0% { opacity: 0; transform: translateX(-40px); } 12% { opacity: 1; transform: none; } 85% { opacity: 1; } 100% { opacity: 0; } }
+#fight .lopassive.R { animation-name: lopasR; }
+@keyframes lopasR { 0% { opacity: 0; transform: translateX(40px); } 12% { opacity: 1; transform: none; } 85% { opacity: 1; } 100% { opacity: 0; } }
+.lobanner.result { --d: 1.75s; height: 150px; }
+.lobanner.result.win .lb-in img { height: 38px; margin-bottom: 8px; }

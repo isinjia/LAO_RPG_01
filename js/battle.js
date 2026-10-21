@@ -124,6 +124,7 @@
   const STAND = { constantia: '3P_ConstantiaS2_N_Resolve', griffon: 'BR_PA00EL_N_Resolve', johanna: 'DS_Johanna_N_Serious', lrl: 'PECS_LRL_N_Idle', pupphead: 'PECS_PuppHead_N', fallen: 'AGS_Fallen_N',
     amy: 'BR_Amy_N_Serious', coco: 'PECS_CoCoWhiteShell_N_Smile', marie: 'BR_Marie_N_Pride', scathy: 'BR_Scathy_N_Elegance', labiata: '3P_Labiata_N_Smile' };
   const WHOLE = new Set(['pupphead', 'fallen']); // 기계 몸이라 전신을 통째로 줄여 넣는다
+  FIGHT.STAND = STAND; // 특기 컷인(lohud.js)도 같은 그림을 쓴다
   function shakeBust(side) { const b = el().querySelector('.fcorner.' + side + ' .fbust'); b.classList.remove('hit'); void b.offsetWidth; b.classList.add('hit'); }
 
   // a: 공격자, d: 방어자, res: RULES.combat 결과, opt: { bg, speed }
@@ -212,6 +213,14 @@
         if (res.counter) charge(def, defSide, Math.min(1.0, VW * 0.06));
         t0 += 0.5 / sp;
       }
+      // 재능 발동 판 (원작 패시브 표시): 이번 교전에 효과가 있는 재능만
+      const sa = { hp: a.hp, thp: a.troop ? a.troop.hp : 0 }, sd0 = { hp: d.hp, thp: d.troop ? d.troop.hp : 0 };
+      const ta = RULES.talentOf(a), td = RULES.talentOf(d);
+      const frontD = d.troop && sd0.thp > 0 ? 'T' : 'H', frontA = a.troop && sa.thp > 0 ? 'T' : 'H';
+      const onA = ta && RULES.talentK(null, a, { def: {} }, true, res.dist, sa, sd0, frontD) > 1.001 || (ta && ta.chase && RULES.talentK(null, a, d, true, res.dist, sa, sd0, frontD) > 1.001);
+      const onD = td && (RULES.talentK(null, { def: {} }, d, true, res.dist, sa, sd0, frontD) < 0.999 || (res.counter && RULES.talentK(null, d, { def: {} }, false, res.dist, sd0, sa, frontA) > 1.001));
+      if (onA) tl.push({ t: enter * 0.6, fn: () => passivePlate(attSide, ta.name) });
+      if (onD) tl.push({ t: enter * 0.6 + 0.15, fn: () => passivePlate(defSide, td.name) });
       const end = brawl(att, def, attSide, defSide, a, d, res, t0, sp, st);
       tl.push({ t: end + 0.7 / sp, fn: () => finish() });
       tl.sort((p, q) => p.t - q.t);
@@ -237,6 +246,7 @@
         if (r[s.kT] + r[s.kH] <= 0 && s.counter) continue;
         // 살아 있는 쪽이 저마다 조금씩 어긋나게 공격 동작 (실시간 난전처럼)
         const hitT = tr + 0.18 / sp;
+        if (s.counter && ri === 0) tl.push({ t: tr - 0.12 / sp, fn: () => wordOver(s.from, 'counter') }); // 원작 「반격」 글자
         tl.push({ t: tr, fn: () => {
           for (const f of s.from) {
             if (!f.alive) continue;
@@ -262,7 +272,8 @@
             hitFx(s.from.find((f) => f.alive) || s.from[0], v, s.au, far, k === 0);
             // 피해 숫자: 병사 피해는 맞은 병사들이 나눠 받고, 영웅은 영웅 피해(병사가 없으면 전부)
             const n = v.hero ? (dH > 0 ? dH : dT) : dT / nS;
-            if (n > 0.05) dmgNum(v, n);
+            const adv = s.counter ? res.rel < 0 : res.rel > 0;
+            if (n > 0.05) dmgNum(v, n, v.hero && adv ? 'cri' : s.du.side === 'p' ? 'me' : 'base');
           });
           addTotal(s.toSide, dT + dH);
           const keep = figN(s.du, S.thp);
@@ -300,14 +311,25 @@
     if (split) { const hw = Math.floor(W / 2); c = side === 'L' ? camL : camR; x0 = side === 'L' ? 0 : hw; w = side === 'L' ? hw : W - hw; }
     return [x0 + ((x - c.left) / (c.right - c.left)) * w, ((c.top - y) / (c.top - c.bottom)) * H];
   }
-  function dmgNum(f, n) {
+  // 원작 피해 숫자 글꼴: 적이 맞으면 노랑, 아군이 맞으면 주황, 상성 우위로 친 영웅 피해는 빨강(강한 일격)
+  function dmgNum(f, n, kind) {
     const p = f.rig.g.position, [sx, sy] = toScreen(p.x + (Math.random() - 0.5) * 0.3, p.y + lift(f) + (f.hero ? 2.3 : 1.4) + Math.random() * 0.3, f.side);
+    const px = (f.hero ? 46 : 32) * Math.min(1.4, Math.max(0.75, innerHeight / 800));
+    LOHUD.float(LOHUD.num(Math.max(1, n), kind, kind === 'cri' ? px * 1.2 : px), sx, sy, kind === 'cri' ? 'big' : '', el().querySelector('.fnums'), 1000);
+  }
+  // 원작 글자 그림(반격 등)·재능 발동 판을 그 편 영웅 머리 위에
+  function wordOver(list, k) {
+    const h = list.find((f) => f.hero && f.alive);
+    if (!h) return;
+    const p = h.rig.g.position, [sx, sy] = toScreen(p.x, p.y + lift(h) + 2.9, h.side);
+    LOHUD.float(LOHUD.word(k, 40 * Math.min(1.3, Math.max(0.8, innerHeight / 800))), sx, sy, 'big', el().querySelector('.fnums'), 1100);
+  }
+  function passivePlate(side, name) {
     const e = document.createElement('div');
-    e.className = 'fnum' + (f.hero ? ' hero' : '');
-    e.textContent = Math.max(1, Math.round(n));
-    e.style.left = sx + 'px'; e.style.top = sy + 'px';
+    e.className = 'lopassive ' + side;
+    e.innerHTML = `<small>PASSIVE</small><b>${name}</b>`;
     el().querySelector('.fnums').appendChild(e);
-    setTimeout(() => e.remove(), 1000);
+    setTimeout(() => e.remove(), 1700);
   }
   // 그 편이 받은 피해 합계 (정보판 위 별 모양)
   function addTotal(side, n) {
