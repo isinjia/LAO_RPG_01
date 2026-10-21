@@ -110,6 +110,7 @@
   R.mov = (u) => {
     let m = R.heroStat(u, 'mov');
     if (R.troopAlive(u)) m = Math.min(m, u.troop.def.mov);
+    if (m <= 0) return 0; // 붙박이 적(언더왓쳐 몸통 등)은 움직이지 않는다
     return Math.max(1, Math.round(m + u.buffs.reduce((s, b) => s + (b.mov || 0), 0) - (u.slow || 0)));
   };
   // 남은 병사 수 (10명 부대)

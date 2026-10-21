@@ -72,6 +72,7 @@
         { t: 'deco', art: 'town/r_andr1_11', x: 5, y: 2, w: 3, h: 1, hh: 1.2, block: 1, board: 1 },
         { t: 'npc', id: 'johanna', x: 8, y: 4, dir: -1 },
         { t: 'npc', id: 'marie', x: 4, y: 5, dir: 1 },
+        { t: 'npc', id: 'labiata', x: 10, y: 5, dir: -1 },
       ],
     },
     shop: {
