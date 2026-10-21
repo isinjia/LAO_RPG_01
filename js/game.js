@@ -1427,7 +1427,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.04';
+  const GAME_VERSION = '0.05';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -1692,7 +1692,7 @@
     const j = joined();
     const cards = Object.keys(D.HEROES).filter((id) => j.has(id)).map((id) => {
       const h = D.HEROES[id], s = save.heroes[id], t = h.tiers[s.tier], k = 1 + 0.07 * (s.lv - D.TIER_LV[s.tier]);
-      return `<div class="pcard rcard"><div class="pimg ${id === 'pupphead' || id === 'fallen' ? 'whole' : ''}" style="background-image:url(assets/story/stand/${HERO_STAND[id]}.webp)"></div>${h.lead ? '<i class="plead"></i>' : ''}
+      return `<div class="pcard rcard"><div class="pimg ${id === 'pupphead' || id === 'fallen' ? 'whole' : ''}" style="background-image:url(assets/story/stand/${HERO_STAND[id]}.webp)"></div>
         <div class="pfoot"><span class="plv">Lv.${s.lv}</span><b>${h.name}</b><small>${kindTag(h.kind)} · ${t.cls}</small></div>
         <div class="ptroop rst"><span>체력 ${Math.round(t.hp * k)}</span><span>공격 ${Math.round(t.at * k)}</span><span>방어 ${Math.round(t.df * k)}</span></div></div>`;
     }).join('');
@@ -1751,7 +1751,7 @@
       const { h, s, t } = stat(id), tr = D.TROOPS[pick[id]];
       return `<button class="pcard ${id === cur ? 'sel' : ''} ${st.heroes.includes(id) ? '' : 'off'}" data-h="${id}">
         <div class="pimg ${id === 'pupphead' || id === 'fallen' ? 'whole' : ''}"><canvas class="pcv" data-stand="${HERO_STAND[id]}"></canvas></div>
-        ${h.lead ? '<i class="plead"></i>' : ''}${(save.joined || []).includes(id) ? '' : '<i class="pnew">NEW</i>'}
+        ${(save.joined || []).includes(id) ? '' : '<i class="pnew">NEW</i>'}
         <div class="pfoot"><span class="plv">Lv.${s.lv}</span><b>${h.name}</b><small>${kindTag(h.kind)} · ${t.cls}</small></div>
         <div class="ptroop"><img src="${IMG[tr.icon]}" alt=""><span>${tr.short} ×${R.SQUAD}</span></div><i class="psel"></i><i class="poff">대기</i></button>`;
     };
