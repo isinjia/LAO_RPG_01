@@ -653,7 +653,51 @@
     cam.zoom = Math.max(cam.minZoom, Math.min(cam.maxZoom, cam.zoom * (e.deltaY < 0 ? 1.12 : 1 / 1.12)));
     placeCamera();
   }, { passive: false });
+  // 치트: 타이틀에서 "치트활성화온"을 치면 켜진다. 한글·영문 입력 상태와 상관없이 눌린 자판 위치(e.code)로 알아본다
+  // (두벌식: 치=cl 트=xm 활=ghkf 성=tjd 화=ghk 온=dhs). 켜진 뒤 전투 중 Y = 적을 모두 지우고 바로 승리
+  const CHEAT_KEYS = 'clxmghkftjdghkdhs';
+  // 챕터 목록 (지금은 1장만. 2장을 넣으면 H/J 치트로 오갈 수 있다)
+  const CHAPTERS = [{ id: 'ch01', name: '1장 지구의 마지막 인간' }];
+  let cheatBuf = '', cheatWin = false;
+  function toast(msg) {
+    let t = $('toast');
+    if (!t) { t = document.createElement('div'); t.id = 'toast'; document.body.appendChild(t); }
+    t.textContent = msg; t.classList.remove('on'); void t.offsetWidth; t.classList.add('on');
+  }
+  async function cheatClear() {
+    if (cheatWin || !G || !G.stage) return;
+    cheatWin = true;
+    if (FIGHT.active()) FIGHT.skip();
+    for (const u of G.units) if (u.side === 'e' && u.alive) { u.alive = false; const v = views.get(u.uid); if (v) v.g.visible = false; }
+    toast('치트: 전투 자동 클리어');
+    await endStage(true, '치트로 자동 클리어');
+    cheatWin = false;
+  }
   addEventListener('keydown', (e) => {
+    if (/^Key[A-Z]$/.test(e.code)) {
+      cheatBuf = (cheatBuf + e.code[3].toLowerCase()).slice(-CHEAT_KEYS.length);
+      if (cheatBuf === CHEAT_KEYS && $('screen').querySelector('.title2')) {
+        save.cheat = !save.cheat; writeSave(); cheatBuf = '';
+        AU.play('lo_join', 0.7);
+        toast(save.cheat ? '치트 활성화 · 전투 중 Y = 자동 클리어' : '치트 비활성화');
+        return;
+      }
+      if (e.code === 'KeyY' && save.cheat && G && (mode === 'map' || mode === 'fight')) { e.preventDefault(); cheatClear(); return; }
+      // 월드맵 치트: U 모든 지점 열기, H/J 이전·다음 챕터
+      if (save.cheat && mode === 'screen' && $('screen').querySelector('.wscr')) {
+        if (e.code === 'KeyU') {
+          save.clear = D.STAGES.length; writeSave();
+          AU.play('lo_join', 0.6); toast('치트: 월드맵 모든 지점 열림');
+          stageSelect(); return;
+        }
+        if (e.code === 'KeyH' || e.code === 'KeyJ') {
+          const to = (save.chapter || 0) + (e.code === 'KeyH' ? -1 : 1);
+          if (to < 0 || to >= CHAPTERS.length) { toast(e.code === 'KeyH' ? '이전 챕터가 없습니다' : '다음 챕터가 없습니다 (지금은 1장만 있음)'); return; }
+          save.chapter = to; writeSave();
+          toast(`치트: ${CHAPTERS[to].name}(으)로 이동`); stageSelect(); return;
+        }
+      }
+    }
     // ESC = 뒤로: 창 닫기 → 정보 창 닫기 → 앞 화면으로
     if (e.code === 'Escape' && mode !== 'talk' && mode !== 'fight') {
       const m = $('modal');
@@ -1427,7 +1471,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.05';
+  const GAME_VERSION = '0.06';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -1934,6 +1978,8 @@
     });
   }
   async function endStage(win, why) {
+    if (!G || G.ended) return; // 한 전투는 한 번만 끝난다 (치트·적 차례가 겹쳐도)
+    G.ended = true;
     busy = true;
     const g = G, st = G.stage;
     await wait(400);

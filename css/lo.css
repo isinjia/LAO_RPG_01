@@ -428,3 +428,9 @@
 .wscr .wmap { cursor: pointer; }
 /* 지점 단추: 공통 '눌림' 효과가 위치(transform)를 덮어써 아이콘이 튀지 않게 */
 .wnode:active { transform: translate(-50%, -82%); }
+
+/* 알림 (치트 등) */
+#toast { position: fixed; left: 50%; top: calc(70px + var(--safe-t)); z-index: 60; transform: translateX(-50%); padding: 10px 26px; font: 15px 'LO_B', sans-serif; color: #111;
+  background: var(--lo-y); box-shadow: 0 6px 20px #0008; opacity: 0; pointer-events: none; clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%); }
+#toast.on { animation: toast 2.4s ease both; }
+@keyframes toast { 0% { opacity: 0; transform: translate(-50%, -10px); } 10%, 80% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; } }
