@@ -18,6 +18,7 @@
   const tween = (dur, fn) => new Promise((r) => tweens.push({ t: 0, dur: Math.max(0.001, dur), fn, r }));
 
   let nodes = null, cur = null, done = null, prevScr = 6, busy = false, autoOn = false, fastOn = false, gen = 0;
+  let flags = new Set(); // 지나간 장면의 표시(flag): IF 갈래로 들어갔는지 등을 게임에 알린다
   let typing = null; // {full, n}
   let autoWait = 0, log = [];
   // 글자 소리 높이: 해설은 낮게, 인물은 이름마다 정해진 높이
@@ -49,7 +50,7 @@
       if (!list || !list.length) { res(); return; }
       gen++;
       nodes = new Map(list.map((n) => [n.id, n]));
-      done = res; log = []; prevScr = 6; autoWait = 0; typing = null; busy = false;
+      done = res; log = []; prevScr = 6; autoWait = 0; typing = null; busy = false; flags = new Set();
       preload(list);
       root.classList.remove('hidden'); bgEl.classList.remove('hidden');
       root.classList.remove('nobox', 'logon');
@@ -175,6 +176,7 @@
   async function show(n) {
     const g = gen;
     cur = n; busy = true; typing = null; autoWait = 0;
+    if (n.flag) flags.add(n.flag);
     choicesEl.innerHTML = '';
     root.classList.remove('ready');
     // 앞 줄이 암전(화면 효과 2)으로 끝났으면 검게 덮은 채로 장면을 바꾼다
@@ -247,9 +249,22 @@
     stage.querySelectorAll('.stand').forEach((im) => window.PORTRAIT && PORTRAIT.detach(im));
     stage.innerHTML = '';
     root.classList.remove('logon', 'asking');
-    if (cb) cb();
+    const r = { flags: [...flags] };
+    if (cb) cb(r);
   }
-  function skip() { if (cur) end(); }
+  // 건너뛰기: 사령관의 결정 선택지(must)가 앞에 있으면 거기서 멈춘다. 지나치는 장면의 표시도 모은다
+  function skip() {
+    if (!cur) return;
+    const nx = (n) => { const id = n.next != null ? n.next : n.ch && n.ch.length ? n.ch[0][1] : null; return id != null && nodes.get(id); }; // 원래 선택지는 첫 갈래로
+    let n = cur.must ? null : nx(cur);
+    for (let i = 0; n && i < 2000; i++) {
+      if (n.must) { choicesEl.innerHTML = ''; show(n); return; }
+      if (n.flag) flags.add(n.flag);
+      n = nx(n);
+    }
+    if (cur.must && cur.ch && cur.ch.length) return; // 결정은 직접 골라야 한다
+    end();
+  }
 
   function update(dt) {
     now += dt;

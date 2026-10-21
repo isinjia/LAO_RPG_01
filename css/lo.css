@@ -370,7 +370,11 @@
 .pcard .pimg canvas { position: absolute; left: 50%; top: calc(26% - var(--fy, 0.16) * 190%); height: 190%; width: auto; transform: translateX(calc(var(--fx, 0.5) * -100%)); }
 .pcard .pimg.whole canvas { top: 6%; height: 92%; }
 /* 그리폰은 얼굴 가운데 맞춤이 왼쪽으로 쏠려 보여 살짝 오른쪽으로 */
-.pcard .pimg canvas[data-stand^="BR_PA00EL"] { left: calc(55% + 5px); }
+.pcard .pimg canvas[data-stand^="BR_PA00EL"] { left: calc(55% + 2px); top: calc(26% - var(--fy, 0.16) * 190% + 5px); }
+/* 엘알엘은 커 보여서 80% 크기 (눈높이 선은 그대로) */
+.pcard .pimg canvas[data-stand^="PECS_LRL"] { height: 152%; top: calc(26% - var(--fy, 0.16) * 152%); }
+/* 폴른은 왼쪽으로 20픽셀 */
+.pcard .pimg canvas[data-stand^="AGS_Fallen"] { left: calc(50% - 20px); }
 /* 결과 화면 최우수 인물 */
 .rmvp { background: none; display: flex; align-items: flex-end; justify-content: center; }
 .rmvp canvas { height: 100%; width: auto; max-width: 100%; object-fit: contain; object-position: bottom; }
@@ -575,3 +579,31 @@
   box-shadow: inset 0 0 0 1px rgba(255, 204, 0, .5); clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%); }
 .wchap button:disabled { color: #4b5263; box-shadow: inset 0 0 0 1px var(--lo-line); cursor: default; }
 .wchap button:not(:disabled):hover { background: var(--lo-y); color: #111; }
+
+/* ── IF 엔딩 (게임오버): 검붉게 가라앉은 화면 가운데에 결말 이름과 요약, 선택의 순간으로 되돌아가기 ── */
+.ifend { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 24px; overflow: hidden;
+  background: radial-gradient(ellipse at 50% 40%, rgba(90, 8, 20, .55), rgba(4, 4, 8, .96) 70%), #040408; }
+.ifend::before { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .5;
+  background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(0, 0, 0, .35) 3px 4px); animation: ifscan 6s linear infinite; }
+@keyframes ifscan { to { background-position: 0 200px; } }
+.ifend-in { position: relative; width: min(640px, 100%); text-align: center; animation: ifin 1.2s ease-out both; }
+@keyframes ifin { from { opacity: 0; transform: translateY(14px); filter: blur(6px); } }
+.ifend-go { font: clamp(40px, 9vw, 84px) 'LO_B', sans-serif; letter-spacing: 6px; color: #ff3b5c; text-shadow: 0 0 24px rgba(255, 40, 70, .55); animation: ifglitch 3.2s steps(1) infinite; }
+@keyframes ifglitch { 0%, 92%, 100% { transform: none; } 93% { transform: translateX(-3px) skewX(-6deg); } 95% { transform: translateX(3px); } 97% { transform: translateX(-1px) skewX(4deg); } }
+.ifend-no { margin-top: 6px; font: 14px 'LO_B', sans-serif; letter-spacing: 4px; color: #ffcc00; }
+.ifend-no em { margin-left: 10px; padding: 1px 8px; font: normal 11px 'LO_B', sans-serif; color: #111; background: var(--lo-y); letter-spacing: 1px; }
+.ifend h2 { margin: 14px 0 10px; font: clamp(22px, 4.4vw, 34px) 'LO_B', sans-serif; color: #fff; letter-spacing: 1px; }
+.ifend p { margin: 0 auto; max-width: 560px; font-size: 15px; line-height: 1.75; color: #c9cfdc; word-break: keep-all; }
+.ifend-note { margin-top: 16px; font-size: 12px; color: #7c8496; }
+.ifend-btns { margin-top: 26px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.ifend-btns .wgo { width: min(100%, 280px); height: 60px; margin: 0; }
+.ifend-btns .lo-btn { height: 60px; }
+/* IF 기록 목록 */
+.iflist { display: flex; flex-direction: column; gap: 6px; margin: 10px 0 4px; }
+.ifrow { display: flex; align-items: center; gap: 12px; padding: 8px 12px; background: rgba(255, 255, 255, .04); box-shadow: inset 0 0 0 1px var(--lo-line); color: #6e7688; }
+.ifrow b { flex: none; width: 52px; font: 13px 'LO_B', sans-serif; color: #5c6476; letter-spacing: 1px; }
+.ifrow span { display: flex; flex-direction: column; font: 15px 'LO_B', sans-serif; }
+.ifrow small { font: 12px 'LO_M', sans-serif; color: #6e7688; }
+.ifrow.on { background: rgba(255, 59, 92, .08); box-shadow: inset 0 0 0 1px rgba(255, 59, 92, .45); color: #fff; }
+.ifrow.on b { color: #ff3b5c; }
+.ifrow.on small { color: #aab2c4; }
