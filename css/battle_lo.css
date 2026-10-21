@@ -228,3 +228,11 @@
 .skpre.heal { color: #7dffa0; border-bottom: 2px solid #2fc46c; }
 .skpre.buff { color: var(--lo-y); border-bottom: 2px solid var(--lo-y); font-size: 12px; }
 #forecast .rel.trait { margin-top: 4px; font-size: 12px; }
+
+/* 전투 장면 아래 판: 더 크게, 병사 막대와 'N명'도 읽기 쉽게 */
+@media (orientation: landscape) { #fight .fpanel { width: min(58vw, 820px); padding: 12px 22px 14px; } }
+#fight .fbar { height: 24px; }
+#fight .frow.t .fbar { height: 20px; }
+#fight .fbar b { font-size: 18px; }
+#fight .fbar b small { font-size: 13px; margin-left: 1px; }
+#fight .fname b { font-size: 18px; }

@@ -613,7 +613,7 @@
     if (mf && FXDATA[mf[0]]) {
       wait(delay).then(() => {
         if (!world) return;
-        const h = FXLIB.spawn(world.root, mf[0], { x: x + 0.5, y: 0.35, z: y + 0.55, height: mf[1], renderOrder: 4500 });
+        const h = FXLIB.spawn(world.root, mf[0], { x: x + 0.5, y: 0.35, z: y + 0.55, height: mf[1] * 1.3, renderOrder: 4500 }); // 지도에서도 또렷하게
         if (h) h.group.quaternion.copy(camera.quaternion); // 지도 카메라를 바라보게
       });
       return;
