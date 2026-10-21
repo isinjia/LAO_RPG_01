@@ -424,6 +424,26 @@
 .pcards.many .pfoot b { font-size: 15px; } .pcards.many .pfoot { bottom: 40px; }
 .pcard .poff, .pcards.many .ptroop span { white-space: nowrap; }
 @media (orientation: portrait) { .pcards.many { flex-wrap: nowrap; } .pcards.many .pcard { flex: 0 0 31vw; height: auto; } }
+/* 빈 출전 칸 */
+.pcard.pempty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; background: rgba(20, 26, 38, .55); color: #8d96aa;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14); font: 13px 'LO_B', sans-serif; }
+.pcard.pempty .pplus { font-style: normal; font-size: 34px; line-height: 1; color: var(--lo-y); opacity: .8; }
+.pcard.pempty b { color: #dfe4ee; font-size: 15px; } .pcard.pempty small { font-size: 11px; }
+.pcard.pempty:hover { background: rgba(255, 204, 0, .08); color: #dfe4ee; }
+.pd-swap { display: flex; gap: 6px; } .pd-swap .pd-sortie { flex: 1; }
+/* 출전 영웅 목록 창 */
+.ppick { position: absolute; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(0, 0, 0, .62); }
+.ppbox { position: relative; width: min(560px, 100%); max-height: min(78vh, 640px); display: flex; flex-direction: column; background: #10151f; border: 1px solid var(--lo-line); box-shadow: 0 0 0 1px rgba(255, 204, 0, .25); }
+.pphead { position: relative; display: flex; flex-direction: column; gap: 2px; padding: 12px 52px 10px 16px; border-bottom: 1px solid var(--lo-line); }
+.pphead b { font: 18px 'LO_B', sans-serif; color: #fff; } .pphead small { font-size: 12px; color: var(--lo-y); }
+.pphead .wclose { top: 8px; right: 8px; }
+.pplist { overflow-y: auto; padding: 8px; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 6px; }
+.ppk { display: flex; align-items: center; gap: 10px; padding: 6px 10px 6px 6px; text-align: left; color: #dfe4ee; background: rgba(255, 255, 255, .05); border: 1px solid var(--lo-line); border-radius: 0; }
+.ppk:hover { background: rgba(255, 204, 0, .12); border-color: var(--lo-y); }
+.ppk img { width: 48px; height: 48px; object-fit: cover; background: #1f2636; }
+.ppk span { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; } .ppk b { font: 15px 'LO_B', sans-serif; color: #fff; }
+.ppk small { display: flex; align-items: center; gap: 4px; font-size: 11px; color: #aab2c4; white-space: nowrap; overflow: hidden; } .ppk small .kind { flex: none; } .ppk em { font-style: normal; font-size: 11px; color: #aab2c4; white-space: nowrap; }
+.ppnone { margin: 18px; text-align: center; color: #aab2c4; line-height: 1.7; }
 .pd-sortie { display: block; width: 100%; padding: 10px; font: 14px 'LO_B', sans-serif; color: #fff; background: rgba(255,255,255,.07); border: 1px solid var(--lo-line); border-radius: 0; text-align: center; }
 .pd-sortie.on { background: rgba(255, 204, 0, .16); border-color: var(--lo-y); color: var(--lo-y); }
 .pd-sortie.lead { color: #8bf03a; }
