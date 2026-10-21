@@ -188,3 +188,29 @@
 /* 큰 특기 화면 번쩍임 */
 .loflash { position: absolute; inset: 0; mix-blend-mode: screen; animation: loflash 260ms ease-out forwards; }
 @keyframes loflash { from { opacity: 1; } to { opacity: 0; } }
+
+/* 예상 창이 목표를 가릴 때는 아래로 */
+#forecast.low { top: auto; bottom: calc(10px + var(--safe-b)); }
+@media (orientation: portrait) {
+  #forecast.low { bottom: calc(var(--info-h, 120px) + 14px + var(--safe-b)); }
+  /* 세로 화면: 작전 목표는 둘째 줄, 안내 문구는 줄 바꿈, 영웅 목록은 작게 */
+  #top { flex-wrap: wrap; row-gap: 4px; }
+  #goalBox { display: block !important; order: 3; flex: 1 0 100%; padding: 6px 12px 6px 34px; font-size: 11px; }
+  #goalBox::before { left: 11px; width: 15px; height: 15px; }
+  #hint { white-space: normal; width: max-content; max-width: 92vw; text-align: center; top: calc(98px + var(--safe-t)); font-size: 12px; }
+  #roster { top: calc(104px + var(--safe-t)); gap: 4px; }
+  #roster .rh { width: 40px; height: 40px; }
+}
+
+/* 전투 장면: 적(그림 없는 쪽) 얼굴 아이콘은 모서리 위쪽으로 작게, 영웅을 가리지 않게 */
+#fight .fcorner:not(.stand) .fimg { bottom: 52%; width: 40%; }
+@media (orientation: portrait) {
+  /* 세로 화면: 인물 그림은 비어 있는 위쪽 모서리로, 받은 피해 합계는 그 아래 */
+  #fight .fcorner { top: calc(92px + var(--safe-t)); bottom: auto; width: 40vw; height: 22vh; }
+  #fight .fcorner.stand .fimg { height: 230%; top: 2%; }
+  #fight .fcorner:not(.stand) .fimg { bottom: 18%; width: 52%; }
+  #fight .ftot { top: auto; bottom: -26px; right: 6%; padding: 8px 20px 7px; }
+  #fight .fcorner.R .ftot { left: 6%; right: auto; }
+  #fight .ftot b { font-size: calc(14px + 1.4vh); }
+  #fight .lopassive { top: calc(92px + 22vh + 30px + var(--safe-t)); }
+}

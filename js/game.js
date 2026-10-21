@@ -636,9 +636,9 @@
   // ── 카메라 맞춤·이동 ─────────────────────────────────────
   function insets() {
     const port = innerHeight > innerWidth;
-    const top = 52;
+    const topEl = $('top'), top = Math.max(52, (topEl && topEl.offsetHeight ? topEl.getBoundingClientRect().bottom : 70) + 8);
     let bottom = 8, left = 0, right = 0;
-    if (port) bottom = Math.min(260, innerHeight * 0.3);
+    if (port) { const info = $('info'); bottom = Math.max(Math.min(260, innerHeight * 0.3), info && !info.classList.contains('hidden') ? info.offsetHeight + 80 : 0); }
     return { top, bottom, left, right };
   }
   function fitCamera(focusLead) {
@@ -1173,6 +1173,7 @@
     OV.move = rg.mv; OV.atk = rg.atk; OV.aura = auraTiles(u); OV.path = null; OV.targets = null;
     drawOverlay();
     showInfo(u);
+    panTo(u.x, u.y); // 정보창·버튼에 가리면 보이는 곳으로
     showActs([{ label: '제자리', sub: '이동 안 함', fn: openActions }, { label: '취소', fn: deselect }]);
     setHint('파란 칸: 이동 · 빨간 칸의 적을 누르면 다가가 공격');
     renderRoster();
@@ -1304,7 +1305,11 @@
       <div class="rel">${rel}${near} · 적 지형 ${terr.name}${d.move !== 'fly' && terr.def ? ` ${terr.def > 0 ? '+' : ''}${Math.round(terr.def * 100)}%` : ''}${p.dDead ? ' · <span class="good">격파 예상</span>' : ''}</div>
       <div class="btns"><button class="gold" id="fcGo">공격</button><button id="fcNo">취소</button></div>`;
     el.classList.remove('hidden');
-    { const sp = toScreen(new THREE.Vector3(d.x + 0.5, d.def.big ? 2.1 : 1.6, d.y + 0.5)); LOHUD.target(sp.x, sp.y, 'r'); } // 원작 TARGET 표지
+    { const sp = toScreen(new THREE.Vector3(d.x + 0.5, d.def.big ? 2.1 : 1.6, d.y + 0.5)); LOHUD.target(sp.x, sp.y, 'r'); // 원작 TARGET 표지
+      const sa = toScreen(new THREE.Vector3(a.x + 0.5, 1.2, a.y + 0.5));
+      el.classList.remove('low');
+      const r = el.getBoundingClientRect();
+      if (Math.min(sp.y, sa.y) - 30 < r.bottom) el.classList.add('low'); } // 목표·공격자가 예상 창에 가리면 아래로
     $('fcGo').onclick = () => confirmAttack();
     $('fcNo').onclick = () => backToTarget();
     showInfo(d);
@@ -2566,6 +2571,10 @@
       m.renderOrder = 5200; m.center.set(0.5, 0); m.visible = false;
       world.root.add(m);
       loadTex('assets/ui/UI_Battle_main_Field_cursor_g.png').then((tx) => { if (tx) { m.material.map = tx; m.material.needsUpdate = true; } });
+    }
+    if (ui.state === 'forecast' && ui.target && mode === 'map') { // TARGET 표지는 카메라가 움직여도 목표를 따라간다
+      const d = ui.target, sp = toScreen(new THREE.Vector3(d.x + 0.5, d.def.big ? 2.1 : 1.6, d.y + 0.5));
+      LOHUD.target(sp.x, sp.y, 'r');
     }
     const sv = ui.sel && views.get(ui.sel.uid);
     world.selMark.visible = !!(sv && world.selMark.material.map && mode === 'map');

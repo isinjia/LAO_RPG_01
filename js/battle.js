@@ -29,7 +29,7 @@
   };
   FIGHT.resize = function (w, h) {
     const a = w / h;
-    if (a < 1) { VW = 9.4; VH = VW / a; } else { VH = Math.max(8.4, 12.5 / a); VW = VH * a; }
+    if (a < 1) { VW = 8.2; VH = VW / a; } // 세로 화면: 병사를 크게 else { VH = Math.max(8.4, 12.5 / a); VW = VH * a; }
     const cy = a < 1 ? 1.2 : 0.6;
     cam.left = -VW / 2; cam.right = VW / 2; cam.top = VH / 2 + cy; cam.bottom = -VH / 2 + cy;
     cam.updateProjectionMatrix();
@@ -94,10 +94,12 @@
   const isAir = (u, hero) => (hero ? u.kind : u.troop && u.troop.kind) === 'fly';
   const lift = (f) => (f.air ? f.air + Math.sin(T * 3 + f.bob) * 0.07 : 0);
   // 랑그릿사 모바일처럼: 영웅은 맨 뒤(바깥쪽), 병사 무리는 영웅 앞(적 쪽)에 3줄
-  const heroX = (dir) => dir * (VW / 2 - Math.min(1.3, VW * 0.12));
+  // 영웅은 바깥쪽이되, 모서리 인물 그림에 가리지 않게 가장자리에서 조금 들인다
+  const EDGE = () => Math.min(1.9, VW * 0.16);
+  const heroX = (dir) => dir * (VW / 2 - EDGE());
   function soldierSlots(n, side) {
     const dir = side === 'L' ? -1 : 1;
-    const front = 0.9, back = VW / 2 - Math.min(1.3, VW * 0.12) - 1.1;
+    const front = 0.9, back = VW / 2 - EDGE() - 1.1;
     const span = Math.min(0.95, Math.max(0.5, (back - front) / 3.2));
     const out = [];
     for (let i = 0; i < n; i++) {
@@ -272,7 +274,7 @@
             const advH = s.counter ? res.rel < 0 : res.rel > 0;
             hitFx(s.from.find((f) => f.alive) || s.from[0], v, s.au, far, k === 0, v.hero && advH);
             // 피해 숫자: 병사 피해는 맞은 병사들이 나눠 받고, 영웅은 영웅 피해(병사가 없으면 전부)
-            const n = v.hero ? (dH > 0 ? dH : dT) : dT / nS;
+            const n = v.hero ? (dH > 0 ? dH : dT) : k === 0 ? dT : 0; // 병사 피해는 그 접전 합계를 한 숫자로
             const adv = s.counter ? res.rel < 0 : res.rel > 0;
             if (n > 0.05) dmgNum(v, n, v.hero && adv ? 'cri' : s.du.side === 'p' ? 'me' : 'base');
           });
