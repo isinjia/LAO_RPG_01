@@ -719,7 +719,7 @@
   // (두벌식: 치=cl 트=xm 활=ghkf 성=tjd 화=ghk 온=dhs). 켜진 뒤 전투 중 Y = 적을 모두 지우고 바로 승리
   const CHEAT_KEYS = 'clxmghkftjdghkdhs';
   // 챕터 목록 (지금은 1장만. 2장을 넣으면 H/J 치트로 오갈 수 있다)
-  const CHAPTERS = [{ id: 'ch01', name: '1장 지구의 마지막 인간' }];
+  const CHAPTERS = D.CHAPTERS;
   let cheatBuf = '', cheatWin = false;
   function toast(msg) {
     let t = $('toast');
@@ -754,9 +754,10 @@
         }
         if (e.code === 'KeyH' || e.code === 'KeyJ') {
           const to = (save.chapter || 0) + (e.code === 'KeyH' ? -1 : 1);
-          if (to < 0 || to >= CHAPTERS.length) { toast(e.code === 'KeyH' ? '이전 챕터가 없습니다' : '다음 챕터가 없습니다 (지금은 1장만 있음)'); return; }
-          save.chapter = to; writeSave();
-          toast(`치트: ${CHAPTERS[to].name}(으)로 이동`); stageSelect(); return;
+          if (to < 0 || to >= CHAPTERS.length) { toast(e.code === 'KeyH' ? '이전 챕터가 없습니다' : '다음 챕터가 없습니다'); return; }
+          save.clear = Math.max(save.clear, chFirst(to)); // 그 장 첫 작전까지 연다
+          save.chapter = to; save.node = null; writeSave();
+          toast(`치트: ${CHAPTERS[to].no}장 ${CHAPTERS[to].name}(으)로 이동`); stageSelect(); return;
         }
       }
     }
@@ -1701,7 +1702,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.23';
+  const GAME_VERSION = '0.24';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -1743,12 +1744,17 @@
   // ── 월드맵 (창세기전식): 원작 3D 지역 지도 위 지점을 눌러 부대가 길을 따라 이동한다 ──
   // 지점 = 본편 작전 장소 8곳 + 마을(등대 아래 비밀기지). 아직 깨지 않은 본편 지점에 가면 이야기 전투,
   // 지나온 지점에서는 소탕전과 받아 둔 의뢰 전투, 마을 지점에서는 마을로 들어간다.
+  // 장(지역)마다 원작 3D 지역 지도 하나와 본편 작전 8곳. 마을은 1장 지도에만 있다
   const TOWN = { name: '등대 아래 비밀기지', sub: '오르카 임시 거점', unlock: 3 };
   const WT = 'T'; // 마을 지점 id
-  const nodeIds = () => D.STAGES.map((_, i) => i).concat([WT]);
+  const chOf = (si) => (D.STAGES[si].ch || 1) - 1; // 작전 번호(0부터) -> 장 번호(0부터)
+  const chFirst = (c) => D.STAGES.findIndex((s) => (s.ch || 1) - 1 === c);
+  const chOpen = () => chOf(Math.min(save.clear, D.STAGES.length - 1)); // 열린 마지막 장
+  const curCh = () => Math.min(Math.max(0, save.chapter || 0), chOpen());
+  const nodeIds = () => D.STAGES.map((_, i) => i).filter((i) => chOf(i) === curCh()).concat(curCh() === 0 ? [WT] : []);
   const nodeOpen = (id) => (id === WT ? save.clear >= TOWN.unlock : id <= Math.min(save.clear, D.STAGES.length - 1));
   // 지점의 3D 자리
-  const nodePos = (id) => (id === WT ? WM3D.data.town : WM3D.data.stages[id]);
+  const nodePos = (id) => (id === WT ? WM3D.data.town : WM3D.data.stages[id - chFirst(curCh())]);
   const sideList = () => (window.SIDE || []);
   const sideState = (idx) => (save.side || {})[idx];
   // 마을에서 받을 수 있는 의뢰 (아직 받지 않은 것)
@@ -1773,8 +1779,13 @@
   function stageSelect() {
     leaveMap();
     AU.bgm('lo_lobby');
-    if (save.node == null || !nodeOpen(save.node)) save.node = Math.min(save.clear, D.STAGES.length - 1);
+    const ch = curCh(), CH = CHAPTERS[ch];
+    save.chapter = ch;
+    if (save.node == null || !nodeOpen(save.node) || !nodeIds().includes(save.node)) save.node = Math.max(...nodeIds().filter((i) => i !== WT && nodeOpen(i)));
     const here = save.node;
+    // 부대가 서 있던 자리는 장마다 따로 (1장은 예전 저장 기록의 자리 그대로)
+    save.wposCh = save.wposCh || {};
+    if (!save.wposCh[CH.id] && CH.id === 'ch01' && save.wpos3) save.wposCh[CH.id] = save.wpos3;
     // 깼거나 지금 갈 수 있는 지점만 보이고, 나머지는 숨긴다
     const pins = nodeIds().filter(nodeOpen).map((id) => {
       const town = id === WT;
@@ -1792,17 +1803,21 @@
         <b class="tag">${tag}</b>${em}${mark}</button>`;
     }).join('');
     // 앞뒤 작전끼리 잇는 선: 둘 다 깬 길은 실선, 다음 작전으로 가는 길은 흐르는 점선
-    const links = D.STAGES.map((_, i) => [i, i + 1]).filter(([a, b]) => b < D.STAGES.length && nodeOpen(a) && nodeOpen(b));
+    const links = D.STAGES.map((_, i) => [i, i + 1]).filter(([a, b]) => b < D.STAGES.length && chOf(a) === ch && chOf(b) === ch && nodeOpen(a) && nodeOpen(b));
     screen(`<div class="wscr">
       <div class="wmap"><svg class="wlink">${links.map(([a, b]) => `<line class="${b < save.clear ? 'done' : 'next'}"/>`).join('')}</svg>${pins}
         <div class="wtoken" id="wTok"><img src="${IMG[D.HEROES.constantia.icon]}" alt=""></div></div>
       <div class="wvig"></div>
       <div class="whead"><button class="wback" id="sBack" aria-label="뒤로"></button>
-        <div class="wtitle"><small>CHAPTER 01</small><b>지구의 마지막 인간</b></div></div>
+        <div class="wtitle"><small>CHAPTER ${String(CH.no).padStart(2, '0')}</small><b>${CH.name}</b></div>
+        ${chOpen() > 0 ? `<div class="wchap"><button id="sPrev" ${ch > 0 ? '' : 'disabled'} aria-label="이전 지역">‹</button><span>${CH.no} / ${chOpen() + 1}</span><button id="sNext" ${ch < chOpen() ? '' : 'disabled'} aria-label="다음 지역">›</button></div>` : ''}</div>
       <div class="wtools"><button class="lo-btn dark" id="sHero">부대 현황</button></div>
       <div class="winfo" id="sInfo"></div></div>`);
     $('sBack').onclick = () => { AU.play('lo_click', 0.6); title(); };
     $('sHero').onclick = () => { AU.play('lo_click', 0.6); heroRoster(); };
+    const goCh = (to) => { AU.play('lo_click', 0.6); AU.play('lo_trans_in', 0.5); save.chapter = to; save.node = null; writeSave(); stageSelect(); };
+    if ($('sPrev')) $('sPrev').onclick = () => goCh(ch - 1);
+    if ($('sNext')) $('sNext').onclick = () => goCh(ch + 1);
     // 원작 3D 지도를 깔고, 지점 단추와 부대 말은 매 순간 3D 자리를 화면에 비춰 붙인다
     let moving = 0, tokPos = null;
     const map = $('screen').querySelector('.wscr .wmap'), tok = $('screen').querySelector('#wTok');
@@ -1823,10 +1838,10 @@
       tok.style.visibility = s ? '' : 'hidden';
       if (s) { tok.style.left = s.x + 'px'; tok.style.top = s.y + 'px'; }
     }
-    WM3D.mount(map, 'ch01').then((ok) => {
+    WM3D.mount(map, CH.id).then((ok) => {
       if (!ok) return;
-      if (!save.wpos3) save.wpos3 = nodePos(here).slice();
-      tokPos = save.wpos3.slice();
+      if (!save.wposCh[CH.id]) save.wposCh[CH.id] = nodePos(here).slice();
+      tokPos = save.wposCh[CH.id].slice();
       WM3D.setFocus(tokPos); // 카메라 가운데에 늘 부대
       WM3D.setMarker(here === WT ? null : nodePos(here));
       WM3D.onFrame(place);
@@ -1852,7 +1867,7 @@
       });
       if (my !== moving || !tok.isConnected) return;
       tok.classList.remove('walk');
-      save.wpos3 = p.slice();
+      save.wposCh[CH.id] = p.slice();
       if (node != null) { save.node = node; WM3D.setMarker(node === WT ? null : nodePos(node)); }
       writeSave();
       moving = 0;
@@ -1991,7 +2006,8 @@
   }
 
   // 출격 준비: 원작 편성 화면처럼 영웅 카드 + 오른쪽 상세(능력치·특기·병사 배속). 고를 때 인물 음성
-  const HERO_STAND = { constantia: '3P_ConstantiaS2_N_Smile', griffon: 'BR_PA00EL_N_Smile', johanna: 'DS_Johanna_N_Smile', lrl: 'PECS_LRL_N_Laugh', pupphead: 'PECS_PuppHead_N', fallen: 'AGS_Fallen_N' };
+  const HERO_STAND = { constantia: '3P_ConstantiaS2_N_Smile', griffon: 'BR_PA00EL_N_Smile', johanna: 'DS_Johanna_N_Smile', lrl: 'PECS_LRL_N_Laugh', pupphead: 'PECS_PuppHead_N', fallen: 'AGS_Fallen_N',
+    amy: 'BR_Amy_N_Smile', coco: 'PECS_CoCoWhiteShell_N_Smile', marie: 'BR_Marie_N_Smile' };
   const heroVoice = (id, kind) => AU.voice(id + '_' + kind);
   // 화면 안의 일러스트 캔버스(data-stand)를 움직이는 일러스트로 (js/portrait.js). 화면이 바뀌면 알아서 정리된다
   function liveCards() {
@@ -2250,9 +2266,15 @@
     const S = st.kind !== 'repeat' && window.STORY && STORY[st.idx];
     if (win && S) { AU.bgm(S.bgmEnd); await story(S.end); }
     if (win) {
+      const chDone = !st.kind && (si === D.STAGES.length - 1 || chOf(si + 1) !== chOf(si)), C0 = CHAPTERS[chOf(si)];
+      if (chDone && si < D.STAGES.length - 1) { save.chapter = chOf(si + 1); save.node = null; writeSave(); } // 다음 지역 지도로
       stageSelect();
-      if (!st.kind && si === D.STAGES.length - 1) modal('<h3>1지역 완료</h3><p>「지구의 마지막 인간」을 모두 마쳤습니다. 플레이해 주셔서 감사합니다!</p><p style="color:#9aa6c4">마을에 고난도 의뢰가 들어왔습니다. 소탕전으로 영웅을 더 키워 도전해 보세요.</p><div class="opts"><button class="gold" data-a="ok">확인</button></div>');
-      else if (!st.kind && sideNew().length) modal(`<h3>새 의뢰</h3><p>${TOWN.name}에 새 의뢰가 들어왔습니다.</p><div class="opts"><button class="gold" data-a="ok">확인</button></div>`);
+      if (chDone) {
+        const nx = CHAPTERS[chOf(si) + 1];
+        modal(`<h3>${C0.no}지역 완료</h3><p>「${C0.name}」을(를) 모두 마쳤습니다.${nx ? '' : ' 플레이해 주셔서 감사합니다!'}</p>`
+          + (nx ? `<p style="color:#9aa6c4">새 지역 「${nx.name}」이(가) 열렸습니다. 월드맵 위 화살표로 지나온 지역을 다시 찾아갈 수 있습니다.</p>` : '')
+          + (sideNew().length ? `<p style="color:#9aa6c4">마을에 새 의뢰가 들어왔습니다.</p>` : '') + '<div class="opts"><button class="gold" data-a="ok">확인</button></div>');
+      } else if (!st.kind && sideNew().length) modal(`<h3>새 의뢰</h3><p>${TOWN.name}에 새 의뢰가 들어왔습니다.</p><div class="opts"><button class="gold" data-a="ok">확인</button></div>`);
     }
     busy = false;
   }
@@ -2342,7 +2364,7 @@
     $('boot').classList.add('hidden');
     requestAnimationFrame(frame);
     title();
-    WM3D.load('ch01').catch(() => {}); // 월드맵 3D 자료는 타이틀 동안 미리 받아 둔다
+    WM3D.load(CHAPTERS[curCh()].id).catch(() => {}); // 월드맵 3D 자료는 타이틀 동안 미리 받아 둔다
     // 첫 터치에서 배경음 시작 (모바일 정책)
     const kick = () => { AU.bgm(AU.bgmName || 'lo_title'); removeEventListener('pointerdown', kick); };
     addEventListener('pointerdown', kick);

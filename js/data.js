@@ -1,4 +1,4 @@
-// 게임 자료: 지형, 병종 상성, 특기, 영웅(전직 3단계)과 배속 병사, 철충, 스테이지(본작 1지역 1-1 ~ 1-8)
+// 게임 자료: 지형, 병종 상성, 특기, 영웅(전직 3단계)과 배속 병사, 철충, 스테이지(본작 지역마다 본편 작전 8개)
 // 랑그릿사 모바일 방식: 지도 위 한 칸 = 영웅 1명 + 배속 병사 부대. 공격받으면 병사가 먼저 깎이고, 병사가 전멸하면 영웅이 맞는다.
 (function () {
   // ── 지형 ────────────────────────────────────────────────
@@ -48,9 +48,15 @@
     siren: { name: '경찰 출동', cd: 3, tgt: 'self', radius: 2, buff: { at: 0.2 }, fx: 'buff', sfx: 'charge', desc: '주변 2칸 아군 공격 +20% (적 차례가 끝날 때까지)' },
     arrest: { name: '현행범 체포', cd: 3, tgt: 'enemy', range: 1, area: 0, power: 1.0, slow: 2, fx: 'shot', sfx: 'gun', desc: '인접한 적 하나를 공격하고 다음 차례 이동 -2' },
     barrage: { name: '집중 포격', cd: 4, tgt: 'tile', range: 4, area: 'sq', power: 0.8, fx: 'fire', sfx: 'expB', desc: '사거리 4, 3x3 범위 포격' },
+    // 2지역 합류 인원
+    intel: { name: '첩보 교란', cd: 3, tgt: 'enemy', range: 3, area: 0, power: 0.8, slow: 2, fx: 'shot', sfx: 'gun', desc: '사거리 3 적 하나를 공격하고 다음 차례 이동 -2' },
+    raid: { name: '그림자 습격', cd: 3, tgt: 'enemy', range: 2, area: 0, power: 1.4, fx: 'slash', sfx: 'slash', desc: '사거리 2 적 하나에 기습 (반격 없음)' },
+    wall: { name: '화이트 셸 방벽', cd: 3, tgt: 'self', radius: 1, buff: { df: 0.4 }, fx: 'shield', sfx: 'energy', desc: '자신과 주변 1칸 아군 방어 +40%' },
+    tackle: { name: '셸 돌진', cd: 3, tgt: 'enemy', range: 1, area: 0, power: 1.3, slow: 1, fx: 'slash', sfx: 'expM', desc: '인접한 적 하나를 들이받고 다음 차례 이동 -1' },
     // 철충
     shell: { name: '포격', cd: 3, tgt: 'tile', range: 3, area: 1, power: 0.8, fx: 'fire', sfx: 'cannon', desc: '사거리 3 십자 범위 포격' },
     snipe: { name: '저격', cd: 2, tgt: 'enemy', range: 5, area: 0, power: 1.5, fx: 'shot', sfx: 'laserBig', desc: '사거리 5 적 하나 저격' },
+    devour: { name: '포식', cd: 3, tgt: 'self', area: 'adj', power: 1.3, fx: 'slash', sfx: 'swing', desc: '인접한 적 전체를 물어뜯는다' },
   };
 
   // ── 배속 병사 ───────────────────────────────────────────
@@ -66,6 +72,8 @@
     e_chick: { name: '나이트 칙 무리', short: '나이트 칙', rig: 'e_NightChick_N', icon: 'e_NightChick_N', kind: 'inf', hp: 52, at: 12, df: 8, mov: 3, sfx: 'gun' },
     e_launcher: { name: '나이트 칙 런처 무리', short: '런처', rig: 'e_NightChickM_N', icon: 'e_NightChickM_N', kind: 'arch', hp: 44, at: 13, df: 6, mov: 3, sfx: 'cannon' },
     e_shielder: { name: '나이트 칙 실더 무리', short: '실더', rig: 'e_NightChickS_N', icon: 'e_NightChickS_N', kind: 'pike', hp: 64, at: 10, df: 13, mov: 3, sfx: 'gun' },
+    e_scout: { name: '스카우트 무리', short: '스카우트', rig: 'e_Scout_N', icon: 'e_Scout_N', kind: 'cav', hp: 50, at: 14, df: 8, mov: 5, sfx: 'gun' },
+    e_cannon: { name: '나이트 칙 캐논 무리', short: '캐논', rig: 'e_NightChickC_N', icon: 'e_NightChickC_N', kind: 'arch', hp: 42, at: 15, df: 6, mov: 3, sfx: 'cannon' },
   };
 
   // ── 영웅 (본작 1지역 출격 인원) ─────────────────────────
@@ -131,9 +139,30 @@
       ],
       bio: '언어 모듈이 고장 난 AGS 포격 로봇. 사거리 2의 포격과 넓은 범위 포격 특기를 씁니다.',
     },
+    // 2지역 합류
+    amy: {
+      name: '에이미', full: '에이미 레이저', rig: 'amy', icon: 'c_BR_Amy_N', face: 'BR_Amy_N', sfx: 'gun',
+      kind: 'cav', move: 'horse', rng: 1, // 군사용 첩보 유닛: 빠른 발로 파고들어 교란한다
+      tiers: [
+        { cls: '군사용 첩보 유닛', hp: 86, at: 25, df: 13, mov: 5, troops: ['raider', 'guard'], skills: ['intel'] },
+        { cls: '그림자 첩보원', hp: 99, at: 29, df: 15, mov: 5, troops: ['raider', 'guard', 'flyer'], skills: ['intel', 'raid'] },
+        { cls: '레이저 에이전트', hp: 113, at: 33, df: 17, mov: 5, troops: ['raider', 'guard', 'flyer'], skills: ['intel', 'raid'] },
+      ],
+      bio: '블랙 리버의 군사용 첩보 유닛. 지형 정보에 밝고 빠른 기동으로 적진을 흔듭니다. 사령관을 자기라고 부릅니다.',
+    },
+    coco: {
+      name: '코코', full: '코코 인 화이트셸', rig: 'coco', icon: 'c_PECS_CoCoWhiteShell_N', face: 'PECS_CoCoWhiteShell_N', sfx: 'cannon',
+      kind: 'pike', move: 'foot', rng: 1, // 화이트 셸에 탄 방어형
+      tiers: [
+        { cls: '화이트 셸 조종사', hp: 128, at: 19, df: 24, mov: 3, troops: ['shield', 'guard'], skills: ['wall'] },
+        { cls: '마리 부대 방패', hp: 147, at: 22, df: 27, mov: 3, troops: ['shield', 'guard', 'gunner'], skills: ['wall', 'tackle'] },
+        { cls: '불굴의 화이트 셸', hp: 168, at: 25, df: 31, mov: 3, troops: ['shield', 'guard', 'gunner'], skills: ['wall', 'tackle'] },
+      ],
+      bio: '불굴의 마리 부대의 막내. 회로가 없어 철충이 노리지 않는 로봇 화이트 셸에 타고 동료를 지킵니다.',
+    },
   };
   const TIER_LV = [1, 5, 10];
-  const MAX_LV = 20;
+  const MAX_LV = 70; // 지역이 늘수록 원작 적 레벨도 오르므로 넉넉히
 
   // ── 철충 (영웅 자리에 서는 개체 + 거느린 병사) ─────────
   const ENEMIES = {
@@ -142,12 +171,23 @@
     shielder: { name: '나이트 칙 실더', rig: 'e_NightChickS_N', icon: 'e_NightChickS_N', kind: 'pike', move: 'foot', rng: 1, hp: 58, at: 10, df: 16, mov: 3, troop: 'e_shielder', sfx: 'gun' },
     bigchick: { name: '빅 칙', rig: 'e_BigChick_N', icon: 'e_BigChick_N', kind: 'pike', move: 'foot', rng: 1, hp: 130, at: 19, df: 18, mov: 3, troop: 'e_chick', skills: ['shell'], big: true, sfx: 'cannon' },
     stalker: { name: '스토커', rig: 'e_Stalker_B0108', icon: 'e_Stalker_B0108', kind: 'arch', move: 'foot', rng: 3, hp: 210, at: 26, df: 17, mov: 3, troop: null, skills: ['snipe'], big: true, sfx: 'laserBig' },
+    // 2지역
+    scout: { name: '스카우트', rig: 'e_Scout_N', icon: 'e_Scout_N', kind: 'cav', move: 'horse', rng: 1, hp: 42, at: 15, df: 8, mov: 5, troop: 'e_scout', sfx: 'gun' },
+    harvester: { name: '하베스터', rig: 'e_Harvester_N', icon: 'e_Harvester_N', kind: 'inf', move: 'foot', rng: 1, hp: 70, at: 17, df: 12, mov: 3, troop: 'e_chick', sfx: 'swing' },
+    cannon: { name: '나이트 칙 캐논', rig: 'e_NightChickC_N', icon: 'e_NightChickC_N', kind: 'arch', move: 'foot', rng: 3, hp: 36, at: 16, df: 6, mov: 2, troop: 'e_cannon', skills: ['shell'], sfx: 'cannon' },
+    fabigchick: { name: '풀아머 빅 칙', rig: 'e_FABigChick_N', icon: 'e_FABigChick_N', kind: 'pike', move: 'foot', rng: 1, hp: 170, at: 20, df: 24, mov: 3, troop: 'e_shielder', skills: ['shell'], big: true, sfx: 'cannon' },
+    predator: { name: '프레데터', rig: 'e_Predator_N', icon: 'e_Predator_N', kind: 'demon', move: 'foot', rng: 1, hp: 300, at: 28, df: 18, mov: 4, troop: null, skills: ['devour'], big: true, sfx: 'swing' },
   };
 
   // ── 스테이지: 본작 1지역 「지구의 마지막 인간」 ─────────
   // waves: 적 무리. turn = 나타나는 턴(1 = 처음부터, 그 뒤는 적 차례에 증원). 증원 전에 적을 다 잡으면 승리
   // 적 레벨은 본작 스테이지 편성 그대로.
   const C = (t, lv) => [t, lv];
+  // 지역(장): 원작 메인 지역 순서. id 는 월드맵 자료 폴더(assets/world/<id>)
+  const CHAPTERS = [
+    { id: 'ch01', no: 1, name: '지구의 마지막 인간' },
+    { id: 'ch02', no: 2, name: '즐거운 나의 집' },
+  ];
   const STAGES = [
     {
       id: 1, idx: '1-1', title: '비상 상황', bgm: 'lo_battle1', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
@@ -332,7 +372,207 @@
       starts: [[2, 11], [3, 10], [1, 10], [4, 11], [0, 11], [3, 11]],
       waves: [{ turn: 1, at: [11, 1], boss: 'stalker', units: [C('stalker', 13), C('chick', 12), C('shielder', 13), C('launcher', 12)] }],
     },
+    // ── 본작 2지역 「즐거운 나의 집」: 공단 지대에서 새 동료를 만들고, 프레데터에게 쫓긴 불굴의 마리를 찾는다 ──
+    {
+      id: 9, ch: 2, idx: '2-1', title: '유전자 저장소', bgm: 'lo_battle1', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      heroes: ['constantia', 'griffon', 'johanna', 'lrl', 'pupphead', 'fallen'],
+      map: [
+        'ss..##cc##..ss',
+        's...#cccc#...s',
+        '....#c..c#....',
+        '..s....r....s.',
+        '.ss..r.r.....s',
+        '.....r.rrr....',
+        '..rrrr...r.ss.',
+        '..r..s...r..s.',
+        '.rr.sss..rr...',
+        '.r.......r..f.',
+        '.r..ff....r.ff',
+        'rr.fff....r..f',
+      ],
+      starts: [[1, 11], [0, 11], [2, 10], [1, 10], [0, 10], [2, 11]],
+      waves: [
+        { turn: 1, at: [9, 6], units: [C('chick', 12), C('shielder', 12), C('scout', 12), C('chick', 12)] },
+        { turn: 3, at: [12, 3], units: [C('launcher', 12), C('shielder', 12), C('scout', 12), C('chick', 12), C('launcher', 12)] },
+        { turn: 5, at: [6, 3], units: [C('chick', 12), C('scout', 13), C('scout', 12), C('launcher', 12), C('chick', 12)] },
+      ],
+    },
+    {
+      id: 10, ch: 2, idx: '2-2', title: '수소 전지 저장고', bgm: 'lo_battle1', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      heroes: ['constantia', 'griffon', 'amy', 'johanna', 'lrl', 'fallen'],
+      map: [
+        'cc..cc..cc..cc',
+        'cc..cc..cc..cc',
+        '..............',
+        'rrrrrrrrrrrrrr',
+        '..s.....s.....',
+        '.##..##...##..',
+        '.##..##...##..',
+        '......r.......',
+        'ss....r....ss.',
+        '......r.......',
+        '.##...r...##..',
+        '.##..rr...##..',
+        '.....r........',
+      ],
+      starts: [[5, 12], [4, 12], [6, 11], [3, 11], [7, 12], [4, 11]],
+      waves: [
+        { turn: 1, at: [7, 4], units: [C('shielder', 13), C('scout', 13), C('chick', 13), C('shielder', 13), C('scout', 13)] },
+        { turn: 3, at: [12, 2], units: [C('scout', 13), C('shielder', 13), C('launcher', 13), C('chick', 13), C('scout', 13)] },
+        { turn: 5, at: [2, 2], units: [C('scout', 13), C('chick', 13), C('shielder', 13), C('launcher', 17), C('scout', 13), C('chick', 13)] },
+      ],
+    },
+    {
+      id: 11, ch: 2, idx: '2-3', title: '디너 파티', bgm: 'lo_battle2', night: true, goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      heroes: ['constantia', 'johanna', 'amy', 'griffon', 'lrl', 'pupphead'],
+      map: [
+        '##cccc##cccc##',
+        '#..........c.#',
+        '#.##.##.##...#',
+        '..##.##.##..s.',
+        '..............',
+        's...rrrrrr...s',
+        'ss..r....r..ss',
+        '....r.ss.r....',
+        '.##.r....r.##.',
+        '.##.rrrrrr.##.',
+        '.......r......',
+        'ff.....r....ff',
+      ],
+      starts: [[7, 11], [6, 11], [8, 10], [6, 10], [5, 11], [8, 11]],
+      waves: [
+        { turn: 1, at: [7, 4], units: [C('chick', 14), C('scout', 14), C('harvester', 14), C('chick', 14), C('scout', 14)] },
+        { turn: 3, at: [12, 1], units: [C('scout', 14), C('chick', 14), C('harvester', 14), C('scout', 14), C('chick', 14)] },
+        { turn: 5, at: [2, 1], units: [C('launcher', 15), C('shielder', 14), C('cannon', 15), C('chick', 14), C('launcher', 15)] },
+      ],
+    },
+    {
+      id: 12, ch: 2, idx: '2-4', title: '그리운 옛 집', bgm: 'lo_battle1', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      heroes: ['constantia', 'griffon', 'amy', 'johanna', 'lrl', 'fallen'],
+      map: [
+        'mm..ss...cc.mm',
+        'm...s#s..cc..m',
+        '.....s........',
+        '..ff.....hh...',
+        '.fff..r..h....',
+        '......r.......',
+        '.##...rrrr..s.',
+        '.#c.......r.ss',
+        '.cc..ss...r...',
+        '.....s....r...',
+        '..f.......rr..',
+        '.fff.......r..',
+        '..f........r..',
+      ],
+      starts: [[11, 12], [10, 12], [12, 11], [10, 11], [12, 12], [11, 10]],
+      waves: [
+        { turn: 1, at: [6, 5], units: [C('scout', 15), C('chick', 15), C('scout', 15), C('harvester', 15), C('scout', 15), C('chick', 15)] },
+        { turn: 3, at: [9, 1], boss: 'fabigchick', units: [C('shielder', 10), C('cannon', 16), C('fabigchick', 18), C('shielder', 10), C('cannon', 16)] },
+      ],
+    },
+    {
+      id: 13, ch: 2, idx: '2-5', title: '헤파이스 철공소', bgm: 'lo_battle2', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      heroes: ['constantia', 'griffon', 'lrl', 'amy', 'johanna', 'pupphead'],
+      map: [
+        'cccc..##..cccc',
+        'c..c..##..c..c',
+        'c..c......c..c',
+        'cc.c..rr..c.cc',
+        '......r.......',
+        '.ss...r...ss..',
+        '..s...r....s..',
+        'rrrrrrrrrrrrrr',
+        '..............',
+        '.##..ss..##...',
+        '.##.......##..',
+        '......r.......',
+        '.....rr.......',
+      ],
+      starts: [[6, 12], [5, 12], [7, 11], [5, 11], [4, 12], [7, 12]],
+      waves: [
+        { turn: 1, at: [7, 6], units: [C('launcher', 17), C('scout', 16), C('scout', 17), C('chick', 17), C('launcher', 17), C('scout', 16)] },
+        { turn: 3, at: [12, 4], units: [C('shielder', 17), C('chick', 17), C('scout', 17), C('shielder', 17), C('scout', 16), C('launcher', 17)] },
+        { turn: 5, at: [2, 4], units: [C('scout', 16), C('chick', 16), C('shielder', 17), C('cannon', 17), C('scout', 16), C('launcher', 16)] },
+      ],
+    },
+    {
+      id: 14, ch: 2, idx: '2-6', title: '오염된 공장', bgm: 'lo_battle2', night: true, goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      heroes: ['constantia', 'amy', 'griffon', 'lrl', 'johanna', 'fallen'],
+      map: [
+        '##cc##cc##cc##',
+        '#............#',
+        '#.##..##..##.#',
+        '..##..##..##..',
+        '..............',
+        '.rrrrrrrrrrrr.',
+        '.r..........r.',
+        '.r.ss.##.ss.r.',
+        '.r....##....r.',
+        '.rrrrr..rrrrr.',
+        '......rr......',
+        's.....r......s',
+        'ss....r.....ss',
+      ],
+      starts: [[6, 12], [7, 12], [5, 11], [7, 11], [6, 11], [8, 12]],
+      waves: [
+        { turn: 1, at: [6, 4], units: [C('scout', 14), C('shielder', 20), C('scout', 18), C('chick', 18), C('scout', 14)] },
+        { turn: 3, at: [11, 1], units: [C('cannon', 18), C('harvester', 18), C('chick', 19), C('launcher', 19), C('cannon', 18)] },
+        { turn: 5, at: [2, 1], units: [C('launcher', 19), C('scout', 19), C('shielder', 19), C('cannon', 19), C('launcher', 19), C('scout', 19)] },
+      ],
+    },
+    {
+      id: 15, ch: 2, idx: '2-7', title: '마리의 표식', bgm: 'lo_battle1', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      heroes: ['constantia', 'coco', 'amy', 'griffon', 'johanna', 'lrl'],
+      map: [
+        's.ss....ss..s.',
+        '...s.##...s...',
+        '.....##.......',
+        '..r.......hh..',
+        '..rrrr....h...',
+        '.....rr.......',
+        '.ss...r..ss...',
+        '......r...s...',
+        '..hh..rrrr....',
+        '..h......r..ff',
+        '.........r.fff',
+        '.ss......r..f.',
+        '.s.......r....',
+      ],
+      starts: [[9, 12], [8, 12], [10, 11], [8, 11], [10, 12], [9, 11]],
+      waves: [
+        { turn: 1, at: [6, 6], units: [C('scout', 19), C('harvester', 19), C('launcher', 19), C('cannon', 19), C('scout', 19), C('harvester', 19)] },
+        { turn: 3, at: [11, 2], units: [C('scout', 19), C('cannon', 19), C('scout', 19), C('scout', 19), C('scout', 19), C('cannon', 19)] },
+        { turn: 5, at: [3, 1], units: [C('cannon', 18), C('cannon', 18), C('cannon', 21), C('chick', 32), C('cannon', 18), C('cannon', 18)] },
+        { turn: 7, at: [1, 9], units: [C('shielder', 19), C('chick', 20), C('scout', 19), C('launcher', 20), C('scout', 19), C('shielder', 19), C('chick', 20), C('scout', 19)] },
+      ],
+    },
+    {
+      id: 16, ch: 2, idx: '2-8', title: '장군의 은신처', bgm: 'lo_boss1', goal: '프레데터 격파', lose: '콘스탄챠 퇴각', win: 'boss',
+      heroes: ['constantia', 'coco', 'griffon', 'amy', 'johanna', 'lrl'],
+      // 지하 통로: 좁은 길을 따라 안쪽으로 파고들면 프레데터가 덮친다
+      map: [
+        '##############',
+        '#cc..#....#..#',
+        '#c...#.##.#..#',
+        '#.........r..#',
+        '###.###.#rr.##',
+        '#.....#..r...#',
+        '#.##..#..r.#.#',
+        '#..#.....r.#.#',
+        '#..####.rr...#',
+        '#.......r..#.#',
+        '##.##.#.r.##.#',
+        '#.....#.r....#',
+        '#.....#.r....#',
+        '##############',
+      ],
+      starts: [[8, 12], [7, 12], [9, 11], [7, 11], [9, 12], [8, 11]],
+      waves: [
+        { turn: 1, at: [8, 6], units: [C('scout', 23), C('chick', 23), C('harvester', 23), C('scout', 23), C('cannon', 23), C('scout', 23), C('chick', 23), C('harvester', 23)] },
+        { turn: 3, at: [2, 2], boss: 'predator', units: [C('predator', 25)] },
+      ],
+    },
   ];
 
-  (typeof window !== 'undefined' ? window : globalThis).DATA = { TERRAIN, KIND, REL, SKILLS, HEROES, TIER_LV, MAX_LV, TROOPS, ENEMIES, STAGES };
+  (typeof window !== 'undefined' ? window : globalThis).DATA = { TERRAIN, KIND, REL, SKILLS, HEROES, TIER_LV, MAX_LV, TROOPS, ENEMIES, CHAPTERS, STAGES };
 })();

@@ -1,4 +1,4 @@
-"""tools/story_<ch>.json(extract_story.py) -> js/story.js + 장면 그림(assets/story/...) + 초상화(js/assets.js 에 합침)
+"""tools/story_<ch>.json(extract_story.py) -> js/story.js(1장) · js/story_<ch>.js(2장부터) + 장면 그림(assets/story/...) + 초상화(js/assets.js 에 합침)
 
 python tools/build_story.py ch01
 """
@@ -21,6 +21,14 @@ ICONS = {
     'e_NightChickM_N': 'PassivePanelIcon/PanelIcon_MP_NightChickM_N.png',
     'e_NightChickS_N': 'PassivePanelIcon/PanelIcon_MP_NightChickS_N.png',
     'e_Stalker_B0108': 'ChallengeBossTx/Challenge_PanelIcon_MP_Stalker_B0108.png',
+    # 2지역
+    'c_BR_Amy_N': 'FormationIcon/FormationIcon_BR_Amy_N.png',
+    'c_PECS_CoCoWhiteShell_N': 'FormationIcon/FormationIcon_PECS_CoCoWhiteShell_N.png',
+    'c_BR_Marie_N': 'FormationIcon/FormationIcon_BR_Marie_N.png',
+    'e_Scout_N': 'PassivePanelIcon/PanelIcon_MP_Scout_N.png',
+    'e_NightChickC_N': 'PassivePanelIcon/PanelIcon_MP_NightChickC_N.png',
+    'e_FABigChick_N': 'PassivePanelIcon/PanelIcon_MP_FABigChick_N.png',
+    'e_Harvester_N': 'PassivePanelIcon/PanelIcon_MP_Harvester_N.png',
 }
 # 얼굴 그림이 없는 화자 -> 초상화
 NO_FACE = {'PECS_PuppHead_N': 'c_PECS_PuppHead_N', 'AGS_Fallen_N': 'c_AGS_Fallen_N'}
@@ -132,7 +140,7 @@ def main():
             parts[part] = nodes
         story[s['idx']] = {'name': s['name'], 'desc': s['desc'], 'bgmStart': bgm(s.get('bgm_start')), 'bgmEnd': bgm(s.get('bgm_end')), **parts}
     rewrite(story)
-    with open(os.path.join(ROOT, 'js', 'story.js'), 'w', encoding='utf8') as f:
+    with open(os.path.join(ROOT, 'js', 'story.js' if CH == 'ch01' else 'story_%s.js' % CH), 'w', encoding='utf8') as f:
         f.write('// tools/build_story.py 로 생성: 본작 메인 스토리 대본 (선택지 갈래 포함)\nwindow.STORY = Object.assign(window.STORY || {}, ' + json.dumps(story, ensure_ascii=False) + ');\n')
     # 초상화를 js/assets.js 에 합친다
     p = os.path.join(ROOT, 'js', 'assets.js')

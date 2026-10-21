@@ -1,5 +1,6 @@
 """대화용 전신 일러스트 준비: 대본(tools/story_<ch>.json)에 나오는 인물·표정마다 2DModel 프리팹과 표정 그림을
-유니티 참조 프로젝트로 복사하고 portrait_jobs.txt 를 쓴다.  python tools/unity_ref/setup_portrait.py ch01
+유니티 참조 프로젝트로 복사하고 portrait_jobs.txt 를 쓴다.  python tools/unity_ref/setup_portrait.py ch01 [ch02 ...]
+이미 assets/story/stand 에 있는 그림은 다시 찍지 않는다.
 그다음 Unity -executeMethod RefPortrait.Run, 결과는 proj/portrait/*.png
 """
 import json, os, shutil, sys
@@ -10,11 +11,13 @@ sys.path.insert(0, os.path.join(HERE, '..'))
 import setup as S  # noqa: E402  (copy_asset, PROJ)
 
 SRC = S.SRC_ROOT
-CH = sys.argv[1] if len(sys.argv) > 1 else 'ch01'
+CHS = sys.argv[1:] or ['ch01']
+STAND = os.path.join(HERE, '..', '..', 'assets', 'story', 'stand')
+have = lambda name: os.path.exists(os.path.join(STAND, name + '.webp'))
 
 
 def main():
-    story = json.load(open(os.path.join(HERE, '..', 'story_%s.json' % CH), encoding='utf8'))
+    story = [s for ch in CHS for s in json.load(open(os.path.join(HERE, '..', 'story_%s.json' % ch), encoding='utf8'))]
     want = {}
     for s in story:
         for part in ('start', 'mid', 'end'):
@@ -33,6 +36,8 @@ def main():
         faces = sorted(f[:-4] for f in os.listdir(face_dir) if f.endswith('.png')) if os.path.isdir(face_dir) else []
         default = next((f for f in faces if f.lower().endswith('_idle')), None) or next((f for f in faces if 'smile' in f.lower()), faces[0] if faces else '')
         exprs = {e or default for e in exprs} | ({default} if default else set())
+        exprs = {e for e in exprs if not have(e or m)}
+        if not exprs and have(default or m): continue
         for e in sorted(exprs):
             fp = ''
             if e:
@@ -49,7 +54,7 @@ def main():
                 if n.get('cg', '').startswith('2DModel_'): cgs.add(n['cg'])
     for cg in sorted(cgs):
         prefab = SRC + '/AssetBundleResource/Character_2D/%s.prefab' % cg
-        if os.path.exists(prefab):
+        if os.path.exists(prefab) and not have(cg):
             jobs.append('%s|%s|' % (cg, S.copy_asset(prefab, copied)))
     open(os.path.join(S.PROJ, 'portrait_jobs.txt'), 'w').write('\n'.join(jobs) + '\n')
     print('assets:', len(copied), 'jobs:', len(jobs))

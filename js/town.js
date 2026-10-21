@@ -71,6 +71,7 @@
         { t: 'deco', art: 'town/r_mk4_2', x: 10, y: 2, w: 1, h: 1, hh: 1.3, block: 1 },
         { t: 'deco', art: 'town/r_andr1_11', x: 5, y: 2, w: 3, h: 1, hh: 1.2, block: 1, board: 1 },
         { t: 'npc', id: 'johanna', x: 8, y: 4, dir: -1 },
+        { t: 'npc', id: 'marie', x: 4, y: 5, dir: 1 },
       ],
     },
     shop: {
@@ -84,6 +85,7 @@
         { t: 'deco', art: 'town/r_mk0_3', x: 5, y: 2, w: 1, h: 1, hh: 1.5, block: 1 },
         { t: 'npc', id: 'fortune', x: 6, y: 4, dir: 1 },
         { t: 'npc', id: 'pupphead', x: 3, y: 5, dir: 1 },
+        { t: 'npc', id: 'coco', x: 8, y: 6, dir: -1 },
       ],
     },
     cafe: {
@@ -94,6 +96,7 @@
         { t: 'deco', art: 'town/r_cafe4_1', x: 8, y: 5, w: 3, h: 1, hh: 1.2, block: 1 },
         { t: 'deco', art: 'town/r_cafe4_3', x: 10, y: 2, w: 1, h: 1, hh: 1.7, block: 1 },
         { t: 'deco', art: 'town/r_cafe2_3', x: 1, y: 2, w: 1, h: 1, hh: 0.8, block: 1 },
+        { t: 'npc', id: 'amy', x: 2, y: 6, dir: 1 },
       ],
     },
   };
