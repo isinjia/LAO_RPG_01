@@ -448,8 +448,8 @@
   100% { transform: translate(-50%, calc(-100% - 5vh)) scale(1); opacity: 0; }
 }
 /* 그 편이 받은 피해 합계: 정보판 위에 별 모양으로, 늘 때마다 통 튄다 (주황 테두리 별 위에 흰 별) */
-#fight .ftot { position: absolute; bottom: calc(100% - 6px); left: 70px; z-index: 2; display: none; padding: 14px 34px 12px; pointer-events: none; transform-origin: 50% 70%; isolation: isolate; }
-#fight .fside.R .ftot { left: auto; right: 70px; }
+#fight .ftot { position: absolute; top: 4%; right: 4%; z-index: 2; display: none; padding: 14px 34px 12px; pointer-events: none; transform-origin: 50% 70%; isolation: isolate; }
+#fight .fcorner.R .ftot { right: auto; left: 4%; }
 #fight .ftot.on { display: block; }
 #fight .ftot.pop { animation: ftot .3s cubic-bezier(.2, 1.6, .4, 1); }
 #fight .ftot::before, #fight .ftot::after { content: ''; position: absolute; inset: 0; clip-path: polygon(0% 30%, 12% 22%, 8% 0%, 26% 14%, 38% 2%, 48% 16%, 62% 0%, 70% 16%, 88% 4%, 86% 24%, 100% 26%, 90% 44%, 100% 60%, 86% 66%, 94% 92%, 72% 80%, 60% 100%, 50% 82%, 34% 98%, 28% 80%, 6% 90%, 12% 68%, 0% 56%, 8% 44%); }
@@ -458,3 +458,70 @@
 #fight .ftot b { position: relative; display: block; font: italic calc(20px + 1.8vh) 'LO_B', sans-serif; line-height: 1; letter-spacing: -1px;
   background: linear-gradient(180deg, #8ff4ff 0 40%, #18a8d8 60%, #5fe0ff); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-stroke: 1.5px #0b3a52; }
 @keyframes ftot { 0% { transform: scale(1.35); } 100% { transform: scale(1); } }
+
+/* ── 전투 화면 UI: 배치는 랑그릿사 모바일(양쪽 아래 모서리에 큰 인물, 가운데 아래에 마주 보는 영웅·병사 막대),
+   꾸밈은 라스트오리진(짙은 남색 판·노란 선·깎인 모서리·사선 무늬). 아군은 파랑, 적은 빨강 ── */
+#fight { --fa: #3fb4ff; --fa2: #1a5fd0; --fe: #ff4062; --fe2: #b3132f; }
+#fight .fcorner { position: absolute; bottom: 0; z-index: 1; width: min(26vw, 380px); height: min(40vh, 400px); pointer-events: none; }
+#fight .fcorner.L { left: 0; } #fight .fcorner.R { right: 0; }
+#fight .fbust { position: absolute; inset: 0; overflow: hidden; --c: var(--fa); clip-path: polygon(0 0, 78% 0, 100% 22%, 100% 100%, 0 100%); }
+#fight .R .fbust { --c: var(--fe); clip-path: polygon(22% 0, 100% 0, 100% 100%, 0 100%, 0 22%); }
+/* 뒤판: 바닥에서 올라오는 편 색 + 사선 무늬, 안쪽 비스듬한 끝에 노란 선 */
+#fight .fbust::before { content: ''; position: absolute; inset: 0; z-index: -1;
+  background: repeating-linear-gradient(-55deg, transparent 0 9px, rgba(255, 255, 255, .035) 9px 11px), linear-gradient(0deg, color-mix(in srgb, var(--c) 38%, transparent), transparent 60%); }
+#fight .fbust::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: var(--lo-y); clip-path: polygon(76.6% 0, 78% 0, 100% 22%, 100% 24.4%); }
+#fight .R .fbust::after { clip-path: polygon(22% 0, 23.4% 0, 0 24.4%, 0 22%); }
+#fight .fimg { position: absolute; display: block; border: 0; border-radius: 0; background: none; }
+/* 아군 영웅: 전신 그림의 윗몸을 크게 */
+#fight .fcorner.stand .fimg { left: 50%; top: 4%; width: auto; height: 200%; transform: translateX(-50%); filter: drop-shadow(0 0 18px rgba(0, 0, 0, .55)); animation: fbustIn .45s cubic-bezier(.2, .8, .3, 1) both; }
+#fight .fcorner.stand.whole .fimg { top: 8%; height: 100%; }
+/* 그림이 없는 적: 얼굴 아이콘을 깎인 틀에 */
+#fight .fcorner:not(.stand) .fimg { left: 50%; bottom: 28%; width: 54%; height: auto; aspect-ratio: 1; object-fit: cover; transform: translateX(-50%); box-sizing: border-box; padding: 3px;
+  background: linear-gradient(160deg, var(--c), color-mix(in srgb, var(--c) 40%, #000)); clip-path: polygon(14% 0, 100% 0, 100% 86%, 86% 100%, 0 100%, 0 14%); animation: fbustIn .45s cubic-bezier(.2, .8, .3, 1) both; }
+#fight .L .fimg { --dx: -40px; } #fight .R .fimg { --dx: 40px; }
+@keyframes fbustIn { from { opacity: 0; translate: var(--dx) 0; } }
+#fight .fbust.hit .fimg { animation: fbustHit .32s ease-out; }
+@keyframes fbustHit { 0% { translate: 0 0; filter: brightness(2.2); } 20% { translate: -9px 3px; } 45% { translate: 7px -2px; } 70% { translate: -4px 1px; } 100% { translate: 0 0; } }
+
+/* 가운데 아래 판 */
+#fight .fpanel { position: absolute; z-index: 2; left: 50%; bottom: calc(10px + var(--safe-b)); transform: translateX(-50%); width: min(48vw, 680px); padding: 10px 18px 12px;
+  background: linear-gradient(180deg, rgba(14, 19, 30, .94), rgba(6, 9, 15, .94)); box-shadow: inset 0 0 0 1px var(--lo-line);
+  clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%, 0 14px); }
+#fight .fpanel::before { content: ''; position: absolute; left: 14px; right: 14px; top: 0; height: 2px; background: var(--lo-y); }
+#fight .fpanel::after { content: ''; position: absolute; left: 50%; top: 0; width: 120px; height: 6px; transform: translateX(-50%); background: var(--lo-y); clip-path: polygon(0 0, 100% 0, calc(100% - 6px) 100%, 6px 100%); }
+#fight .fhead { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+#fight .fname { display: flex; align-items: center; gap: 6px; min-width: 0; font: 12px 'LO_M', sans-serif; color: #aab2c4; white-space: nowrap; }
+#fight .fname.R { flex-direction: row-reverse; }
+#fight .fname b { font: 16px 'LO_B', sans-serif; color: #fff; overflow: hidden; text-overflow: ellipsis; }
+#fight .fname i { font: normal 11px 'LO_B', sans-serif; color: #111; background: var(--lo-y); padding: 1px 8px; letter-spacing: 1px; }
+#fight .fname small { font: 12px 'LO_B', sans-serif; color: #8d95a8; }
+#fight .frow { display: grid; grid-template-columns: 1fr 64px 1fr; align-items: center; gap: 8px; margin-top: 5px; }
+#fight .frow > span { text-align: center; font: 15px 'LO_B', sans-serif; color: var(--lo-y); line-height: 1; letter-spacing: 2px; }
+#fight .frow > span small { display: block; margin-top: 2px; font: 8px 'LO_B', sans-serif; color: #7c8496; letter-spacing: 2px; }
+#fight .fbar { position: relative; height: 20px; background: #03050a; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14); }
+#fight .frow.t .fbar { height: 15px; }
+#fight .fbar.L { clip-path: polygon(10px 0, 100% 0, 100% 100%, 0 100%); }
+#fight .fbar.R { clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 100%, 0 100%); }
+/* 막대는 가운데 글자 쪽에 붙어 있고 바깥쪽부터 줄어든다 */
+#fight .fbar i { position: absolute; top: 0; bottom: 0; }
+#fight .fbar.L i { right: 0; } #fight .fbar.R i { left: 0; }
+#fight .fbar .lag { background: rgba(255, 255, 255, .85); transition: width .45s ease-out .32s; }
+#fight .fbar .fill { transition: width .14s ease-out; background-image: repeating-linear-gradient(-60deg, rgba(255, 255, 255, .16) 0 3px, transparent 3px 8px), linear-gradient(90deg, var(--a), var(--b)); }
+#fight .frow.h .fbar.L .fill { --a: var(--fa2); --b: var(--fa); }
+#fight .frow.h .fbar.R .fill { --a: var(--fe); --b: var(--fe2); }
+#fight .frow.t .fbar.L .fill { --a: #136c8c; --b: #5fe6ff; }
+#fight .frow.t .fbar.R .fill { --a: #ff9a4a; --b: #a8401a; }
+#fight .fbar b { position: absolute; top: 50%; transform: translateY(-50%); font: italic 16px 'LO_B', sans-serif; color: #fff; text-shadow: 0 1px 0 #000, 0 0 6px #000; line-height: 1; }
+#fight .frow.t .fbar b { font-size: 13px; }
+#fight .fbar b small { font-size: 10px; font-style: normal; margin-left: 1px; color: #dfe4ee; }
+#fight .fbar.L b { right: 8px; } #fight .fbar.R b { left: 8px; }
+/* 상성 안내: 위 가운데 노란 띠 */
+#fight .fvs { top: calc(46px + var(--safe-t)); bottom: auto; font-size: 0; text-shadow: none; }
+#fight .fvs small { display: inline-block; padding: 4px 22px; font: 13px 'LO_B', sans-serif; color: #111; background: var(--lo-y); letter-spacing: 1px;
+  clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%); }
+#fight .fvs small:empty { display: none; }
+@media (orientation: portrait) {
+  #fight .fpanel { width: calc(100% - 16px); padding: 8px 12px 10px; }
+  #fight .fcorner { width: 46vw; height: 30vh; bottom: calc(118px + var(--safe-b)); }
+  #fight .fvs { top: calc(46px + var(--safe-t)); bottom: auto; }
+}

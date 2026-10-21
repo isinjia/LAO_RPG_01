@@ -107,14 +107,23 @@
     return out;
   }
 
-  function setBars(cls, u, thp, hp) {
-    const s = el().querySelector('.fside.' + cls);
-    const tb = s.querySelector('.fhp.t'), hb = s.querySelector('.fhp.h');
-    if (u.troop) { tb.style.visibility = ''; tb.querySelector('i').style.width = Math.max(0, (thp / u.troop.hpMax) * 100) + '%'; tb.querySelector('b').textContent = `병사 ${RULES.soldiers(u, thp)}명`; }
-    else tb.style.visibility = 'hidden';
-    hb.querySelector('i').style.width = Math.max(0, (hp / u.hpMax) * 100) + '%';
-    hb.querySelector('b').textContent = '영웅 ' + Math.max(0, Math.round(hp));
+  // 아래 가운데 판 (랑그릿사식): 영웅·병사 막대가 가운데 글자를 사이에 두고 마주 본다. 깎인 만큼 흰 잔상이 늦게 따라 줄어든다
+  function setBars(cls, u, thp, hp, instant) {
+    const bar = (row, v, max, txt) => {
+      const b = el().querySelector(`.frow.${row} .fbar.${cls}`), w = Math.max(0, Math.min(1, v / max)) * 100 + '%';
+      b.style.visibility = '';
+      b.querySelectorAll('i').forEach((i) => { if (instant) i.style.transition = 'none'; i.style.width = w; });
+      if (instant) { void b.offsetWidth; b.querySelectorAll('i').forEach((i) => { i.style.transition = ''; }); }
+      b.querySelector('b').innerHTML = txt;
+    };
+    if (u.troop) bar('t', thp, u.troop.hpMax, `${RULES.soldiers(u, thp)}<small>명</small>`);
+    else el().querySelector('.frow.t .fbar.' + cls).style.visibility = 'hidden';
+    bar('h', hp, u.hpMax, Math.max(0, Math.round(hp)));
   }
+  // 모서리 인물 그림: 아군 영웅은 대화용 전신 그림의 윗몸, 그림이 없는 적은 얼굴 아이콘을 틀에 넣는다
+  const STAND = { constantia: '3P_ConstantiaS2_N_Resolve', griffon: 'BR_PA00EL_N_Resolve', johanna: 'DS_Johanna_N_Serious', lrl: 'PECS_LRL_N_Idle', pupphead: 'PECS_PuppHead_N', fallen: 'AGS_Fallen_N' };
+  const WHOLE = new Set(['pupphead', 'fallen']); // 기계 몸이라 전신을 통째로 줄여 넣는다
+  function shakeBust(side) { const b = el().querySelector('.fcorner.' + side + ' .fbust'); b.classList.remove('hit'); void b.offsetWidth; b.classList.add('hit'); }
 
   // a: 공격자, d: 방어자, res: RULES.combat 결과, opt: { bg, speed }
   FIGHT.play = function (a, d, res, opt) {
@@ -134,11 +143,13 @@
       const off = split ? GAP : 0;
       const st = { [a.uid]: { thp: a.troop ? a.troop.hp : 0, hp: a.hp }, [d.uid]: { thp: d.troop ? d.troop.hp : 0, hp: d.hp } };
       const setSide = (cls, u) => {
-        const s = ui.querySelector('.fside.' + cls);
-        s.querySelector('.fimg').src = (window.IMG && IMG[u.icon]) || '';
-        s.querySelector('.fname').textContent = u.name + (u.troop ? ' · ' + u.troop.def.short : '');
-        s.querySelector('.fstat').textContent = `${DATA.KIND[u.troop && st[u.uid].thp > 0 ? u.troop.kind : u.kind].name} · Lv${u.lv}`;
-        setBars(cls, u, st[u.uid].thp, st[u.uid].hp);
+        const c = ui.querySelector('.fcorner.' + cls), sd = u.side === 'p' && STAND[u.rig];
+        c.classList.toggle('stand', !!sd); c.classList.toggle('whole', !!sd && WHOLE.has(u.rig));
+        c.querySelector('.fbust').classList.remove('hit');
+        c.querySelector('.fimg').src = sd ? 'assets/story/stand/' + sd + '.webp' : (window.IMG && IMG[u.icon]) || '';
+        const kind = DATA.KIND[u.troop && st[u.uid].thp > 0 ? u.troop.kind : u.kind].name;
+        ui.querySelector('.fname.' + cls).innerHTML = `<b>${u.name}</b><i>${u.troop ? u.troop.def.short : kind}</i><small>Lv.${u.lv}</small>`;
+        setBars(cls, u, st[u.uid].thp, st[u.uid].hp, true);
       };
       ui.querySelector('.fnums').innerHTML = '';
       ui.querySelectorAll('.ftot').forEach((e) => { e.classList.remove('on', 'pop'); e.querySelector('b').textContent = ''; });
@@ -256,6 +267,7 @@
           const keep = figN(s.du, S.thp);
           while (s.to.filter((f) => !f.hero && f.alive).length > keep) die(s.to.filter((f) => !f.hero && f.alive).sort((p, q) => Math.abs(p.x) - Math.abs(q.x))[0]);
           setBars(s.toSide, s.du, S.thp, S.hp);
+          if (dH > 0) shakeBust(s.toSide);
           if (S.hp <= 0.5 && heroF.alive) die(heroF);
         } });
         end = Math.max(end, hitT + (far ? TRAVEL / sp : 0) + 0.35 / sp);
@@ -300,7 +312,7 @@
   function addTotal(side, n) {
     if (n <= 0) return;
     tot[side] += n;
-    const e = el().querySelector('.fside.' + side + ' .ftot');
+    const e = el().querySelector('.fcorner.' + side + ' .ftot');
     e.querySelector('b').textContent = Math.round(tot[side]);
     e.classList.add('on'); e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop');
   }
