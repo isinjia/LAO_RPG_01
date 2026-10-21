@@ -607,7 +607,7 @@
   const MAP_FX = { fire: ['explosion_small', 1.3], bolt: ['hit_energy', 1.4], heal: ['heal', 1.3], buff: ['buff', 1.5], shield: ['shield', 1.4], slash: ['hit_slash', 1.2],
     laser: ['hit_energy', 1.3], shot: ['hit_bullet', 0.9], spawn: ['cast', 1.4], hit: ['hit_bullet', 0.9], heavy: ['hit_heavy', 1.6], energy: ['hit_energy', 1.2],
     melee: ['hit_slash', 1.2], boom: ['explosion_small', 1.4], bigboom: ['explosion_big', 2.6], dust: ['dust_fall', 1.0], debuff: ['debuff', 1.3], cast: ['cast', 1.5],
-    charge: ['charge', 1.8], crit: ['hit_crit', 1.2] };
+    charge: ['charge', 1.8], crit: ['hit_crit', 1.2], crack: ['land_crack', 1.6], slashline: ['slash_line', 1.1], muzzle: ['muzzle_heavy', 0.9] };
   function fxAt(x, y, kind, delay = 0) {
     const mf = window.FXLIB && MAP_FX[kind];
     if (mf && FXDATA[mf[0]]) {
@@ -915,20 +915,38 @@
     if (!world) return;
     const OS = 32, g = world.oc.getContext('2d');
     g.clearRect(0, 0, world.oc.width, world.oc.height);
-    const fillTiles = (list, fill, stroke) => {
+    // 원작 전투 칸 결: 가장자리가 밝은 판 + 얇은 테 + 네 모서리 꺾쇠, 공격·위험 칸은 사선 빗금
+    const hatch = (g.__hatch = g.__hatch || (() => {
+      const c = document.createElement('canvas'); c.width = c.height = 8;
+      const h = c.getContext('2d'); h.strokeStyle = 'rgba(255,255,255,.22)'; h.lineWidth = 1.5;
+      h.beginPath(); h.moveTo(-2, 10); h.lineTo(10, -2); h.moveTo(6, 10); h.lineTo(10, 6); h.moveTo(-2, 2); h.lineTo(2, -2); h.stroke();
+      return g.createPattern(c, 'repeat');
+    })());
+    const fillTiles = (list, rgb, a, hatched, corner = true) => {
       if (!list) return;
       for (const [x, y] of list) {
-        g.fillStyle = fill; rr(g, x * OS + 1.5, y * OS + 1.5, OS - 3, OS - 3, 5); g.fill();
-        if (stroke) { g.strokeStyle = stroke; g.lineWidth = 1.5; g.stroke(); }
+        const x0 = x * OS + 1.5, y0 = y * OS + 1.5, w = OS - 3;
+        const lg = g.createRadialGradient(x0 + w / 2, y0 + w / 2, 2, x0 + w / 2, y0 + w / 2, w * 0.75);
+        lg.addColorStop(0, `rgba(${rgb},${a * 0.45})`); lg.addColorStop(1, `rgba(${rgb},${a})`);
+        g.fillStyle = lg; rr(g, x0, y0, w, w, 3); g.fill();
+        if (hatched) { g.fillStyle = hatch; g.fill(); }
+        g.strokeStyle = `rgba(${rgb},${Math.min(1, a + 0.45)})`; g.lineWidth = 1.2; g.stroke();
+        if (corner) { // 모서리 꺾쇠
+          g.strokeStyle = 'rgba(255,255,255,.85)'; g.lineWidth = 1.6; const k = 6, m = 3;
+          g.beginPath();
+          g.moveTo(x0 + m, y0 + m + k); g.lineTo(x0 + m, y0 + m); g.lineTo(x0 + m + k, y0 + m);
+          g.moveTo(x0 + w - m - k, y0 + w - m); g.lineTo(x0 + w - m, y0 + w - m); g.lineTo(x0 + w - m, y0 + w - m - k);
+          g.stroke();
+        }
       }
     };
-    if (OV.danger) fillTiles(OV.danger, 'rgba(255,60,70,.22)', 'rgba(255,90,90,.35)');
-    fillTiles(OV.ghost, 'rgba(70,150,255,.18)', 'rgba(160,210,255,.45)');
-    fillTiles(OV.atk, 'rgba(255,50,60,.42)', 'rgba(255,150,150,.85)');
-    fillTiles(OV.move, 'rgba(40,130,255,.55)', 'rgba(200,230,255,.95)');
-    fillTiles(OV.skill, 'rgba(150,70,255,.42)', 'rgba(220,180,255,.9)');
-    fillTiles(OV.area, 'rgba(255,150,50,.55)', 'rgba(255,220,150,.95)');
-    fillTiles(OV.targets, 'rgba(255,40,40,.5)', 'rgba(255,200,200,.95)');
+    if (OV.danger) fillTiles(OV.danger, '255,60,80', 0.24, true, false);
+    fillTiles(OV.ghost, '63,180,255', 0.18, false, false);
+    fillTiles(OV.atk, '255,59,92', 0.45, true);
+    fillTiles(OV.move, '40,150,255', 0.55);
+    fillTiles(OV.skill, '170,90,255', 0.45, true);
+    fillTiles(OV.area, '255,170,40', 0.6, true);
+    fillTiles(OV.targets, '255,40,70', 0.55, true);
     if (OV.aura) { // 지휘 재능 범위: 이동 칸 위에 노란 테두리
       const set = new Set(OV.aura.map(([x, y]) => x + ',' + y));
       g.fillStyle = 'rgba(255,214,100,.16)';
@@ -942,12 +960,17 @@
       }
     }
     if (OV.path && OV.path.length > 1) {
-      g.strokeStyle = 'rgba(255,240,180,.95)'; g.lineWidth = 5; g.lineCap = 'round'; g.lineJoin = 'round';
-      g.beginPath();
-      OV.path.forEach(([x, y], i) => { const px = x * OS + OS / 2, py = y * OS + OS / 2; if (i) g.lineTo(px, py); else g.moveTo(px, py); });
-      g.stroke();
-      const [ex, ey] = OV.path[OV.path.length - 1];
-      g.fillStyle = 'rgba(255,240,180,.95)'; g.beginPath(); g.arc(ex * OS + OS / 2, ey * OS + OS / 2, 6, 0, 7); g.fill();
+      // 이동 길: 노란 띠 + 끝에 원작 결 꺾쇠 화살
+      g.lineCap = 'round'; g.lineJoin = 'round';
+      const trace = () => { g.beginPath(); OV.path.forEach(([x, y], i) => { const px = x * OS + OS / 2, py = y * OS + OS / 2; if (i) g.lineTo(px, py); else g.moveTo(px, py); }); };
+      trace(); g.strokeStyle = 'rgba(0,0,0,.45)'; g.lineWidth = 8; g.stroke();
+      trace(); g.strokeStyle = 'rgba(255,204,0,.95)'; g.lineWidth = 4; g.stroke();
+      const [ex, ey] = OV.path[OV.path.length - 1], [px0, py0] = OV.path[OV.path.length - 2];
+      const ang = Math.atan2(ey - py0, ex - px0), cx = ex * OS + OS / 2, cy = ey * OS + OS / 2;
+      g.save(); g.translate(cx, cy); g.rotate(ang);
+      g.fillStyle = '#ffcc00'; g.strokeStyle = 'rgba(0,0,0,.6)'; g.lineWidth = 2;
+      g.beginPath(); g.moveTo(9, 0); g.lineTo(-5, -9); g.lineTo(-1, 0); g.lineTo(-5, 9); g.closePath(); g.stroke(); g.fill();
+      g.restore();
     }
     world.ot.needsUpdate = true;
   }
@@ -1359,6 +1382,8 @@
     await Promise.all(deaths);
     if (deaths.length) await wait(200);
   }
+  let shakeT = 0, shakeA = 0;
+  function shake(sec, amp) { if (save.opts.shake === false) return; shakeT = sec; shakeA = amp; }
   // 무기 갈래 (공격 소리 기준) → 지도 효과 갈래
   const weaponKind = (u) => ({ cannon: 'heavy', missile: 'heavy', expM: 'heavy', expB: 'heavy', laserBig: 'energy', elec: 'energy', energy: 'energy', charge: 'energy', spray: 'energy',
     slash: 'melee', swing: 'melee' }[u.def.sfx] || 'hit');
@@ -1366,6 +1391,7 @@
     const va = views.get(a.uid), vd = views.get(d.uid);
     va.rig.once('atk', Math.max(1, va.rig.dur('atk') / 1.0) * speedK);
     AU.play(a.def.sfx, 0.7);
+    if (weaponKind(a) !== 'melee') fxAt(a.x, a.y, 'muzzle', 120); // 연출을 꺼도 지도에서 총구 번쩍임
     await wait(380);
     fxAt(d.x, d.y, weaponKind(a));
     vd.rig.c.setFlash(1);
@@ -1375,6 +1401,7 @@
     if (res.counter) {
       vd.rig.once('atk', Math.max(1, vd.rig.dur('atk') / 1.0) * speedK);
       AU.play(d.def.sfx, 0.6);
+      if (weaponKind(d) !== 'melee') fxAt(d.x, d.y, 'muzzle', 120);
       await wait(380);
       fxAt(a.x, a.y, weaponKind(d));
       va.rig.c.setFlash(1);
@@ -1396,6 +1423,28 @@
     if (u.boss || u.lead) AU.play(u.side === 'p' ? 'fail' : 'expB', 0.6);
     updateDanger();
   }
+  // 특기 갈래마다 다른 원작 효과 연출 (지도 위)
+  //  fire: 칸마다 차례로 터지는 폭발 + 가운데 땅 갈라짐 + 화면 흔들림
+  //  laser: 시전자에서 먼 칸으로 이어지는 에너지 타격 + 화면 번쩍임
+  //  slash: 칼날 타격 + 베기 선 + 강한 일격, shot: 총구 번쩍임 + 총탄 타격 + 강한 일격
+  //  heal·buff·shield: 대상마다 원작 회복·강화·방어막
+  function skillFx(u, s, area, tx, ty) {
+    const byDist = area.slice().sort((a, b) => R.dist(u.x, u.y, a[0], a[1]) - R.dist(u.x, u.y, b[0], b[1]));
+    if (s.fx === 'fire') {
+      byDist.forEach(([x, y], i) => fxAt(x, y, i % 3 ? 'boom' : 'heavy', i * 70));
+      fxAt(tx, ty, 'crack', 60);
+      shake(0.35, 0.12); LOHUD.flash('rgba(255,160,40,.35)', 260);
+    } else if (s.fx === 'laser') {
+      byDist.forEach(([x, y], i) => fxAt(x, y, 'energy', i * 55));
+      LOHUD.flash('rgba(160,200,255,.45)', 300); shake(0.25, 0.08);
+    } else if (s.fx === 'slash') {
+      byDist.forEach(([x, y], i) => { fxAt(x, y, 'melee', i * 60); fxAt(x, y, 'slashline', i * 60 + 40); fxAt(x, y, 'crit', i * 60 + 90); });
+      shake(0.25, 0.1);
+    } else if (s.fx === 'shot') {
+      fxAt(u.x, u.y, 'muzzle', 0);
+      byDist.forEach(([x, y], i) => { fxAt(x, y, 'hit', 80 + i * 50); fxAt(x, y, 'crit', 140 + i * 50); });
+    } else byDist.forEach(([x, y], i) => { if (R.unitAt(G, x, y) || s.fx !== 'heal') fxAt(x, y, s.fx, i * 40); });
+  }
   async function useSkill(u, sk, tx, ty) {
     const s = D.SKILLS[sk];
     u.cd[sk] = s.cd + 1; // 다음 차례 시작에 1 줄어 s.cd 턴 동안 못 쓴다
@@ -1410,7 +1459,7 @@
     OV.area = R.skillArea(G, u, sk, tx, ty); drawOverlay();
     await wait(500);
     AU.play(s.sfx, 0.8);
-    OV.area.forEach(([x, y], i) => fxAt(x, y, s.fx, i * 40));
+    skillFx(u, s, OV.area, tx, ty);
     await wait(350);
     const deaths = [];
     for (const r of R.skillEffect(G, u, sk, tx, ty, Math.random)) {
@@ -2488,6 +2537,13 @@
       return;
     }
     if (!G || !world) { renderer.render(scene, camera); return; }
+    // 화면 흔들림 (큰 특기·폭발)
+    if (shakeT > 0) {
+      shakeT -= dt;
+      const k = Math.max(0, shakeT) * shakeA * 10;
+      camera.position.x += (Math.random() - 0.5) * k; camera.position.z += (Math.random() - 0.5) * k;
+      if (shakeT <= 0) placeCamera();
+    }
     // 카메라 부드럽게 이동
     if (cam.tx != null) {
       const k = 1 - Math.pow(0.0015, dt);
@@ -2543,7 +2599,8 @@
     requestAnimationFrame(frame);
     title();
     WM3D.load(CHAPTERS[curCh()].id).catch(() => {});
-    if (window.FXLIB) FXLIB.preload(); // 원작 전투 효과 그림도 미리 // 월드맵 3D 자료는 타이틀 동안 미리 받아 둔다
+    if (window.FXLIB) FXLIB.preload(); // 원작 전투 효과 그림도 미리
+    LOHUD.speedOf = () => speedK; // 배너·컷인 길이를 배속에 맞춘다 // 월드맵 3D 자료는 타이틀 동안 미리 받아 둔다
     // 첫 터치에서 배경음 시작 (모바일 정책)
     const kick = () => { AU.bgm(AU.bgmName || 'lo_title'); removeEventListener('pointerdown', kick); };
     addEventListener('pointerdown', kick);

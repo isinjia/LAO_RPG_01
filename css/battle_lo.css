@@ -129,7 +129,7 @@
 @keyframes lbOut { to { opacity: 0; transform: translateY(-50%) scaleY(.2); } }
 
 /* 특기 컷인 */
-.lobanner.cutin { top: 46%; height: 220px; --d: calc(1.05s / var(--sp, 1)); }
+.lobanner.cutin { top: 46%; height: 220px; }
 .lobanner.cutin .lc-band { position: absolute; inset: 0; overflow: hidden; background: linear-gradient(90deg, rgba(10, 12, 16, .2), rgba(10, 12, 16, .92) 25%, rgba(10, 12, 16, .92) 75%, rgba(10, 12, 16, .2));
   clip-path: polygon(0 18%, 100% 0, 100% 82%, 0 100%); animation: lcBand .3s cubic-bezier(.2, .8, .3, 1) both; }
 .lobanner.cutin .lc-band::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(-24deg, transparent 0 22px, rgba(255, 255, 255, .03) 22px 24px); }
@@ -182,5 +182,9 @@
 @keyframes lopas { 0% { opacity: 0; transform: translateX(-40px); } 12% { opacity: 1; transform: none; } 85% { opacity: 1; } 100% { opacity: 0; } }
 #fight .lopassive.R { animation-name: lopasR; }
 @keyframes lopasR { 0% { opacity: 0; transform: translateX(40px); } 12% { opacity: 1; transform: none; } 85% { opacity: 1; } 100% { opacity: 0; } }
-.lobanner.result { --d: 1.75s; height: 150px; }
+.lobanner.result { height: 150px; }
 .lobanner.result.win .lb-in img { height: 38px; margin-bottom: 8px; }
+
+/* 큰 특기 화면 번쩍임 */
+.loflash { position: absolute; inset: 0; mix-blend-mode: screen; animation: loflash 260ms ease-out forwards; }
+@keyframes loflash { from { opacity: 1; } to { opacity: 0; } }

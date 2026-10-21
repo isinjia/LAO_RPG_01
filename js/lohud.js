@@ -45,15 +45,19 @@
 
   // ── 배너 ──
   let bTimer = 0;
+  H.speedOf = () => 1; // 게임 배속 (game.js 가 바꿔 끼운다). 배너 길이를 배속만큼 줄인다
   function show(html, cls, ms) {
     const el = layer();
     const b = document.createElement('div');
     b.className = 'lobanner ' + cls;
     b.innerHTML = html;
     el.querySelectorAll('.lobanner').forEach((o) => o.remove());
+    const sp = Math.max(1, H.speedOf()), real = ms / sp;
+    b.style.setProperty('--d', Math.max(0.3, (real - 260) / 1000) + 's'); // 사라지기 시작하는 때
+    b.style.setProperty('--sp', sp);
     el.appendChild(b);
     clearTimeout(bTimer);
-    bTimer = setTimeout(() => b.remove(), ms);
+    bTimer = setTimeout(() => b.remove(), real);
     return b;
   }
   // 차례 시작: 원작 전투의 노랑(아군)·빨강(적) 사선 띠가 화면을 가로지른다
@@ -61,7 +65,7 @@
     const p = side === 'p';
     return show(`<div class="lb-band"></div><div class="lb-line"></div>
       <div class="lb-in"><small>TURN ${String(turn).padStart(2, '0')}</small><b>${p ? 'PLAYER PHASE' : 'ENEMY PHASE'}</b><span>${p ? '아군 차례' : '적 차례'}${sub ? ' · ' + sub : ''}</span></div>`,
-    'phase ' + (p ? 'p' : 'e'), 1600 / speed);
+    'phase ' + (p ? 'p' : 'e'), 1600);
   };
   // 작전 개시: 원작 MISSION START 글자 그림
   H.start = function (title, goal) {
@@ -85,9 +89,18 @@
     const pic = stand ? `<img class="lc-stand" src="assets/story/stand/${stand}.webp" alt="">` : `<img class="lc-icon" src="${(window.IMG && IMG[u.icon]) || ''}" alt="">`;
     const b = show(`<div class="lc-band">${pic}</div><div class="lc-flash"></div>
       <div class="lc-txt"><small>${u.side === 'p' ? 'ACTIVE SKILL' : 'ENEMY SKILL'}</small><b>${skillName}</b><span>${u.name}</span></div>`,
-    'cutin ' + (u.side === 'p' ? 'p' : 'e'), 1300 / speed);
-    b.style.setProperty('--sp', speed);
+    'cutin ' + (u.side === 'p' ? 'p' : 'e'), 1300);
     return b;
+  };
+
+  // 화면 번쩍임 (큰 특기)
+  H.flash = function (color = 'rgba(255,255,255,.5)', ms = 260) {
+    const f = document.createElement('div');
+    f.className = 'loflash';
+    f.style.background = color;
+    f.style.animationDuration = ms + 'ms';
+    layer().appendChild(f);
+    setTimeout(() => f.remove(), ms + 50);
   };
 
   // ── 지도 위 표지 (TARGET) ──
