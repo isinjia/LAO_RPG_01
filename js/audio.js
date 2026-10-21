@@ -36,6 +36,25 @@
       this.vEl.volume = Math.min(1, this.vol * 1.4 * vol);
       this.vEl.play().catch(() => {});
     },
+    // 글자 소리 (역전재판식 삑삑): 파일 없이 짧은 사각파를 만든다. freq = 화자마다 다른 높이
+    blip(freq = 600, vol = 1) {
+      if (!this.on) return;
+      try {
+        const ctx = this.actx || (this.actx = new (window.AudioContext || window.webkitAudioContext)());
+        if (ctx.state === 'suspended') ctx.resume();
+        const t = ctx.currentTime;
+        const o = ctx.createOscillator(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+        o.type = 'square';
+        o.frequency.setValueAtTime(freq * (0.97 + Math.random() * 0.06), t);
+        f.type = 'lowpass'; f.frequency.value = 2600;
+        const v = 0.05 * this.vol * vol;
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(v, t + 0.004);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+        o.connect(f); f.connect(g); g.connect(ctx.destination);
+        o.start(t); o.stop(t + 0.06);
+      } catch (e) { /* 소리 장치 없음 */ }
+    },
     setOn(v) {
       this.on = v;
       if (this.bgmEl) { if (v) this.bgmEl.play().catch(() => {}); else this.bgmEl.pause(); }

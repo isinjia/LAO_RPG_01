@@ -20,6 +20,17 @@
   let nodes = null, cur = null, done = null, prevScr = 6, busy = false, autoOn = false, fastOn = false, gen = 0;
   let typing = null; // {full, n}
   let autoWait = 0, log = [];
+  // 글자 소리 높이: 해설은 낮게, 인물은 이름마다 정해진 높이
+  let lastBlip = 0;
+  const blipFreq = (who) => {
+    if (!who) return 330;
+    // 주요 인물은 성격에 맞춰 직접 (그리폰 높고 빠르게, 펍 헤드는 낮은 기계음)
+    const fixed = [['그리폰', 780], ['콘스탄챠', 640], ['요안나', 540], ['LRL', 880], ['펍 헤드', 420], ['폴른', 470]];
+    for (const [k, f] of fixed) if (who.includes(k)) return f;
+    let h = 0;
+    for (const ch of who) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+    return 560 + (h % 7) * 50;
+  };
   const IMGPRE = {};
 
   function preload(list) {
@@ -239,8 +250,17 @@
     if (!cur) return;
     if (typing) {
       const cps = fastOn ? 400 : 42;
+      const before = Math.floor(typing.n);
       typing.n = Math.min(typing.full.length, typing.n + dt * cps);
-      textEl.textContent = typing.full.slice(0, Math.floor(typing.n));
+      const shown = Math.floor(typing.n);
+      textEl.textContent = typing.full.slice(0, shown);
+      // 글자 소리: 두 글자마다 한 번, 띄어쓰기·문장부호는 건너뛴다 (빠르게 넘길 때는 소리 없음)
+      if (!fastOn) for (let i = before; i < shown; i++) {
+        if (i % 2 || !/[0-9A-Za-zㄱ-힣]/.test(typing.full[i])) continue;
+        if (now - lastBlip < 0.045) continue;
+        lastBlip = now;
+        AU.blip(blipFreq(cur.who), 1);
+      }
       if (typing.n >= typing.full.length) { typing = null; afterTyped(); }
     } else if ((autoOn || fastOn) && autoWait > 0 && !busy && !root.classList.contains('logon') && !root.classList.contains('asking')) {
       autoWait -= dt;
