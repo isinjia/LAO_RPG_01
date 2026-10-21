@@ -1368,20 +1368,28 @@
     showActs(null);
     setHint('같은 적을 한 번 더 누르면 공격합니다');
   }
-  // 예상 창 자리. 가로 화면(PC): 화면 세로 가운데, 공격자·목표가 없는 쪽 절반의 가운데 (눈길·마우스 가까이, 둘 다 가리지 않게)
+  // 예상 창 자리. 가로 화면(PC): 누른 목표 바로 옆 (눈길·마우스가 그대로), 공격자가 없는 쪽에
   // 세로 화면: 위에 두되 목표·공격자를 가리면 아래로
   function placeForecast() {
     const el = $('forecast'), a = ui.sel, d = ui.target;
     if (!a || !d || el.classList.contains('hidden')) return;
     const sp = toScreen(new THREE.Vector3(d.x + 0.5, 1.2, d.y + 0.5)), sa = toScreen(new THREE.Vector3(a.x + 0.5, 1.2, a.y + 0.5));
-    if (innerWidth > innerHeight) {
+    if (innerWidth > innerHeight) { // 누른 목표 바로 옆: 오른쪽·왼쪽·아래·위 가운데 화면 안에 들고 목표·공격자를 가리지 않는 첫 자리
       el.classList.add('pc'); el.classList.remove('low');
-      const mid = (sp.x + sa.x) / 2, half = el.offsetWidth * 1.15 / 2 + 12;
-      const x = mid > innerWidth / 2 ? innerWidth * 0.25 : innerWidth * 0.75;
-      el.style.left = Math.max(half, Math.min(innerWidth - half, x)) + 'px';
+      const w = el.offsetWidth * 1.15, h = el.offsetHeight * 1.15, gap = 56;
+      const top = ($('top').getBoundingClientRect().bottom || 60) + 8, bot = innerHeight - 8;
+      const body = (p, big) => (big ? [p.x - 70, p.y - 120, p.x + 70, p.y + 40] : [p.x - 45, p.y - 75, p.x + 45, p.y + 30]); // 유닛 몸의 대략 화면 상자 (큰 철충은 크게)
+      const hit = (r, b) => r[0] < b[2] && r[2] > b[0] && r[1] < b[3] && r[3] > b[1];
+      const away = sa.x <= sp.x ? 1 : -1; // 공격자 반대쪽부터
+      const cands = [[sp.x + away * (gap + w / 2), sp.y], [sp.x - away * (gap + w / 2), sp.y], [sp.x, sp.y + 40 + h / 2], [sp.x, sp.y - 90 - h / 2]];
+      const fit = (c) => { const x = Math.max(w / 2 + 8, Math.min(innerWidth - w / 2 - 8, c[0])), y = Math.max(top + h / 2, Math.min(bot - h / 2, c[1])); return [x, y, [x - w / 2, y - h / 2, x + w / 2, y + h / 2]]; };
+      let pick = null;
+      for (const c of cands) { const f = fit(c); if (!hit(f[2], body(sp, d.def.big)) && !hit(f[2], body(sa, a.def.big))) { pick = f; break; } } // 목표도, 지금 행동하는 아군도 가리지 않게
+      if (!pick) pick = fit(cands[0]);
+      el.style.left = pick[0] + 'px'; el.style.top = pick[1] + 'px';
       return;
     }
-    el.classList.remove('pc'); el.style.left = '';
+    el.classList.remove('pc'); el.style.left = ''; el.style.top = '';
     el.classList.remove('low');
     const r = el.getBoundingClientRect();
     if (Math.min(sp.y, sa.y) - 30 < r.bottom) el.classList.add('low'); // 목표·공격자가 예상 창에 가리면 아래로
@@ -1982,7 +1990,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.43';
+  const GAME_VERSION = '0.44';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();

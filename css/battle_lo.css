@@ -246,5 +246,5 @@
 }
 #fight .fcorner.loading .fbust { visibility: hidden; }
 
-/* PC(가로 화면): 예상 창은 화면 세로 가운데, 공격자·목표가 없는 쪽 절반에 조금 크게 (left 는 game.js 가 정한다) */
+/* PC(가로 화면): 예상 창은 누른 목표 바로 옆에 조금 크게 (left·top 은 game.js 가 정한다) */
 #forecast.pc { top: 50%; transform: translate(-50%, -50%) scale(1.15); transform-origin: 50% 50%; }
