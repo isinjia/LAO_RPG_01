@@ -8,6 +8,7 @@
     BR_Amy_N: 'p_amy', PECS_CoCoWhiteShell_N: 'p_coco', BR_Marie_N: 'p_marie', BR_Scathy_N: 'p_scathy', '3P_Labiata_N': 'p_labiata' };
   const rigOf = (stand) => {
     if (!stand || stand.includes('_Dialog0')) return null; // 도입부 컷 그림은 정지 그림
+    if (window.CLASSES && CLASSES.PORTRAITS[stand]) return CLASSES.PORTRAITS[stand]; // 전직 스킨 일러스트
     for (const m in MODELS) if (stand === m || stand.startsWith(m + '_')) return MODELS[m];
     return null;
   };
@@ -102,7 +103,7 @@
     live.add(p);
     p.still = new Image();
     p.still.onload = () => drawStill(p);
-    p.still.src = `assets/story/stand/${stand}.webp`;
+    if (!(window.CLASSES && CLASSES.PORTRAITS[stand])) p.still.src = `assets/story/stand/${stand}.webp`; // 전직 스킨은 정지 그림 없이 바로 움직이는 일러스트
     if (!uid) return p; // 움직이는 일러스트가 없는 인물은 정지 그림 그대로
     SD.prepare(uid).then(() => {
       if (!live.has(p) || !SD.ready(uid)) return;

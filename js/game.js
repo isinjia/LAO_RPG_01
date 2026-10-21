@@ -154,14 +154,25 @@
   const pathy = (c) => c === 'r' || c === '=' || c === 'v' || c === 'c';
 
   // 지도 바닥: 원작 전투 배경의 손그림 질감(assets/tiles, tools/build_tiles.py)을 지형별로 깔고 경계는 흐린 가면으로 섞는다
-  const TILE_NAMES = ['grass', 'forest', 'dirt', 'asphalt', 'tree0', 'tree1', 'tree2', 'tree3', 'tree4', 'rock0', 'rock1', 'ruin0', 'ruin1', 'wall', 'sign', 'bags0', 'bags1', 'barrel', 'wreck0', 'wreck1', 'wreck2'];
+  // 작전 장소(지형 갈래, D.LANDS)마다 바닥 질감·소품·전투 배경이 바뀐다
+  const LAND_PARTS = (L) => [L.base, L.wood, L.dirt, L.floor, L.road, L.barrel, ...L.tree, ...L.mount, ...L.rubble, ...L.ruins, ...L.tall, ...L.camp];
+  const TILE_NAMES = [...new Set(Object.values(D.LANDS).flatMap(LAND_PARTS).filter(Boolean))];
+  const landOf = (st) => D.LANDS[st.land] || D.LANDS.forest;
+  // 전투 배경: 지형 글자별 갈래 배경 → 작전의 원작 장면 배경 → 갈래 기본 배경
+  function fightBgOf(st, c) {
+    const L = landOf(st);
+    let b = L.fight[c] || st.fbg || L.fight._;
+    if (st.night && b === 'forest') b = 'night'; // 밤 작전의 숲은 밤 숲 배경
+    return b.startsWith('BG_') ? `assets/story/bg/${b}.webp` : `assets/bg/${b}.webp`;
+  }
+  const terrName = (x, y) => (landOf(G.stage).names || {})[G.map[y][x]] || R.terr(G, x, y).name;
   const TILE = {};
   function loadTiles() {
     return Promise.all(TILE_NAMES.map((n) => new Promise((r) => { const im = new Image(); im.onload = () => { TILE[n] = im; r(); }; im.onerror = r; im.src = `assets/tiles/${n}.webp`; })));
   }
   // 지도 밖 PAD 칸까지 지형을 이어 그린다: 화면이 빈 바탕 없이 꽉 차고, 못 가는 바깥은 어둡게 덮어 구분한다
   const PAD = 6;
-  const OUTER = 0x171f14, OUTER_CSS = '#171f14'; // 늘린 지형 너머의 판 색 (어둡게 덮인 풀빛)
+  const fade = (hex, a) => `rgba(${parseInt(hex.slice(1, 3), 16)},${parseInt(hex.slice(3, 5), 16)},${parseInt(hex.slice(5, 7), 16)},${a})`; // 늘린 지형 너머의 판 색(갈래 outer)
   function extendMap(G) {
     const w = G.w + PAD * 2, h = G.h + PAD * 2, map = [];
     const road = (c) => c === 'r' || c === '=';
@@ -180,7 +191,7 @@
           c = outX && outY ? '.' : inner && (road(inner) || inner === 'v' || inner === 'c') ? (c === '=' ? '=' : 'r') : c === '=' ? 'w' : '.';
         } else if ('cvs#'.includes(c)) c = '.';
         else if (c === 'm') c = hash(x, y, 11) < 0.6 ? 'm' : 'h';
-        if ((c === '.' || c === 'h') && hash(x, y, 12) > 0.72) c = 'f';
+        if ((c === '.' || c === 'h') && hash(x, y, 12) > 0.72 && !landOf(G.stage).indoor) c = 'f';
         else if (c === 'f' && hash(x, y, 13) > 0.8) c = '.';
         row += c;
       }
@@ -189,7 +200,7 @@
     return { w, h, map };
   }
   function drawGround(G0) {
-    const G = extendMap(G0);
+    const G = extendMap(G0), L = landOf(G0.stage);
     const c = canvas(G.w * TS, G.h * TS), g = c.getContext('2d');
     const at = (x, y) => (R.inB(G, x, y) ? G.map[y][x] : null);
     const PAT = (TS * 3) / 384; // 질감 한 장 = 3칸
@@ -222,10 +233,11 @@
       lg.globalCompositeOperation = 'destination-in'; lg.drawImage(m, 0, 0);
       g.drawImage(l, 0, 0);
     };
-    fillTex(g, 'grass');
-    layer('forest', (t) => t === 'f', TS * 0.22);
-    layer('dirt', (t) => t === 'm' || t === 's' || t === '#', TS * 0.2);
-    layer('asphalt', (t) => t === 'c', TS * 0.12);
+    fillTex(g, L.base);
+    if (L.wood) layer(L.wood, (t) => t === 'f', TS * 0.22);
+    if (L.woodTint) tint(L.woodTint, mask((t) => t === 'f', TS * 0.22));
+    layer(L.dirt, (t) => t === 'm' || t === 's' || t === '#', TS * 0.2);
+    layer(L.floor, (t) => t === 'c', TS * 0.12);
     // 언덕: 볼록한 빛과 그늘
     for (let y = 0; y < G.h; y++) for (let x = 0; x < G.w; x++) {
       if (G.map[y][x] !== 'h') continue;
@@ -251,7 +263,8 @@
       }
     };
     tint('rgba(45,38,20,.5)', mask(null, TS * 0.1, roadShape(TS * 0.76)));
-    layer('asphalt', null, TS * 0.04, roadShape(TS * 0.62));
+    layer(L.road, null, TS * 0.04, roadShape(TS * 0.62));
+    if (L.roadTint) tint(L.roadTint, mask(null, TS * 0.04, roadShape(TS * 0.62)));
     tint('rgba(70,58,40,.22)', mask(null, TS * 0.04, roadShape(TS * 0.62)));
     // 물: 칸 모양이 드러나지 않게 흐린 가면으로 모래톱 → 얕은 물 → 깊은 물 순서로 겹친다
     const wet = (t) => t === 'w' || t === '=';
@@ -327,28 +340,29 @@
     for (const [gx0, gy0, gx1, gy1, x, y, w, h] of [[0, 0, 0, F, 0, 0, c.width, F], [0, c.height, 0, c.height - F, 0, c.height - F, c.width, F],
       [0, 0, F, 0, 0, 0, F, c.height], [c.width, 0, c.width - F, 0, c.width - F, 0, F, c.height]]) {
       const lg = g.createLinearGradient(gx0, gy0, gx1, gy1);
-      lg.addColorStop(0, OUTER_CSS); lg.addColorStop(1, 'rgba(23,31,20,0)');
+      lg.addColorStop(0, L.outer); lg.addColorStop(1, fade(L.outer, 0));
       g.fillStyle = lg; g.fillRect(x, y, w, h);
     }
     return c;
   }
 
-  // 장식: 원작 소품 그림 (나무·바위 더미·무너진 건물·모래주머니·철충 잔해)
-  const DECO = {};
-  function decoTex() {
-    if (DECO.tree) return;
-    const tex = (n) => { const im = TILE[n]; const t = new THREE.Texture(im); t.needsUpdate = true; t.anisotropy = 4; t.aspect = im ? im.width / im.height : 1; return t; };
-    DECO.tree = ['tree0', 'tree1', 'tree2', 'tree3', 'tree4'].map(tex);
-    DECO.mount = ['rock0', 'rock1'].map(tex);
-    DECO.rubble = ['ruin0', 'ruin1', 'wall'].map(tex);
-    DECO.ruins = ['wreck0', 'wreck1', 'wreck2', 'sign', 'wall'].map(tex);
-    DECO.camp = ['bags0', 'bags1', 'barrel'].map(tex);
+  // 장식: 원작 소품 그림 (나무·바위·무너진 건물·모래주머니·철충 잔해·연구 설비·철충 둥지). 지형 갈래마다 고른다
+  const DECO = {}; // 그림 이름 -> 텍스처 (갈래끼리 함께 쓴다)
+  const PROP_H = { tree0: 0.86, tree1: 0.86, tree2: 0.86, tree3: 0.62, tree4: 0.62, rock0: 0.62, rock1: 0.62, ruin0: 0.5, ruin1: 0.5, wall: 0.95, sign: 0.62, wreck0: 0.42, wreck1: 0.42, wreck2: 0.42,
+    bags0: 0.36, bags1: 0.36, barrel: 0.34, server: 0.72, tank0: 0.95, tank1: 0.88, goo0: 0.4, goo1: 0.7, console: 0.62, gas: 0.5, desk: 0.5, mach0: 0.85, mach1: 0.62,
+    crate0: 0.36, crate1: 0.42, shelf: 0.46, fwall: 0.72, hive0: 0.62, hive1: 0.62, crystal0: 0.82, crystal1: 0.5, spike: 0.72, mush0: 0.34, mush1: 0.3 };
+  function decoTex(L) {
+    const tex = (n) => { const im = TILE[n]; const t = new THREE.Texture(im); t.needsUpdate = true; t.anisotropy = 4; t.aspect = im ? im.width / im.height : 1; t.pname = n; return t; };
+    const get = (n) => DECO[n] || (DECO[n] = tex(n));
+    const list = (a) => a.map(get);
+    return { tree: list(L.tree), mount: list(L.mount), rubble: list(L.rubble), ruins: list(L.ruins), tall: list(L.tall), camp: list(L.camp), barrel: get(L.barrel) };
   }
-  // 그림 비율대로 높이 h 인 소품
-  const prop = (t, h, x, z, night) => sprite(t, h * t.aspect, h, x, z, night);
+  const pick = (a, r) => a[Math.min(a.length - 1, Math.floor(r * a.length))];
+  // 그림 비율대로 높이 h 인 소품 (h 를 안 주면 그림마다 정한 높이)
+  const prop = (t, h, x, z, col) => { h = h || PROP_H[t.pname] || 0.5; return sprite(t, h * t.aspect, h, x, z, col); };
 
-  function sprite(t, w, h, x, z, night) {
-    const m = new THREE.SpriteMaterial({ map: t, transparent: true, depthTest: false, depthWrite: false, color: night ? 0x8a96c8 : 0xffffff });
+  function sprite(t, w, h, x, z, col) {
+    const m = new THREE.SpriteMaterial({ map: t, transparent: true, depthTest: false, depthWrite: false, color: col == null ? 0xffffff : col });
     const s = new THREE.Sprite(m);
     s.center.set(0.5, 0.06);
     s.scale.set(w, h, 1);
@@ -359,11 +373,13 @@
 
   function buildWorld() {
     if (world) { scene.remove(world.root); world.dispose(); }
-    decoTex();
+    const L = landOf(G.stage), DK = decoTex(L);
     const root = new THREE.Group();
     const night = !!G.stage.night;
+    const pc = new THREE.Color(night ? 0x8a96c8 : 0xffffff); // 소품 빛깔 (밤, 갈래 빛깔)
+    if (L.prop) pc.multiply(new THREE.Color(L.prop));
     // 바닥 바깥 (어두운 판)
-    const outer = new THREE.Mesh(new THREE.PlaneGeometry(G.w + 80, G.h + 80), new THREE.MeshBasicMaterial({ color: night ? 0x0b0f1a : OUTER }));
+    const outer = new THREE.Mesh(new THREE.PlaneGeometry(G.w + 80, G.h + 80), new THREE.MeshBasicMaterial({ color: night ? 0x0b0f1a : L.outer }));
     outer.rotation.x = -Math.PI / 2; outer.position.set(G.w / 2, -0.02, G.h / 2);
     root.add(outer);
     // 지면
@@ -419,22 +435,21 @@
         const n = 2 + (hash(x, y, 7) > 0.55 ? 1 : 0);
         for (let i = 0; i < n; i++) {
           const ox = [0.3, 0.72, 0.5][i] + (hash(x, y, i) - 0.5) * 0.14, oz = [0.38, 0.52, 0.86][i] + (hash(x, y, i + 3) - 0.5) * 0.08;
-          const k = Math.floor(hash(x, y, i + 1) * 5), small = k >= 3;
-          decos.push(prop(DECO.tree[k], (small ? 0.62 : 0.86) + hash(x, y, i + 9) * 0.14, x + ox, y + oz, night));
+          const tt = pick(DK.tree, hash(x, y, i + 1));
+          decos.push(prop(tt, PROP_H[tt.pname] + hash(x, y, i + 9) * 0.14, x + ox, y + oz, pc));
         }
       } else if (t === 'm') {
-        decos.push(prop(DECO.mount[hash(x, y, 2) > 0.5 ? 1 : 0], 0.62, x + 0.5, y + 0.8, night));
+        decos.push(prop(pick(DK.mount, hash(x, y, 2)), 0, x + 0.5, y + 0.8, pc));
       } else if (t === '#') {
-        const k = Math.floor(hash(x, y, 4) * 3);
-        decos.push(prop(DECO.rubble[k], k === 2 ? 0.95 : 0.5, x + 0.5, y + 0.82, night));
+        decos.push(prop(pick(DK.rubble, hash(x, y, 4)), 0, x + 0.5, y + 0.82, pc));
       } else if (t === 's') {
         const r = hash(x, y, 5);
-        if (r < 0.55) decos.push(prop(DECO.ruins[Math.floor(hash(x, y, 6) * 3)], 0.42, x + 0.3 + hash(x, y, 8) * 0.4, y + 0.74, night));
-        else if (r < 0.7) decos.push(prop(DECO.ruins[3], 0.62, x + 0.7, y + 0.6, night));
-        else if (r < 0.82) decos.push(prop(DECO.ruins[4], 0.7, x + 0.3, y + 0.62, night));
+        if (r < 0.55) decos.push(prop(pick(DK.ruins, hash(x, y, 6)), 0.42, x + 0.3 + hash(x, y, 8) * 0.4, y + 0.74, pc));
+        else if (r < 0.7) decos.push(prop(DK.tall[0], 0.62, x + 0.7, y + 0.6, pc));
+        else if (r < 0.82) decos.push(prop(DK.tall[DK.tall.length - 1], 0.7, x + 0.3, y + 0.62, pc));
       } else if (t === 'c') {
-        decos.push(prop(DECO.camp[hash(x, y, 3) > 0.5 ? 1 : 0], 0.36, x + 0.5, y + 0.88, night));
-        if (hash(x, y, 9) > 0.6) decos.push(prop(DECO.camp[2], 0.34, x + 0.18, y + 0.5, night));
+        decos.push(prop(pick(DK.camp, hash(x, y, 3)), 0.36, x + 0.5, y + 0.88, pc));
+        if (hash(x, y, 9) > 0.6) decos.push(prop(DK.barrel, 0.34, x + 0.18, y + 0.5, pc));
       }
     }
     // 지도 밖 숲·바위 (어둡게)
@@ -446,10 +461,10 @@
       if (t === 'f') {
         const n = 1 + (hash(x, y, 7) > 0.5 ? 1 : 0);
         for (let i = 0; i < n; i++) {
-          const k = Math.floor(hash(x, y, i + 1) * 5);
-          dim.push(prop(DECO.tree[k], 0.7 + hash(x, y, i + 9) * 0.2, gx + [0.35, 0.7][i] + (hash(x, y, i) - 0.5) * 0.2, gy + [0.45, 0.8][i], night));
+          const tt = pick(DK.tree, hash(x, y, i + 1));
+          dim.push(prop(tt, PROP_H[tt.pname] * 0.82 + hash(x, y, i + 9) * 0.2, gx + [0.35, 0.7][i] + (hash(x, y, i) - 0.5) * 0.2, gy + [0.45, 0.8][i], pc));
         }
-      } else if (t === 'm') dim.push(prop(DECO.mount[hash(x, y, 2) > 0.5 ? 1 : 0], 0.62, gx + 0.5, gy + 0.8, night));
+      } else if (t === 'm') dim.push(prop(pick(DK.mount, hash(x, y, 2)), 0, gx + 0.5, gy + 0.8, pc));
       dim.forEach((s) => { s.material.color.multiplyScalar(0.55); decos.push(s); });
     }
     decos.forEach((s) => root.add(s));
@@ -461,7 +476,7 @@
       },
     };
   }
-  const isDeco = (t) => Object.values(DECO).flat().includes(t);
+  const isDeco = (t) => Object.values(DECO).includes(t);
 
   // ── 유닛 표시 ───────────────────────────────────────────
   // 한 칸 = 영웅(큰 리그) + 뒤쪽 병사 2명(작은 리그). 발밑 고리 색 = 진영, 앞쪽 막대 = 병사(위)·영웅(아래) 체력
@@ -504,7 +519,8 @@
     hero.bb.position.set(0, 0, 0.12);
     g.add(hero.bb);
     const soldiers = [];
-    if (u.troop) for (const [ox, oz] of [[-0.34, -0.2], [0.34, -0.26]]) {
+    // 병사는 영웅 뒤(위)쪽 양옆, 자기 칸 안에 선다 (윗칸으로 삐져나가 윗칸 영웅 발치에 붙어 보이지 않게)
+    if (u.troop) for (const [ox, oz] of [[-0.3, -0.1], [0.3, -0.15]]) {
       const s = billboard(u.troop.rig, 0.58, native, f);
       s.bb.position.set(ox, 0, oz);
       g.add(s.bb);
@@ -801,6 +817,7 @@
     }
     // ESC = 뒤로: 창 닫기 → 정보 창 닫기 → 앞 화면으로
     if (e.code === 'Escape' && mode !== 'talk' && mode !== 'fight') {
+      if ($('ccOv')) { e.preventDefault(); $('ccOv').close(); return; }
       const m = $('modal');
       if (!m.classList.contains('hidden')) { e.preventDefault(); m.click(); return; }
       if (mode === 'town') { const out = document.querySelector('#townHud .tn-out'); if (out) out.click(); return; }
@@ -1025,7 +1042,7 @@
     if (!u) {
       const t = R.terr(G, tile[0], tile[1]);
       const cs = (v) => (v >= 99 ? '불가' : v);
-      el.innerHTML = `<div class="pic" style="background:#203050"></div><div class="nm">${t.name}</div>
+      el.innerHTML = `<div class="pic" style="background:#203050"></div><div class="nm">${terrName(tile[0], tile[1])}</div>
         <div class="st">방어 보정 <b>${t.def > 0 ? '+' : ''}${Math.round(t.def * 100)}%</b>${t.heal ? ' · 차례 시작 시 체력 <b>+' + Math.round(t.heal * 100) + '%</b>' : ''}</div>
         <div class="st">이동 소모: 보병 <b>${cs(t.cost.foot)}</b> · 기동 <b>${cs(t.cost.horse)}</b> · 비행 <b>${cs(t.cost.fly)}</b></div>`;
       el.classList.remove('hidden'); syncInfoH(); return;
@@ -1040,7 +1057,7 @@
       <div class="st">공격 <b>${Math.round(R.atk(u, 'H') * R.auraK(G, u, 'at'))}</b>${pct('at')} · 방어 <b>${Math.round(R.def(u, 'H') * R.auraK(G, u, 'df'))}</b>${pct('df')} · 이동 <b>${R.mov(u)}</b> · 사거리 <b>${u.rng}</b></div>
       ${R.talentOf(u) ? `<div class="tal"><b>재능 · ${R.talentOf(u).name}</b> ${R.talentOf(u).desc}</div>` : ''}
       ${R.passivesOf(u).map((t) => `<div class="tal pas"><b>수동 · ${t.name}</b> ${t.desc}</div>`).join('')}
-      <div class="ex">${troopLine}특기: ${sk}${u.side === 'p' ? ` · 경험치 <b>${u.exp}</b>/100` : ''} · 지형 ${t.name}${u.move !== 'fly' && t.def ? ` (${t.def > 0 ? '+' : ''}${Math.round(t.def * 100)}%)` : ''}</div>`;
+      <div class="ex">${troopLine}특기: ${sk}${u.side === 'p' ? ` · 경험치 <b>${u.exp}</b>/100` : ''} · 지형 ${terrName(u.x, u.y)}${u.move !== 'fly' && t.def ? ` (${t.def > 0 ? '+' : ''}${Math.round(t.def * 100)}%)` : ''}</div>`;
     el.classList.remove('hidden');
     syncInfoH();
   }
@@ -1333,7 +1350,7 @@
       <div class="h" style="font-size:16px">영웅 ${Math.round(u.hp)}<em>→ ${Math.max(0, Math.round(u.hp - h))}</em></div></div></div>`;
     el.innerHTML = `<div class="row">${side(a, p.aT, p.aH, '')}<div class="mid">예상<b>⚔</b>${p.counter ? '반격 있음' : '반격 없음'}</div>${side(d, p.dT, p.dH, 'R')}</div>
       ${traitLine ? `<div class="rel trait">${traitLine}</div>` : ''}
-      <div class="rel">${rel}${near} · 적 지형 ${terr.name}${d.move !== 'fly' && terr.def ? ` ${terr.def > 0 ? '+' : ''}${Math.round(terr.def * 100)}%` : ''}${p.dDead ? ' · <span class="good">격파 예상</span>' : ''}</div>
+      <div class="rel">${rel}${near} · 적 지형 ${terrName(d.x, d.y)}${d.move !== 'fly' && terr.def ? ` ${terr.def > 0 ? '+' : ''}${Math.round(terr.def * 100)}%` : ''}${p.dDead ? ' · <span class="good">격파 예상</span>' : ''}</div>
       <div class="btns"><button class="gold" id="fcGo">공격</button><button id="fcNo">취소</button></div>`;
     el.classList.remove('hidden');
     { const sp = toScreen(new THREE.Vector3(d.x + 0.5, d.def.big ? 2.1 : 1.6, d.y + 0.5)); LOHUD.target(sp.x, sp.y, 'r'); // 원작 TARGET 표지
@@ -1405,7 +1422,7 @@
       mode = 'fight';
       $('hud').classList.add('hidden');
       $('banner').classList.add('hidden');
-      await FIGHT.play(a, d, res, { bg: R.terr(G, d.x, d.y).bg, speed: speedK });
+      await FIGHT.play(a, d, res, { bg: fightBgOf(G.stage, G.map[d.y][d.x]), speed: speedK });
       mode = 'map';
       $('hud').classList.remove('hidden');
     } else await mapClash(a, d, res);
@@ -1759,7 +1776,8 @@
     if (!S || !S[part] || !S[part].length) return null;
     const d = !st.kind && ifList().find((x) => x.idx === st.idx && x.part === part);
     if (!d) { await story(S[part]); return null; }
-    const nodes = S[part].map((n) => (n.id === d.node ? Object.assign({}, n, { ch: n.ch.concat([[d.text, d.scene[0].id]]), must: true }) : n)).concat(d.scene);
+    // 선택지가 없던 줄이면 원래 흐름으로 가는 선택지(keep)를 먼저 둔다 (원래 대사는 그대로)
+    const nodes = S[part].map((n) => (n.id === d.node ? Object.assign({}, n, { ch: (n.ch && n.ch.length ? n.ch : [[d.keep, n.next]]).concat([[d.text, d.scene[0].id]]), next: n.ch && n.ch.length ? n.next : null, must: true }) : n)).concat(d.scene);
     const r = await story(nodes);
     return r && r.flags.includes('if:' + d.id) ? d : null;
   }
@@ -1942,7 +1960,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.35';
+  const GAME_VERSION = '0.40';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2241,33 +2259,121 @@
   function heroRoster() {
     const j = joined();
     const cards = Object.keys(D.HEROES).filter((id) => j.has(id)).map((id) => {
-      const h = D.HEROES[id], s = save.heroes[id], t = h.tiers[s.tier], k = 1 + 0.07 * (s.lv - D.TIER_LV[s.tier]);
-      return `<div class="pcard rcard"><div class="pimg ${id === 'pupphead' || id === 'fallen' ? 'whole' : ''}" style="background-image:url(assets/story/stand/${HERO_STAND[id]}.webp)"></div>
-        <div class="pfoot"><span class="plv">Lv.${s.lv}</span><b>${h.name}</b><small>${kindTag(h.kind)} · ${t.cls}</small></div>
-        <div class="ptroop rst"><span>체력 ${Math.round(t.hp * k)}</span><span>공격 ${Math.round(t.at * k)}</span><span>방어 ${Math.round(t.df * k)}</span></div></div>`;
+      const h = D.HEROES[id], s = save.heroes[id], c = CL.stats(id, s);
+      return `<div class="pcard rcard" data-h="${id}"><div class="pimg ${id === 'pupphead' || id === 'fallen' ? 'whole' : ''}"><canvas class="pcv" data-stand="${standOf(id)}"></canvas></div>
+        ${CL.canChange(id, s) ? '<i class="pcc">전직 가능</i>' : ''}
+        <div class="pfoot"><span class="plv">Lv.${s.lv}</span><b>${h.name}</b><small>${kindTag(c.kind)} · ${c.cls}</small></div>
+        <div class="ptroop rst"><span>체력 ${c.hp}</span><span>공격 ${c.at}</span><span>방어 ${c.df}</span></div></div>`;
     }).join('');
     $('modal').classList.add('wide');
-    modal(`<h3>부대 현황 <small style="color:#8d95a8;font:13px LO_M">합류 ${j.size}명</small></h3><div class="rgrid">${cards}</div><div class="opts"><button class="gold" data-a="ok">닫기</button></div>`, () => $('modal').classList.remove('wide'));
+    modal(`<h3>부대 현황 <small style="color:#8d95a8;font:13px LO_M">합류 ${j.size}명 · 카드를 누르면 전직</small></h3><div class="rgrid">${cards}</div><div class="opts"><button class="gold" data-a="ok">닫기</button></div>`, (a, b) => {
+      $('modal').classList.remove('wide');
+      const c = b && b.closest && b.closest('.rcard');
+      if (c) classChange(c.dataset.h, heroRoster);
+    });
+    $('modal').querySelectorAll('.rcard').forEach((c) => (c.dataset.a = 'hero'));
+    liveCards();
   }
   const joined = () => new Set(D.STAGES.slice(0, Math.min(D.STAGES.length, save.clear + 1)).flatMap((s) => s.heroes));
   function heroStatLine(id) {
-    const h = D.HEROES[id], s = save.heroes[id], t = h.tiers[s.tier], k = 1 + 0.07 * (s.lv - D.TIER_LV[s.tier]);
-    return `${kindTag(h.kind)} 체력 <b>${Math.round(t.hp * k)}</b> · 공격 <b>${Math.round(t.at * k)}</b> · 방어 <b>${Math.round(t.df * k)}</b> · 이동 <b>${t.mov}</b> · 사거리 <b>${h.rng}</b>`;
+    const h = D.HEROES[id], c = CL.stats(id, save.heroes[id]);
+    return `${kindTag(c.kind)} 체력 <b>${c.hp}</b> · 공격 <b>${c.at}</b> · 방어 <b>${c.df}</b> · 이동 <b>${c.mov}</b> · 사거리 <b>${c.rng}</b>`;
   }
   function heroCards() {
     const j = joined();
     return Object.entries(D.HEROES).filter(([id]) => j.has(id)).map(([id, h]) => {
-      const s = save.heroes[id], t = h.tiers[s.tier];
-      return `<div class="hero"><div class="pic" style="background-image:url(${IMG[h.icon]})"></div>
-        <div class="nm">${h.full}<small>Lv${s.lv} · ${t.cls}</small></div>
+      const s = save.heroes[id];
+      return `<div class="hero"><div class="pic" style="background-image:url(${IMG[iconOf(id)]})"></div>
+        <div class="nm">${h.full}<small>Lv${s.lv} · ${clsOf(id)}</small></div>
         <div class="st">${heroStatLine(id)}</div></div>`;
     }).join('');
+  }
+
+  // 전직 (랑그릿사식 전직 나무): 기본 → 갈래 A·B 중 하나(Lv5) → 같은 갈래 상위 직업(Lv10). 직업마다 원작 스킨 일러스트·SD
+  function classChange(id, done) {
+    const h = D.HEROES[id], s = save.heroes[id];
+    const opts = CL.options(id, s);
+    let sel = opts[0] || CL.cur(id, s);
+    let changed = false;
+    const key = (n) => (n.tier ? n.br + n.tier : 'R');
+    const nodes = { R: CL.node(id, 0), A1: CL.node(id, 1, 'A'), A2: CL.node(id, 2, 'A'), B1: CL.node(id, 1, 'B'), B2: CL.node(id, 2, 'B') };
+    const stateOf = (n) => {
+      if (!n.tier) return s.tier === 0 ? 'cur' : 'done';
+      if (s.tier >= n.tier && s.br === n.br) return s.tier === n.tier ? 'cur' : 'done';
+      if (s.tier >= 1 && s.br !== n.br) return 'closed'; // 다른 갈래를 골랐다
+      if (s.tier === n.tier - 1) return CL.canChange(id, s) ? 'ready' : 'next';
+      return 'lock';
+    };
+    const iconFor = (n) => IMG[n.skin === 'N' ? h.icon : h.icon.replace(/_N$/, '_' + n.skin)] || IMG[h.icon];
+    const standFor = (n) => CL.standOfNode(id, n) || HERO_STAND[id];
+    const ov = document.createElement('div');
+    ov.id = 'ccOv';
+    document.body.appendChild(ov);
+    const close = () => { ov.querySelectorAll('canvas[data-stand]').forEach((c) => PORTRAIT.detach(c)); ov.remove(); done && done(changed); };
+    const nodeBtn = (k) => {
+      const n = nodes[k], stt = stateOf(n);
+      return `<button class="ccn ${stt} ${key(sel) === k ? 'sel' : ''}" data-k="${k}"><img src="${iconFor(n)}" alt=""><span>
+        <small>${n.tier ? `Lv.${D.TIER_LV[n.tier]} · ` : ''}${D.KIND[n.kind].name}</small><b>${n.cls}</b>
+        <em>${{ cur: '현재 직업', done: '전직 완료', ready: '전직 가능', next: `Lv.${D.TIER_LV[n.tier]}부터`, closed: '다른 갈래', lock: '잠김' }[stt]}</em></span></button>`;
+    };
+    const info = () => {
+      const n = sel, c0 = CL.stats(id, s), c1 = CL.stats(id, s, n.tier, n.br), t0 = CL.cur(id, s), t1 = n;
+      const MOVE = { foot: '보행', horse: '기마', fly: '비행' };
+      const d = (a, b) => (b > a ? `<em class="up">▲${b - a}</em>` : b < a ? `<em class="dn">▼${a - b}</em>` : '');
+      const ns = t1.skills.filter((k) => !t0.skills.includes(k)), nt = t1.troops.filter((k) => !t0.troops.includes(k));
+      const can = opts.some((o) => key(o) === key(n)) && CL.canChange(id, s);
+      const chg = (a, b, txt) => (a !== b ? `<em class="cc-chg">${txt}</em>` : '');
+      return `<div class="cc-form"><div><label>병종</label>${kindTag(t1.kind)}${chg(t0.kind, t1.kind, `← ${D.KIND[t0.kind].name}`)}</div>
+          <div><label>이동</label><b>${MOVE[t1.move]} ${t1.mov}</b>${chg(t0.move + t0.mov, t1.move + t1.mov, `← ${MOVE[t0.move]} ${t0.mov}`)}</div>
+          <div><label>사거리</label><b>${t1.rng}</b>${chg(t0.rng, t1.rng, `← ${t0.rng}`)}</div></div>
+        <div class="cc-st"><div><label>체력</label><b>${c1.hp}</b>${d(c0.hp, c1.hp)}</div><div><label>공격</label><b>${c1.at}</b>${d(c0.at, c1.at)}</div>
+        <div><label>방어</label><b>${c1.df}</b>${d(c0.df, c1.df)}</div></div>
+        <div class="cc-tag">${n.desc || (n.tier ? '' : '기본 직업')}</div>
+        <div class="cc-new">${ns.length ? `<div><label>새 특기</label>${ns.map((k) => `<b>${D.SKILLS[k].name}</b><small>${D.SKILLS[k].desc}</small>`).join('')}</div>` : ''}
+          ${nt.length ? `<div><label>새 병사</label>${nt.map((k) => `<span><img src="${IMG[D.TROOPS[k].icon]}" alt="">${D.TROOPS[k].name}</span>`).join('')}</div>` : ''}
+          <div><label>특기</label>${t1.skills.map((k) => D.SKILLS[k].name).join(' · ')}</div><div><label>배속 병사</label>${t1.troops.map((k) => D.TROOPS[k].short).join(' · ')}</div></div>
+        <div class="cc-btns"><button class="wgo" id="ccGo" ${can ? '' : 'disabled'}><b>전직</b><small>${can ? 'CLASS CHANGE' : stateOf(n) === 'next' ? `Lv.${D.TIER_LV[n.tier]}부터` : stateOf(n) === 'cur' || stateOf(n) === 'done' ? '이미 거친 직업' : '고를 수 없음'}</small></button>
+          <button class="lo-btn dark" id="ccX">닫기</button></div>`;
+    };
+    const render = () => {
+      ov.querySelectorAll('canvas[data-stand]').forEach((c) => PORTRAIT.detach(c));
+      ov.innerHTML = `<div class="cc">
+        <div class="whead"><button class="wback" id="ccBack" aria-label="뒤로"></button><div class="wtitle"><small>CLASS CHANGE · Lv.${s.lv}</small><b>${h.full} 전직</b></div></div>
+        <div class="cc-pv"><canvas data-stand="${standFor(sel)}"></canvas><div class="cc-name"><small>${sel.skin === 'N' ? '기본 모습' : sel.skinName}</small><b>${sel.cls}</b></div></div>
+        <div class="cc-r"><div class="cc-tree">
+            <div class="cc-col">${nodeBtn('R')}</div>
+            <div class="cc-col">${nodeBtn('A1')}${nodeBtn('B1')}</div>
+            <div class="cc-col">${nodeBtn('A2')}${nodeBtn('B2')}</div></div>
+          <div class="cc-info">${info()}</div></div></div>`;
+      const cv = ov.querySelector('.cc-pv canvas');
+      PORTRAIT.attach(cv, cv.dataset.stand, { h: Math.max(300, ov.querySelector('.cc-pv').getBoundingClientRect().height) });
+      ov.querySelectorAll('.ccn').forEach((b) => (b.onclick = () => { AU.play('lo_pick', 0.5); sel = nodes[b.dataset.k]; render(); }));
+      $('ccBack').onclick = $('ccX').onclick = () => { AU.play('lo_click', 0.5); close(); };
+      $('ccGo').onclick = () => {
+        if (!opts.some((o) => key(o) === key(sel)) || !CL.canChange(id, s)) return;
+        s.tier = sel.tier; s.br = sel.br; writeSave(); changed = true;
+        AU.play('lo_join', 0.8); heroVoice(id, 'Join');
+        toast(`전직 · ${h.name} → ${sel.cls}`);
+        ov.classList.add('flash');
+        setTimeout(() => ov.classList.remove('flash'), 700);
+        opts.length = 0; opts.push(...CL.options(id, s));
+        render();
+      };
+    };
+    render();
+    ov.close = close;
   }
 
   // 출격 준비: 원작 편성 화면처럼 영웅 카드 + 오른쪽 상세(능력치·특기·병사 배속). 고를 때 인물 음성
   const HERO_STAND = { constantia: '3P_ConstantiaS2_N_Smile', griffon: 'BR_PA00EL_N_Smile', johanna: 'DS_Johanna_N_Smile', lrl: 'PECS_LRL_N_Laugh', pupphead: 'PECS_PuppHead_N', fallen: 'AGS_Fallen_N',
     amy: 'BR_Amy_N_Smile', coco: 'PECS_CoCoWhiteShell_N_Smile', marie: 'BR_Marie_N_Smile', scathy: 'BR_Scathy_N_Smile', labiata: '3P_Labiata_N_Smile' };
   const heroVoice = (id, kind) => AU.voice(id + '_' + kind);
+  // 전직(js/classes.js): 지금 직업의 스킨 일러스트·아이콘, 능력치
+  const CL = window.CLASSES;
+  const standOf = (id) => CL.standOf(id, save.heroes[id]) || HERO_STAND[id];
+  const iconOf = (id) => CL.iconOf(id, save.heroes[id]);
+  const clsOf = (id) => CL.cur(id, save.heroes[id]).cls;
+  const formOf = (id) => CL.cur(id, save.heroes[id]); // 지금 직업: kind·move·rng·mov·troops·skills
   // 화면 안의 일러스트 캔버스(data-stand)를 움직이는 일러스트로 (js/portrait.js). 화면이 바뀌면 알아서 정리된다
   function liveCards() {
     document.querySelectorAll('canvas[data-stand]').forEach((cv) => {
@@ -2286,7 +2392,7 @@
     }
     const pick = {};
     for (const id of roster) {
-      const t = D.HEROES[id].tiers[save.heroes[id].tier];
+      const t = formOf(id);
       pick[id] = t.troops.includes(save.troops[id]) ? save.troops[id] : t.troops[0];
     }
     const j = joined();
@@ -2295,15 +2401,15 @@
     const fresh = st.heroes.find((id) => !(save.joined || []).includes(id));
     AU.bgm('lo_lobby');
     const stat = (id) => {
-      const h = D.HEROES[id], s = save.heroes[id], t = h.tiers[s.tier], k = 1 + 0.07 * (s.lv - D.TIER_LV[s.tier]);
-      return { h, s, t, hp: Math.round(t.hp * k), at: Math.round(t.at * k), df: Math.round(t.df * k) };
+      const h = D.HEROES[id], s = save.heroes[id], c = CL.stats(id, s);
+      return { h, s, t: Object.assign({}, c.t, { cls: c.cls }), hp: c.hp, at: c.at, df: c.df };
     };
     const card = (id) => {
       const { h, s, t } = stat(id), tr = D.TROOPS[pick[id]];
       return `<button class="pcard ${id === cur ? 'sel' : ''} ${st.heroes.includes(id) ? '' : 'off'}" data-h="${id}">
-        <div class="pimg ${id === 'pupphead' || id === 'fallen' ? 'whole' : ''}"><canvas class="pcv" data-stand="${HERO_STAND[id]}"></canvas></div>
-        ${(save.joined || []).includes(id) ? '' : '<i class="pnew">NEW</i>'}
-        <div class="pfoot"><span class="plv">Lv.${s.lv}</span><b>${h.name}</b><small>${kindTag(h.kind)} · ${t.cls}</small></div>
+        <div class="pimg ${id === 'pupphead' || id === 'fallen' ? 'whole' : ''}"><canvas class="pcv" data-stand="${standOf(id)}"></canvas></div>
+        ${(save.joined || []).includes(id) ? '' : '<i class="pnew">NEW</i>'}${CL.canChange(id, s) ? '<i class="pcc">전직 가능</i>' : ''}
+        <div class="pfoot"><span class="plv">Lv.${s.lv}</span><b>${h.name}</b><small>${kindTag(t.kind)} · ${t.cls}</small></div>
         <div class="ptroop"><img src="${IMG[tr.icon]}" alt=""><span>${tr.short} ×${R.SQUAD}</span></div><i class="psel"></i><i class="poff">대기</i></button>`;
     };
     const detail = () => {
@@ -2316,8 +2422,9 @@
         : `<button class="pd-sortie ${inP ? 'on' : ''}" id="pTog">${inP ? '출전 중 · 누르면 대기' : st.heroes.length >= st.free ? `대기 중 · 출전 인원이 가득 찼습니다 (${st.free}명)` : '대기 중 · 누르면 출전'}</button>`;
       return `<div class="pd-head"><b>${h.full}</b><span>${t.cls}</span></div>${sortie}
         <div class="pd-lv"><span>Lv.<b>${s.lv}</b></span><div class="pd-exp"><i style="width:${Math.min(100, s.exp)}%"></i></div>${next ? `<small>Lv.${next}에 전직</small>` : '<small>최종 전직</small>'}</div>
-        <div class="pd-stats"><div><label>병종</label>${kindTag(h.kind)}</div><div><label>체력</label><b>${hp}</b></div><div><label>공격</label><b>${at}</b></div>
-          <div><label>방어</label><b>${df}</b></div><div><label>이동</label><b>${t.mov}</b></div><div><label>사거리</label><b>${h.rng}</b></div></div>
+        <button class="pd-cc ${CL.canChange(id, s) ? 'ready' : ''}" id="pCC"><b>전직</b><small>${CL.canChange(id, s) ? '전직할 수 있습니다' : next ? `Lv.${next}부터 · 전직 나무 보기` : '최종 전직 완료 · 전직 나무 보기'}</small></button>
+        <div class="pd-stats"><div><label>병종</label>${kindTag(t.kind)}</div><div><label>체력</label><b>${hp}</b></div><div><label>공격</label><b>${at}</b></div>
+          <div><label>방어</label><b>${df}</b></div><div><label>이동</label><b>${t.mov}</b></div><div><label>사거리</label><b>${t.rng}</b></div></div>
         <div class="wi-sub">특기</div><div class="pd-skills">${t.skills.map((k) => { const sk = D.SKILLS[k]; return `<div><b>${sk.name}</b><small>재사용 ${sk.cd}턴 · ${sk.desc}</small></div>`; }).join('')}</div>
         <div class="wi-sub">병사 배속 <small>공격받으면 병사가 먼저 피해를 받습니다</small></div><div class="pd-troops">${troops}</div>`;
     };
@@ -2346,6 +2453,11 @@
       }));
       bindTroops();
     };
+    // 전직 버튼: 전직 창을 열고, 전직하면 카드(스킨 일러스트)까지 다시 그린다
+    const bindCC = () => {
+      const b = $('pCC');
+      if (b) b.onclick = () => { AU.play('lo_click', 0.6); classChange(cur, (changed) => { if (changed) { const t = formOf(cur); if (!t.troops.includes(pick[cur])) pick[cur] = t.troops[0]; render(); bindCC(); } }); };
+    };
     // 고를 때는 화면 전체를 다시 그리지 않고 바뀐 곳만 (움직이는 일러스트가 처음부터 다시 시작하지 않게)
     const bindTroops = () => {
       document.querySelectorAll('.ptr').forEach((b) => (b.onclick = () => {
@@ -2360,6 +2472,7 @@
         else return;
         AU.play('lo_equip', 0.6); refresh();
       };
+      bindCC();
     };
     const refresh = () => {
       document.querySelectorAll('.pcard').forEach((b) => {
@@ -2408,13 +2521,13 @@
       if (old.length) {
         const avg = old.reduce((s, k) => s + save.heroes[k].lv, 0) / old.length;
         const lv = Math.max(save.heroes[id].lv, Math.round(avg) - 1);
-        save.heroes[id] = { lv, exp: 0, tier: lv >= D.TIER_LV[2] ? 2 : lv >= D.TIER_LV[1] ? 1 : 0 };
+        save.heroes[id] = { lv, exp: 0, tier: 0 }; // 전직은 출격 준비에서 직접 고른다
       }
       save.joined.push(id);
     }
     st.heroes.forEach((id, i) => {
       // 시작 칸이 모자라면 (자유 편성으로 인원이 많을 때) 첫 시작 칸 근처 빈칸
-      const p = st.starts[i] || R.freeAround(G, st.starts[0][0], st.starts[0][1], D.HEROES[id].move, 1)[0];
+      const p = st.starts[i] || R.freeAround(G, st.starts[0][0], st.starts[0][1], formOf(id).move, 1)[0];
       R.makeHero(G, id, save.heroes[id], save.troops[id], p[0], p[1]);
     });
     R.spawnWave(G, 0);
@@ -2427,7 +2540,7 @@
     $('boot').querySelector('.bstage').innerHTML = `<span>${st.idx}</span>${st.title}<small>승리 조건 · ${st.goal}</small>`;
     let n = 0;
     await Promise.all([...rigs].map((id) => SD.prepare(id).then(() => { $('loadMsg').textContent = `부대 집결 중… ${++n}/${rigs.size}`; })));
-    await Promise.all([...new Set(st.map.join('').split('').map((c) => (D.TERRAIN[c] || D.TERRAIN['.']).bg))].map((b) => loadTex('assets/bg/' + b + '.webp')));
+    await Promise.all([...new Set(st.map.join('').split('').map((c) => fightBgOf(st, c)))].map((b) => loadTex(b)));
     $('boot').classList.add('hidden');
     $('boot').querySelector('.logo').classList.remove('hidden');
     for (const u of G.units) addView(u);
@@ -2469,12 +2582,12 @@
       const list = rows.map((r, i) => {
         const up = r.lv1 > r.lv0, h = D.HEROES[r.id];
         return `<div class="rrow ${r === mvp ? 'mvp' : ''}" style="animation-delay:${0.35 + i * 0.08}s">
-          <img src="${IMG[h.icon]}" alt=""><div class="rinfo"><div class="rname"><b>${r.name}</b>${r === mvp ? '<i>MVP</i>' : ''}${r.alive ? '' : '<small>퇴각</small>'}</div>
+          <img src="${IMG[iconOf(r.id)]}" alt=""><div class="rinfo"><div class="rname"><b>${r.name}</b>${r === mvp ? '<i>MVP</i>' : ''}${r.alive ? '' : '<small>퇴각</small>'}</div>
           <div class="rlv">Lv.<b>${r.lv1}</b>${up ? `<span class="rup">LEVEL UP</span>` : ''}<em>+${gain} EXP</em></div>
           <div class="rbar"><i data-w="${r.exp1}" style="width:${up ? 0 : r.exp0}%"></i></div>${r.notes.map((n) => `<div class="rnote">${n}</div>`).join('')}</div></div>`;
       }).join('');
       screen(`<div class="rscr ${win ? 'win' : 'lose'}"><div class="pbg"></div>
-        <div class="rmvp"><canvas data-stand="${HERO_STAND[face.id]}"></canvas></div>
+        <div class="rmvp"><canvas data-stand="${standOf(face.id)}"></canvas></div>
         <div class="rpanel">
           <div class="rhead">${win ? '<img src="assets/ui/UI_Battle_Main_missionclear_label_2.png" alt="MISSION COMPLETE">' : '<b class="rfail">MISSION FAILED</b>'}
             <div class="rstage"><span>${st.idx}</span>${st.title}<small>${turn}턴</small></div></div>
@@ -2509,17 +2622,9 @@
       R.addExp(u, gain);
       s.lv = u.lv; s.exp = u.exp;
       row.lv1 = u.lv; row.exp1 = u.exp;
-      while (s.tier < 2 && s.lv >= D.TIER_LV[s.tier + 1]) {
-        const from = h.tiers[s.tier].cls;
-        s.tier++;
-        row.notes.push(`전직 · ${from} → <b>${h.tiers[s.tier].cls}</b>`);
-        const prev = h.tiers[s.tier - 1];
-        const ns = h.tiers[s.tier].skills.filter((k) => !prev.skills.includes(k)), nt = h.tiers[s.tier].troops.filter((k) => !prev.troops.includes(k));
-        if (ns.length) row.notes.push(`새 특기 · ${ns.map((k) => D.SKILLS[k].name).join(', ')}`);
-        const np = (h.passives || []).filter((p) => p.tier === s.tier);
-        if (np.length) row.notes.push(`새 수동 특기 · ${np.map((p) => p.name).join(', ')}`);
-        if (nt.length) row.notes.push(`새 병사 · ${nt.map((k) => D.TROOPS[k].short).join(', ')}`);
-      }
+      // 전직은 랑그릿사처럼 직접 고른다: 레벨이 되면 알려 주기만 (출격 준비·부대 현황의 전직 버튼)
+      if (CL.canChange(u.key, s) && !(row.lv0 >= D.TIER_LV[s.tier + 1])) row.notes.push(`<b>전직 가능</b> · 출격 준비에서 전직할 수 있습니다`);
+      void h;
       rows.push(row);
     }
     const clear0 = save.clear;
@@ -2623,7 +2728,8 @@
       const sp = dt * (v.u.acted && v.u.side === 'p' ? 0.4 : 1);
       v.rig.update(sp);
       v.rig.order = 100 + Math.round((v.g.position.z + 0.1) * 20) + 2;
-      for (const s of v.soldiers) { if (!s.bb.visible) continue; s.rig.update(sp); s.rig.order = 100 + Math.round((v.g.position.z + s.bb.position.z) * 20); }
+      // 병사는 자기 영웅은 물론 윗줄 영웅보다도 아래에 그린다
+      for (const s of v.soldiers) { if (!s.bb.visible) continue; s.rig.update(sp); s.rig.order = 100 + Math.round((v.g.position.z - 0.5) * 20) - 7 + (s.bb.position.z > -0.12 ? 1 : 0); }
       v.ring.scale.setScalar(ui.sel === v.u ? 1 + Math.sin(t * 6) * 0.08 : 1);
       if (v.u.move === 'fly') v.bb.position.y = 0.06 + Math.sin(t * 2.2 + v.bob) * 0.04;
     }
@@ -2679,7 +2785,7 @@
     // 시험용 훅
     window.GAME = {
       get G() { return G; }, get mode() { return mode; }, get ui() { return ui; }, save, R, D,
-      launch, prep, setAuto, startStage, endTurn, onTap, fitCamera, views, camera, cam, stageSelect, title, enterTown,
+      launch, prep, setAuto, startStage, endTurn, onTap, fitCamera, views, camera, cam, stageSelect, title, enterTown, fightBgOf,
       // 창이 숨겨져 rAF가 멈춘 상태에서 시험할 때: 시간을 직접 진행하고 한 장 찍어 서버에 저장
       step(sec) { for (let i = 0; i < Math.round(sec * 30); i++) step(1 / 30); },
       // 시간을 진행하면서 약속(Promise)들도 풀리게 한다 (숨은 창에서도 타이머 제한 없이)

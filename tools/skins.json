@@ -1,0 +1,209 @@
+{
+ "PECS_LRL": [
+  [
+   "PECS_LRL_NS1",
+   "2DModel_PECS_LRL_NS1",
+   "고스로리 LRL",
+   "LobbyScript_PECS_LRL_NS1",
+   "CharFace_PECS_LRL_NS1"
+  ],
+  [
+   "PECS_LRL_NS2",
+   "2DModel_PECS_LRL_NS2",
+   "교대 복귀자 보급품 1호",
+   "",
+   "CharFace_PECS_LRL_NS2"
+  ],
+  [
+   "PECS_LRL_NS3",
+   "2DModel_PECS_LRL_NS3",
+   "꿈을 이룬 소녀",
+   "LobbyScript_PECS_LRL_NS3",
+   "CharFace_PECS_LRL_NS3"
+  ],
+  [
+   "PECS_LRL_NS4",
+   "2DModel_PECS_LRL_NS4",
+   "빨간 모자 프린세스",
+   "LobbyScript_PECS_LRL_NS4",
+   "CharFace_PECS_LRL_NS4"
+  ],
+  [
+   "PECS_LRL_NS5",
+   "2DModel_PECS_LRL_NS5",
+   "아쿠아 랜드 물놀이의 사명 : 권속이 선물해준 수영복",
+   "LobbyScript_PECS_LRL_NS5",
+   "CharFace_PECS_LRL_NS5"
+  ]
+ ],
+ "3P_ConstantiaS2": [
+  [
+   "3P_ConstantiaS2_NS1",
+   "2DModel_3P_ConstantiaS2_NS1",
+   "전투수트 콘스탄챠",
+   "",
+   "CharFace_3P_ConstantiaS2_NS1"
+  ],
+  [
+   "3P_ConstantiaS2_SS1",
+   "2DModel_3P_ConstantiaS2_SS1",
+   "안경을 벗은 콘스탄챠",
+   "",
+   "CharFace_3P_ConstantiaS2_SS1"
+  ],
+  [
+   "3P_ConstantiaS2_NS2",
+   "2DModel_3P_ConstantiaS2_NS2",
+   "나이트 드레스 콘스탄챠",
+   "",
+   "CharFace_3P_ConstantiaS2_NS2"
+  ],
+  [
+   "3P_ConstantiaS2_NS3",
+   "2DModel_3P_ConstantiaS2_NS3",
+   "당신만을 기다리는 근위총병",
+   "LobbyScript_3P_ConstantiaS2_NS3",
+   "CharFace_3P_ConstantiaS2_NS3"
+  ]
+ ],
+ "BR_PA00EL": [
+  [
+   "BR_PA00EL_NS1",
+   "2DModel_BR_PA00EL_NS1",
+   "예장복 그리폰",
+   "",
+   "CharFace_BR_PA00EL_NS1"
+  ],
+  [
+   "BR_PA00EL_SS1",
+   "2DModel_BR_PA00EL_SS1",
+   "정찰용 그리폰",
+   "",
+   "CharFace_BR_PA00EL_SS1"
+  ],
+  [
+   "BR_PA00EL_NS2",
+   "2DModel_BR_PA00EL_NS2",
+   "프로젝트 오르카: 그리폰",
+   "LobbyScript_BR_PA00EL_NS2",
+   "CharFace_BR_PA00EL_NS2"
+  ],
+  [
+   "BR_PA00EL_NS3",
+   "2DModel_BR_PA00EL_NS3",
+   "벌써 5년",
+   "LobbyScript_BR_PA00EL_NS3",
+   "CharFace_BR_PA00EL_NS3"
+  ]
+ ],
+ "BR_Amy": [
+  [
+   "BR_Amy_NS1",
+   "2DModel_BR_Amy_NS1",
+   "전투복 에이미",
+   "",
+   "CharFace_BR_Amy_NS1"
+  ],
+  [
+   "BR_Amy_NS2",
+   "2DModel_BR_Amy_NS2",
+   "드림위버 웨딩 스페셜 : 파랑새",
+   "LobbyScript_BR_Amy_NS2",
+   "CharFace_BR_Amy_NS2"
+  ]
+ ],
+ "BR_Marie": [
+  [
+   "BR_Marie_NS1",
+   "2DModel_BR_Marie_NS1",
+   "수줍은 고백",
+   "LobbyScript_BR_Marie_NS1",
+   "CharFace_BR_Marie_NS1"
+  ],
+  [
+   "BR_Marie_NS2",
+   "2DModel_BR_Marie_NS2",
+   "마리의 란제리 선물",
+   "LobbyScript_BR_Marie_NS2",
+   "CharFace_BR_Marie_NS2"
+  ],
+  [
+   "BR_Marie_NS3",
+   "2DModel_BR_Marie_NS3",
+   "하계 전투복 마리",
+   "LobbyScript_BR_Marie_NS3",
+   "CharFace_BR_Marie_NS3"
+  ]
+ ],
+ "BR_Scathy": [
+  [
+   "BR_Scathy_NS1",
+   "2DModel_BR_Scathy_NS1",
+   "위험한 가족 : 또 하나의 가족을 위해",
+   "LobbyScript_BR_Scathy_NS1",
+   "CharFace_BR_Scathy_NS1"
+  ],
+  [
+   "BR_Scathy_NS2",
+   "2DModel_BR_Scathy_NS2",
+   "드림위버 모던 컬렉션: Dress Hook Hacker​",
+   "LobbyScript_BR_Scathy_NS2",
+   "CharFace_BR_Scathy_NS2"
+  ]
+ ],
+ "3P_Labiata": [
+  [
+   "3P_Labiata_NS1",
+   "2DModel_3P_Labiata_NS1",
+   "한겨울의 만찬 라비아타",
+   "LobbyScript_3P_Labiata_NS1",
+   "CharFace_3P_Labiata_NS1"
+  ],
+  [
+   "3P_Labiata_SS1",
+   "2DModel_3P_Labiata_SS1",
+   "본 모습을 찾은 라비아타",
+   "",
+   "CharFace_3P_Labiata_SS1"
+  ],
+  [
+   "3P_Labiata_NS3",
+   "2DModel_3P_Labiata_NS3",
+   "혼자만의 휴가",
+   "LobbyScript_3P_Labiata_NS3",
+   "CharFace_3P_Labiata_NS3"
+  ],
+  [
+   "3P_Labiata_NS4",
+   "2DModel_3P_Labiata_NS4",
+   "과거 혼자만의 휴가",
+   "LobbyScript_3P_Labiata_NS4",
+   "CharFace_3P_Labiata_NS4"
+  ],
+  [
+   "3P_Labiata_NS5",
+   "2DModel_3P_Labiata_NS5",
+   "눈 속에 피는 꽃",
+   "LobbyScript_3P_Labiata_NS5",
+   "CharFace_3P_Labiata_NS5"
+  ]
+ ],
+ "DS_Johanna": [
+  [
+   "DS_Johanna_NS1",
+   "2DModel_DS_Johanna_NS1",
+   "수호성인 요안나",
+   "LobbyScript_DS_Johanna_NS1",
+   "CharFace_DS_Johanna_NS1"
+  ]
+ ],
+ "PECS_CoCoWhiteShell": [
+  [
+   "PECS_CoCoWhiteShell_NS1",
+   "2DModel_PECS_CoCoWhiteShell_NS1",
+   "STAR CHILD : 별의 수호자 스페이스 슈트",
+   "LobbyScript_PECS_CoCoWhiteShell_NS1",
+   "CharFace_PECS_CoCoWhiteShell_NS1"
+  ]
+ ]
+}

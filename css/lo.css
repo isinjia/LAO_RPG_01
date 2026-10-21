@@ -607,3 +607,69 @@
 .ifrow.on { background: rgba(255, 59, 92, .08); box-shadow: inset 0 0 0 1px rgba(255, 59, 92, .45); color: #fff; }
 .ifrow.on b { color: #ff3b5c; }
 .ifrow.on small { color: #aab2c4; }
+
+/* ── 전직 (랑그릿사식 전직 나무 · 원작 스킨) ── */
+.pd-cc { display: flex; align-items: center; gap: 10px; width: 100%; margin: 2px 0 10px; padding: 9px 14px; border: 1px solid var(--lo-line); border-radius: 0; background: rgba(255,255,255,.05); color: #cfd5e2; text-align: left;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%); }
+.pd-cc b { font: 16px 'LO_B', sans-serif; color: #fff; }
+.pd-cc small { font-size: 12px; color: #9aa6c4; }
+.pd-cc.ready { background: linear-gradient(90deg, rgba(255, 204, 0, .28), rgba(255, 204, 0, .08)); border-color: var(--lo-y); animation: ccPulse 1.4s ease-in-out infinite; }
+.pd-cc.ready b, .pd-cc.ready small { color: var(--lo-y); }
+@keyframes ccPulse { 50% { box-shadow: 0 0 14px rgba(255, 204, 0, .55); } }
+.pcard .pcc, .rcard .pcc { position: absolute; z-index: 5; right: 6px; top: 6px; padding: 2px 8px; font: normal 11px 'LO_B', sans-serif; color: #111; background: var(--lo-y); box-shadow: 0 0 8px rgba(255, 204, 0, .7); }
+.rcard { cursor: pointer; }
+#ccOv { position: fixed; inset: 0; z-index: 60; background: radial-gradient(ellipse at 30% 50%, #1d2840, #070a12 75%); animation: ccIn .25s ease; }
+#ccOv.flash::after { content: ''; position: absolute; inset: 0; background: #fff; animation: ccFlash .7s ease-out forwards; pointer-events: none; }
+@keyframes ccIn { from { opacity: 0; } }
+@keyframes ccFlash { from { opacity: .9; } to { opacity: 0; } }
+.cc { position: absolute; inset: 0; display: grid; grid-template-columns: minmax(0, 42%) minmax(0, 1fr); }
+.cc .whead { z-index: 3; }
+.cc-pv { position: relative; overflow: hidden; }
+.cc-pv canvas { position: absolute; left: 50%; bottom: 0; height: 100%; width: auto; transform: translateX(-50%); }
+.cc-name { position: absolute; left: 0; right: 0; bottom: 0; padding: 40px 24px calc(18px + var(--safe-b)); background: linear-gradient(transparent, rgba(5, 8, 14, .9)); }
+.cc-name small { display: block; color: var(--lo-y); font: 12px 'LO_B', sans-serif; letter-spacing: 1px; }
+.cc-name b { font: 30px 'LO_B', sans-serif; color: #fff; }
+.cc-r { display: flex; flex-direction: column; gap: 14px; padding: calc(70px + var(--safe-t)) calc(20px + var(--safe-r)) calc(16px + var(--safe-b)) 10px; overflow-y: auto; }
+.cc-tree { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 22px; align-items: center; }
+.cc-col { display: flex; flex-direction: column; gap: 14px; position: relative; }
+.cc-col + .cc-col::before { content: '▶'; position: absolute; left: -18px; top: 50%; transform: translateY(-50%); color: #5d6782; font-size: 12px; }
+.ccn { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--lo-line); border-radius: 0; background: rgba(12, 17, 28, .85); color: #fff; text-align: left; min-height: 66px;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%); }
+.ccn img { width: 48px; height: 48px; flex: none; object-fit: cover; border: 1px solid #ffffff33; }
+.ccn span { display: flex; flex-direction: column; min-width: 0; }
+.ccn small { font-size: 10px; color: #8d97b0; }
+.ccn b { font: 14px 'LO_B', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ccn em { font: normal 11px 'LO_B', sans-serif; color: #8d97b0; }
+.ccn.cur { border-color: #4aa8ff; } .ccn.cur em { color: #7cc0ff; }
+.ccn.done em { color: #8bf03a; }
+.ccn.ready { border-color: var(--lo-y); animation: ccPulse 1.4s ease-in-out infinite; } .ccn.ready em { color: var(--lo-y); }
+.ccn.closed, .ccn.lock { opacity: .5; } .ccn.closed img, .ccn.lock img { filter: grayscale(1); }
+.ccn.sel { background: linear-gradient(90deg, rgba(255, 204, 0, .25), rgba(12, 17, 28, .85)); border-color: var(--lo-y); opacity: 1; }
+.cc-info { display: flex; flex-direction: column; gap: 10px; }
+.cc-st { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.cc-form { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.cc-form div { padding: 8px 10px; background: rgba(255, 204, 0, .08); border-left: 3px solid var(--lo-y); }
+.cc-form label { display: block; font-size: 11px; color: #8d97b0; margin-bottom: 2px; }
+.cc-form b { font: 16px 'LO_B', sans-serif; color: #fff; }
+.cc-form .kind { font-size: 13px; }
+.cc-chg { display: block; font-style: normal; font-size: 11px; color: var(--lo-y); margin-top: 2px; }
+.cc-st div { padding: 8px 10px; background: rgba(255,255,255,.05); }
+.cc-st label { display: block; font-size: 11px; color: #8d97b0; }
+.cc-st b { font: 20px 'LO_B', sans-serif; color: #fff; }
+.cc-st em { font-style: normal; font-size: 12px; margin-left: 4px; } .cc-st .up { color: #8bf03a; } .cc-st .dn { color: #ff8a7a; }
+.cc-tag { font: 13px 'LO_B', sans-serif; color: var(--lo-y); }
+.cc-new { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #cfd5e2; }
+.cc-new label { display: inline-block; min-width: 70px; color: #8d97b0; font-size: 12px; }
+.cc-new b { color: #fff; margin-right: 6px; } .cc-new small { color: #9aa6c4; }
+.cc-new span { display: inline-flex; align-items: center; gap: 4px; margin-right: 8px; } .cc-new span img { width: 22px; height: 22px; }
+.cc-btns { display: flex; gap: 10px; align-items: stretch; margin-top: 4px; }
+.cc-btns .wgo { flex: 1; height: 62px; }
+.cc-btns .wgo:disabled { filter: grayscale(1) brightness(.6); }
+.cc-btns .lo-btn { min-width: 110px; }
+@media (orientation: portrait) {
+  .cc { grid-template-columns: 1fr; grid-template-rows: 40vh 1fr; }
+  .cc-r { padding: 10px 10px calc(12px + var(--safe-b)); }
+  .cc-tree { gap: 0 16px; } .ccn { min-height: 56px; padding: 6px; } .ccn img { width: 36px; height: 36px; } .ccn b { font-size: 12px; }
+  .cc-col + .cc-col::before { left: -13px; }
+  .cc-name b { font-size: 22px; }
+}

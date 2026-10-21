@@ -44,6 +44,14 @@ PORTRAITS = {"p_constantia": "3P_ConstantiaS2_N", "p_griffon": "BR_PA00EL_N", "p
              "p_pupphead": "PECS_PuppHead_N", "p_fallen": "AGS_Fallen_N",
              "p_amy": "BR_Amy_N", "p_coco": "PECS_CoCoWhiteShell_N", "p_marie": "BR_Marie_N",
              "p_scathy": "BR_Scathy_N", "p_labiata": "3P_Labiata_N"}
+
+# 전직 스킨 (전직 단계마다 원작 스킨의 SD)
+SKIN_UNITS = {"constantia_NS1": "3P_ConstantiaS2_NS1", "constantia_NS3": "3P_ConstantiaS2_NS3", "constantia_SS1": "3P_ConstantiaS2_SS1", "constantia_NS2": "3P_ConstantiaS2_NS2", "griffon_SS1": "BR_PA00EL_SS1", "griffon_NS2": "BR_PA00EL_NS2", "griffon_NS1": "BR_PA00EL_NS1", "griffon_NS3": "BR_PA00EL_NS3", "johanna_NS1": "DS_Johanna_NS1", "lrl_NS1": "PECS_LRL_NS1", "lrl_NS4": "PECS_LRL_NS4", "lrl_NS2": "PECS_LRL_NS2", "lrl_NS3": "PECS_LRL_NS3", "fallen_RV": "AGS_Fallen_RV", "marie_NS3": "BR_Marie_NS3", "marie_NS1": "BR_Marie_NS1", "labiata_NS1": "3P_Labiata_NS1", "labiata_SS1": "3P_Labiata_SS1", "labiata_NS3": "3P_Labiata_NS3", "labiata_NS5": "3P_Labiata_NS5", "scathy_NS1": "BR_Scathy_NS1", "scathy_NS2": "BR_Scathy_NS2", "amy_NS1": "BR_Amy_NS1", "amy_NS2": "BR_Amy_NS2", "coco_NS1": "PECS_CoCoWhiteShell_NS1"}
+UNITS.update(SKIN_UNITS)
+
+# 전직 스킨 일러스트 (스파인·중첩 프리팹이라 못 만드는 라비아타 NS3·스카디 NS2·코코 NS1 은 뺌: 기본 일러스트를 씀)
+SKIN_PORTRAITS = {"p_constantia_NS1": "3P_ConstantiaS2_NS1", "p_constantia_NS3": "3P_ConstantiaS2_NS3", "p_constantia_SS1": "3P_ConstantiaS2_SS1", "p_constantia_NS2": "3P_ConstantiaS2_NS2", "p_griffon_SS1": "BR_PA00EL_SS1", "p_griffon_NS2": "BR_PA00EL_NS2", "p_griffon_NS1": "BR_PA00EL_NS1", "p_griffon_NS3": "BR_PA00EL_NS3", "p_johanna_NS1": "DS_Johanna_NS1", "p_lrl_NS1": "PECS_LRL_NS1", "p_lrl_NS4": "PECS_LRL_NS4", "p_lrl_NS2": "PECS_LRL_NS2", "p_lrl_NS3": "PECS_LRL_NS3", "p_marie_NS3": "BR_Marie_NS3", "p_marie_NS1": "BR_Marie_NS1", "p_labiata_NS1": "3P_Labiata_NS1", "p_labiata_SS1": "3P_Labiata_SS1", "p_labiata_NS5": "3P_Labiata_NS5", "p_scathy_NS1": "BR_Scathy_NS1", "p_amy_NS1": "BR_Amy_NS1", "p_amy_NS2": "BR_Amy_NS2"}
+PORTRAITS.update(SKIN_PORTRAITS)
 PORTRAIT_DIR = ROOT + "/AssetBundleResource/Character_2D"
 FACE_DIR = ROOT + "/AssetBundleResource/Texture/face"
 PORTRAIT_ATLAS = (0.62, 0.42)  # 일러스트는 화면 높이만큼 크게 그리므로 원본 해상도 기준으로 더 크게 남긴다 (PC, 휴대폰)
@@ -319,7 +327,7 @@ def build_prefab(path, atlas):
         for ch in t.get("m_Children") or []:
             cid = str(ch["fileID"])
             if cid in tr:
-                walk(cid, ix, (path + "/" if path else "") + go.get(str(tr[cid]["m_GameObject"]["fileID"]), {}).get("m_Name", "?"))
+                walk(cid, ix, (path + "/" if path else "") + str(go.get(str(tr[cid]["m_GameObject"]["fileID"]), {}).get("m_Name", "?")))
 
     walk(root, -1, "")
     # animation paths are relative to the Animator's GameObject
@@ -1017,10 +1025,17 @@ def build(uid):
     for db in dyn:
         extra |= {n["path"] for n in nodes if n["path"] == db["r"] or n["path"].startswith(db["r"] + "/")}
         extra |= {cc["n"] for cc in db["c"]}
+    if uid.startswith("p_"):  # 정지 스킨 일러스트의 방 배경·카메라 경계 그림은 빼고 인물만
+        bgp = [n["path"] for n in nodes if n["n"] in ("BG", "Camera_Boundary")]
+        for n in nodes:
+            if any(n["path"] == q or n["path"].startswith(q + "/") for q in bgp):
+                n.pop("sr", None)
     nodes = prune(nodes, clips, extra)
     for n in nodes:
         n.pop("_tid", None); n.pop("_gid", None)
     quantize_clips(clips)
+    if uid.startswith("p_") and "idle" not in clips:  # 움직임 없는 스킨 일러스트: 멈춘 대기 자세 하나
+        clips["idle"] = {"dur": 1.0, "n": 1, "loop": 1, "tracks": []}
     atlas_meta, atlas_files = packed_atlas([p for _, p, _, _ in atlas.textures], uid in hires_ids() or uid.startswith("p_"),
                                            PORTRAIT_ATLAS if uid.startswith("p_") else None)
     data = {

@@ -140,7 +140,7 @@
       T = 0; tl = []; actors = []; fxs = []; tweens.length = 0;
       const sp = opt.speed || 1;
       bgMat.map = null; bgMat.color.set(0x223044); bgMat.needsUpdate = true;
-      K.loadTex('assets/bg/' + opt.bg + '.webp').then((t) => { if (!t) return; bgMat.map = t; bgMat.color.set(0xffffff); bgMat.needsUpdate = true; fitBg(); });
+      K.loadTex(opt.bg.includes('/') ? opt.bg : 'assets/bg/' + opt.bg + '.webp').then((t) => { if (!t) return; bgMat.map = t; bgMat.color.set(0xffffff); bgMat.needsUpdate = true; fitBg(); });
       const L = a.side === 'p' ? a : d, Rr = L === a ? d : a;
       const ui = el();
       ui.classList.remove('hidden');

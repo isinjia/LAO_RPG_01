@@ -30,10 +30,12 @@
   // 영웅: st = save.heroes[id] = {lv, exp, tier}, troopKey = 배속 병사
   R.makeHero = function (G, id, st, troopKey, x, y) {
     const h = HEROES[id];
-    const tier = h.tiers[st.tier];
+    const CL = (typeof window !== 'undefined' && window.CLASSES) || null; // 전직 (js/classes.js): 직업마다 병종·이동·사거리·병사·특기·모습
+    const tier = CL ? CL.cur(id, st) : h.tiers[st.tier];
     const u = {
-      uid: ++uid, side: 'p', key: id, def: h, name: h.name, rig: h.rig, icon: h.icon, kind: h.kind, move: h.move, rng: h.rng,
-      lv: st.lv, exp: st.exp, tier: st.tier, cls: tier.cls, x, y, alive: true, acted: false, buffs: [], cd: {}, lead: !!h.lead,
+      uid: ++uid, side: 'p', key: id, def: h, name: h.name, rig: CL ? CL.rigOf(id, st) : h.rig, icon: CL ? CL.iconOf(id, st) : h.icon,
+      kind: tier.kind || h.kind, move: tier.move || h.move, rng: tier.rng || h.rng, form: CL ? tier : null,
+      lv: st.lv, exp: st.exp, tier: st.tier, br: st.br || 'A', cls: tier.cls, x, y, alive: true, acted: false, buffs: [], cd: {}, lead: !!h.lead,
       troop: troopOf(troopKey && tier.troops.includes(troopKey) ? troopKey : tier.troops[0]),
     };
     fill(u);
@@ -91,9 +93,11 @@
   R.buffK = buffK;
   R.heroStat = function (u, k) {
     if (u.side === 'p') {
-      const t = u.def.tiers[u.tier];
+      const t = u.form || u.def.tiers[u.tier];
       if (k === 'mov') return t.mov;
-      return t[k] * (1 + 0.07 * (u.lv - TIER_LV[u.tier]));
+      const m = (u.form && u.form.m[k]) || 1; // 전직한 직업의 병종 경향
+      // 레벨 성장은 1레벨부터 이어서 세고, 전직 단계마다 6%씩 더 (전직해도 약해지지 않게)
+      return u.def.tiers[0][k] * (1 + 0.07 * (u.lv - 1)) * (1 + 0.06 * u.tier) * m;
     }
     if (k === 'mov') return u.def.mov;
     return u.def[k] * (1 + 0.07 * (u.lv - 1));
@@ -119,7 +123,7 @@
   R.troopAlive = (u) => !!(u.troop && u.troop.hp > 0);
   R.total = (u) => u.hp + (u.troop ? u.troop.hp : 0);
   R.totalMax = (u) => u.hpMax + (u.troop ? u.troop.hpMax : 0);
-  R.skillsOf = (u) => (u.side === 'p' ? u.def.tiers[u.tier].skills : u.def.skills || []);
+  R.skillsOf = (u) => (u.side === 'p' ? (u.form || u.def.tiers[u.tier]).skills : u.def.skills || []);
 
   // ── 이동 범위 ──────────────────────────────────────────
   // 적 칸은 지나갈 수 없고, 아군 칸은 지나가기만 한다.
