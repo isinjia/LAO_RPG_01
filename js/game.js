@@ -1226,7 +1226,9 @@
   async function moveSel(x, y, thenTarget) {
     const u = ui.sel;
     const path = R.path(ui.reach, x, y);
-    busy = true; showActs(null); clearOv(); setHint('');
+    // 걷는 동안에도 이동·공격 가능 범위(파랑·빨강)는 그대로 둔다
+    busy = true; showActs(null); setHint('');
+    OV.path = null; OV.targets = null; OV.aura = null; OV.skill = null; OV.area = null; drawOverlay(); skillPreview(null);
     await walk(u, path);
     busy = false;
     if (thenTarget) { ui.state = 'target'; showForecast(thenTarget); } else openActions();
