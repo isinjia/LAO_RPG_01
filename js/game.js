@@ -1352,6 +1352,7 @@
     const a = ui.sel, d = ui.target;
     if (!a || !d) return;
     $('forecast').classList.add('hidden'); LOHUD.target(null);
+    ui.state = 'attacking'; ui.target = null; // 예상 상태를 끝낸다 (표지가 다시 켜지지 않게)
     busy = true; showActs(null); clearOv(); setHint('');
     await attack(a, d);
     busy = false;
@@ -1400,6 +1401,7 @@
     const res = R.combat(G, a, d, a.x, a.y, Math.random);
     if (save.opts.fight) {
       await Promise.all([a, d].flatMap((u) => [u.rig, u.troop && u.troop.rig]).filter((r) => r && !SD.template(r)).map((r) => SD.prepare(r))); // 처음 보는 리그도 전투 장면 전에
+      LOHUD.target(null);
       mode = 'fight';
       $('hud').classList.add('hidden');
       $('banner').classList.add('hidden');
@@ -2632,7 +2634,7 @@
       world.root.add(m);
       loadTex('assets/ui/UI_Battle_main_Field_cursor_g.png').then((tx) => { if (tx) { m.material.map = tx; m.material.needsUpdate = true; } });
     }
-    if (ui.state === 'forecast' && ui.target && mode === 'map') { // TARGET 표지는 카메라가 움직여도 목표를 따라간다
+    if (ui.state === 'forecast' && ui.target && mode === 'map' && !busy) { // TARGET 표지는 카메라가 움직여도 목표를 따라간다
       const d = ui.target, sp = toScreen(new THREE.Vector3(d.x + 0.5, d.def.big ? 2.1 : 1.6, d.y + 0.5));
       LOHUD.target(sp.x, sp.y, 'r');
     }

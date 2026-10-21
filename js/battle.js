@@ -96,11 +96,13 @@
   // 랑그릿사 모바일처럼: 영웅은 맨 뒤(바깥쪽), 병사 무리는 영웅 앞(적 쪽)에 3줄
   // 영웅은 바깥쪽이되, 모서리 인물 그림에 가리지 않게 가장자리에서 조금 들인다
   const EDGE = () => Math.min(1.9, VW * 0.16);
-  const heroX = (dir) => dir * (VW / 2 - EDGE());
+  const PORT = () => VW < VH; // 세로 화면
+  // 세로 화면은 폭이 좁아 진형을 촘촘히: 앞줄 0.75, 열 간격 0.4, 영웅은 맨 뒷열 바로 뒤 (화면 안)
+  const heroX = (dir) => dir * (PORT() ? Math.min(VW / 2 - 0.6, 0.75 + 3 * 0.4 + 1.0) : VW / 2 - EDGE());
   function soldierSlots(n, side) {
     const dir = side === 'L' ? -1 : 1;
-    const front = 1.25, back = VW / 2 - EDGE() - 1.1; // 앞줄은 가운데에서 떨어뜨려 맞붙어도 틈이 남게
-    const span = Math.min(0.95, Math.max(0.5, (back - front) / 3.2));
+    const front = PORT() ? 0.75 : 1.25, back = VW / 2 - EDGE() - 1.1; // 앞줄은 가운데에서 떨어뜨려 맞붙어도 틈이 남게
+    const span = PORT() ? 0.4 : Math.min(0.95, Math.max(0.5, (back - front) / 3.2));
     const out = [];
     for (let i = 0; i < n; i++) {
       const row = i % 3, col = Math.floor(i / 3); // 앞 열부터 채운다
@@ -150,7 +152,11 @@
         const c = ui.querySelector('.fcorner.' + cls), sd = u.side === 'p' && STAND[u.rig];
         c.classList.toggle('stand', !!sd); c.classList.toggle('whole', !!sd && WHOLE.has(u.rig));
         c.querySelector('.fbust').classList.remove('hit');
-        c.querySelector('.fimg').src = sd ? 'assets/story/stand/' + sd + '.webp' : (window.IMG && IMG[u.icon]) || '';
+        const im = c.querySelector('.fimg'); // 앞 전투의 그림이 잠깐 비치지 않게, 새 그림이 다 오면 보인다
+        im.style.visibility = 'hidden';
+        im.onload = () => { im.style.visibility = ''; };
+        im.src = sd ? 'assets/story/stand/' + sd + '.webp' : (window.IMG && IMG[u.icon]) || '';
+        if (im.complete) im.style.visibility = '';
         const kind = DATA.KIND[u.troop && st[u.uid].thp > 0 ? u.troop.kind : u.kind].name;
         ui.querySelector('.fname.' + cls).innerHTML = `<b>${u.name}</b><i>${u.troop ? u.troop.def.short : kind}</i><small>Lv.${u.lv}</small>`;
         setBars(cls, u, st[u.uid].thp, st[u.uid].hp, true);
@@ -303,7 +309,9 @@
       if (f.u.side === 'e') fx(f.hero && f.u.def.big ? 'explosion_big' : 'explosion_small', p.x, p.y + lift(f) + (f.hero ? 0.9 : 0.5), { k: f.hero ? 1 : 0.55, renderOrder: 540 });
       else fx('dust_fall', p.x, p.y + 0.15, { k: f.hero ? 1 : 0.8, renderOrder: 95 }); }
     if (f.shadow) f.shadow.visible = false;
-    const away = f.side === 'L' ? -1 : 1, k = f.hero ? 0.8 : 1;
+    const away = f.side === 'L' ? -1 : 1;
+    let k = f.hero ? 0.8 : 1;
+    if (PORT()) k *= 0.62; // 세로 화면은 좁아서 덜 솟구친다
     f.fly = { vx: away * (1.4 + Math.random() * 1.8) * k, vy: (10 + Math.random() * 2.6) * k, w: -away * (5 + Math.random() * 5), t: 0, y0: f.rig.g.position.y, land: 0 };
     f.rig.c.speed = 0.25; // 자세는 맞은 순간에서 거의 멈춘다
     f.rig.c.mesh.renderOrder += 60; // 날아가는 동안 다른 병사 앞에

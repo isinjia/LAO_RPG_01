@@ -406,14 +406,17 @@
     const myMax0 = R.totalMax(u), fear = u.side === 'p' ? 2 : 0.4, riskMemo = new Map();
     const myKind = R.troopAlive(u) ? u.troop.kind : u.kind;
     // advOnly: 상성으로 나를 이기는 적만 센다 (그냥 이동할 때). 아니면 닿는 적 모두 (공격·특기를 하러 설 칸)
-    const relRisk = (x, y, advOnly) => {
-      const k = y * G.w + x + (advOnly ? 1e6 : 0);
+    // only: 'asleep' 잠든 적만 / 'awake' 깨어 있는 적만 / 없으면 모두
+    const asleep = (o) => o.side === 'e' && !o.awake;
+    const relRisk = (x, y, advOnly, only) => {
+      const k = y * G.w + x + (advOnly ? 1e6 : 0) + (only === 'asleep' ? 2e6 : only === 'awake' ? 4e6 : 0);
       if (riskMemo.has(k)) return riskMemo.get(k);
       const ox = u.x, oy = u.y; u.x = x; u.y = y;
       let n = 0, sum = 0;
       for (const o of foes) {
         if (R.dist(o.x, o.y, x, y) > R.mov(o) + o.rng) continue;
         if (advOnly && !R.relX(R.troopAlive(o) ? o.troop.kind : o.kind, myKind)) continue;
+        if ((only === 'asleep' && !asleep(o)) || (only === 'awake' && asleep(o))) continue;
         // 적이 칠 자리: 이 칸에서 적 쪽으로 한 칸씩 걸어 나가 적 사거리만큼 떨어진 칸
         let ax = x, ay = y;
         while (R.dist(ax, ay, x, y) < Math.min(o.rng, R.dist(o.x, o.y, x, y))) { if (Math.abs(o.x - ax) >= Math.abs(o.y - ay)) ax += Math.sign(o.x - ax); else ay += Math.sign(o.y - ay); }
@@ -427,7 +430,8 @@
       return n;
     };
     const risk = (x, y) => (th ? Math.max(0, th[y * G.w + x] - 1) * caution(u) : 0) + relRisk(x, y, false);
-    const moveRisk = (x, y) => (th ? Math.max(0, th[y * G.w + x] - 1) * caution(u) : 0) + relRisk(x, y, true) * 0.5;
+    // 이동 위험: 깨어 있는 적은 그대로, 잠든 적(다가가야 깨는 적)은 상한을 두어 언젠가는 다가가 끌어낸다
+    const moveRisk = (x, y) => (th ? Math.max(0, th[y * G.w + x] - 1) * caution(u) * 1.5 : 0) + relRisk(x, y, true, 'awake') * 0.75 + Math.min(5, relRisk(x, y, true, 'asleep') * 0.75);
     const myMax = R.totalMax(u);
     let best = null;
     const consider = (sc, p) => { if (!best || sc > best.sc) best = { sc, ...p }; };
@@ -472,7 +476,7 @@
       let sc = f[t.y * G.w + t.x];
       if (u.hp < u.hpMax * 0.35 && u.side === 'p') sc = -sc * 0.3;
       sc -= terrDef(G, u, t.x, t.y) * 0.5;
-      sc += Math.min(5, moveRisk(t.x, t.y) * 1.5); // 위험한 칸은 피하되, 상한을 두어 언젠가는 다가간다 (잠든 적 앞에서 멈춰 서지 않게)
+      sc += moveRisk(t.x, t.y);
       if (!mv || sc < mv.sc) mv = { sc, t };
     }
     return mv ? { to: [mv.t.x, mv.t.y], act: 'wait' } : { to: [u.x, u.y], act: 'wait' };
