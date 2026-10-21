@@ -1354,15 +1354,14 @@
     const motes = Array.from({ length: 14 }, (_, i) => `<i style="left:${(i * 53) % 100}%;animation-delay:${-(i * 1.7) % 9}s;animation-duration:${8 + (i % 5)}s;--s:${0.4 + (i % 4) * 0.25}"></i>`).join('');
     screen(`<div class="title2">
       <div class="tbg"></div><div class="tlight"></div><div class="tmotes">${motes}</div><div class="tvig"></div>
-      <div class="tcenter"><img class="tlogo" src="assets/title/logo.webp" alt=""><div class="tsub">오르카 전기 · 랑그릿사식 전술 RPG</div></div>
+      <div class="tcenter"><img class="tlogo" src="assets/title/logo.webp" alt=""><div class="tsub">개발자 B의 내 마음대로 LAST ORIGIN</div></div>
       <div class="ttouch" id="tTouch">화면을 터치해 주세요</div>
       <div class="tmenu hidden" id="tMenu">
         ${has ? '<button id="tCont">이어하기</button>' : ''}
         <button id="tNew">처음부터</button>
         <button id="tHelp">도움말</button>
       </div>
-      <div class="tver">Ver ${GAME_VERSION}</div>
-      <div class="tcopy">라스트오리진 원작 자원을 사용한 비영리 팬메이드 게임</div></div>`);
+      <div class="tver">Ver ${GAME_VERSION}</div></div>`);
     let touched = false;
     $('screen').querySelector('.title2').onclick = (e) => {
       if (touched || e.target.closest('button')) return;
