@@ -516,11 +516,11 @@
     const g = new THREE.Group();
     const native = u.side === 'p' ? 1 : -1, f = u.side === 'p' ? 1 : -1;
     const hero = billboard(u.rig, (u.def.big ? 1.2 : 0.88) * (u.def.sizeK || 1), native, f);
-    hero.bb.position.set(0, 0, 0.12);
+    hero.bb.position.set(0, 0, -0.14);
     g.add(hero.bb);
     const soldiers = [];
-    // 병사는 영웅 뒤(위)쪽 양옆, 자기 칸 안에 선다 (윗칸으로 삐져나가 윗칸 영웅 발치에 붙어 보이지 않게)
-    if (u.troop) for (const [ox, oz] of [[-0.3, -0.1], [0.3, -0.15]]) {
+    // 병사는 영웅 앞(아래)쪽 양옆에 서고, 영웅보다 위에 그린다
+    if (u.troop) for (const [ox, oz] of [[-0.3, 0.24], [0.3, 0.3]]) {
       const s = billboard(u.troop.rig, 0.58, native, f);
       s.bb.position.set(ox, 0, oz);
       g.add(s.bb);
@@ -966,7 +966,7 @@
       }
     };
     if (OV.danger) fillTiles(OV.danger, '255,60,80', ui.state === 'idle' ? 0.24 : 0.1, ui.state === 'idle', false); // 고르는 동안은 옅게
-    fillTiles(OV.ghost, '63,180,255', 0.18, false, false);
+    fillTiles(OV.ghost, '40,150,255', 0.55); // 옮긴 뒤 다시 옮길 수 있는 칸: 옮기기 전 파란 칸과 똑같이
     fillTiles(OV.atk, '255,59,92', 0.45, true);
     fillTiles(OV.move, '40,150,255', 0.55);
     fillTiles(OV.skill, '170,90,255', 0.45, true);
@@ -1992,7 +1992,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.46';
+  const GAME_VERSION = '0.48';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2818,9 +2818,8 @@
     for (const v of views.values()) {
       const sp = dt * (v.u.acted && v.u.side === 'p' ? 0.4 : 1);
       v.rig.update(sp);
-      v.rig.order = 100 + Math.round((v.g.position.z + 0.1) * 20) + 2;
-      // 병사는 자기 영웅은 물론 윗줄 영웅보다도 아래에 그린다
-      for (const s of v.soldiers) { if (!s.bb.visible) continue; s.rig.update(sp); s.rig.order = 100 + Math.round((v.g.position.z - 0.5) * 20) - 7 + (s.bb.position.z > -0.12 ? 1 : 0); }
+      v.rig.order = 100 + Math.round((v.g.position.z + v.bb.position.z) * 20);
+      for (const s of v.soldiers) { if (!s.bb.visible) continue; s.rig.update(sp); s.rig.order = 100 + Math.round((v.g.position.z + s.bb.position.z) * 20) + 2; }
       v.ring.scale.setScalar(ui.sel === v.u ? 1 + Math.sin(t * 6) * 0.08 : 1);
       if (v.u.move === 'fly') v.bb.position.y = 0.06 + Math.sin(t * 2.2 + v.bob) * 0.04;
     }
