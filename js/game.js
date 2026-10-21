@@ -1340,20 +1340,42 @@
   }
 
   // ── 화면들 ───────────────────────────────────────────────
-  // 화면 전환: 원작처럼 검은 판이 노란 띠를 끌며 쓸고 지나가고, 새 화면이 그 뒤를 따라 밀려 들어온다
+  // 화면 전환: 왼쪽에서 빛나는 사선이 날아오고, 그 선을 따라 새 화면이 옛 화면을 덮는다.
+  // 옛 화면은 바뀌기 직전에 복제해(그림판 내용까지 옮겨 그려) 새 화면 밑(#wipeOld)에 깔아 둔다
+  const WIPE_LAYERS = ['screen', 'talkBg', 'talk'];
+  let oldSnap = null;
+  function snap() {
+    const box = document.createElement('div');
+    for (const id of WIPE_LAYERS) {
+      const e = $(id);
+      if (!e.childElementCount || e.classList.contains('hidden')) continue;
+      const c = e.cloneNode(true), dst = c.querySelectorAll('canvas');
+      c.classList.remove('wipein');
+      e.querySelectorAll('canvas').forEach((s, i) => { dst[i]._portrait = true; try { dst[i].getContext('2d').drawImage(s, 0, 0); } catch (_) {} });
+      box.appendChild(c);
+    }
+    return box.childElementCount ? box : null;
+  }
+  // 지금 모습을 떠 두기 (곧이어 전환이 없으면 버린다)
+  function keepSnap() { const s = snap(); if (s) oldSnap = s; requestAnimationFrame(() => { oldSnap = null; }); }
+  window.WIPE = { keep: keepSnap };
   function wipe() {
-    const w = $('wipe'), sc = $('screen');
-    w.classList.remove('go'); sc.classList.remove('enter'); void w.offsetWidth;
-    w.classList.add('go'); sc.classList.add('enter');
+    const wo = $('wipeOld'), els = [$('wipe'), ...WIPE_LAYERS.map($)];
+    wo.replaceChildren(...(oldSnap ? [oldSnap] : [])); oldSnap = null;
+    els.forEach((e) => e.classList.remove('wipein')); void wo.offsetWidth;
+    els.forEach((e) => e.classList.add('wipein'));
+    clearTimeout(wipe.t);
+    wipe.t = setTimeout(() => { wo.replaceChildren(); els.forEach((e) => e.classList.remove('wipein')); }, 760);
   }
   // 같은 화면을 새로 그릴 때(출격 준비에서 영웅·병사 고르기 등)는 전환 효과 없이
   function screen(html) {
     const kind = (html.match(/class="([\w-]+)/) || [])[1];
     const same = kind && $('screen').firstElementChild && $('screen').firstElementChild.classList.contains(kind);
+    if (!same) keepSnap();
     $('screen').innerHTML = html; mode = 'screen';
-    if (!same) wipe(); else $('screen').classList.remove('enter'); // 다시 그린 내용이 또 밀려 들어오지 않게
+    if (!same) wipe();
   }
-  function hideScreen() { $('screen').innerHTML = ''; }
+  function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
   const GAME_VERSION = '0.01';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];

@@ -325,20 +325,19 @@
 #boot .bload { position: absolute; right: calc(24px + var(--safe-r)); bottom: calc(20px + var(--safe-b)); display: flex; align-items: center; gap: 10px; color: #dfe4ee; font: 14px 'LO_B', sans-serif; letter-spacing: 1px; }
 #boot .bload i { width: 22px; height: 22px; border: 3px solid var(--lo-y); border-right-color: transparent; border-radius: 50%; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-/* 화면 전환: 검은 판이 노란 띠를 끌며 비스듬한 왼쪽 끝을 앞세우고 지나가고, 옅은 그림자 판이 한 박자 늦게 따라간다.
-   검은 판과 노란 띠는 같은 시간표로 움직여 띠 굵기가 일정하다 (--o: 왼쪽으로 더 삐져나온 만큼) */
+/* 화면 전환: 빛나는 사선(기울기 = 화면 높이의 16%만큼 위가 오른쪽)이 왼쪽에서 날아오고, 새 화면은 그 선 왼쪽만 보이게 잘라 덮어 간다.
+   선과 자르는 선은 같은 시간표로 움직여 늘 겹친다. 옛 화면 복제는 #wipeOld (새 화면 밑) */
+#wipeOld { position: fixed; inset: 0; z-index: 24; pointer-events: none; }
+#wipeOld:empty { display: none; }
 #wipe { position: fixed; inset: 0; z-index: 45; pointer-events: none; overflow: hidden; }
-#wipe i { position: absolute; top: 0; bottom: 0; left: calc(-16vh - 2vw - var(--o, 0px)); width: calc(100vw + 16vh + 4vw + var(--o, 0px)); transform: translateX(calc(100vw + 16vh + 8vw)); clip-path: polygon(16vh 0, 100% 0, 100% 100%, 0 100%); }
-#wipe .w1 { background: repeating-linear-gradient(-58deg, transparent 0 calc(22 * var(--u)), rgba(255, 255, 255, .025) calc(22 * var(--u)) calc(24 * var(--u))), linear-gradient(90deg, #0b0f17, #141a26 60%, #0b0f17); }
-#wipe .w1 b { position: absolute; top: 0; bottom: 0; left: 0; width: calc(16vh + 6vw); background: linear-gradient(90deg, rgba(255, 204, 0, .22), rgba(255, 204, 0, 0) 60%); clip-path: polygon(16vh 0, 100% 0, calc(100% - 16vh) 100%, 0 100%); }
-#wipe .w2 { --o: calc(18 * var(--u)); background: linear-gradient(180deg, var(--lo-y), var(--lo-y2)); }
-#wipe .w3 { --o: calc(90 * var(--u)); background: linear-gradient(90deg, rgba(6, 8, 12, .15), rgba(6, 8, 12, .6) 40%); }
-#wipe.go .w1, #wipe.go .w2 { animation: wipe .7s cubic-bezier(.7, 0, .25, 1) both; }
-#wipe.go .w3 { animation: wipe .7s cubic-bezier(.7, 0, .25, 1) .07s both; }
-@keyframes wipe { 0%, 10% { transform: translateX(0); } 100% { transform: translateX(calc(100vw + 16vh + 8vw)); } }
-/* 새 화면은 판이 걷히는 쪽에서 살짝 밀려 들어온다 */
-#screen.enter > * { animation: screenIn .7s cubic-bezier(.2, .7, .2, 1) .12s both; }
-@keyframes screenIn { 0% { transform: translateX(calc(-40 * var(--u))); filter: brightness(.55); } 100% { transform: none; filter: none; } }
+#wipe i { position: absolute; left: 0; bottom: 0; height: 100%; width: 3px; transform-origin: 0 100%; transform: translateX(-30vh) skewX(-9.09deg);
+  background: linear-gradient(180deg, #fff, #ffe680 50%, #fff); box-shadow: 0 0 6px 1px #fff, 0 0 18px 4px rgba(255, 204, 0, .85), 0 0 48px 10px rgba(255, 204, 0, .4); }
+#wipe i::before { content: ''; position: absolute; top: 0; bottom: 0; right: 100%; width: 22vw; background: linear-gradient(90deg, rgba(255, 214, 90, 0), rgba(255, 214, 90, .22)); }
+#wipe i::after { content: ''; position: absolute; top: 0; bottom: 0; left: 100%; width: 5vw; background: linear-gradient(90deg, rgba(0, 0, 0, .45), rgba(0, 0, 0, 0)); }
+#wipe.wipein i { animation: wipeLine .66s cubic-bezier(.55, 0, .2, 1) both; }
+#screen.wipein, #talkBg.wipein, #talk.wipein { animation: wipeClip .66s cubic-bezier(.55, 0, .2, 1) both; }
+@keyframes wipeLine { 0% { transform: translateX(-16vh) skewX(-9.09deg); } 100% { transform: translateX(100vw) skewX(-9.09deg); } }
+@keyframes wipeClip { 0% { clip-path: polygon(0 0, 0 0, -16vh 100%, 0 100%); } 100% { clip-path: polygon(0 0, calc(100% + 16vh) 0, 100% 100%, 0 100%); } }
 
 .mbox { background: rgba(14, 18, 27, .97); border: 0; border-top: 3px solid var(--lo-y); border-radius: 0; padding: 20px 20px 18px; box-shadow: 0 12px 50px #000;
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%); animation: ap-fade .2s both; }
