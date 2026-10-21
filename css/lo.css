@@ -367,3 +367,36 @@
 #fight.split .fsplit { display: block; animation: fsplit .35s cubic-bezier(.2, .8, .3, 1) both; }
 @keyframes fsplit { from { transform: translateX(-50%) rotate(2.5deg) scaleY(0); } }
 #fight.split .fvs { display: none; }
+
+/* ── 마을 (js/town.js) ── */
+#townCv { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 26; touch-action: none; background: #05070c; }
+#townHud { position: fixed; inset: 0; z-index: 27; pointer-events: none; }
+#townHud .tn-name { position: absolute; left: 50%; top: calc(18px + var(--safe-t)); transform: translateX(-50%); padding: 6px 34px; font: 18px 'LO_B', sans-serif; color: #fff; letter-spacing: 2px;
+  background: linear-gradient(90deg, transparent, rgba(0,0,0,.7) 20%, rgba(0,0,0,.7) 80%, transparent); opacity: 0; transition: opacity .4s; }
+#townHud.show .tn-name { opacity: 1; }
+#townHud .tn-out { position: absolute; right: calc(12px + var(--safe-r)); top: calc(12px + var(--safe-t)); pointer-events: auto; height: 42px; min-width: 120px; font-size: 14px; }
+#townHud .tn-help { position: absolute; left: 0; right: 0; bottom: calc(10px + var(--safe-b)); text-align: center; font-size: 12px; color: #fffa; text-shadow: 0 1px 3px #000; }
+#talkBg.see { background: transparent; }
+#talkBg.see .tbg, #talkBg.see .tshade { display: none; }
+/* 월드맵: 부대 표지, 의뢰 표시, 마을 지점, 할 일 목록 */
+.wtoken { position: absolute; z-index: 3; width: calc(64 * var(--n)); height: calc(64 * var(--n)); min-width: 38px; min-height: 38px; transform: translate(-50%, -150%); transition: left .4s linear, top .4s linear; pointer-events: none; }
+.wtoken img { width: 100%; height: 100%; border-radius: 50%; border: 3px solid var(--lo-y); box-shadow: 0 0 14px rgba(255, 204, 0, .7); background: #1b2130; object-fit: cover; }
+.wtoken::after { content: ''; position: absolute; left: 50%; bottom: -10px; transform: translateX(-50%); border: 7px solid transparent; border-top-color: var(--lo-y); }
+.wnode .wq { position: absolute; left: 50%; bottom: calc(118 * var(--n)); transform: translateX(-50%); font: 900 max(18px, calc(34 * var(--n))) 'LO_B', sans-serif; color: var(--lo-y); text-shadow: 0 0 6px #000, 0 2px 0 #3a2a00; animation: wbob 1.2s ease-in-out infinite; }
+.wnode.town .tag { background: #8bf03a; }
+.wnode em.town, .wi-name em.town { color: #8bf03a; }
+.wi-no.wi-town { color: #8bf03a; font-size: 30px; }
+.wi-list div, .wact { display: block; width: 100%; text-align: left; padding: 9px 12px; margin-bottom: 6px; background: rgba(255,255,255,.05); border: 0; border-left: 3px solid var(--lo-y); border-radius: 0; color: #fff; }
+.wi-list b, .wact b { display: block; font: 15px 'LO_B', sans-serif; } .wi-list small, .wact small { display: block; font-size: 12px; color: #aab2c4; margin-top: 2px; }
+.wact em { display: block; font: normal 11px 'LO_B', sans-serif; color: var(--lo-y); margin-top: 4px; }
+.wact.side { border-left-color: #ff9d2a; background: rgba(255, 157, 42, .1); }
+.wact.dim { border-left-color: #6d7486; }
+.wact:hover { background: rgba(255,255,255,.1); }
+.wdone { font-size: 12px; color: #8bf03a; padding: 4px 2px; }
+/* 출격 준비 자유 편성: 대기 중인 카드 */
+.pcard .poff { display: none; position: absolute; z-index: 4; left: 50%; top: 40%; transform: translate(-50%, -50%); padding: 4px 16px; font: normal 15px 'LO_B', sans-serif; color: #fff; background: rgba(0,0,0,.75); letter-spacing: 2px; }
+.pcard.off .poff { display: block; }
+.pcard.off .pimg { filter: grayscale(.7) brightness(.5) !important; }
+.pd-sortie { display: block; width: 100%; padding: 10px; font: 14px 'LO_B', sans-serif; color: #fff; background: rgba(255,255,255,.07); border: 1px solid var(--lo-line); border-radius: 0; text-align: center; }
+.pd-sortie.on { background: rgba(255, 204, 0, .16); border-color: var(--lo-y); color: var(--lo-y); }
+.pd-sortie.lead { color: #8bf03a; }

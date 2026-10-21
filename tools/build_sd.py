@@ -29,7 +29,7 @@ TEX_SCALE = 0.5
 UNITS = {
     # 1지역 출격 부대 (본작 스토리)
     "constantia": "3P_ConstantiaS2_N", "griffon": "BR_PA00EL_N", "johanna": "DS_Johanna_N", "lrl": "PECS_LRL_N",
-    "pupphead": "PECS_PuppHead_N", "fallen": "AGS_Fallen_N",
+    "pupphead": "PECS_PuppHead_N", "fallen": "AGS_Fallen_N", "fortune": "PECS_Fortune_N",
     # 용병
     "brownie": "BR_Brownie_N", "gnome": "BR_Gnome_N", "leprechaun": "BR_Leprechaun_N", "sylphid": "BR_Sylphid_N", "harpy": "BR_Harpy_N",
     # 이후 지역용

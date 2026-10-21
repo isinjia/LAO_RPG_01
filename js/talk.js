@@ -53,6 +53,7 @@
       preload(list);
       root.classList.remove('hidden'); bgEl.classList.remove('hidden');
       root.classList.remove('nobox', 'logon');
+      bgEl.classList.toggle('see', !!list[0].see); // 마을 위 대화: 뒤 화면이 보이게
       layers.forEach((l) => { l.style.backgroundImage = ''; l.style.opacity = 0; });
       stage.querySelectorAll('.stand').forEach((im) => window.PORTRAIT && PORTRAIT.detach(im));
       stage.innerHTML = ''; cgEl.removeAttribute('src'); cgEl.dataset.k = '';
