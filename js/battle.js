@@ -263,8 +263,7 @@
       beam(s.x + (src.side === 'L' ? 0.4 : -0.4), s.y + (src.hero ? 1.2 : 0.7), p.x, p.y + h * 0.6, au.side === 'p' ? 0x9fd8ff : 0xff9a7a);
     }
     spark(p.x + (Math.random() - 0.5) * 0.4, p.y + h * (0.4 + Math.random() * 0.5), ranged);
-    dst.rig.c.setTint(1.6, 1.3, 1.3);
-    dst.tintT = T + 0.09;
+    dst.flashT = T; // 맞으면 하얗게 번쩍 (랑그릿사처럼)
     if (snd) K.AU.play(far ? 'expS' : src.hero ? au.def.sfx : (au.troop ? au.troop.def.sfx : au.def.sfx), far ? 0.35 : 0.6);
   }
   function spark(x, y, ranged) {
@@ -316,7 +315,7 @@
     }
     for (const f of actors) {
       f.rig.update(dt);
-      if (f.tintT && T >= f.tintT) { f.tintT = 0; f.rig.c.setTint(1, 1, 1); }
+      if (f.flashT != null) { const k = (T - f.flashT) / 0.18; f.rig.c.setFlash(k >= 1 ? 0 : k < 0.3 ? 1 : (1 - k) / 0.7); if (k >= 1) f.flashT = null; }
       if (f.fly) { // 튕겨 날아가 떨어지기
         const q = f.fly, g = f.rig.g;
         q.t += dt; q.vy -= 18 * dt;

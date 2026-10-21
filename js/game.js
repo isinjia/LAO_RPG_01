@@ -1155,16 +1155,20 @@
     AU.play(a.def.sfx, 0.7);
     await wait(380);
     fxAt(d.x, d.y, 'hit');
-    vd.rig.c.setTint(1.8, 1.4, 1.4);
+    vd.rig.c.setFlash(1);
     await wait(120);
+    vd.rig.c.setFlash(0);
     refreshView(d);
     if (res.counter) {
       vd.rig.once('atk', Math.max(1, vd.rig.dur('atk') / 1.0) * speedK);
       AU.play(d.def.sfx, 0.6);
       await wait(380);
       fxAt(a.x, a.y, 'hit');
+      va.rig.c.setFlash(1);
+      await wait(120);
+      va.rig.c.setFlash(0);
     }
-    await wait(250);
+    await wait(130);
   }
   async function kill(u) {
     u.alive = false; u.hp = 0;
