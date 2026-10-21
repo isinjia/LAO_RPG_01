@@ -1514,10 +1514,11 @@
       else v.rig.once('atk', Math.max(1.3, v.rig.dur('atk') / 0.8) * speedK);
       v.soldiers.forEach((x) => x.bb.visible && x.rig.once('atk', 1.4 * speedK));
     }
-    OV.area = R.skillArea(G, u, sk, tx, ty); drawOverlay();
+    const area = R.skillArea(G, u, sk, tx, ty); // 기다리는 동안 겹침 판이 지워져도 쓰도록 따로 둔다
+    OV.area = area; drawOverlay();
     await wait(500);
     AU.play(s.sfx, 0.8);
-    const travel = skillFx(u, s, OV.area, tx, ty);
+    const travel = skillFx(u, s, area, tx, ty);
     await wait(350 + travel);
     const deaths = [];
     for (const r of R.skillEffect(G, u, sk, tx, ty, Math.random)) {
