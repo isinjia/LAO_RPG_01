@@ -55,7 +55,8 @@
       root.classList.remove('hidden'); bgEl.classList.remove('hidden');
       root.classList.remove('nobox', 'logon');
       bgEl.classList.toggle('see', !!list[0].see); // 마을 위 대화: 뒤 화면이 보이게
-      layers.forEach((l) => { l.style.backgroundImage = ''; l.style.opacity = 0; });
+      // 이름도 지운다: 앞 대화의 마지막 배경과 같은 배경으로 시작해도 다시 깔리게 (함교→함교가 검게 남던 문제)
+      layers.forEach((l) => { l.style.backgroundImage = ''; l.style.opacity = 0; l.dataset.k = ''; });
       stage.querySelectorAll('.stand').forEach((im) => window.PORTRAIT && PORTRAIT.detach(im));
       stage.innerHTML = ''; cgEl.removeAttribute('src'); cgEl.dataset.k = '';
       fxEl.className = 'tfx'; fxEl.style.opacity = 0;
