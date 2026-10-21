@@ -769,6 +769,7 @@
     }
     // ESC = 뒤로: 창 닫기 → 정보 창 닫기 → 앞 화면으로
     if (e.code === 'Escape' && mode !== 'talk' && mode !== 'fight') {
+      if ($('ccOv')) { e.preventDefault(); $('ccOv').close(); return; }
       const m = $('modal');
       if (!m.classList.contains('hidden')) { e.preventDefault(); m.click(); return; }
       if (mode === 'town') { const out = document.querySelector('#townHud .tn-out'); if (out) out.click(); return; }
@@ -2070,33 +2071,115 @@
   function heroRoster() {
     const j = joined();
     const cards = Object.keys(D.HEROES).filter((id) => j.has(id)).map((id) => {
-      const h = D.HEROES[id], s = save.heroes[id], t = h.tiers[s.tier], k = 1 + 0.07 * (s.lv - D.TIER_LV[s.tier]);
-      return `<div class="pcard rcard"><div class="pimg ${id === 'pupphead' || id === 'fallen' ? 'whole' : ''}" style="background-image:url(assets/story/stand/${HERO_STAND[id]}.webp)"></div>
-        <div class="pfoot"><span class="plv">Lv.${s.lv}</span><b>${h.name}</b><small>${kindTag(h.kind)} · ${t.cls}</small></div>
-        <div class="ptroop rst"><span>체력 ${Math.round(t.hp * k)}</span><span>공격 ${Math.round(t.at * k)}</span><span>방어 ${Math.round(t.df * k)}</span></div></div>`;
+      const h = D.HEROES[id], s = save.heroes[id], c = CL.stats(id, s);
+      return `<div class="pcard rcard" data-h="${id}"><div class="pimg ${id === 'pupphead' || id === 'fallen' ? 'whole' : ''}"><canvas class="pcv" data-stand="${standOf(id)}"></canvas></div>
+        ${CL.canChange(id, s) ? '<i class="pcc">전직 가능</i>' : ''}
+        <div class="pfoot"><span class="plv">Lv.${s.lv}</span><b>${h.name}</b><small>${kindTag(h.kind)} · ${c.cls}</small></div>
+        <div class="ptroop rst"><span>체력 ${c.hp}</span><span>공격 ${c.at}</span><span>방어 ${c.df}</span></div></div>`;
     }).join('');
     $('modal').classList.add('wide');
-    modal(`<h3>부대 현황 <small style="color:#8d95a8;font:13px LO_M">합류 ${j.size}명</small></h3><div class="rgrid">${cards}</div><div class="opts"><button class="gold" data-a="ok">닫기</button></div>`, () => $('modal').classList.remove('wide'));
+    modal(`<h3>부대 현황 <small style="color:#8d95a8;font:13px LO_M">합류 ${j.size}명 · 카드를 누르면 전직</small></h3><div class="rgrid">${cards}</div><div class="opts"><button class="gold" data-a="ok">닫기</button></div>`, (a, b) => {
+      $('modal').classList.remove('wide');
+      const c = b && b.closest && b.closest('.rcard');
+      if (c) classChange(c.dataset.h, heroRoster);
+    });
+    $('modal').querySelectorAll('.rcard').forEach((c) => (c.dataset.a = 'hero'));
+    liveCards();
   }
   const joined = () => new Set(D.STAGES.slice(0, Math.min(D.STAGES.length, save.clear + 1)).flatMap((s) => s.heroes));
   function heroStatLine(id) {
-    const h = D.HEROES[id], s = save.heroes[id], t = h.tiers[s.tier], k = 1 + 0.07 * (s.lv - D.TIER_LV[s.tier]);
-    return `${kindTag(h.kind)} 체력 <b>${Math.round(t.hp * k)}</b> · 공격 <b>${Math.round(t.at * k)}</b> · 방어 <b>${Math.round(t.df * k)}</b> · 이동 <b>${t.mov}</b> · 사거리 <b>${h.rng}</b>`;
+    const h = D.HEROES[id], c = CL.stats(id, save.heroes[id]);
+    return `${kindTag(h.kind)} 체력 <b>${c.hp}</b> · 공격 <b>${c.at}</b> · 방어 <b>${c.df}</b> · 이동 <b>${c.mov}</b> · 사거리 <b>${h.rng}</b>`;
   }
   function heroCards() {
     const j = joined();
     return Object.entries(D.HEROES).filter(([id]) => j.has(id)).map(([id, h]) => {
-      const s = save.heroes[id], t = h.tiers[s.tier];
-      return `<div class="hero"><div class="pic" style="background-image:url(${IMG[h.icon]})"></div>
-        <div class="nm">${h.full}<small>Lv${s.lv} · ${t.cls}</small></div>
+      const s = save.heroes[id];
+      return `<div class="hero"><div class="pic" style="background-image:url(${IMG[iconOf(id)]})"></div>
+        <div class="nm">${h.full}<small>Lv${s.lv} · ${clsOf(id)}</small></div>
         <div class="st">${heroStatLine(id)}</div></div>`;
     }).join('');
+  }
+
+  // 전직 (랑그릿사식 전직 나무): 기본 → 갈래 A·B 중 하나(Lv5) → 같은 갈래 상위 직업(Lv10). 직업마다 원작 스킨 일러스트·SD
+  function classChange(id, done) {
+    const h = D.HEROES[id], s = save.heroes[id];
+    const opts = CL.options(id, s);
+    let sel = opts[0] || CL.cur(id, s);
+    let changed = false;
+    const key = (n) => (n.tier ? n.br + n.tier : 'R');
+    const nodes = { R: CL.node(id, 0), A1: CL.node(id, 1, 'A'), A2: CL.node(id, 2, 'A'), B1: CL.node(id, 1, 'B'), B2: CL.node(id, 2, 'B') };
+    const stateOf = (n) => {
+      if (!n.tier) return s.tier === 0 ? 'cur' : 'done';
+      if (s.tier >= n.tier && s.br === n.br) return s.tier === n.tier ? 'cur' : 'done';
+      if (s.tier >= 1 && s.br !== n.br) return 'closed'; // 다른 갈래를 골랐다
+      if (s.tier === n.tier - 1) return CL.canChange(id, s) ? 'ready' : 'next';
+      return 'lock';
+    };
+    const iconFor = (n) => IMG[n.skin === 'N' ? h.icon : h.icon.replace(/_N$/, '_' + n.skin)] || IMG[h.icon];
+    const standFor = (n) => CL.standOfNode(id, n) || HERO_STAND[id];
+    const ov = document.createElement('div');
+    ov.id = 'ccOv';
+    document.body.appendChild(ov);
+    const close = () => { ov.querySelectorAll('canvas[data-stand]').forEach((c) => PORTRAIT.detach(c)); ov.remove(); done && done(changed); };
+    const nodeBtn = (k) => {
+      const n = nodes[k], stt = stateOf(n);
+      return `<button class="ccn ${stt} ${key(sel) === k ? 'sel' : ''}" data-k="${k}"><img src="${iconFor(n)}" alt=""><span>
+        <small>${n.tier ? `Lv.${D.TIER_LV[n.tier]} · ${CL.BR_NAME[n.br]}` : '기본 직업'}</small><b>${n.cls}</b>
+        <em>${{ cur: '현재 직업', done: '전직 완료', ready: '전직 가능', next: `Lv.${D.TIER_LV[n.tier]}부터`, closed: '다른 갈래', lock: '잠김' }[stt]}</em></span></button>`;
+    };
+    const info = () => {
+      const n = sel, c0 = CL.stats(id, s), c1 = CL.stats(id, s, n.tier, n.br), t0 = h.tiers[s.tier], t1 = h.tiers[n.tier];
+      const d = (a, b) => (b > a ? `<em class="up">▲${b - a}</em>` : b < a ? `<em class="dn">▼${a - b}</em>` : '');
+      const ns = t1.skills.filter((k) => !t0.skills.includes(k)), nt = t1.troops.filter((k) => !t0.troops.includes(k));
+      const can = opts.some((o) => key(o) === key(n)) && CL.canChange(id, s);
+      return `<div class="cc-st"><div><label>체력</label><b>${c1.hp}</b>${d(c0.hp, c1.hp)}</div><div><label>공격</label><b>${c1.at}</b>${d(c0.at, c1.at)}</div>
+        <div><label>방어</label><b>${c1.df}</b>${d(c0.df, c1.df)}</div><div><label>이동</label><b>${c1.mov}</b></div></div>
+        <div class="cc-tag">${n.tier ? `${CL.BR_NAME[n.br]} 갈래 · ${n.br === 'A' ? '공격 +8% · 방어 −4%' : '체력·방어 +8% · 공격 −4%'}` : '기본 직업'}</div>
+        <div class="cc-new">${ns.length ? `<div><label>새 특기</label>${ns.map((k) => `<b>${D.SKILLS[k].name}</b><small>${D.SKILLS[k].desc}</small>`).join('')}</div>` : ''}
+          ${nt.length ? `<div><label>새 병사</label>${nt.map((k) => `<span><img src="${IMG[D.TROOPS[k].icon]}" alt="">${D.TROOPS[k].name}</span>`).join('')}</div>` : ''}
+          <div><label>특기</label>${t1.skills.map((k) => D.SKILLS[k].name).join(' · ')}</div><div><label>배속 병사</label>${t1.troops.map((k) => D.TROOPS[k].short).join(' · ')}</div></div>
+        <div class="cc-btns"><button class="wgo" id="ccGo" ${can ? '' : 'disabled'}><b>전직</b><small>${can ? 'CLASS CHANGE' : stateOf(n) === 'next' ? `Lv.${D.TIER_LV[n.tier]}부터` : stateOf(n) === 'cur' || stateOf(n) === 'done' ? '이미 거친 직업' : '고를 수 없음'}</small></button>
+          <button class="lo-btn dark" id="ccX">닫기</button></div>`;
+    };
+    const render = () => {
+      ov.querySelectorAll('canvas[data-stand]').forEach((c) => PORTRAIT.detach(c));
+      ov.innerHTML = `<div class="cc">
+        <div class="whead"><button class="wback" id="ccBack" aria-label="뒤로"></button><div class="wtitle"><small>CLASS CHANGE · Lv.${s.lv}</small><b>${h.full} 전직</b></div></div>
+        <div class="cc-pv"><canvas data-stand="${standFor(sel)}"></canvas><div class="cc-name"><small>${sel.skin === 'N' ? '기본 모습' : sel.skinName}</small><b>${sel.cls}</b></div></div>
+        <div class="cc-r"><div class="cc-tree">
+            <div class="cc-col">${nodeBtn('R')}</div>
+            <div class="cc-col">${nodeBtn('A1')}${nodeBtn('B1')}</div>
+            <div class="cc-col">${nodeBtn('A2')}${nodeBtn('B2')}</div></div>
+          <div class="cc-info">${info()}</div></div></div>`;
+      const cv = ov.querySelector('.cc-pv canvas');
+      PORTRAIT.attach(cv, cv.dataset.stand, { h: Math.max(300, ov.querySelector('.cc-pv').getBoundingClientRect().height) });
+      ov.querySelectorAll('.ccn').forEach((b) => (b.onclick = () => { AU.play('lo_pick', 0.5); sel = nodes[b.dataset.k]; render(); }));
+      $('ccBack').onclick = $('ccX').onclick = () => { AU.play('lo_click', 0.5); close(); };
+      $('ccGo').onclick = () => {
+        if (!opts.some((o) => key(o) === key(sel)) || !CL.canChange(id, s)) return;
+        s.tier = sel.tier; s.br = sel.br; writeSave(); changed = true;
+        AU.play('lo_join', 0.8); heroVoice(id, 'Join');
+        toast(`전직 · ${h.name} → ${sel.cls}`);
+        ov.classList.add('flash');
+        setTimeout(() => ov.classList.remove('flash'), 700);
+        opts.length = 0; opts.push(...CL.options(id, s));
+        render();
+      };
+    };
+    render();
+    ov.close = close;
   }
 
   // 출격 준비: 원작 편성 화면처럼 영웅 카드 + 오른쪽 상세(능력치·특기·병사 배속). 고를 때 인물 음성
   const HERO_STAND = { constantia: '3P_ConstantiaS2_N_Smile', griffon: 'BR_PA00EL_N_Smile', johanna: 'DS_Johanna_N_Smile', lrl: 'PECS_LRL_N_Laugh', pupphead: 'PECS_PuppHead_N', fallen: 'AGS_Fallen_N',
     amy: 'BR_Amy_N_Smile', coco: 'PECS_CoCoWhiteShell_N_Smile', marie: 'BR_Marie_N_Smile', scathy: 'BR_Scathy_N_Smile', labiata: '3P_Labiata_N_Smile' };
   const heroVoice = (id, kind) => AU.voice(id + '_' + kind);
+  // 전직(js/classes.js): 지금 직업의 스킨 일러스트·아이콘, 능력치
+  const CL = window.CLASSES;
+  const standOf = (id) => CL.standOf(id, save.heroes[id]) || HERO_STAND[id];
+  const iconOf = (id) => CL.iconOf(id, save.heroes[id]);
+  const clsOf = (id) => CL.cur(id, save.heroes[id]).cls;
   // 화면 안의 일러스트 캔버스(data-stand)를 움직이는 일러스트로 (js/portrait.js). 화면이 바뀌면 알아서 정리된다
   function liveCards() {
     document.querySelectorAll('canvas[data-stand]').forEach((cv) => {
@@ -2124,14 +2207,14 @@
     const fresh = st.heroes.find((id) => !(save.joined || []).includes(id));
     AU.bgm('lo_lobby');
     const stat = (id) => {
-      const h = D.HEROES[id], s = save.heroes[id], t = h.tiers[s.tier], k = 1 + 0.07 * (s.lv - D.TIER_LV[s.tier]);
-      return { h, s, t, hp: Math.round(t.hp * k), at: Math.round(t.at * k), df: Math.round(t.df * k) };
+      const h = D.HEROES[id], s = save.heroes[id], c = CL.stats(id, s);
+      return { h, s, t: Object.assign({}, c.t, { cls: c.cls }), hp: c.hp, at: c.at, df: c.df };
     };
     const card = (id) => {
       const { h, s, t } = stat(id), tr = D.TROOPS[pick[id]];
       return `<button class="pcard ${id === cur ? 'sel' : ''} ${st.heroes.includes(id) ? '' : 'off'}" data-h="${id}">
-        <div class="pimg ${id === 'pupphead' || id === 'fallen' ? 'whole' : ''}"><canvas class="pcv" data-stand="${HERO_STAND[id]}"></canvas></div>
-        ${(save.joined || []).includes(id) ? '' : '<i class="pnew">NEW</i>'}
+        <div class="pimg ${id === 'pupphead' || id === 'fallen' ? 'whole' : ''}"><canvas class="pcv" data-stand="${standOf(id)}"></canvas></div>
+        ${(save.joined || []).includes(id) ? '' : '<i class="pnew">NEW</i>'}${CL.canChange(id, s) ? '<i class="pcc">전직 가능</i>' : ''}
         <div class="pfoot"><span class="plv">Lv.${s.lv}</span><b>${h.name}</b><small>${kindTag(h.kind)} · ${t.cls}</small></div>
         <div class="ptroop"><img src="${IMG[tr.icon]}" alt=""><span>${tr.short} ×${R.SQUAD}</span></div><i class="psel"></i><i class="poff">대기</i></button>`;
     };
@@ -2145,6 +2228,7 @@
         : `<button class="pd-sortie ${inP ? 'on' : ''}" id="pTog">${inP ? '출전 중 · 누르면 대기' : st.heroes.length >= st.free ? `대기 중 · 출전 인원이 가득 찼습니다 (${st.free}명)` : '대기 중 · 누르면 출전'}</button>`;
       return `<div class="pd-head"><b>${h.full}</b><span>${t.cls}</span></div>${sortie}
         <div class="pd-lv"><span>Lv.<b>${s.lv}</b></span><div class="pd-exp"><i style="width:${Math.min(100, s.exp)}%"></i></div>${next ? `<small>Lv.${next}에 전직</small>` : '<small>최종 전직</small>'}</div>
+        <button class="pd-cc ${CL.canChange(id, s) ? 'ready' : ''}" id="pCC"><b>전직</b><small>${CL.canChange(id, s) ? '전직할 수 있습니다' : next ? `Lv.${next}부터 · 전직 나무 보기` : '최종 전직 완료 · 전직 나무 보기'}</small></button>
         <div class="pd-stats"><div><label>병종</label>${kindTag(h.kind)}</div><div><label>체력</label><b>${hp}</b></div><div><label>공격</label><b>${at}</b></div>
           <div><label>방어</label><b>${df}</b></div><div><label>이동</label><b>${t.mov}</b></div><div><label>사거리</label><b>${h.rng}</b></div></div>
         <div class="wi-sub">특기</div><div class="pd-skills">${t.skills.map((k) => { const sk = D.SKILLS[k]; return `<div><b>${sk.name}</b><small>재사용 ${sk.cd}턴 · ${sk.desc}</small></div>`; }).join('')}</div>
@@ -2175,6 +2259,11 @@
       }));
       bindTroops();
     };
+    // 전직 버튼: 전직 창을 열고, 전직하면 카드(스킨 일러스트)까지 다시 그린다
+    const bindCC = () => {
+      const b = $('pCC');
+      if (b) b.onclick = () => { AU.play('lo_click', 0.6); classChange(cur, (changed) => { if (changed) { const t = D.HEROES[cur].tiers[save.heroes[cur].tier]; if (!t.troops.includes(pick[cur])) pick[cur] = t.troops[0]; render(); bindCC(); } }); };
+    };
     // 고를 때는 화면 전체를 다시 그리지 않고 바뀐 곳만 (움직이는 일러스트가 처음부터 다시 시작하지 않게)
     const bindTroops = () => {
       document.querySelectorAll('.ptr').forEach((b) => (b.onclick = () => {
@@ -2189,6 +2278,7 @@
         else return;
         AU.play('lo_equip', 0.6); refresh();
       };
+      bindCC();
     };
     const refresh = () => {
       document.querySelectorAll('.pcard').forEach((b) => {
@@ -2237,7 +2327,7 @@
       if (old.length) {
         const avg = old.reduce((s, k) => s + save.heroes[k].lv, 0) / old.length;
         const lv = Math.max(save.heroes[id].lv, Math.round(avg) - 1);
-        save.heroes[id] = { lv, exp: 0, tier: lv >= D.TIER_LV[2] ? 2 : lv >= D.TIER_LV[1] ? 1 : 0 };
+        save.heroes[id] = { lv, exp: 0, tier: 0 }; // 전직은 출격 준비에서 직접 고른다
       }
       save.joined.push(id);
     }
@@ -2296,12 +2386,12 @@
       const list = rows.map((r, i) => {
         const up = r.lv1 > r.lv0, h = D.HEROES[r.id];
         return `<div class="rrow ${r === mvp ? 'mvp' : ''}" style="animation-delay:${0.35 + i * 0.08}s">
-          <img src="${IMG[h.icon]}" alt=""><div class="rinfo"><div class="rname"><b>${r.name}</b>${r === mvp ? '<i>MVP</i>' : ''}${r.alive ? '' : '<small>퇴각</small>'}</div>
+          <img src="${IMG[iconOf(r.id)]}" alt=""><div class="rinfo"><div class="rname"><b>${r.name}</b>${r === mvp ? '<i>MVP</i>' : ''}${r.alive ? '' : '<small>퇴각</small>'}</div>
           <div class="rlv">Lv.<b>${r.lv1}</b>${up ? `<span class="rup">LEVEL UP</span>` : ''}<em>+${gain} EXP</em></div>
           <div class="rbar"><i data-w="${r.exp1}" style="width:${up ? 0 : r.exp0}%"></i></div>${r.notes.map((n) => `<div class="rnote">${n}</div>`).join('')}</div></div>`;
       }).join('');
       screen(`<div class="rscr ${win ? 'win' : 'lose'}"><div class="pbg"></div>
-        <div class="rmvp"><canvas data-stand="${HERO_STAND[face.id]}"></canvas></div>
+        <div class="rmvp"><canvas data-stand="${standOf(face.id)}"></canvas></div>
         <div class="rpanel">
           <div class="rhead">${win ? '<img src="assets/ui/UI_Battle_Main_missionclear_label_2.png" alt="MISSION COMPLETE">' : '<b class="rfail">MISSION FAILED</b>'}
             <div class="rstage"><span>${st.idx}</span>${st.title}<small>${turn}턴</small></div></div>
@@ -2336,15 +2426,9 @@
       R.addExp(u, gain);
       s.lv = u.lv; s.exp = u.exp;
       row.lv1 = u.lv; row.exp1 = u.exp;
-      while (s.tier < 2 && s.lv >= D.TIER_LV[s.tier + 1]) {
-        const from = h.tiers[s.tier].cls;
-        s.tier++;
-        row.notes.push(`전직 · ${from} → <b>${h.tiers[s.tier].cls}</b>`);
-        const prev = h.tiers[s.tier - 1];
-        const ns = h.tiers[s.tier].skills.filter((k) => !prev.skills.includes(k)), nt = h.tiers[s.tier].troops.filter((k) => !prev.troops.includes(k));
-        if (ns.length) row.notes.push(`새 특기 · ${ns.map((k) => D.SKILLS[k].name).join(', ')}`);
-        if (nt.length) row.notes.push(`새 병사 · ${nt.map((k) => D.TROOPS[k].short).join(', ')}`);
-      }
+      // 전직은 랑그릿사처럼 직접 고른다: 레벨이 되면 알려 주기만 (출격 준비·부대 현황의 전직 버튼)
+      if (CL.canChange(u.key, s) && !(row.lv0 >= D.TIER_LV[s.tier + 1])) row.notes.push(`<b>전직 가능</b> · 출격 준비에서 전직할 수 있습니다`);
+      void h;
       rows.push(row);
     }
     const clear0 = save.clear;

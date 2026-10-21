@@ -31,9 +31,10 @@
   R.makeHero = function (G, id, st, troopKey, x, y) {
     const h = HEROES[id];
     const tier = h.tiers[st.tier];
+    const CL = (typeof window !== 'undefined' && window.CLASSES) || null; // 전직 갈래·스킨 (js/classes.js)
     const u = {
-      uid: ++uid, side: 'p', key: id, def: h, name: h.name, rig: h.rig, icon: h.icon, kind: h.kind, move: h.move, rng: h.rng,
-      lv: st.lv, exp: st.exp, tier: st.tier, cls: tier.cls, x, y, alive: true, acted: false, buffs: [], cd: {}, lead: !!h.lead,
+      uid: ++uid, side: 'p', key: id, def: h, name: h.name, rig: CL ? CL.rigOf(id, st) : h.rig, icon: CL ? CL.iconOf(id, st) : h.icon, kind: h.kind, move: h.move, rng: h.rng,
+      lv: st.lv, exp: st.exp, tier: st.tier, br: st.br || 'A', cls: CL ? CL.cur(id, st).cls : tier.cls, x, y, alive: true, acted: false, buffs: [], cd: {}, lead: !!h.lead,
       troop: troopOf(troopKey && tier.troops.includes(troopKey) ? troopKey : tier.troops[0]),
     };
     fill(u);
@@ -93,7 +94,9 @@
     if (u.side === 'p') {
       const t = u.def.tiers[u.tier];
       if (k === 'mov') return t.mov;
-      return t[k] * (1 + 0.07 * (u.lv - TIER_LV[u.tier]));
+      const CL = typeof window !== 'undefined' && window.CLASSES, m = u.tier && CL ? CL.K[u.br || 'A'][k] || 1 : 1; // 전직 갈래 경향
+      // 레벨 성장은 1레벨부터 이어서 세고, 전직 단계마다 6%씩 더 (전직해도 약해지지 않게)
+      return u.def.tiers[0][k] * (1 + 0.07 * (u.lv - 1)) * (1 + 0.06 * u.tier) * m;
     }
     if (k === 'mov') return u.def.mov;
     return u.def[k] * (1 + 0.07 * (u.lv - 1));
