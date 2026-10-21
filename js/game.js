@@ -966,7 +966,7 @@
       }
     };
     if (OV.danger) fillTiles(OV.danger, '255,60,80', ui.state === 'idle' ? 0.24 : 0.1, ui.state === 'idle', false); // 고르는 동안은 옅게
-    fillTiles(OV.ghost, '63,180,255', 0.18, false, false);
+    fillTiles(OV.ghost, '40,150,255', 0.55); // 옮긴 뒤 다시 옮길 수 있는 칸: 옮기기 전 파란 칸과 똑같이
     fillTiles(OV.atk, '255,59,92', 0.45, true);
     fillTiles(OV.move, '40,150,255', 0.55);
     fillTiles(OV.skill, '170,90,255', 0.45, true);
@@ -1992,7 +1992,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.47';
+  const GAME_VERSION = '0.48';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
