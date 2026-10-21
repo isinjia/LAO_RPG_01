@@ -1471,7 +1471,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.06';
+  const GAME_VERSION = '0.07';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -1558,8 +1558,9 @@
     AU.bgm('lo_lobby');
     if (save.node == null || !nodeOpen(save.node)) save.node = Math.min(save.clear, D.STAGES.length - 1);
     const here = save.node;
-    const pins = nodeIds().map((id) => {
-      const [x, y] = nodePos(id), open = nodeOpen(id), town = id === WT;
+    // 깼거나 지금 갈 수 있는 지점만 보이고, 나머지는 숨긴다
+    const pins = nodeIds().filter(nodeOpen).map((id) => {
+      const [x, y] = nodePos(id), town = id === WT;
       const st = town ? null : D.STAGES[id];
       const clear = !town && id < save.clear;
       const col = town ? 'Grn' : st.win === 'boss' ? 'Red' : clear ? 'Grn' : 'Yel';
@@ -1567,10 +1568,10 @@
       const mark = town ? (sideNew().length ? '<b class="wq">!</b>' : '') : sides.length ? '<b class="wq s">!</b>' : '';
       const tag = town ? TOWN.name : st.idx;
       const em = town ? '<em class="town">TOWN</em>' : clear ? '<em>CLEAR</em>' : id === save.clear ? '<em class="new">NEW</em>' : '';
-      return `<button class="wnode ${open ? '' : 'lock'} ${clear ? 'clear' : ''} ${town ? 'town' : ''} c${col}" data-n="${id}" style="left:${x * 100}%;top:${y * 100}%">
+      return `<button class="wnode ${clear ? 'clear' : ''} ${town ? 'town' : ''} c${col}" data-n="${id}" style="left:${x * 100}%;top:${y * 100}%">
         <i class="ol" style="background-image:url(assets/ui/UI_WolrdMap_Chapter_Icon_Selected_OL_${col}.png)"></i>
         <i class="base" style="background-image:url(assets/ui/UI_WolrdMap_Chapter_Icon_Base_${col}.png)"></i>
-        <i class="ico" style="background-image:url(assets/ui/${town ? 'UI_WolrdMap_Chapter_Icon_Story_WH' : `UI_WolrdMap_Chapter_Icon_${open ? 'Main' : 'Lock'}_${col}`}.png)"></i>
+        <i class="ico" style="background-image:url(assets/ui/${town ? 'UI_WolrdMap_Chapter_Icon_Story_WH' : `UI_WolrdMap_Chapter_Icon_Main_${col}`}.png)"></i>
         <b class="tag">${tag}</b>${em}${mark}</button>`;
     }).join('');
     // 길: 열린 지점끼리 점선
@@ -1620,26 +1621,14 @@
       if (x < 0 || y < 0 || x > 1 || y > 1) return;
       // 가까운 지점에 붙는다 (지점 단추를 직접 눌러도 같음)
       let best = null, bd = 0.045;
-      for (const id of nodeIds()) { const [nx, ny] = nodePos(id); const dd = Math.hypot(nx - x, (ny - y) * 0.5625); if (dd < bd) { bd = dd; best = id; } }
+      for (const id of nodeIds().filter(nodeOpen)) { const [nx, ny] = nodePos(id); const dd = Math.hypot(nx - x, (ny - y) * 0.5625); if (dd < bd) { bd = dd; best = id; } }
       const btn = ev.target.closest('.wnode');
       if (btn) best = btn.dataset.n === WT ? WT : +btn.dataset.n;
       AU.play('lo_pick', 0.5);
       if (best == null) { walkTo(x, y, null); return; }
-      if (!nodeOpen(best)) { lockedInfo(best); walkTo(...nodePos(best), null); return; }
       if (best === save.node && !moving && save.wpos && Math.hypot(save.wpos[0] - nodePos(best)[0], save.wpos[1] - nodePos(best)[1]) < 1e-3) { stageSel = best; nodeInfo(); return; }
       walkTo(...nodePos(best), best);
     });
-    // 잠긴 지점에 가면 안내만
-    function lockedInfo(id) {
-      setTimeout(() => {
-        if (!$('sInfo')) return;
-        const st = D.STAGES[id];
-        $('sInfo').innerHTML = `<button class="wclose" onclick="this.parentElement.classList.remove('on')">✕</button><div class="wi-top"><span class="wi-no">${st.idx}</span><div class="wi-name">${st.title}</div></div>
-          <p class="wi-desc">아직 갈 수 없는 곳입니다.
-앞의 작전을 먼저 마치면 길이 열립니다.</p>`;
-        placeInfo();
-      }, 50);
-    }
     stageSel = here;
     $('screen').querySelectorAll('.wnode').forEach((b) => b.classList.toggle('sel', b.dataset.n === String(here)));
   }
