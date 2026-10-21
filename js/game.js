@@ -468,17 +468,22 @@
   const views = new Map(); // uid -> 표시 객체
   function rr(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
   const ringTex = {};
+  // 발밑 표지 (원작 전투 칸 결): 빛나는 육각 테두리, 지휘관·보스는 노란 겹테
   function getRingTex(side, big) {
     const k = side + big;
     if (ringTex[k]) return ringTex[k];
     return (ringTex[k] = canvasTex(128, 128, (g) => {
-      const c = side === 'p' ? '74,168,255' : '255,90,80';
-      const rg = g.createRadialGradient(64, 64, 10, 64, 64, 62);
-      rg.addColorStop(0, 'rgba(0,0,0,.45)'); rg.addColorStop(0.6, `rgba(${c},.35)`); rg.addColorStop(0.85, `rgba(${c},.9)`); rg.addColorStop(1, `rgba(${c},0)`);
-      g.fillStyle = rg; g.beginPath(); g.arc(64, 64, 62, 0, 7); g.fill();
-      if (big) { g.strokeStyle = 'rgba(255,215,106,.95)'; g.lineWidth = 6; g.beginPath(); g.arc(64, 64, 50, 0, 7); g.stroke(); }
+      const c = side === 'p' ? '63,180,255' : '255,59,92';
+      const hex = (r) => { g.beginPath(); for (let i = 0; i < 6; i++) { const a = Math.PI / 6 + (i * Math.PI) / 3; g[i ? 'lineTo' : 'moveTo'](64 + Math.cos(a) * r, 64 + Math.sin(a) * r); } g.closePath(); };
+      const rg = g.createRadialGradient(64, 64, 6, 64, 64, 60);
+      rg.addColorStop(0, 'rgba(0,0,0,.5)'); rg.addColorStop(0.7, `rgba(${c},.28)`); rg.addColorStop(1, `rgba(${c},0)`);
+      hex(58); g.fillStyle = rg; g.fill();
+      g.shadowColor = `rgba(${c},1)`; g.shadowBlur = 10;
+      hex(52); g.strokeStyle = `rgba(${c},.95)`; g.lineWidth = 5; g.stroke();
+      if (big) { hex(42); g.strokeStyle = 'rgba(255,204,0,.95)'; g.shadowColor = 'rgba(255,204,0,1)'; g.lineWidth = 4; g.stroke(); }
     }));
   }
+
   function billboard(rigId, h, native, f) {
     const bb = new THREE.Group();
     const rig = new Rig(rigId, h, native);
@@ -521,22 +526,27 @@
     refreshView(u);
     return v;
   }
+  // 지도 유닛 막대 (원작 전투 막대 결): 짙은 사선 판 위 병사·영웅 사선 막대, 왼쪽 칸에 남은 병사 수
   function drawBadge(v) {
     const u = v.u, g = v.bc.getContext('2d'), W = v.bc.width;
     const acted = u.acted && u.side === G.side && u.side === 'p';
+    const para = (x, y, w, h, sk) => { g.beginPath(); g.moveTo(x + sk, y); g.lineTo(x + w, y); g.lineTo(x + w - sk, y + h); g.lineTo(x, y + h); g.closePath(); };
     g.clearRect(0, 0, W, 40);
-    g.fillStyle = 'rgba(0,0,0,.6)'; rr(g, 0, 2, W, 36, 8); g.fill();
+    para(0, 3, W, 34, 8); g.fillStyle = 'rgba(12,14,18,.82)'; g.fill();
+    g.strokeStyle = u.side === 'p' ? 'rgba(63,180,255,.9)' : 'rgba(255,59,92,.9)'; g.lineWidth = 2; g.stroke();
     const bar = (y, k, c0, c1) => {
-      g.fillStyle = '#1a2036'; rr(g, 16, y, W - 22, 11, 4); g.fill();
-      if (k > 0) { const lg = g.createLinearGradient(16, 0, W - 6, 0); lg.addColorStop(0, acted ? '#777' : c0); lg.addColorStop(1, acted ? '#999' : c1); g.fillStyle = lg; rr(g, 16, y, Math.max(6, (W - 22) * k), 11, 4); g.fill(); }
+      para(24, y, W - 30, 10, 4); g.fillStyle = '#05070a'; g.fill();
+      if (k > 0) { const lg = g.createLinearGradient(24, 0, W - 6, 0); lg.addColorStop(0, acted ? '#666' : c0); lg.addColorStop(1, acted ? '#999' : c1); g.fillStyle = lg; para(24, y, Math.max(8, (W - 30) * k), 10, 4); g.fill(); }
     };
-    if (u.troop) bar(8, u.troop.hp / u.troop.hpMax, u.side === 'p' ? '#3a8cff' : '#ff8a3a', u.side === 'p' ? '#9cd0ff' : '#ffc890');
-    bar(u.troop ? 22 : 15, u.hp / u.hpMax, u.side === 'p' ? '#2fc46c' : '#e8402f', u.side === 'p' ? '#9dffbc' : '#ff9a8a');
-    g.fillStyle = u.lead || u.boss ? '#ffd76a' : D.KIND[R.troopAlive(u) ? u.troop.kind : u.kind].color;
-    g.font = 'bold 16px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillText(u.troop ? String(R.soldiers(u)) : (u.lead || u.boss ? '★' : '●'), 9, 21);
+    if (u.troop) bar(9, u.troop.hp / u.troop.hpMax, u.side === 'p' ? '#2a7cff' : '#ff7a2a', u.side === 'p' ? '#8fd0ff' : '#ffc070');
+    bar(u.troop ? 22 : 15, u.hp / u.hpMax, u.side === 'p' ? '#21c060' : '#e8203f', u.side === 'p' ? '#a6ffc4' : '#ff8aa0');
+    para(4, 7, 20, 26, 5); g.fillStyle = u.lead || u.boss ? '#ffcc00' : u.side === 'p' ? '#1d6fd0' : '#c0183a'; g.fill();
+    g.fillStyle = u.lead || u.boss ? '#111' : '#fff';
+    g.font = '16px LO_B, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(u.troop ? String(R.soldiers(u)) : (u.lead || u.boss ? '★' : '●'), 14, 21);
     v.bt.needsUpdate = true;
   }
+
   function refreshView(u) {
     const v = views.get(u.uid);
     if (!v) return;
