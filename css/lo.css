@@ -230,8 +230,11 @@
 .pcard .pimg { position: absolute; inset: 0; background: no-repeat center 6% / auto 190%; transition: transform .3s; }
 .pcard::before { content: ''; position: absolute; inset: 0; z-index: 1; background: linear-gradient(transparent 52%, rgba(6, 9, 15, .96) 82%); }
 .pcard .pimg.whole { background-size: 130% auto; background-position: center 30%; }
-.pcard.sel { box-shadow: inset 0 0 0 2px var(--lo-y), 0 0 18px rgba(255, 204, 0, .35); }
-.pcard.sel::after { content: ''; position: absolute; left: 0; top: 0; z-index: 2; border-top: 26px solid var(--lo-y); border-right: 26px solid transparent; }
+.pcard.sel { box-shadow: none; }
+/* 선택 테두리는 일러스트보다 위에 (가장자리 띠를 맨 위 층에) */
+.pcard .psel { position: absolute; inset: 0; z-index: 4; pointer-events: none; box-shadow: inset 0 0 0 3px var(--lo-y), inset 0 0 22px rgba(255, 204, 0, .45); opacity: 0; transition: opacity .15s; }
+.pcard.sel .psel { opacity: 1; }
+.pcard.sel::after { content: ''; position: absolute; left: 0; top: 0; z-index: 5; border-top: 26px solid var(--lo-y); border-right: 26px solid transparent; }
 .pcard:hover .pimg { transform: scale(1.04); }
 .pcard:not(.sel) .pimg { filter: brightness(.75) saturate(.85); }
 .plead { position: absolute; z-index: 3; right: 8px; top: 8px; width: 34px; height: 26px; background: url(../assets/ui/frame_Cha_formation_Leader.png) center/contain no-repeat; }

@@ -1499,7 +1499,7 @@
         <div class="pimg ${id === 'pupphead' || id === 'fallen' ? 'whole' : ''}"><canvas class="pcv" data-stand="${HERO_STAND[id]}"></canvas></div>
         ${h.lead ? '<i class="plead"></i>' : ''}${(save.joined || []).includes(id) ? '' : '<i class="pnew">NEW</i>'}
         <div class="pfoot"><span class="plv">Lv.${s.lv}</span><b>${h.name}</b><small>${kindTag(h.kind)} · ${t.cls}</small></div>
-        <div class="ptroop"><img src="${IMG[tr.icon]}" alt=""><span>${tr.short} ×${R.SQUAD}</span></div></button>`;
+        <div class="ptroop"><img src="${IMG[tr.icon]}" alt=""><span>${tr.short} ×${R.SQUAD}</span></div><i class="psel"></i></button>`;
     };
     const detail = () => {
       const id = cur, { h, s, t, hp, at, df } = stat(id);
