@@ -147,6 +147,12 @@
 .wmap { position: absolute; inset: 0; z-index: 0; isolation: isolate; touch-action: none; } /* 원작 3D 지도(그림판) 위에 지점 단추·부대 말을 매 순간 3D 자리에 맞춰 붙인다 */
 .wmap .w3d { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity .6s; }
 .wmap .w3d.on { opacity: 1; }
+.wmap .wlink { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; z-index: 0; }
+.wlink line { stroke: var(--lo-y); stroke-width: 3; stroke-linecap: round; filter: drop-shadow(0 0 4px rgba(255, 204, 0, .8)); }
+.wlink line.done { opacity: .75; }
+.wlink line.next { stroke-dasharray: 9 7; animation: wdash 1.2s linear infinite; }
+@keyframes wdash { to { stroke-dashoffset: -32; } }
+.wmap:not(.ready) .wlink { visibility: hidden; }
 .wmap:not(.ready) .wnode, .wmap:not(.ready) .wtoken { visibility: hidden; }
 .wmap .wtoken { transition: none; }
 .wvig { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 40% 55%, transparent 40%, rgba(0,0,0,.65)), linear-gradient(rgba(0,0,0,.55), transparent 22%); }
