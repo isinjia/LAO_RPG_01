@@ -18,6 +18,39 @@
     's': { name: '폐허', cost: { foot: 1, horse: 2, fly: 1 }, def: 0.05, bg: 'ruins' },
   };
 
+  // ── 지형 갈래 (작전 장소) ─────────────────────────────
+  // 작전마다 장소에 맞춰 지도 바닥 질감·소품·전투 배경을 바꾼다 (질감·소품: assets/tiles, tools/build_tiles.py)
+  // base 바닥 / wood 숲 칸 바닥(woodTint 덧칠) / dirt 산·폐허·벽 칸 바닥 / floor 기지 칸 바닥 / road 길(roadTint 덧칠)
+  // 소품: tree 숲 · mount 산 · rubble 벽 · ruins 폐허 잔해 · tall 폐허 큰 소품 · camp 기지 · barrel 기지 곁 소품, prop 소품 빛깔
+  // fight: 전투 배경 (지형 글자별, _ = 기본. 작전의 fbg 가 기본을 대신한다). BG_ 로 시작하면 원작 장면 전투 배경(assets/story/bg)
+  // indoor: 지도 밖에 숲을 흩뿌리지 않는다, names: 이 갈래에서 바꿔 부르는 지형 이름
+  const OUTDOOR = { tree: ['tree0', 'tree1', 'tree2', 'tree3', 'tree4'], mount: ['rock0', 'rock1'], rubble: ['ruin0', 'ruin1', 'wall'], ruins: ['wreck0', 'wreck1', 'wreck2'], tall: ['sign', 'wall'], camp: ['bags0', 'bags1'], barrel: 'barrel' };
+  const INDOOR = { indoor: true, tree: ['crate0', 'crate1', 'gas', 'console'], mount: ['mach0', 'mach1', 'server'], rubble: ['server', 'tank0', 'tank1', 'mach0'], ruins: ['wreck0', 'desk', 'crate0'], tall: ['tank0', 'console'], camp: ['crate0', 'crate1'], barrel: 'gas' };
+  const IN_NAMES = { '.': '시설 바닥', f: '장비 더미', m: '대형 설비', h: '단차', r: '통로', s: '잔해', '#': '격벽', c: '방어 거점' };
+  const LANDS = {
+    forest: { ...OUTDOOR, name: '숲', base: 'forest', wood: 'forest', woodTint: 'rgba(20,40,12,.32)', dirt: 'dirt', floor: 'asphalt', road: 'asphalt', outer: '#171f14',
+      fight: { _: 'forest', m: 'mountain', w: 'bridge', '=': 'bridge', c: 'fort', '#': 'fort' } },
+    coast: { ...OUTDOOR, name: '해안', base: 'grass', wood: 'forest', dirt: 'sand', floor: 'asphalt', road: 'asphalt', outer: '#1d2a22',
+      fight: { _: 'cliff', f: 'forest', h: 'plain', w: 'plain', '=': 'bridge', s: 'coast', '#': 'coast', c: 'camp', m: 'mountain' } },
+    ruin: { ...OUTDOOR, name: '도시 폐허', base: 'concrete', wood: 'forest', dirt: 'dirt', floor: 'asphalt', road: 'asphalt', outer: '#1a1d1a',
+      fight: { _: 'coast', f: 'forest', r: 'ruins', w: 'bridge', '=': 'bridge', c: 'fort', m: 'mountain' }, names: { '.': '폐허 바닥' } },
+    factory: { ...OUTDOOR, name: '공장', base: 'factory', wood: 'grate', dirt: 'grate', floor: 'grate', road: 'asphalt', outer: '#1b1b1d',
+      tree: ['crate0', 'crate1', 'shelf', 'barrel'], mount: ['mach0', 'mach1'], rubble: ['fwall', 'wall', 'ruin1'], tall: ['sign', 'shelf'],
+      fight: { _: 'fort' }, names: { '.': '공장 바닥', f: '자재 더미', m: '대형 설비', '#': '무너진 벽', r: '통로' } },
+    lab: { ...INDOOR, name: '연구 시설', base: 'labw', dirt: 'labd', floor: 'labd', road: 'factory', outer: '#15191f', fight: { _: 'BG_5_2_3' }, names: IN_NAMES },
+    base: { ...INDOOR, name: '지하 시설', base: 'labd', dirt: 'grate', floor: 'grate', road: 'grate', outer: '#0d1117', fight: { _: 'BG_5_1_3' }, names: IN_NAMES },
+    cave: { ...OUTDOOR, name: '지하 굴', base: 'cave', wood: 'cave', woodTint: 'rgba(10,14,8,.3)', dirt: 'cave', floor: 'grate', road: 'dirt', outer: '#0e100c', prop: 0xb4ab96,
+      tree: ['mush0', 'mush1'], rubble: ['rock0', 'rock1'], tall: ['rock1', 'rock0'],
+      fight: { _: 'mountain' }, names: { '.': '굴 바닥', f: '버섯 군락', m: '암벽', '#': '바위 벽', w: '지하수', r: '굴길' } },
+    vr: { ...INDOOR, name: '가상 공간', base: 'vr', dirt: 'vr', floor: 'vr', road: 'vr', roadTint: 'rgba(140,225,255,.28)', outer: '#0a1424', prop: 0x9fe8ff,
+      tree: ['tree0', 'tree1', 'tree2', 'tree3', 'tree4'],
+      fight: { _: 'BG_6_2_1' }, names: { '.': '가상 공간', f: '기억의 숲', m: '데이터 더미', h: '단차', r: '빛의 길', s: '깨진 데이터', '#': '데이터 벽', c: '방어 거점' } },
+    tomb: { ...INDOOR, name: '무덤', base: 'tomb', dirt: 'tomb', floor: 'grate', road: 'grate', outer: '#080c10',
+      tree: ['spike', 'crystal1'], mount: ['hive0', 'hive1'], rubble: ['hive0', 'hive1', 'spike', 'crystal0'], ruins: ['crystal1', 'goo1', 'wreck0'], tall: ['crystal0'], camp: ['crate0'],
+      fight: { _: 'BG_6_8_2' }, names: { '.': '무덤 바닥', f: '철충 가시', m: '철충 둥지', '#': '철충 둥지 벽', s: '잔해', c: '방어 거점' } },
+  };
+  LANDS.infect = { ...LANDS.factory, name: '오염된 공장', rubble: ['goo0', 'hive0', 'hive1', 'fwall'], ruins: ['goo1', 'wreck0', 'wreck1'], tall: ['spike', 'goo1'], names: { ...LANDS.factory.names, '#': '철충화된 벽' } };
+
   // ── 병종 (랑그릿사 모바일) ───────────────────────────
   // 상성은 병사 병종 기준(영웅끼리는 영웅 병종). REL[공격][방어] = 유리 배율 (+30% 등). 반대 방향은 그만큼 불리.
   const KIND = {
@@ -1517,5 +1550,16 @@
     },
   ];
 
-  (typeof window !== 'undefined' ? window : globalThis).DATA = { TERRAIN, KIND, REL, SKILLS, HEROES, TIER_LV, MAX_LV, TROOPS, ENEMIES, CHAPTERS, STAGES };
+  // 작전 장소: [지형 갈래, 원작 장면 전투 배경]. 대본의 장소(place)와 원작 장면 배경(bg)을 따른다
+  const STAGE_LAND = {
+    '1-1': ['ruin'], '1-2': ['coast'], '1-3': ['coast', 'BG_CliffNight'], '1-4': ['ruin'], '1-5': ['coast', 'BG_1_5_3'], '1-6': ['coast', 'BG_1_6_3'], '1-7': ['coast'], '1-8': ['coast'],
+    '2-1': ['ruin'], '2-2': ['factory'], '2-3': ['ruin'], '2-4': ['ruin', 'BG_2_4_2'], '2-5': ['factory', 'BG_2_5_3'], '2-6': ['infect'], '2-7': ['ruin'], '2-8': ['cave', 'BG_2_8_2'],
+    '3-1': ['forest', 'BG_3_1_2'], '3-2': ['ruin', 'BG_3_2_2'], '3-3': ['lab', 'BG_3_3_3'], '3-4': ['base', 'BG_3_4_2'], '3-5': ['lab', 'BG_3_5_2'], '3-6': ['forest', 'BG_3_6_3'], '3-7': ['forest', 'BG_3_7_2'], '3-8': ['forest', 'BG_3_8_2'],
+    '4-1': ['forest', 'BG_4_1_2'], '4-2': ['cave', 'BG_4_2_2'], '4-3': ['base', 'BG_4_3_2'], '4-4': ['base', 'BG_4_4_2'], '4-5': ['cave'], '4-6': ['base', 'BG_4_6_2'], '4-7': ['base', 'BG_4_7_2'], '4-8': ['base', 'BG_4_8_2'],
+    '5-1': ['base', 'BG_5_1_3'], '5-2': ['lab', 'BG_5_2_3'], '5-3': ['lab', 'BG_5_3_3'], '5-4': ['lab', 'BG_5_3_3'], '5-5': ['ruin', 'BG_5_5_2'], '5-6': ['forest', 'BG_5_6_2'], '5-7': ['base', 'BG_5_7_2'], '5-8': ['base', 'BG_5_8_3'],
+    '6-1': ['base', 'BG_6_1_2'], '6-2': ['vr', 'BG_6_2_2'], '6-3': ['lab', 'BG_6_3_2'], '6-4': ['vr', 'BG_6_4_2'], '6-5': ['vr', 'BG_6_5_2'], '6-6': ['vr', 'BG_6_6_2'], '6-7': ['lab', 'BG_6_7_2'], '6-8': ['tomb', 'BG_6_8_2'],
+  };
+  STAGES.forEach((s) => { const [land, fbg] = STAGE_LAND[s.idx] || ['forest']; s.land = s.land || land; if (fbg && !s.fbg) s.fbg = fbg; });
+
+  (typeof window !== 'undefined' ? window : globalThis).DATA = { TERRAIN, LANDS, KIND, REL, SKILLS, HEROES, TIER_LV, MAX_LV, TROOPS, ENEMIES, CHAPTERS, STAGES };
 })();

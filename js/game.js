@@ -154,14 +154,25 @@
   const pathy = (c) => c === 'r' || c === '=' || c === 'v' || c === 'c';
 
   // 지도 바닥: 원작 전투 배경의 손그림 질감(assets/tiles, tools/build_tiles.py)을 지형별로 깔고 경계는 흐린 가면으로 섞는다
-  const TILE_NAMES = ['grass', 'forest', 'dirt', 'asphalt', 'tree0', 'tree1', 'tree2', 'tree3', 'tree4', 'rock0', 'rock1', 'ruin0', 'ruin1', 'wall', 'sign', 'bags0', 'bags1', 'barrel', 'wreck0', 'wreck1', 'wreck2'];
+  // 작전 장소(지형 갈래, D.LANDS)마다 바닥 질감·소품·전투 배경이 바뀐다
+  const LAND_PARTS = (L) => [L.base, L.wood, L.dirt, L.floor, L.road, L.barrel, ...L.tree, ...L.mount, ...L.rubble, ...L.ruins, ...L.tall, ...L.camp];
+  const TILE_NAMES = [...new Set(Object.values(D.LANDS).flatMap(LAND_PARTS).filter(Boolean))];
+  const landOf = (st) => D.LANDS[st.land] || D.LANDS.forest;
+  // 전투 배경: 지형 글자별 갈래 배경 → 작전의 원작 장면 배경 → 갈래 기본 배경
+  function fightBgOf(st, c) {
+    const L = landOf(st);
+    let b = L.fight[c] || st.fbg || L.fight._;
+    if (st.night && b === 'forest') b = 'night'; // 밤 작전의 숲은 밤 숲 배경
+    return b.startsWith('BG_') ? `assets/story/bg/${b}.webp` : `assets/bg/${b}.webp`;
+  }
+  const terrName = (x, y) => (landOf(G.stage).names || {})[G.map[y][x]] || R.terr(G, x, y).name;
   const TILE = {};
   function loadTiles() {
     return Promise.all(TILE_NAMES.map((n) => new Promise((r) => { const im = new Image(); im.onload = () => { TILE[n] = im; r(); }; im.onerror = r; im.src = `assets/tiles/${n}.webp`; })));
   }
   // 지도 밖 PAD 칸까지 지형을 이어 그린다: 화면이 빈 바탕 없이 꽉 차고, 못 가는 바깥은 어둡게 덮어 구분한다
   const PAD = 6;
-  const OUTER = 0x171f14, OUTER_CSS = '#171f14'; // 늘린 지형 너머의 판 색 (어둡게 덮인 풀빛)
+  const fade = (hex, a) => `rgba(${parseInt(hex.slice(1, 3), 16)},${parseInt(hex.slice(3, 5), 16)},${parseInt(hex.slice(5, 7), 16)},${a})`; // 늘린 지형 너머의 판 색(갈래 outer)
   function extendMap(G) {
     const w = G.w + PAD * 2, h = G.h + PAD * 2, map = [];
     const road = (c) => c === 'r' || c === '=';
@@ -180,7 +191,7 @@
           c = outX && outY ? '.' : inner && (road(inner) || inner === 'v' || inner === 'c') ? (c === '=' ? '=' : 'r') : c === '=' ? 'w' : '.';
         } else if ('cvs#'.includes(c)) c = '.';
         else if (c === 'm') c = hash(x, y, 11) < 0.6 ? 'm' : 'h';
-        if ((c === '.' || c === 'h') && hash(x, y, 12) > 0.72) c = 'f';
+        if ((c === '.' || c === 'h') && hash(x, y, 12) > 0.72 && !landOf(G.stage).indoor) c = 'f';
         else if (c === 'f' && hash(x, y, 13) > 0.8) c = '.';
         row += c;
       }
@@ -189,7 +200,7 @@
     return { w, h, map };
   }
   function drawGround(G0) {
-    const G = extendMap(G0);
+    const G = extendMap(G0), L = landOf(G0.stage);
     const c = canvas(G.w * TS, G.h * TS), g = c.getContext('2d');
     const at = (x, y) => (R.inB(G, x, y) ? G.map[y][x] : null);
     const PAT = (TS * 3) / 384; // 질감 한 장 = 3칸
@@ -222,10 +233,11 @@
       lg.globalCompositeOperation = 'destination-in'; lg.drawImage(m, 0, 0);
       g.drawImage(l, 0, 0);
     };
-    fillTex(g, 'grass');
-    layer('forest', (t) => t === 'f', TS * 0.22);
-    layer('dirt', (t) => t === 'm' || t === 's' || t === '#', TS * 0.2);
-    layer('asphalt', (t) => t === 'c', TS * 0.12);
+    fillTex(g, L.base);
+    if (L.wood) layer(L.wood, (t) => t === 'f', TS * 0.22);
+    if (L.woodTint) tint(L.woodTint, mask((t) => t === 'f', TS * 0.22));
+    layer(L.dirt, (t) => t === 'm' || t === 's' || t === '#', TS * 0.2);
+    layer(L.floor, (t) => t === 'c', TS * 0.12);
     // 언덕: 볼록한 빛과 그늘
     for (let y = 0; y < G.h; y++) for (let x = 0; x < G.w; x++) {
       if (G.map[y][x] !== 'h') continue;
@@ -251,7 +263,8 @@
       }
     };
     tint('rgba(45,38,20,.5)', mask(null, TS * 0.1, roadShape(TS * 0.76)));
-    layer('asphalt', null, TS * 0.04, roadShape(TS * 0.62));
+    layer(L.road, null, TS * 0.04, roadShape(TS * 0.62));
+    if (L.roadTint) tint(L.roadTint, mask(null, TS * 0.04, roadShape(TS * 0.62)));
     tint('rgba(70,58,40,.22)', mask(null, TS * 0.04, roadShape(TS * 0.62)));
     // 물: 칸 모양이 드러나지 않게 흐린 가면으로 모래톱 → 얕은 물 → 깊은 물 순서로 겹친다
     const wet = (t) => t === 'w' || t === '=';
@@ -327,28 +340,29 @@
     for (const [gx0, gy0, gx1, gy1, x, y, w, h] of [[0, 0, 0, F, 0, 0, c.width, F], [0, c.height, 0, c.height - F, 0, c.height - F, c.width, F],
       [0, 0, F, 0, 0, 0, F, c.height], [c.width, 0, c.width - F, 0, c.width - F, 0, F, c.height]]) {
       const lg = g.createLinearGradient(gx0, gy0, gx1, gy1);
-      lg.addColorStop(0, OUTER_CSS); lg.addColorStop(1, 'rgba(23,31,20,0)');
+      lg.addColorStop(0, L.outer); lg.addColorStop(1, fade(L.outer, 0));
       g.fillStyle = lg; g.fillRect(x, y, w, h);
     }
     return c;
   }
 
-  // 장식: 원작 소품 그림 (나무·바위 더미·무너진 건물·모래주머니·철충 잔해)
-  const DECO = {};
-  function decoTex() {
-    if (DECO.tree) return;
-    const tex = (n) => { const im = TILE[n]; const t = new THREE.Texture(im); t.needsUpdate = true; t.anisotropy = 4; t.aspect = im ? im.width / im.height : 1; return t; };
-    DECO.tree = ['tree0', 'tree1', 'tree2', 'tree3', 'tree4'].map(tex);
-    DECO.mount = ['rock0', 'rock1'].map(tex);
-    DECO.rubble = ['ruin0', 'ruin1', 'wall'].map(tex);
-    DECO.ruins = ['wreck0', 'wreck1', 'wreck2', 'sign', 'wall'].map(tex);
-    DECO.camp = ['bags0', 'bags1', 'barrel'].map(tex);
+  // 장식: 원작 소품 그림 (나무·바위·무너진 건물·모래주머니·철충 잔해·연구 설비·철충 둥지). 지형 갈래마다 고른다
+  const DECO = {}; // 그림 이름 -> 텍스처 (갈래끼리 함께 쓴다)
+  const PROP_H = { tree0: 0.86, tree1: 0.86, tree2: 0.86, tree3: 0.62, tree4: 0.62, rock0: 0.62, rock1: 0.62, ruin0: 0.5, ruin1: 0.5, wall: 0.95, sign: 0.62, wreck0: 0.42, wreck1: 0.42, wreck2: 0.42,
+    bags0: 0.36, bags1: 0.36, barrel: 0.34, server: 0.72, tank0: 0.95, tank1: 0.88, goo0: 0.4, goo1: 0.7, console: 0.62, gas: 0.5, desk: 0.5, mach0: 0.85, mach1: 0.62,
+    crate0: 0.36, crate1: 0.42, shelf: 0.46, fwall: 0.72, hive0: 0.62, hive1: 0.62, crystal0: 0.82, crystal1: 0.5, spike: 0.72, mush0: 0.34, mush1: 0.3 };
+  function decoTex(L) {
+    const tex = (n) => { const im = TILE[n]; const t = new THREE.Texture(im); t.needsUpdate = true; t.anisotropy = 4; t.aspect = im ? im.width / im.height : 1; t.pname = n; return t; };
+    const get = (n) => DECO[n] || (DECO[n] = tex(n));
+    const list = (a) => a.map(get);
+    return { tree: list(L.tree), mount: list(L.mount), rubble: list(L.rubble), ruins: list(L.ruins), tall: list(L.tall), camp: list(L.camp), barrel: get(L.barrel) };
   }
-  // 그림 비율대로 높이 h 인 소품
-  const prop = (t, h, x, z, night) => sprite(t, h * t.aspect, h, x, z, night);
+  const pick = (a, r) => a[Math.min(a.length - 1, Math.floor(r * a.length))];
+  // 그림 비율대로 높이 h 인 소품 (h 를 안 주면 그림마다 정한 높이)
+  const prop = (t, h, x, z, col) => { h = h || PROP_H[t.pname] || 0.5; return sprite(t, h * t.aspect, h, x, z, col); };
 
-  function sprite(t, w, h, x, z, night) {
-    const m = new THREE.SpriteMaterial({ map: t, transparent: true, depthTest: false, depthWrite: false, color: night ? 0x8a96c8 : 0xffffff });
+  function sprite(t, w, h, x, z, col) {
+    const m = new THREE.SpriteMaterial({ map: t, transparent: true, depthTest: false, depthWrite: false, color: col == null ? 0xffffff : col });
     const s = new THREE.Sprite(m);
     s.center.set(0.5, 0.06);
     s.scale.set(w, h, 1);
@@ -359,11 +373,13 @@
 
   function buildWorld() {
     if (world) { scene.remove(world.root); world.dispose(); }
-    decoTex();
+    const L = landOf(G.stage), DK = decoTex(L);
     const root = new THREE.Group();
     const night = !!G.stage.night;
+    const pc = new THREE.Color(night ? 0x8a96c8 : 0xffffff); // 소품 빛깔 (밤, 갈래 빛깔)
+    if (L.prop) pc.multiply(new THREE.Color(L.prop));
     // 바닥 바깥 (어두운 판)
-    const outer = new THREE.Mesh(new THREE.PlaneGeometry(G.w + 80, G.h + 80), new THREE.MeshBasicMaterial({ color: night ? 0x0b0f1a : OUTER }));
+    const outer = new THREE.Mesh(new THREE.PlaneGeometry(G.w + 80, G.h + 80), new THREE.MeshBasicMaterial({ color: night ? 0x0b0f1a : L.outer }));
     outer.rotation.x = -Math.PI / 2; outer.position.set(G.w / 2, -0.02, G.h / 2);
     root.add(outer);
     // 지면
@@ -419,22 +435,21 @@
         const n = 2 + (hash(x, y, 7) > 0.55 ? 1 : 0);
         for (let i = 0; i < n; i++) {
           const ox = [0.3, 0.72, 0.5][i] + (hash(x, y, i) - 0.5) * 0.14, oz = [0.38, 0.52, 0.86][i] + (hash(x, y, i + 3) - 0.5) * 0.08;
-          const k = Math.floor(hash(x, y, i + 1) * 5), small = k >= 3;
-          decos.push(prop(DECO.tree[k], (small ? 0.62 : 0.86) + hash(x, y, i + 9) * 0.14, x + ox, y + oz, night));
+          const tt = pick(DK.tree, hash(x, y, i + 1));
+          decos.push(prop(tt, PROP_H[tt.pname] + hash(x, y, i + 9) * 0.14, x + ox, y + oz, pc));
         }
       } else if (t === 'm') {
-        decos.push(prop(DECO.mount[hash(x, y, 2) > 0.5 ? 1 : 0], 0.62, x + 0.5, y + 0.8, night));
+        decos.push(prop(pick(DK.mount, hash(x, y, 2)), 0, x + 0.5, y + 0.8, pc));
       } else if (t === '#') {
-        const k = Math.floor(hash(x, y, 4) * 3);
-        decos.push(prop(DECO.rubble[k], k === 2 ? 0.95 : 0.5, x + 0.5, y + 0.82, night));
+        decos.push(prop(pick(DK.rubble, hash(x, y, 4)), 0, x + 0.5, y + 0.82, pc));
       } else if (t === 's') {
         const r = hash(x, y, 5);
-        if (r < 0.55) decos.push(prop(DECO.ruins[Math.floor(hash(x, y, 6) * 3)], 0.42, x + 0.3 + hash(x, y, 8) * 0.4, y + 0.74, night));
-        else if (r < 0.7) decos.push(prop(DECO.ruins[3], 0.62, x + 0.7, y + 0.6, night));
-        else if (r < 0.82) decos.push(prop(DECO.ruins[4], 0.7, x + 0.3, y + 0.62, night));
+        if (r < 0.55) decos.push(prop(pick(DK.ruins, hash(x, y, 6)), 0.42, x + 0.3 + hash(x, y, 8) * 0.4, y + 0.74, pc));
+        else if (r < 0.7) decos.push(prop(DK.tall[0], 0.62, x + 0.7, y + 0.6, pc));
+        else if (r < 0.82) decos.push(prop(DK.tall[DK.tall.length - 1], 0.7, x + 0.3, y + 0.62, pc));
       } else if (t === 'c') {
-        decos.push(prop(DECO.camp[hash(x, y, 3) > 0.5 ? 1 : 0], 0.36, x + 0.5, y + 0.88, night));
-        if (hash(x, y, 9) > 0.6) decos.push(prop(DECO.camp[2], 0.34, x + 0.18, y + 0.5, night));
+        decos.push(prop(pick(DK.camp, hash(x, y, 3)), 0.36, x + 0.5, y + 0.88, pc));
+        if (hash(x, y, 9) > 0.6) decos.push(prop(DK.barrel, 0.34, x + 0.18, y + 0.5, pc));
       }
     }
     // 지도 밖 숲·바위 (어둡게)
@@ -446,10 +461,10 @@
       if (t === 'f') {
         const n = 1 + (hash(x, y, 7) > 0.5 ? 1 : 0);
         for (let i = 0; i < n; i++) {
-          const k = Math.floor(hash(x, y, i + 1) * 5);
-          dim.push(prop(DECO.tree[k], 0.7 + hash(x, y, i + 9) * 0.2, gx + [0.35, 0.7][i] + (hash(x, y, i) - 0.5) * 0.2, gy + [0.45, 0.8][i], night));
+          const tt = pick(DK.tree, hash(x, y, i + 1));
+          dim.push(prop(tt, PROP_H[tt.pname] * 0.82 + hash(x, y, i + 9) * 0.2, gx + [0.35, 0.7][i] + (hash(x, y, i) - 0.5) * 0.2, gy + [0.45, 0.8][i], pc));
         }
-      } else if (t === 'm') dim.push(prop(DECO.mount[hash(x, y, 2) > 0.5 ? 1 : 0], 0.62, gx + 0.5, gy + 0.8, night));
+      } else if (t === 'm') dim.push(prop(pick(DK.mount, hash(x, y, 2)), 0, gx + 0.5, gy + 0.8, pc));
       dim.forEach((s) => { s.material.color.multiplyScalar(0.55); decos.push(s); });
     }
     decos.forEach((s) => root.add(s));
@@ -461,7 +476,7 @@
       },
     };
   }
-  const isDeco = (t) => Object.values(DECO).flat().includes(t);
+  const isDeco = (t) => Object.values(DECO).includes(t);
 
   // ── 유닛 표시 ───────────────────────────────────────────
   // 한 칸 = 영웅(큰 리그) + 뒤쪽 병사 2명(작은 리그). 발밑 고리 색 = 진영, 앞쪽 막대 = 병사(위)·영웅(아래) 체력
@@ -1024,7 +1039,7 @@
     if (!u) {
       const t = R.terr(G, tile[0], tile[1]);
       const cs = (v) => (v >= 99 ? '불가' : v);
-      el.innerHTML = `<div class="pic" style="background:#203050"></div><div class="nm">${t.name}</div>
+      el.innerHTML = `<div class="pic" style="background:#203050"></div><div class="nm">${terrName(tile[0], tile[1])}</div>
         <div class="st">방어 보정 <b>${t.def > 0 ? '+' : ''}${Math.round(t.def * 100)}%</b>${t.heal ? ' · 차례 시작 시 체력 <b>+' + Math.round(t.heal * 100) + '%</b>' : ''}</div>
         <div class="st">이동 소모: 보병 <b>${cs(t.cost.foot)}</b> · 기동 <b>${cs(t.cost.horse)}</b> · 비행 <b>${cs(t.cost.fly)}</b></div>`;
       el.classList.remove('hidden'); syncInfoH(); return;
@@ -1038,7 +1053,7 @@
       ${bars(u)}
       <div class="st">공격 <b>${Math.round(R.atk(u, 'H') * R.auraK(G, u, 'at'))}</b>${pct('at')} · 방어 <b>${Math.round(R.def(u, 'H') * R.auraK(G, u, 'df'))}</b>${pct('df')} · 이동 <b>${R.mov(u)}</b> · 사거리 <b>${u.rng}</b></div>
       ${R.talentOf(u) ? `<div class="tal"><b>재능 · ${R.talentOf(u).name}</b> ${R.talentOf(u).desc}</div>` : ''}
-      <div class="ex">${troopLine}특기: ${sk}${u.side === 'p' ? ` · 경험치 <b>${u.exp}</b>/100` : ''} · 지형 ${t.name}${u.move !== 'fly' && t.def ? ` (${t.def > 0 ? '+' : ''}${Math.round(t.def * 100)}%)` : ''}</div>`;
+      <div class="ex">${troopLine}특기: ${sk}${u.side === 'p' ? ` · 경험치 <b>${u.exp}</b>/100` : ''} · 지형 ${terrName(u.x, u.y)}${u.move !== 'fly' && t.def ? ` (${t.def > 0 ? '+' : ''}${Math.round(t.def * 100)}%)` : ''}</div>`;
     el.classList.remove('hidden');
     syncInfoH();
   }
@@ -1303,7 +1318,7 @@
       ${u.troop ? `<div class="h" style="font-size:14px">병사 ${Math.round(u.troop.hp)}<em>→ ${Math.max(0, Math.round(u.troop.hp - t))}</em></div>` : ''}
       <div class="h" style="font-size:16px">영웅 ${Math.round(u.hp)}<em>→ ${Math.max(0, Math.round(u.hp - h))}</em></div></div></div>`;
     el.innerHTML = `<div class="row">${side(a, p.aT, p.aH, '')}<div class="mid">예상<b>⚔</b>${p.counter ? '반격 있음' : '반격 없음'}</div>${side(d, p.dT, p.dH, 'R')}</div>
-      <div class="rel">${rel}${near} · 적 지형 ${terr.name}${d.move !== 'fly' && terr.def ? ` ${terr.def > 0 ? '+' : ''}${Math.round(terr.def * 100)}%` : ''}${p.dDead ? ' · <span class="good">격파 예상</span>' : ''}</div>
+      <div class="rel">${rel}${near} · 적 지형 ${terrName(d.x, d.y)}${d.move !== 'fly' && terr.def ? ` ${terr.def > 0 ? '+' : ''}${Math.round(terr.def * 100)}%` : ''}${p.dDead ? ' · <span class="good">격파 예상</span>' : ''}</div>
       <div class="btns"><button class="gold" id="fcGo">공격</button><button id="fcNo">취소</button></div>`;
     el.classList.remove('hidden');
     { const sp = toScreen(new THREE.Vector3(d.x + 0.5, d.def.big ? 2.1 : 1.6, d.y + 0.5)); LOHUD.target(sp.x, sp.y, 'r'); } // 원작 TARGET 표지
@@ -1368,7 +1383,7 @@
       mode = 'fight';
       $('hud').classList.add('hidden');
       $('banner').classList.add('hidden');
-      await FIGHT.play(a, d, res, { bg: R.terr(G, d.x, d.y).bg, speed: speedK });
+      await FIGHT.play(a, d, res, { bg: fightBgOf(G.stage, G.map[d.y][d.x]), speed: speedK });
       mode = 'map';
       $('hud').classList.remove('hidden');
     } else await mapClash(a, d, res);
@@ -1880,7 +1895,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.39';
+  const GAME_VERSION = '0.40';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2460,7 +2475,7 @@
     $('boot').querySelector('.bstage').innerHTML = `<span>${st.idx}</span>${st.title}<small>승리 조건 · ${st.goal}</small>`;
     let n = 0;
     await Promise.all([...rigs].map((id) => SD.prepare(id).then(() => { $('loadMsg').textContent = `부대 집결 중… ${++n}/${rigs.size}`; })));
-    await Promise.all([...new Set(st.map.join('').split('').map((c) => (D.TERRAIN[c] || D.TERRAIN['.']).bg))].map((b) => loadTex('assets/bg/' + b + '.webp')));
+    await Promise.all([...new Set(st.map.join('').split('').map((c) => fightBgOf(st, c)))].map((b) => loadTex(b)));
     $('boot').classList.add('hidden');
     $('boot').querySelector('.logo').classList.remove('hidden');
     for (const u of G.units) addView(u);
@@ -2700,7 +2715,7 @@
     // 시험용 훅
     window.GAME = {
       get G() { return G; }, get mode() { return mode; }, get ui() { return ui; }, save, R, D,
-      launch, prep, setAuto, startStage, endTurn, onTap, fitCamera, views, camera, cam, stageSelect, title, enterTown,
+      launch, prep, setAuto, startStage, endTurn, onTap, fitCamera, views, camera, cam, stageSelect, title, enterTown, fightBgOf,
       // 창이 숨겨져 rAF가 멈춘 상태에서 시험할 때: 시간을 직접 진행하고 한 장 찍어 서버에 저장
       step(sec) { for (let i = 0; i < Math.round(sec * 30); i++) step(1 / 30); },
       // 시간을 진행하면서 약속(Promise)들도 풀리게 한다 (숨은 창에서도 타이머 제한 없이)
