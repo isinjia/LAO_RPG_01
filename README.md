@@ -52,6 +52,8 @@ python tools/serve.py 8795
 | `js/rules.js` | 이동 범위·지배 영역, 영웅+병사 전투 계산, 특기, 경험치, 적 무리, 승패, 적 판단 — 화면과 무관 (node에서도 실행) |
 | `js/game.js` | 지도 3D 판, 유닛 표시(영웅+병사 2명, 체력 막대 두 줄), 입력, 차례 진행, 대화(선택지), 화면들 |
 | `js/battle.js` | 전투 연출: 영웅이 앞, 병사가 뒤. 타격 시점마다 병사가 먼저 쓰러짐 |
+| `js/lohud.js`, `css/battle_lo.css` | 원작 전투 UI 결: 원작 피해 숫자 글꼴(`js/dmgfont.js`), 작전 개시·차례·증원·결과 배너, 특기 컷인, TARGET 표지, 지도 전투 화면 꾸밈 |
+| `js/fx.js`, `js/fx_data.js` | 원작 전투 효과 플립북 재생 (총구 번쩍임·탄·타격·폭발·회복·강화 등 23종, `assets/fx/`) |
 | `js/talk.js` | 원작 노벨 대화창: 배경 교차 전환, 인물 등장·퇴장 효과, 장소 자막, 화면 효과·덧붙임 효과(소리), AUTO / FAST / SKIP / HISTORY |
 | `css/lo.css` | 원작 화면 모양: 대화, 작전 선택(3D 지역 지도), 출격 준비(편성 화면), 결과(MISSION COMPLETE), 불러오기·화면 전환·확인 창 |
 | `js/story.js` | 본작 대본 (`tools/build_story.py`로 생성, 연출 값 포함) |
@@ -72,6 +74,8 @@ python tools/serve.py 8795
 
 - UI 조각: `python tools/extract_ui.py <아틀라스>` → `tools/ui_src`, 쓰는 것만 `python tools/copy_ui.py` → `assets/ui`
 - 전투 지도 바닥 질감·소품: `python tools/build_tiles.py` → `assets/tiles` (원작 전투 배경 손그림에서 이음매 없는 질감과 소품을 오려 냄)
+- 전투 효과: `python tools/unity_ref/setup_fx.py` → 유니티 `-executeMethod RefFxBake.Run` (그래픽 켠 채로) → `python tools/build_fx.py` (원작 효과 프리팹을 검은·흰 바탕에 두 번 그려 미리 곱한 색의 낱장 묶음으로)
+- 피해 숫자 글꼴: `python tools/build_dmgfont.py` (원작 BMFont → `assets/ui/dmg_*.png` + `js/dmgfont.js`)
 - 지역 지도(3D): `python tools/unity_ref/setup_worldmap.py` → 유니티 `-executeMethod RefWorldMap3D.Run` (그래픽 켠 채로, `-nographics` 없이) → `python tools/build_world3d.py`
   (모델·재질 값·그림, 작전 지점 3D 자리, 애니메이터 상태 S_08~S_15 = 작전 1~8 카메라 클립, S_Default = 전체 둘러보기. 마을 자리는 `tools/world_old_ch01.json`의 옛 사진 위 자리를 3D로 옮김)
 - 움직이는 대화 일러스트: `python tools/unity_ref/setup.py portraits` → 유니티 `RefMesh.Run` → `python tools/build_sd.py portraits` → `js/sd/p_<영웅>.*`

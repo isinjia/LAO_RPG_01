@@ -101,6 +101,7 @@
   const HEROES = {
     constantia: {
       name: '콘스탄챠', full: '콘스탄챠 S2', rig: 'constantia', icon: 'c_3P_ConstantiaS2_N', face: '3P_ConstantiaS2_N', sfx: 'rifle',
+      talent: { name: '맏언니의 지휘', aura: { r: 2, at: 0.1 }, desc: '주변 2칸 아군 공격 +10%' },
       kind: 'arch', move: 'foot', rng: 2, lead: true, // 궁병
       tiers: [
         { cls: '가정경비 바이오로이드', hp: 92, at: 21, df: 14, mov: 3, troops: ['gunner', 'guard'], skills: ['repair'] },
@@ -111,6 +112,7 @@
     },
     griffon: {
       name: '그리폰', full: 'P/A-00 그리폰', rig: 'griffon', icon: 'c_BR_PA00EL_N', face: 'BR_PA00EL_N', sfx: 'missile',
+      talent: { name: '급강하 강습', first: 0.2, desc: '먼저 공격할 때 피해 +20%' },
       kind: 'fly', move: 'fly', rng: 1, sizeK: 1.15, // 제트 팩으로 날아다니는 비병
       tiers: [
         { cls: '기동공격 바이오로이드', hp: 80, at: 25, df: 11, mov: 5, troops: ['flyer', 'raider'], skills: ['missile'] },
@@ -121,6 +123,7 @@
     },
     johanna: {
       name: '요안나', full: '프레스터 요안나', rig: 'johanna', icon: 'c_DS_Johanna_N', face: 'DS_Johanna_N', sfx: 'slash',
+      talent: { name: '철벽의 맹세', guard: 0.2, desc: '공격받을 때 받는 피해 -20%' },
       kind: 'pike', move: 'foot', rng: 1,
       tiers: [
         { cls: '사제여왕', hp: 115, at: 21, df: 21, mov: 3, troops: ['shield', 'guard'], skills: ['oath'] },
@@ -131,6 +134,7 @@
     },
     lrl: {
       name: 'LRL', full: 'LRL', rig: 'lrl', icon: 'c_PECS_LRL_N', face: 'PECS_LRL_N', sfx: 'swing',
+      talent: { name: '싸이클롭스의 긍지', hpHigh: [0.7, 0.2], desc: '영웅 체력 70% 이상이면 피해 +20%' },
       kind: 'inf', move: 'foot', rng: 1,
       tiers: [
         { cls: '등대 근무 바이오로이드', hp: 101, at: 28, df: 15, mov: 3, troops: ['guard', 'shield'], skills: ['beam'] },
@@ -141,6 +145,7 @@
     },
     pupphead: {
       name: '펍 헤드', full: 'SD-3M 펍 헤드', rig: 'pupphead', icon: 'c_PECS_PuppHead_N', face: '', sfx: 'gun',
+      talent: { name: '추격 본능', chase: [0.5, 0.25], desc: '총체력 50% 이하인 적에게 피해 +25%' },
       kind: 'cav', move: 'horse', rng: 1,
       tiers: [
         { cls: '경찰·헌병 로봇', hp: 87, at: 20, df: 15, mov: 5, troops: ['raider', 'guard'], skills: ['siren'] },
@@ -151,6 +156,7 @@
     },
     fallen: {
       name: '폴른', full: 'CT2199W 폴른', rig: 'fallen', icon: 'c_AGS_Fallen_N', face: '', sfx: 'cannon',
+      talent: { name: '원거리 포격', far: 0.2, desc: '2칸 이상 떨어져 공격할 때 피해 +20%' },
       kind: 'arch', move: 'foot', rng: 2,
       tiers: [
         { cls: '지원 포격 AGS', hp: 97, at: 27, df: 13, mov: 3, troops: ['gunner', 'shield'], skills: ['barrage'] },
@@ -162,6 +168,7 @@
     // 3지역 합류
     marie: {
       name: '마리', full: '불굴의 마리', rig: 'marie', icon: 'c_BR_Marie_N', face: 'BR_Marie_N', sfx: 'rifle',
+      talent: { name: '불굴의 지휘', aura: { r: 2, df: 0.12 }, desc: '주변 2칸 아군 방어 +12%' },
       kind: 'inf', move: 'foot', rng: 1, // 스틸라인 지휘관: 주변 아군을 북돋우고 위성으로 포격한다
       tiers: [
         { cls: '스틸라인 지휘관', hp: 118, at: 26, df: 20, mov: 3, troops: ['guard', 'shield', 'gunner'], skills: ['command'] },
@@ -173,6 +180,7 @@
     // 6지역 합류
     labiata: {
       name: '라비아타', full: '라비아타 프로토타입', rig: 'labiata', icon: 'c_3P_Labiata_N', face: '3P_Labiata_N', sfx: 'expM',
+      talent: { name: '최초의 투지', hpLow: [0.5, 0.3], desc: '영웅 체력 50% 이하면 피해 +30%' },
       kind: 'inf', move: 'foot', rng: 1, // 최초의 바이오로이드: 맨주먹으로 적을 부순다
       tiers: [
         { cls: '최초의 바이오로이드', hp: 140, at: 36, df: 22, mov: 3, troops: ['guard', 'shield', 'raider'], skills: ['proto'] },
@@ -184,6 +192,7 @@
     // 5지역 합류
     scathy: {
       name: '스카디', full: '스카디', rig: 'scathy', icon: 'c_BR_Scathy_N', face: 'BR_Scathy_N', sfx: 'elec',
+      talent: { name: '해킹 표적', slowed: 0.3, desc: '이동 감소가 걸린 적에게 피해 +30%' },
       kind: 'mage', move: 'foot', rng: 2, // 전자전 전문가: 멀리서 해킹으로 적을 묶는다
       tiers: [
         { cls: '전자전 전문가', hp: 84, at: 27, df: 11, mov: 3, troops: ['gunner', 'guard'], skills: ['hack'] },
@@ -195,6 +204,7 @@
     // 2지역 합류
     amy: {
       name: '에이미', full: '에이미 레이저', rig: 'amy', icon: 'c_BR_Amy_N', face: 'BR_Amy_N', sfx: 'gun',
+      talent: { name: '그림자 기습', first: 0.15, guard: 0.1, desc: '먼저 공격할 때 피해 +15%, 받는 피해 -10%' },
       kind: 'cav', move: 'horse', rng: 1, // 군사용 첩보 유닛: 빠른 발로 파고들어 교란한다
       tiers: [
         { cls: '군사용 첩보 유닛', hp: 86, at: 25, df: 13, mov: 5, troops: ['raider', 'guard'], skills: ['intel'] },
@@ -205,6 +215,7 @@
     },
     coco: {
       name: '코코', full: '코코 인 화이트셸', rig: 'coco', icon: 'c_PECS_CoCoWhiteShell_N', face: 'PECS_CoCoWhiteShell_N', sfx: 'cannon',
+      talent: { name: '화이트 셸 장갑', troopGuard: 0.2, desc: '병사가 받는 피해 -20%' },
       kind: 'pike', move: 'foot', rng: 1, // 화이트 셸에 탄 방어형
       tiers: [
         { cls: '화이트 셸 조종사', hp: 128, at: 19, df: 24, mov: 3, troops: ['shield', 'guard'], skills: ['wall'] },
