@@ -501,7 +501,8 @@
     hero.bb.position.set(0, 0, 0.12);
     g.add(hero.bb);
     const soldiers = [];
-    if (u.troop) for (const [ox, oz] of [[-0.34, -0.2], [0.34, -0.26]]) {
+    // 병사는 영웅 뒤(위)쪽 양옆, 자기 칸 안에 선다 (윗칸으로 삐져나가 윗칸 영웅 발치에 붙어 보이지 않게)
+    if (u.troop) for (const [ox, oz] of [[-0.3, -0.1], [0.3, -0.15]]) {
       const s = billboard(u.troop.rig, 0.58, native, f);
       s.bb.position.set(ox, 0, oz);
       g.add(s.bb);
@@ -2641,7 +2642,8 @@
       const sp = dt * (v.u.acted && v.u.side === 'p' ? 0.4 : 1);
       v.rig.update(sp);
       v.rig.order = 100 + Math.round((v.g.position.z + 0.1) * 20) + 2;
-      for (const s of v.soldiers) { if (!s.bb.visible) continue; s.rig.update(sp); s.rig.order = 100 + Math.round((v.g.position.z + s.bb.position.z) * 20); }
+      // 병사는 자기 영웅은 물론 윗줄 영웅보다도 아래에 그린다
+      for (const s of v.soldiers) { if (!s.bb.visible) continue; s.rig.update(sp); s.rig.order = 100 + Math.round((v.g.position.z - 0.5) * 20) - 7 + (s.bb.position.z > -0.12 ? 1 : 0); }
       v.ring.scale.setScalar(ui.sel === v.u ? 1 + Math.sin(t * 6) * 0.08 : 1);
       if (v.u.move === 'fly') v.bb.position.y = 0.06 + Math.sin(t * 2.2 + v.bob) * 0.04;
     }
