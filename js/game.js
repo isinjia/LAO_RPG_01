@@ -1340,14 +1340,18 @@
   }
 
   // ── 화면들 ───────────────────────────────────────────────
-  // 화면 전환: 원작처럼 검은 판이 쓸고 지나간다
-  function wipe() { const w = $('wipe'); w.classList.remove('go'); void w.offsetWidth; w.classList.add('go'); }
+  // 화면 전환: 원작처럼 검은 판이 노란 띠를 끌며 쓸고 지나가고, 새 화면이 그 뒤를 따라 밀려 들어온다
+  function wipe() {
+    const w = $('wipe'), sc = $('screen');
+    w.classList.remove('go'); sc.classList.remove('enter'); void w.offsetWidth;
+    w.classList.add('go'); sc.classList.add('enter');
+  }
   // 같은 화면을 새로 그릴 때(출격 준비에서 영웅·병사 고르기 등)는 전환 효과 없이
   function screen(html) {
     const kind = (html.match(/class="([\w-]+)/) || [])[1];
     const same = kind && $('screen').firstElementChild && $('screen').firstElementChild.classList.contains(kind);
     $('screen').innerHTML = html; mode = 'screen';
-    if (!same) wipe();
+    if (!same) wipe(); else $('screen').classList.remove('enter'); // 다시 그린 내용이 또 밀려 들어오지 않게
   }
   function hideScreen() { $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
