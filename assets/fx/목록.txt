@@ -1,0 +1,25 @@
+이름             원작 프리팹                                      장수 크기   길이  덮는 범위        용량
+hit_bullet       Smg_Simple_Hit                                   14장 224x172  0.6초  12.5×9.6  단위   60KB
+hit_crit         Hit_bass                                         15장 212x256  0.6초   3.9×4.7  단위   36KB
+hit_heavy        cannon_hit                                       22장 256x236  0.9초  43.3×39.9 단위  126KB
+hit_slash        Labiata_NS1_skill1_blade_Hit                     11장 240x256  0.5초  29.5×31.4 단위  109KB
+slash_line       Boryeon_skill1_Blade_Hit                          7장 256x148  0.3초  28.2×16.3 단위   26KB
+hit_energy       Alice_NS2_Sword_Hit_Prefab_F                     23장 224x256  1.0초  50.4×57.6 단위  161KB
+explosion_small  simple_explosion                                 20장 240x256  0.8초  24.1×25.7 단위  113KB
+explosion_big    FX_hit_EXPLOSION 1                               39장 212x256  1.9초  10.2×12.3 단위  262KB
+muzzle_small     FX_shot_flash                                     2장 116x128  0.1초   6.6×7.3  단위    3KB
+muzzle_rifle     brownie_shoot                                    17장 224x176  0.7초   9.9×7.8  단위   60KB
+muzzle_heavy     leprechaun_fire                                  17장 256x216  0.7초  12.5×10.5 단위   67KB
+bullet           Brownie_bullet                                   10장 128x8    0.5초   5.0×0.3  단위    1KB
+bullet_bug       FX_bullet_bug                                    20장 128x92   1.0초   6.5×4.7  단위   40KB
+heal             daphne_hit                                       24장 208x256  1.2초  12.4×15.3 단위  229KB
+buff             Azazel_skill2_buff_FX                            24장 256x228  1.2초  29.5×26.3 단위  249KB
+debuff           Faucre_skill2_Debuff_prefab                      24장 180x256  1.2초  19.1×27.2 단위  156KB
+shield           VFX_Public_Buff_shield                           19장 256x196  0.9초  19.5×15.0 단위  103KB
+charge           delta_skill2_charge                              28장 256x248  1.4초  48.7×47.2 단위  158KB
+cast             Andvari_skill2_buff_fx                            9장 256x256  0.5초  14.6×14.6 단위  102KB
+dust_fall        FX_falldown_dust_F                               21장 256x240  1.1초   8.6×8.1  단위   72KB
+dust_step        vfx_Frontstep_Dust                               15장 224x160  0.8초  13.7×9.8  단위   63KB
+land_crack       FX_jump_hitground                                40장 256x132  2.0초   7.0×3.6  단위    9KB
+big_flash        FX_big_glow_flash                                18장 252x256  0.9초 354.9×360.5단위  130KB
+합계 2346KB

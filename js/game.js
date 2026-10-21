@@ -593,7 +593,21 @@
 
   // 지도 위 이펙트
   const mapFx = [];
+  // 원작 효과 플립북(js/fx.js)이 있으면 그것으로: 특기 갈래 → 원작 효과 이름, 지도 칸 기준 낱장 세로
+  const MAP_FX = { fire: ['explosion_small', 1.3], bolt: ['hit_energy', 1.4], heal: ['heal', 1.3], buff: ['buff', 1.5], shield: ['shield', 1.4], slash: ['hit_slash', 1.2],
+    laser: ['hit_energy', 1.3], shot: ['hit_bullet', 0.9], spawn: ['cast', 1.4], hit: ['hit_bullet', 0.9], heavy: ['hit_heavy', 1.6], energy: ['hit_energy', 1.2],
+    melee: ['hit_slash', 1.2], boom: ['explosion_small', 1.4], bigboom: ['explosion_big', 2.6], dust: ['dust_fall', 1.0], debuff: ['debuff', 1.3], cast: ['cast', 1.5],
+    charge: ['charge', 1.8], crit: ['hit_crit', 1.2] };
   function fxAt(x, y, kind, delay = 0) {
+    const mf = window.FXLIB && MAP_FX[kind];
+    if (mf && FXDATA[mf[0]]) {
+      wait(delay).then(() => {
+        if (!world) return;
+        const h = FXLIB.spawn(world.root, mf[0], { x: x + 0.5, y: 0.35, z: y + 0.55, height: mf[1], renderOrder: 4500 });
+        if (h) h.group.quaternion.copy(camera.quaternion); // 지도 카메라를 바라보게
+      });
+      return;
+    }
     const map = { fire: 'fx_firehit', bolt: 'fx_bolt', heal: 'fx_glow', buff: 'fx_ring', shield: 'fx_ring', slash: 'fx_cross', laser: 'fx_glow', shot: 'fx_spark', spawn: 'fx_ring', hit: 'fx_spark' }[kind] || 'fx_glow';
     const col = { heal: 0x70ff9a, buff: 0xffc14d, shield: 0x7fc8ff, laser: 0xff7ad5, spawn: 0xff6655 }[kind] || 0xffffff;
     wait(delay).then(() => {
@@ -1335,12 +1349,15 @@
     await Promise.all(deaths);
     if (deaths.length) await wait(200);
   }
+  // 무기 갈래 (공격 소리 기준) → 지도 효과 갈래
+  const weaponKind = (u) => ({ cannon: 'heavy', missile: 'heavy', expM: 'heavy', expB: 'heavy', laserBig: 'energy', elec: 'energy', energy: 'energy', charge: 'energy', spray: 'energy',
+    slash: 'melee', swing: 'melee' }[u.def.sfx] || 'hit');
   async function mapClash(a, d, res) {
     const va = views.get(a.uid), vd = views.get(d.uid);
     va.rig.once('atk', Math.max(1, va.rig.dur('atk') / 1.0) * speedK);
     AU.play(a.def.sfx, 0.7);
     await wait(380);
-    fxAt(d.x, d.y, 'hit');
+    fxAt(d.x, d.y, weaponKind(a));
     vd.rig.c.setFlash(1);
     await wait(120);
     vd.rig.c.setFlash(0);
@@ -1349,7 +1366,7 @@
       vd.rig.once('atk', Math.max(1, vd.rig.dur('atk') / 1.0) * speedK);
       AU.play(d.def.sfx, 0.6);
       await wait(380);
-      fxAt(a.x, a.y, 'hit');
+      fxAt(a.x, a.y, weaponKind(d));
       va.rig.c.setFlash(1);
       await wait(120);
       va.rig.c.setFlash(0);
@@ -1360,6 +1377,7 @@
     u.alive = false; u.hp = 0;
     const v = views.get(u.uid);
     pop(u.x, u.y, u.side === 'p' ? '퇴각' : '격파!', 'info big', 1.3);
+    fxAt(u.x, u.y, u.side === 'e' ? (u.def.big ? 'bigboom' : 'boom') : 'dust'); // 원작 효과: 철충은 폭발
     if (v) {
       for (const r of [v.rig, ...v.soldiers.map((s) => s.rig)]) if (r.c.has('die')) r.once('die', 1.4 * speedK, true);
       await animateP(0.9, (k) => { for (const r of [v.rig, ...v.soldiers.map((s) => s.rig)]) r.c.setOpacity(1 - k * k); });
@@ -1375,6 +1393,7 @@
     const v = views.get(u.uid);
     panTo(tx, ty);
     LOHUD.cutin(u, s.name, speedK); // 원작식 특기 컷인
+    fxAt(u.x, u.y, s.power ? 'charge' : 'cast', 300); // 시전자 둘레에 원작 기 모으기 효과
     AU.play('charge', 0.5);
     await wait(950);
     if (v && v.rig.c.has('skill')) v.rig.once('skill', Math.max(1, v.rig.dur('skill') / 1.6) * speedK);
@@ -1389,7 +1408,7 @@
         R.apply(r.u, r.toT, r.toH);
         u.dealt = (u.dealt || 0) + r.toT + r.toH;
         popDmg(r.u, r.toT, r.toH);
-        if (s.slow) r.u.slowNext = s.slow;
+        if (s.slow) { r.u.slowNext = s.slow; fxAt(r.u.x, r.u.y, 'debuff', 200); }
         refreshView(r.u);
         if (r.u.hp <= 0) deaths.push(kill(r.u));
       } else {
@@ -2360,6 +2379,7 @@
       a.fn(k);
       if (k >= 1) { anims.splice(i, 1); a.done && a.done(); }
     }
+    if (window.FXLIB) FXLIB.update(dt * speedK); // 원작 효과 플립북
     if (mode === 'fight') {
       FIGHT.update(dt);
       FIGHT.render(renderer);
@@ -2420,7 +2440,8 @@
     $('boot').classList.add('hidden');
     requestAnimationFrame(frame);
     title();
-    WM3D.load(CHAPTERS[curCh()].id).catch(() => {}); // 월드맵 3D 자료는 타이틀 동안 미리 받아 둔다
+    WM3D.load(CHAPTERS[curCh()].id).catch(() => {});
+    if (window.FXLIB) FXLIB.preload(); // 원작 전투 효과 그림도 미리 // 월드맵 3D 자료는 타이틀 동안 미리 받아 둔다
     // 첫 터치에서 배경음 시작 (모바일 정책)
     const kick = () => { AU.bgm(AU.bgmName || 'lo_title'); removeEventListener('pointerdown', kick); };
     addEventListener('pointerdown', kick);

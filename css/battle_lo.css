@@ -136,7 +136,7 @@
 .lobanner.cutin.p .lc-band { box-shadow: inset 0 3px 0 var(--lo-y), inset 0 -3px 0 var(--lo-y); }
 .lobanner.cutin.e .lc-band { box-shadow: inset 0 3px 0 var(--lb-red), inset 0 -3px 0 var(--lb-red); }
 .lobanner.cutin .lc-stand { position: absolute; left: 14%; top: -2%; height: 250%; animation: lcStand 1.2s cubic-bezier(.15, .85, .3, 1) both; filter: drop-shadow(0 0 20px rgba(0, 0, 0, .6)); }
-.lobanner.cutin .lc-icon { position: absolute; left: 22%; top: 50%; width: 150px; height: 150px; transform: translateY(-50%); object-fit: cover; border: 3px solid var(--lb-red);
+.lobanner.cutin .lc-icon { position: absolute; left: 22%; top: calc(50% - 75px); width: 150px; height: 150px; object-fit: cover; border: 3px solid var(--lb-red);
   clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%); animation: lcStand 1.2s cubic-bezier(.15, .85, .3, 1) both; }
 .lobanner.cutin .lc-flash { position: absolute; inset: -20% 0; background: #fff; mix-blend-mode: overlay; animation: lcFlash .35s ease-out both; pointer-events: none; }
 .lobanner.cutin .lc-txt { position: absolute; right: 12%; top: 50%; transform: translateY(-50%); text-align: right; animation: lcTxt .5s cubic-bezier(.2, .9, .3, 1.15) .1s both; }
@@ -149,7 +149,7 @@
 @keyframes lcBand { from { transform: scaleY(0) skewY(-4deg); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes lcStand { from { transform: translateX(-28vw); opacity: 0; } 30% { transform: translateX(2vw); opacity: 1; } to { transform: translateX(5vw); opacity: 1; } }
 .lobanner.cutin .lc-icon { --ty: -50%; }
-@keyframes lcFlash { from { opacity: .9; } to { opacity: 0; } }
+@keyframes lcFlash { from { opacity: .45; } to { opacity: 0; } }
 @keyframes lcTxt { from { opacity: 0; transform: translate(80px, -50%) skewX(-12deg); } to { opacity: 1; transform: translate(0, -50%); } }
 
 /* 목표 표지 */
