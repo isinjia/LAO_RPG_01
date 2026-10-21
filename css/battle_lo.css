@@ -163,6 +163,13 @@
   .lobanner.cutin .lc-txt { right: 6%; } .lobanner.cutin .lc-txt b { font-size: 30px; }
   .lobanner.cutin .lc-stand { left: -6%; }
   #turnNo { width: 44px; height: 44px; font-size: 20px; }
+  #turnBox { padding-right: 0; }
+  #phase { display: none; }
+  #turnNo { box-shadow: 0 0 0 2px transparent; }
+  #top:has(#phase.e) #turnNo { filter: hue-rotate(-50deg) saturate(1.6); }
+  .tbtns { gap: 3px; margin-left: auto; }
+  .tbtns button { padding: 8px 7px 7px; font-size: 12px; letter-spacing: 0; }
+  #btnEnd { padding-left: 10px; padding-right: 10px; }
 }
 
 /* 재능 발동 판 (원작 패시브 표시 결) */
