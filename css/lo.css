@@ -416,6 +416,14 @@
 .pcard .poff { display: none; position: absolute; z-index: 4; left: 50%; top: 40%; transform: translate(-50%, -50%); padding: 4px 16px; font: normal 15px 'LO_B', sans-serif; color: #fff; background: rgba(0,0,0,.75); letter-spacing: 2px; }
 .pcard.off .poff { display: block; }
 .pcard.off .pimg { filter: grayscale(.7) brightness(.5) !important; }
+.pcard .plock { position: absolute; z-index: 5; left: 8px; top: 6px; padding: 1px 8px; font: normal 12px 'LO_B', sans-serif; color: #111; background: #8bf03a; }
+.pcnt { margin-left: 12px; font: 14px 'LO_B', sans-serif; color: var(--lo-y); letter-spacing: 0; }
+/* 출전 후보가 많으면 (가로 화면) 두 줄로 */
+.pcards.many { flex-wrap: wrap; align-content: stretch; gap: 10px; }
+.pcards.many .pcard { flex: 0 0 calc((100% - (var(--pc) - 1) * 10px) / var(--pc)); height: calc(50% - 5px); }
+.pcards.many .pfoot b { font-size: 15px; } .pcards.many .pfoot { bottom: 40px; }
+.pcard .poff, .pcards.many .ptroop span { white-space: nowrap; }
+@media (orientation: portrait) { .pcards.many { flex-wrap: nowrap; } .pcards.many .pcard { flex: 0 0 31vw; height: auto; } }
 .pd-sortie { display: block; width: 100%; padding: 10px; font: 14px 'LO_B', sans-serif; color: #fff; background: rgba(255,255,255,.07); border: 1px solid var(--lo-line); border-radius: 0; text-align: center; }
 .pd-sortie.on { background: rgba(255, 204, 0, .16); border-color: var(--lo-y); color: var(--lo-y); }
 .pd-sortie.lead { color: #8bf03a; }

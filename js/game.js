@@ -2054,7 +2054,7 @@
   function repeatStage(si) {
     const b = D.STAGES[si], lv = partyLv();
     const waves = b.waves.map((w) => Object.assign({}, w, { units: w.units.map(([k, l]) => [k, Math.max(l, lv - 1 + (D.ENEMIES[k].big ? 2 : 0))]) }));
-    return Object.assign({}, b, { kind: 'repeat', base: si, title: b.title + ' · 소탕전', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all', turnLimit: 0, waves, free: b.starts.length, heroes: null });
+    return Object.assign({}, b, { kind: 'repeat', base: si, title: b.title + ' · 소탕전', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all', turnLimit: 0, waves, free: MAX_SORTIE, heroes: null });
   }
   function sideStage(idx) {
     const s = sideList().find((x) => x.idx === idx), b = D.STAGES[s.base - 1];
@@ -2231,7 +2231,7 @@
       const heroHtml = st.heroes.map((h) => { const H = D.HEROES[h]; return `<div class="whero ${j.has(h) ? '' : 'new'}"><img src="${IMG[H.icon]}" alt=""><small>${j.has(h) ? 'Lv.' + save.heroes[h].lv : '합류'}</small></div>`; }).join('');
       acts = `<div class="wi-row"><label>승리 조건</label><span>${st.goal}</span></div><div class="wi-row"><label>패배 조건</label><span>${st.lose}</span></div>
         <div class="wi-sub">적 정보 <small>증원 ${st.waves.length - 1}회</small></div><div class="wi-foes">${foeHtml}</div>
-        <div class="wi-sub">출격 인원 <small>${st.heroes.length}명</small></div><div class="wi-heroes">${heroHtml}</div>
+        <div class="wi-sub">출격 인원 <small>기본 ${st.heroes.length}명 · 출격 준비에서 최대 ${Math.min(MAX_SORTIE, new Set([...j, ...st.heroes]).size)}명</small></div><div class="wi-heroes">${heroHtml}</div>
         <button class="wgo" id="sGo"><b>작전 개시</b><small>BATTLE START</small></button>`;
     } else {
       const lv = partyLv();
@@ -2412,10 +2412,22 @@
       PORTRAIT.attach(cv, cv.dataset.stand, { h: Math.max(200, box.height * (cv.parentElement.classList.contains('whole') ? 1 : 1.9)) });
     });
   }
+  // 본편 편성: 지휘관 콘스탄챠, 그 작전 대본(시작·중간·끝)에 나오는 영웅, 이번에 처음 합류하는 영웅은 고정.
+  // 나머지 자리는 합류한 영웅 중에서 MAX_SORTIE 명까지 마음대로 (처음에는 작전 자료의 출전 영웅 그대로)
+  const MAX_SORTIE = 8;
+  function sortieOf(b) {
+    const S = window.STORY && STORY[b.idx];
+    const lines = S ? [...(S.start || []), ...(S.mid || []), ...(S.end || [])] : [];
+    const speaks = (id) => lines.some((l) => (l.who || '').includes(D.HEROES[id].name));
+    const lock = b.heroes.filter((id) => id === 'constantia' || speaks(id) || !(save.joined || []).includes(id));
+    return Object.assign({}, b, { free: MAX_SORTIE, lock, heroes: [...lock, ...b.heroes.filter((id) => !lock.includes(id))] });
+  }
   function prep(x) {
-    const st = stageOf(x);
-    // 소탕전·의뢰: 합류한 영웅 중에서 st.free 명까지 고른다 (콘스탄챠는 지휘관이라 항상 출전)
-    const roster = st.free ? ['constantia', ...[...joined()].filter((id) => id !== 'constantia')] : st.heroes;
+    let st = stageOf(x);
+    if (!st.kind && !st.lock) st = sortieOf(st);
+    // 고정 인원 (소탕전·의뢰는 지휘관 콘스탄챠만), 나머지는 합류한 영웅 중에서 st.free 명까지 고른다
+    const lock = st.lock || ['constantia'];
+    const roster = !st.free ? st.heroes : [...new Set([...lock, ...(st.lock ? st.heroes : []), ...joined()])];
     if (st.free && !st.heroes) {
       const last = (save.party || []).filter((id) => roster.includes(id) && id !== 'constantia');
       st.heroes = ['constantia', ...last, ...roster.filter((id) => id !== 'constantia' && !last.includes(id))].slice(0, st.free);
@@ -2436,7 +2448,7 @@
     };
     const card = (id) => {
       const { h, s, t } = stat(id), tr = D.TROOPS[pick[id]];
-      return `<button class="pcard ${id === cur ? 'sel' : ''} ${st.heroes.includes(id) ? '' : 'off'}" data-h="${id}">
+      return `<button class="pcard ${id === cur ? 'sel' : ''} ${st.heroes.includes(id) ? '' : 'off'}" data-h="${id}">${st.free && lock.includes(id) ? '<i class="plock">필수</i>' : ''}
         <div class="pimg ${id === 'pupphead' || id === 'fallen' ? 'whole' : ''}"><canvas class="pcv" data-stand="${standOf(id)}"></canvas></div>
         ${(save.joined || []).includes(id) ? '' : '<i class="pnew">NEW</i>'}${CL.canChange(id, s) ? '<i class="pcc">전직 가능</i>' : ''}
         <div class="pfoot"><span class="plv">Lv.${s.lv}</span><b>${h.name}</b><small>${kindTag(t.kind)} · ${t.cls}</small></div>
@@ -2449,6 +2461,7 @@
         <span><b>${tr.name}</b>${kindTag(tr.kind)}<small>체력 ${tr.hp} · 공격 ${tr.at} · 방어 ${tr.df} · 이동 ${tr.mov}</small></span></button>`; }).join('');
       const inP = st.heroes.includes(id);
       const sortie = !st.free ? '' : id === 'constantia' ? '<div class="pd-sortie lead">지휘관 · 항상 출전</div>'
+        : lock.includes(id) ? `<div class="pd-sortie lead">${(save.joined || []).includes(id) ? '이번 작전 대본에 나옵니다' : '이번 작전에서 합류합니다'} · 반드시 출전</div>`
         : `<button class="pd-sortie ${inP ? 'on' : ''}" id="pTog">${inP ? '출전 중 · 누르면 대기' : st.heroes.length >= st.free ? `대기 중 · 출전 인원이 가득 찼습니다 (${st.free}명)` : '대기 중 · 누르면 출전'}</button>`;
       return `<div class="pd-head"><b>${h.full}</b><span>${t.cls}</span></div>${sortie}
         <div class="pd-lv"><span>Lv.<b>${s.lv}</b></span><div class="pd-exp"><i style="width:${Math.min(100, s.exp)}%"></i></div>${next ? `<small>Lv.${next}에 전직</small>` : '<small>최종 전직</small>'}</div>
@@ -2458,11 +2471,12 @@
         <div class="wi-sub">특기</div><div class="pd-skills">${t.skills.map((k) => { const sk = D.SKILLS[k]; return `<div><b>${sk.name}</b><small>재사용 ${sk.cd}턴 · ${sk.desc}</small></div>`; }).join('')}</div>
         <div class="wi-sub">병사 배속 <small>공격받으면 병사가 먼저 피해를 받습니다</small></div><div class="pd-troops">${troops}</div>`;
     };
+    const count = () => (st.free ? `<span class="pcnt">출전 ${st.heroes.length} / ${Math.min(st.free, roster.length)}</span>` : '');
     const render = () => {
       screen(`<div class="pscr">
         <div class="pbg"></div>
-        <div class="whead"><button class="wback" id="pBack" aria-label="뒤로"></button><div class="wtitle"><small>${st.idx} · ${st.title}</small><b>출격 준비</b></div></div>
-        <div class="pcards">${roster.map(card).join('')}</div>
+        <div class="whead"><button class="wback" id="pBack" aria-label="뒤로"></button><div class="wtitle"><small>${st.idx} · ${st.title}</small><b>출격 준비${count()}</b></div></div>
+        <div class="pcards ${roster.length > 6 ? 'many' : ''}" style="--pc:${Math.ceil(roster.length / 2)}">${roster.map(card).join('')}</div>
         <div class="pdetail">${detail()}</div>
         <div class="pfootbar"><div class="pgoal"><span>승리 <b>${st.goal}</b></span><span>패배 ${st.lose}</span><span class="dim">보병 ▶ 창병 ▶ 기병 ▶ 보병 · 궁병 ▶ 비병</span></div>
           <button class="lo-btn dark" id="pHelp">도움말</button><button class="wgo pgo" id="pGo"><b>출격</b><small>SORTIE</small></button></div></div>`);
@@ -2497,6 +2511,7 @@
       // 출전 / 대기 바꾸기 (자유 편성)
       if ($('pTog')) $('pTog').onclick = () => {
         const i = st.heroes.indexOf(cur);
+        if (lock.includes(cur)) return;
         if (i >= 0) st.heroes.splice(i, 1);
         else if (st.heroes.length < st.free) { st.heroes.push(cur); heroVoice(cur, 'SquadJoin'); }
         else return;
@@ -2511,6 +2526,8 @@
         const tr = D.TROOPS[pick[b.dataset.h]];
         b.querySelector('.ptroop').innerHTML = `<img src="${IMG[tr.icon]}" alt=""><span>${tr.short} ×${R.SQUAD}</span>`;
       });
+      const cn = document.querySelector('.pcnt');
+      if (cn) cn.outerHTML = count();
       const pd = document.querySelector('.pdetail');
       const top = pd.scrollTop;
       pd.innerHTML = detail();
@@ -2557,7 +2574,9 @@
     }
     st.heroes.forEach((id, i) => {
       // 시작 칸이 모자라면 (자유 편성으로 인원이 많을 때) 첫 시작 칸 근처 빈칸
-      const p = st.starts[i] || R.freeAround(G, st.starts[0][0], st.starts[0][1], formOf(id).move, 1)[0];
+      let p = st.starts[i];
+      for (let k = 0; !p && k < st.starts.length; k++) p = R.freeAround(G, st.starts[k][0], st.starts[k][1], formOf(id).move, 1)[0];
+      if (!p) return;
       R.makeHero(G, id, save.heroes[id], save.troops[id], p[0], p[1]);
     });
     R.spawnWave(G, 0);
