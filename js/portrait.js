@@ -47,14 +47,20 @@
       x0 = N; y0 = N; x1 = -1; y1 = -1;
       const cam = new THREE.OrthographicCamera(cx - half, cx + half, cy + half, cy - half, -1000, 1000);
       cam.position.z = 100;
+      // 움직임 한 바퀴 전체를 촘촘히 한 장에 겹쳐 그린 뒤 한 번 읽는다
+      // (콘스탄챠의 개처럼 긴 움직임 끝에 잠깐 크게 뛰쳐나가는 부위도 잘리지 않게)
       p.c.play('idle', null, true);
-      for (const dt of [0, 3, 3, 3, 3, 3]) { // 움직임 중 여러 순간을 겹쳐 잰다
-        p.c.update(dt);
-        r.setRenderTarget(rt); r.setClearColor(0x000000, 0); r.clear(); r.render(scene, cam);
-        r.readRenderTargetPixels(rt, 0, 0, N, N, px);
-        for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (px[(y * N + x) * 4 + 3] > 8) {
-          if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
-        }
+      const dur = (p.c.clip && p.c.clip.dur) || 6, K = Math.max(24, Math.ceil(dur / 0.1));
+      r.setRenderTarget(rt); r.setClearColor(0x000000, 0); r.clear();
+      r.autoClear = false; // 지우지 않고 겹친다
+      for (let k = 0; k <= K; k++) {
+        p.c.update(k ? dur / K : 0);
+        r.render(scene, cam);
+      }
+      r.autoClear = true;
+      r.readRenderTargetPixels(rt, 0, 0, N, N, px);
+      for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (px[(y * N + x) * 4 + 3] > 8) {
+        if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
       }
       if (x1 < 0 || (x0 > 0 && y0 > 0 && x1 < N - 1 && y1 < N - 1)) break;
       const u0 = (2 * half) / N;
