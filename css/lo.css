@@ -167,7 +167,7 @@
 @keyframes wpulse { 50% { transform: translate(-50%, 34%) scale(1.18); opacity: .55; } }
 .wnode.sel .tag { box-shadow: 0 0 12px var(--lo-y); }
 .wnode:hover:not(:disabled) .ico { filter: drop-shadow(0 0 8px #fff8) brightness(1.15); }
-.wnode:disabled { cursor: default; opacity: .7; }
+.wnode.lock { opacity: .7; }
 .whead { position: absolute; left: calc(8px + var(--safe-l)); top: calc(8px + var(--safe-t)); display: flex; align-items: center; gap: 4px; z-index: 2; }
 .wback { width: 56px; height: 56px; border: 0; border-radius: 0; padding: 0; background: url(../assets/ui/back_Btn.png) left top/contain no-repeat; position: relative; }
 .wback::after { content: ''; position: absolute; left: 13px; top: 12px; width: 12px; height: 12px; border-left: 3px solid #fff; border-bottom: 3px solid #fff; transform: rotate(45deg); }
@@ -419,14 +419,11 @@
 .mbox .oslide input { width: 100%; accent-color: #ffcc00; }
 .mbox .oslide b { text-align: right; color: var(--lo-y); font: 14px 'LO_B', sans-serif; }
 
-/* 월드맵 메뉴: 도착한 지점 옆에 뜨는 작은 창 (도착 전에는 숨김) */
-.wscr .winfo { display: none; right: auto; bottom: auto; width: min(360px, 40vw); max-height: 82vh; padding: 16px 16px 14px; background: rgba(8, 11, 18, .95);
-  border-top: 3px solid var(--lo-y); box-shadow: 0 10px 40px #000; clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%); }
-.wscr .winfo.on { display: flex; animation: wpop .22s ease-out both; }
-@keyframes wpop { from { opacity: 0; transform: scale(.94); } }
-.wscr .winfo .wgo { margin-top: 10px; }
-.wclose { position: absolute; right: 8px; top: 6px; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 0; background: none; color: #aab2c4; font-size: 18px; }
+/* 월드맵 정보 창: 오른쪽에 크게 (도착한 뒤에만 보인다) */
+.wscr .winfo { display: none; }
+.wscr .winfo.on { display: flex; }
+.wclose { position: absolute; right: calc(10px + var(--safe-r)); top: calc(8px + var(--safe-t)); z-index: 2; width: 34px; height: 34px; padding: 0; border: 0; border-radius: 0; background: none; color: #aab2c4; font-size: 20px; }
 .wclose:hover { color: #fff; }
-@media (orientation: portrait) {
-  .wscr .winfo { left: 0 !important; right: 0; top: auto !important; bottom: 0; width: auto; max-height: 52vh; }
-}
+.wtoken.walk img { animation: wwalk .32s ease-in-out infinite; }
+@keyframes wwalk { 50% { transform: translateY(-5px); } }
+.wscr .wmap { cursor: pointer; }

@@ -1414,7 +1414,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.02';
+  const GAME_VERSION = '0.03';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -1510,7 +1510,7 @@
       const mark = town ? (sideNew().length ? '<b class="wq">!</b>' : '') : sides.length ? '<b class="wq s">!</b>' : '';
       const tag = town ? TOWN.name : st.idx;
       const em = town ? '<em class="town">TOWN</em>' : clear ? '<em>CLEAR</em>' : id === save.clear ? '<em class="new">NEW</em>' : '';
-      return `<button class="wnode ${open ? '' : 'lock'} ${clear ? 'clear' : ''} ${town ? 'town' : ''} c${col}" data-n="${id}" style="left:${x * 100}%;top:${y * 100}%" ${open ? '' : 'disabled'}>
+      return `<button class="wnode ${open ? '' : 'lock'} ${clear ? 'clear' : ''} ${town ? 'town' : ''} c${col}" data-n="${id}" style="left:${x * 100}%;top:${y * 100}%">
         <i class="ol" style="background-image:url(assets/ui/UI_WolrdMap_Chapter_Icon_Selected_OL_${col}.png)"></i>
         <i class="base" style="background-image:url(assets/ui/UI_WolrdMap_Chapter_Icon_Base_${col}.png)"></i>
         <i class="ico" style="background-image:url(assets/ui/${town ? 'UI_WolrdMap_Chapter_Icon_Story_WH' : `UI_WolrdMap_Chapter_Icon_${open ? 'Main' : 'Lock'}_${col}`}.png)"></i>
@@ -1522,7 +1522,8 @@
       const [x0, y0] = nodePos(id), [x1, y1] = nodePos(m);
       seg.push(`<line x1="${x0 * 1000}" y1="${y0 * 562.5}" x2="${x1 * 1000}" y2="${y1 * 562.5}"/>`);
     }
-    const [tx, ty] = nodePos(here);
+    if (!save.wpos) save.wpos = nodePos(here).slice();
+    const [tx, ty] = save.wpos;
     screen(`<div class="wscr">
       <div class="wmap" style="background-image:url(assets/world/ch01.webp)">
         <svg viewBox="0 0 1000 562.5" preserveAspectRatio="none">${seg.join('')}</svg>${pins}
@@ -1534,43 +1535,63 @@
       <div class="winfo" id="sInfo"></div></div>`);
     $('sBack').onclick = () => { AU.play('lo_click', 0.6); title(); };
     $('sHero').onclick = () => { AU.play('lo_click', 0.6); heroRoster(); };
-    let moving = false;
-    document.querySelectorAll('.wnode').forEach((b) => (b.onclick = async () => {
-      if (moving) return;
-      const to = b.dataset.n === WT ? WT : +b.dataset.n;
-      AU.play('lo_pick', 0.6);
-      $('sInfo').classList.remove('on'); // 이동하는 동안은 메뉴를 닫는다
-      if (to !== save.node) {
-        moving = true;
-        const path = nodePath(save.node, to), tok = $('wTok');
-        for (let k = 1; k < path.length; k++) {
-          const [x, y] = nodePos(path[k]);
-          tok.style.left = x * 100 + '%'; tok.style.top = y * 100 + '%';
-          AU.play('lo_d_foot', 0.35);
-          await wait(420);
-          if (!$('wTok')) return; // 화면이 바뀜
-        }
-        save.node = path[path.length - 1];
-        writeSave();
-        moving = false;
-      }
-      stageSel = save.node;
-      nodeInfo(); // 도착하면 그 지점 옆에 할 일 메뉴
-    }));
+    // 지도 어디든 누르면 부대가 그 자리까지 걸어간다. 지점 근처를 누르면 그 지점에 붙어 멈추고, 도착하면 정보 창
+    let moving = 0;
+    const map = document.querySelector('.wscr .wmap'), tok = $('wTok');
+    const SPEED = 0.32; // 지도 너비 비율 / 초
+    async function walkTo(x, y, node) {
+      const my = ++moving;
+      $('sInfo').classList.remove('on'); // 걷는 동안은 정보 창을 닫는다
+      const [x0, y0] = save.wpos || nodePos(save.node);
+      const d = Math.hypot(x - x0, (y - y0) * 0.5625), dur = Math.max(0.15, d / SPEED);
+      tok.style.transitionDuration = dur + 's';
+      tok.style.left = x * 100 + '%'; tok.style.top = y * 100 + '%';
+      tok.classList.add('walk');
+      for (let t = 0; t < dur; t += 0.32) { AU.play('lo_d_foot', 0.3); await wait(320); if (my !== moving || !$('wTok')) return; }
+      if (my !== moving || !$('wTok')) return;
+      tok.classList.remove('walk');
+      save.wpos = [x, y];
+      if (node != null) save.node = node;
+      writeSave();
+      moving = 0;
+      if (node != null) { stageSel = node; nodeInfo(); }
+    }
+    // 누른 곳 → 지도 비율 좌표 (지도는 천천히 움직이므로 매번 실제 위치로 잰다)
+    map.addEventListener('click', (ev) => {
+      const r = map.getBoundingClientRect();
+      const x = (ev.clientX - r.left) / r.width, y = (ev.clientY - r.top) / r.height;
+      if (x < 0 || y < 0 || x > 1 || y > 1) return;
+      // 가까운 지점에 붙는다 (지점 단추를 직접 눌러도 같음)
+      let best = null, bd = 0.045;
+      for (const id of nodeIds()) { const [nx, ny] = nodePos(id); const dd = Math.hypot(nx - x, (ny - y) * 0.5625); if (dd < bd) { bd = dd; best = id; } }
+      const btn = ev.target.closest('.wnode');
+      if (btn) best = btn.dataset.n === WT ? WT : +btn.dataset.n;
+      AU.play('lo_pick', 0.5);
+      if (best == null) { walkTo(x, y, null); return; }
+      if (!nodeOpen(best)) { lockedInfo(best); walkTo(...nodePos(best), null); return; }
+      if (best === save.node && !moving && save.wpos && Math.hypot(save.wpos[0] - nodePos(best)[0], save.wpos[1] - nodePos(best)[1]) < 1e-3) { stageSel = best; nodeInfo(); return; }
+      walkTo(...nodePos(best), best);
+    });
+    // 잠긴 지점에 가면 안내만
+    function lockedInfo(id) {
+      setTimeout(() => {
+        if (!$('sInfo')) return;
+        const st = D.STAGES[id];
+        $('sInfo').innerHTML = `<button class="wclose" onclick="this.parentElement.classList.remove('on')">✕</button><div class="wi-top"><span class="wi-no">${st.idx}</span><div class="wi-name">${st.title}</div></div>
+          <p class="wi-desc">아직 갈 수 없는 곳입니다.
+앞의 작전을 먼저 마치면 길이 열립니다.</p>`;
+        placeInfo();
+      }, 50);
+    }
     stageSel = here;
     document.querySelectorAll('.wnode').forEach((b) => b.classList.toggle('sel', b.dataset.n === String(here)));
   }
-  // 도착한 지점 옆에 메뉴를 띄운다 (가로 화면: 지점 좌우 중 넓은 쪽 / 세로 화면: 아래쪽 판)
+  // 도착한 지점의 정보 창을 오른쪽에 띄운다 (도착 전에는 숨김)
   function placeInfo() {
-    const box = $('sInfo'), nb = document.querySelector(`.wnode[data-n="${save.node}"]`);
-    if (!box || !nb) return;
+    const box = $('sInfo');
+    if (!box) return;
+    box.classList.remove('on'); void box.offsetWidth; // 다시 미끄러져 들어오게
     box.classList.add('on');
-    if (innerWidth < innerHeight) { box.style.left = box.style.top = ''; return; }
-    const r = nb.getBoundingClientRect(), w = box.offsetWidth, h = box.offsetHeight;
-    const cx = r.left + r.width / 2, cy = r.top + r.height * 0.6;
-    const left = cx > innerWidth / 2 ? cx - w - 40 : cx + 40;
-    box.style.left = Math.max(10, Math.min(innerWidth - w - 10, left)) + 'px';
-    box.style.top = Math.max(10, Math.min(innerHeight - h - 10, cy - h / 2)) + 'px';
   }
   // 오른쪽 정보 창: 지점의 종류에 따라 할 수 있는 일
   function nodeInfo() {
