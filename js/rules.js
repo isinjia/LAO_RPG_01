@@ -168,7 +168,8 @@
   //   hpHigh: [비율, +] 영웅 체력이 비율 이상이면 피해 +   hpLow: [비율, +] 영웅 체력이 비율 이하면 피해 +
   //   chase: [비율, +] 상대 총체력이 비율 이하면 피해 +   far: 2칸 이상 떨어져 공격할 때 피해 +
   //   slowed: 이동 감소가 걸린 상대에게 피해 +   troopGuard: 병사가 받는 피해 -
-  R.talentOf = (u) => (u.def && u.def.talent) || null;
+  const BOSS_TALENT = { name: '지휘 개체 장갑', guard: 0.15, desc: '받는 피해 -15% (큰 철충의 기본 재능)' };
+  R.talentOf = (u) => (u.def && (u.def.talent || (u.side === 'e' && u.def.big ? BOSS_TALENT : null))) || null;
   R.auraK = function (G, u, k) {
     let v = 0;
     for (const o of G.units) {

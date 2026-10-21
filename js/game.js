@@ -2382,6 +2382,16 @@
       v.ring.scale.setScalar(ui.sel === v.u ? 1 + Math.sin(t * 6) * 0.08 : 1);
       if (v.u.move === 'fly') v.bb.position.y = 0.06 + Math.sin(t * 2.2 + v.bob) * 0.04;
     }
+    // 고른 영웅 머리 위 원작 손 표지 (UI_Battle_main_Field_cursor_g), 위아래로 까딱인다
+    if (!world.selMark) {
+      const m = (world.selMark = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthTest: false })));
+      m.renderOrder = 5200; m.center.set(0.5, 0); m.visible = false;
+      world.root.add(m);
+      loadTex('assets/ui/UI_Battle_main_Field_cursor_g.png').then((tx) => { if (tx) { m.material.map = tx; m.material.needsUpdate = true; } });
+    }
+    const sv = ui.sel && views.get(ui.sel.uid);
+    world.selMark.visible = !!(sv && world.selMark.material.map && mode === 'map');
+    if (sv) { world.selMark.position.set(sv.g.position.x, (sv.u.def.big ? 1.6 : 1.2) + Math.abs(Math.sin(t * 4)) * 0.12, sv.g.position.z); world.selMark.scale.set(0.34, 0.4, 1); }
     if (world.water) world.water.material.map.offset.set(t * 0.03, t * 0.02);
     if (world.cursor.visible) world.cursor.scale.setScalar(1 + Math.sin(t * 5) * 0.04);
     for (let i = mapFx.length - 1; i >= 0; i--) {
