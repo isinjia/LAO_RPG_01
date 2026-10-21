@@ -776,19 +776,100 @@
     if (mode === 'talk') { if (['Enter', 'Space', 'KeyZ'].includes(e.code)) TALK.next(); if (e.code === 'Escape') TALK.askSkip(); return; }
     if (mode === 'fight') { if (['Enter', 'Space', 'Escape', 'KeyZ'].includes(e.code)) FIGHT.skip(); return; }
     if (mode !== 'map') return;
-    const k = e.code;
-    if (!kcur) kcur = [Math.floor(G.w / 2), Math.floor(G.h / 2)];
-    const mv = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0], KeyW: [0, -1], KeyS: [0, 1], KeyA: [-1, 0] }[k];
-    if (mv) { e.preventDefault(); kcur = [Math.max(0, Math.min(G.w - 1, kcur[0] + mv[0])), Math.max(0, Math.min(G.h - 1, kcur[1] + mv[1]))]; hoverTile = kcur; onHover(kcur); panTo(kcur[0], kcur[1]); }
-    else if (k === 'Enter' || k === 'Space' || k === 'KeyZ') { e.preventDefault(); if (ui.state === 'forecast') confirmAttack(); else onTap(kcur[0], kcur[1]); }
-    else if (k === 'Escape' || k === 'KeyX' || k === 'Backspace') { if (ui.state === 'idle' && !busy) openMenu(); else cancel(); }
-    else if (k === 'KeyE') endTurnAsk();
-    else if (k === 'KeyD') toggleDanger();
-    else if (k === 'KeyQ') setAuto(!autoOn);
-    else if (k === 'KeyV') cycleSpd();
-    else if (k === 'KeyF') toggleFight();
+    if (!$('modal').classList.contains('hidden')) return; // 창이 떠 있으면 Esc만 (위에서 처리)
+    mapKey(e);
   });
   let kcur = null;
+
+  // ── 지도 단축키 (도움말: H) ──
+  // 방향키 커서 · Enter/Space/Z 결정 · Esc/X/Backspace 취소 · Tab 다음 영웅(목표 고를 때는 다음 적) · 1~9 영웅
+  // 행동 버튼: A 공격 · S 특기 · W 대기 · C 제자리 (버튼에 글자 표시) · 특기 목록은 1~9
+  // E 턴 종료 · Q 자동 · V 배속 · F 연출 · R 위험 범위 · M 메뉴 · +/- 확대 · C 카메라를 선택한 영웅에게 · H 단축키 보기
+  const keyOf = (code) => (/^Key[A-Z]$/.test(code) ? code[3] : /^(Digit|Numpad)[1-9]$/.test(code) ? code.slice(-1) : code);
+  function setCursor(x, y, pan = true) {
+    kcur = [x, y]; hoverTile = kcur;
+    onHover(kcur);
+    if (pan) panTo(x, y);
+  }
+  function cycleHero(dir) {
+    const list = G.units.filter((u) => u.side === 'p' && u.alive && !u.acted);
+    if (!list.length) { toast('행동할 영웅이 없습니다 · E 턴 종료'); return; }
+    const i = list.indexOf(ui.sel);
+    const u = list[(i + dir + list.length) % list.length] || list[0];
+    rosterPick(u);
+    setCursor(u.x, u.y, false);
+  }
+  function cycleTarget(dir) {
+    const a = ui.sel;
+    const tg = R.targetsFrom(G, a, a.x, a.y);
+    if (!tg.length) return false;
+    const i = tg.indexOf(ui.target);
+    const d = tg[(i + dir + tg.length) % tg.length];
+    showForecast(d);
+    setCursor(d.x, d.y);
+    return true;
+  }
+  function zoomBy(k) {
+    cam.zoom = Math.max(cam.minZoom, Math.min(cam.maxZoom, cam.zoom * k));
+    placeCamera();
+  }
+  function mapKey(e) {
+    const k = e.code, key = keyOf(k);
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (!kcur) kcur = [Math.floor(G.w / 2), Math.floor(G.h / 2)];
+    // 언제든 되는 것
+    if (k === 'KeyH' || k === 'F1' || (k === 'Slash' && e.shiftKey)) { e.preventDefault(); keyHelp(); return; }
+    if (k === 'Equal' || k === 'NumpadAdd') { zoomBy(1.15); return; }
+    if (k === 'Minus' || k === 'NumpadSubtract') { zoomBy(1 / 1.15); return; }
+    if (k === 'KeyV') { cycleSpd(); return; }
+    if (k === 'KeyF') { toggleFight(); return; }
+    if (k === 'KeyQ') { setAuto(!autoOn); return; }
+    if (k === 'KeyR' || k === 'KeyD') { toggleDanger(); return; }
+    const mv = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }[k];
+    if (mv) { e.preventDefault(); setCursor(Math.max(0, Math.min(G.w - 1, kcur[0] + mv[0])), Math.max(0, Math.min(G.h - 1, kcur[1] + mv[1]))); return; }
+    if (busy || G.side !== 'p') return;
+    // 떠 있는 행동 버튼의 글자 (공격 A · 특기 S · 대기 W · 제자리 C · 특기 목록 1~9)
+    const btn = [...$('acts').querySelectorAll('button[data-key]')].find((b) => b.dataset.key === key);
+    if (btn) { e.preventDefault(); if (!btn.disabled) btn.click(); return; }
+    if (k === 'Enter' || k === 'Space' || k === 'KeyZ' || k === 'NumpadEnter') {
+      e.preventDefault();
+      if (ui.state === 'forecast') confirmAttack();
+      else onTap(kcur[0], kcur[1]);
+      return;
+    }
+    if (k === 'Escape' || k === 'KeyX' || k === 'Backspace') { e.preventDefault(); if (ui.state === 'idle') openMenu(); else cancel(); return; }
+    if (k === 'Tab') {
+      e.preventDefault();
+      const dir = e.shiftKey ? -1 : 1;
+      if (['menu', 'target', 'forecast'].includes(ui.state) && cycleTarget(dir)) return;
+      cycleHero(dir);
+      return;
+    }
+    if (/^[1-9]$/.test(key)) {
+      const list = G.units.filter((u) => u.side === 'p' && u.alive);
+      const u = list[+key - 1];
+      if (u) { rosterPick(u); setCursor(u.x, u.y, false); }
+      return;
+    }
+    if (k === 'KeyC') { const u = ui.sel; if (u) { panTo(u.x, u.y, true); setCursor(u.x, u.y, false); } else panTo(kcur[0], kcur[1], true); return; }
+    if (k === 'KeyE') { endTurnAsk(); return; }
+    if (k === 'KeyM') { if (ui.state === 'idle') openMenu(); return; }
+  }
+  function keyHelp() {
+    const row = (k, t) => `<tr><td><kbd>${k}</kbd></td><td>${t}</td></tr>`;
+    modal(`<h3>키보드 단축키</h3><table class="keys">
+      ${row('← ↑ → ↓', '커서 움직이기 (마우스를 올려도 커서가 따라갑니다)')}
+      ${row('Enter · Space · Z', '결정 (영웅 고르기 · 이동 · 공격 확인)')}
+      ${row('Esc · X · Backspace', '취소 · 뒤로 (아무것도 안 골랐으면 메뉴)')}
+      ${row('Tab / Shift+Tab', '다음 / 이전 영웅 · 공격할 적을 고를 때는 다음 적')}
+      ${row('1 ~ 9', '영웅 바로 고르기 (왼쪽 목록 순서) · 특기 목록에서는 그 특기')}
+      ${row('A · S · W · C', '공격 · 특기 · 대기 · 제자리 (행동 버튼에 표시)')}
+      ${row('E', '턴 종료')}${row('Q', '자동 전투')}${row('V', '배속 ×1 → ×2 → ×3')}${row('F', '전투 장면 켜기·끄기')}
+      ${row('R', '적의 공격 범위 (위험)')}${row('C', '카메라를 고른 영웅에게')}${row('+ / −', '확대 · 축소 (휠도 됩니다)')}
+      ${row('M', '메뉴')}${row('H · F1', '이 창')}
+      ${row('전투 장면', 'Enter · Space · Esc 건너뛰기')}${row('대화', 'Enter · Space 다음 · Esc 넘기기')}
+      </table><div class="opts"><button class="gold" data-a="ok">닫기</button></div>`, () => {});
+  }
 
   // ── 겹침 판 그리기 ───────────────────────────────────────
   const OV = { move: null, atk: null, aura: null, skill: null, area: null, danger: null, path: null, targets: null, ghost: null };
@@ -905,9 +986,12 @@
     const el = $('acts');
     if (!list) { el.classList.add('hidden'); el.innerHTML = ''; return; }
     el.innerHTML = '';
+    const ACT_KEY = { 공격: 'A', 특기: 'S', 대기: 'W', 제자리: 'C' };
     for (const a of list) {
       const b = document.createElement('button');
-      b.innerHTML = a.label + (a.sub ? `<small>${a.sub}</small>` : '');
+      const key = a.key || ACT_KEY[a.label];
+      if (key) b.dataset.key = key;
+      b.innerHTML = a.label + (key ? `<kbd>${key}</kbd>` : a.label === '취소' ? '<kbd>Esc</kbd>' : '') + (a.sub ? `<small>${a.sub}</small>` : '');
       if (a.cls) b.className = a.cls;
       b.disabled = !!a.disabled;
       b.onclick = (e) => { e.stopPropagation(); AU.play('lo_click', 0.5); a.fn(); };
@@ -939,6 +1023,7 @@
   // ── 플레이어 조작 ───────────────────────────────────────
   function onHover(t) {
     if (!G || mode !== 'map') return;
+    if (t) kcur = t;
     if (t) { world.cursor.visible = true; world.cursor.position.set(t[0] + 0.5, 0.02, t[1] + 0.5); } else world.cursor.visible = false;
     if (busy) return;
     if (ui.state === 'move' && t) {
@@ -1088,9 +1173,9 @@
   function openSkills() {
     const u = ui.sel;
     ui.state = 'skillpick';
-    const list = R.skillsOf(u).map((sk) => {
+    const list = R.skillsOf(u).map((sk, i) => {
       const s = D.SKILLS[sk], cd = u.cd[sk] || 0;
-      return { label: s.name, sub: cd > 0 ? `${cd}턴 뒤 사용 가능` : `${s.desc} · 대기 ${s.cd}턴`, disabled: cd > 0, fn: () => pickSkill(sk) };
+      return { key: String(i + 1), label: s.name, sub: cd > 0 ? `${cd}턴 뒤 사용 가능` : `${s.desc} · 대기 ${s.cd}턴`, disabled: cd > 0, fn: () => pickSkill(sk) };
     });
     list.push({ label: '취소', fn: openActions });
     showActs(list);
@@ -1434,9 +1519,10 @@
     if (!G) { el.innerHTML = ''; return; }
     const list = G.units.filter((u) => u.side === 'p' && u.alive);
     el.innerHTML = '';
-    for (const u of list) {
+    for (const [i, u] of list.entries()) {
       const b = document.createElement('button');
       b.className = 'rh' + (u.acted ? ' done' : '') + (ui.sel === u ? ' sel' : '');
+      b.dataset.n = i < 9 ? i + 1 : '';
       const hp = u.hp / u.hpMax, tp = u.troop ? u.troop.hp / u.troop.hpMax : 0;
       b.innerHTML = `<img src="${IMG[u.icon]}"><i class="t" style="width:${tp * 100}%"></i><i class="h" style="width:${hp * 100}%"></i>${u.acted ? '<em>완료</em>' : ''}`;
       b.title = u.name;
@@ -1512,6 +1598,7 @@
       <button data-a="autoEnd">모두 행동하면 자동 턴 종료: <b>${onoff(o.autoEnd)}</b></button>
       <button data-a="opts">옵션 (소리·대화·전투)</button>
       <button data-a="help">도움말 (규칙·조작)</button>
+      <button data-a="keys">키보드 단축키 (H)</button>
       <button data-a="goal">승리·패배 조건</button>
       <button data-a="retry">처음부터 다시</button>
       <button data-a="quit" class="red">작전 포기 (선택 화면으로)</button>
@@ -1523,6 +1610,7 @@
         openMenu();
       } else if (a === 'opts') options(openMenu);
       else if (a === 'help') help();
+      else if (a === 'keys') keyHelp();
       else if (a === 'goal') goalInfo();
       else if (a === 'retry') { const st = G.stage; leaveMap(); prep(st); }
       else if (a === 'quit') { leaveMap(); stageSelect(); }
@@ -1571,7 +1659,7 @@
       <p><b>경험치</b> · 전투가 끝나면 참가한 영웅 전원이 같은 양을 받습니다.</p>
       <p><b>특기</b> · 쓰고 나면 정해진 턴 동안 다시 쓸 수 없습니다(괄호 안 숫자).</p>
       <p><b>지형</b> · 숲 +20%, 산·언덕·기지 +10%, 폐허·마을 +5% 방어. 기병은 숲·산에서 느려지고, 비병은 지형의 영향을 받지 않습니다. 적 칸은 지나갈 수 없습니다.</p>
-      <p><b>조작</b> · 누르기: 선택·이동·공격 / 끌기: 지도 이동 / 두 손가락·휠: 확대 / 오른쪽 클릭·Esc: 취소 / 방향키+Enter: 커서 / E: 턴 종료 / D: 위험 범위 / Q: 자동</p>
+      <p><b>조작</b> · 누르기: 선택·이동·공격 / 끌기: 지도 이동 / 두 손가락·휠: 확대 / 오른쪽 클릭·Esc: 취소 / 키보드: 방향키 커서 · Enter 결정 · Esc 취소 · Tab 다음 영웅 · A 공격 · W 대기 · E 턴 종료 (전체 목록은 전투 중 H)</p>
       <div class="opts"><button class="gold" data-a="ok">확인</button></div>`, cb);
   }
 

@@ -322,3 +322,18 @@ button, h2, h3, .tname, #banner, #turnNo, .nm, .stg .tt, .result .big, #fight .f
   #top { gap: 5px; }
   #hint { top: calc(50px + var(--safe-t)); }
 }
+
+/* ── 단축키 표시 (마우스·키보드가 있는 PC에서만) ── */
+#acts kbd, .tbtns kbd { display: none; }
+#acts button kbd { margin-left: 6px; padding: 0 5px; font: 700 11px/16px sans-serif; color: #cfe0ff; background: #0008; border: 1px solid #ffffff44; border-radius: 4px; vertical-align: 2px; }
+#acts button.gold kbd { color: #3a2400; background: #fff6; border-color: #0003; }
+.keys { width: 100%; border-collapse: collapse; font-size: 13px; margin: 6px 0 10px; }
+.keys td { padding: 4px 6px; border-bottom: 1px solid #ffffff14; color: var(--dim); }
+.keys td:first-child { white-space: nowrap; width: 1%; }
+.keys kbd { display: inline-block; padding: 1px 7px; font: 700 12px/18px sans-serif; color: #fff; background: #1c2742; border: 1px solid #ffffff33; border-bottom-width: 2px; border-radius: 5px; }
+@media (hover: hover) and (pointer: fine) {
+  #acts kbd { display: inline; }
+  .tbtns button[data-key] { position: relative; }
+  .tbtns button[data-key]::after { content: attr(data-key); position: absolute; right: 2px; bottom: -9px; padding: 0 3px; font: 700 9px/12px sans-serif; color: #cfe0ff; background: #0b1324; border: 1px solid #ffffff33; border-radius: 3px; pointer-events: none; }
+  #roster .rh::after { content: attr(data-n); position: absolute; left: 2px; top: 1px; font: 800 11px/14px sans-serif; color: #fff; text-shadow: 0 1px 2px #000, 0 0 3px #000; }
+}
