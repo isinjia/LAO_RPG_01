@@ -244,3 +244,4 @@
   #forecast .side img { width: 38px; height: 38px; }
   .rhead img { max-width: 92vw; height: auto; max-height: 5vh; }
 }
+#fight .fcorner.loading .fbust { visibility: hidden; }

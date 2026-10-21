@@ -152,11 +152,11 @@
         const c = ui.querySelector('.fcorner.' + cls), sd = u.side === 'p' && STAND[u.rig];
         c.classList.toggle('stand', !!sd); c.classList.toggle('whole', !!sd && WHOLE.has(u.rig));
         c.querySelector('.fbust').classList.remove('hit');
-        const im = c.querySelector('.fimg'); // 앞 전투의 그림이 잠깐 비치지 않게, 새 그림이 다 오면 보인다
-        im.style.visibility = 'hidden';
-        im.onload = () => { im.style.visibility = ''; };
+        const im = c.querySelector('.fimg'); // 앞 전투의 그림이 잠깐 비치지 않게, 새 그림이 다 오면 틀째로 보인다
+        c.classList.add('loading');
+        im.onload = () => c.classList.remove('loading');
         im.src = sd ? 'assets/story/stand/' + sd + '.webp' : (window.IMG && IMG[u.icon]) || '';
-        if (im.complete) im.style.visibility = '';
+        if (im.complete && im.naturalWidth) c.classList.remove('loading');
         const kind = DATA.KIND[u.troop && st[u.uid].thp > 0 ? u.troop.kind : u.kind].name;
         ui.querySelector('.fname.' + cls).innerHTML = `<b>${u.name}</b><i>${u.troop ? u.troop.def.short : kind}</i><small>Lv.${u.lv}</small>`;
         setBars(cls, u, st[u.uid].thp, st[u.uid].hp, true);
@@ -175,7 +175,9 @@
         const hh = (u.def.big ? 2.8 : 2.0) * (u.def.sizeK || 1);
         const hero = new K.Rig(u.rig, hh, native);
         hero.face(f);
-        const hx = heroX(dir) + dir * off, hy = GROUND + 0.05;
+        // 영웅 몸 폭만큼 화면 가장자리 안쪽으로 (세로 화면처럼 좁을 때 잘리지 않게)
+        const hw = (hero.c.tpl.box.max.x - hero.c.tpl.box.min.x) * hero.k;
+        const hx = dir * Math.min(Math.abs(heroX(dir)), VW / 2 - hw / 2 - 0.15) + dir * off, hy = GROUND + 0.05;
         hero.g.position.set(hx + dir * 7, hy, 0);
         hero.order = 140;
         scene.add(hero.g);
