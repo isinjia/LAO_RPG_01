@@ -21,7 +21,7 @@
 #talkBg .tlids::after { bottom: 0; border-radius: 50% 50% 0 0 / 30% 30% 0 0; transform: translateY(calc(var(--o) * 210%)); box-shadow: 0 -30px 60px 30px #000; }
 
 /* 인물 */
-#talkBg .stand { position: absolute; bottom: -6vh; height: 100vh; max-width: 64vw; object-fit: contain; object-position: bottom; transform: translateX(-50%);
+#talkBg .stand { position: absolute; bottom: -6vh; height: 100vh; max-width: 64vw; object-fit: contain; object-position: bottom; transform: translateX(-50%) scaleX(var(--sx));
   transition: filter .25s; filter: drop-shadow(0 0 16px rgba(0,0,0,.4)); }
 #talkBg .stand.dim { filter: brightness(.45) drop-shadow(0 0 16px rgba(0,0,0,.4)); }
 #talkBg .stand[data-p="L"] { left: 26%; } #talkBg .stand[data-p="R"] { left: 74%; } #talkBg .stand[data-p="C"] { left: 50%; }
@@ -31,13 +31,15 @@
 #talkBg .stand.cut[data-p="L"] { left: 0; object-position: left top; }
 #talkBg .stand.cut[data-p="R"] { left: auto; right: 0; object-position: right top; }
 /* 등장·퇴장 (원작 Char_AppearEffect / Char_OffEffect) */
-#talkBg .stand { --tx: -50%; } #talkBg .stand.cut { --tx: 0%; }
+#talkBg .stand { --tx: -50%; --sx: 1; } #talkBg .stand.cut { --tx: 0%; }
+/* 오른쪽에 선 인물은 좌우 반전해 가운데를 보게 한다 (컷 그림은 구도가 정해져 있어 제외) */
+#talkBg .stand:not(.cut)[data-p="R"], #talkBg .stand:not(.cut)[data-p="RC"] { --sx: -1; }
 @keyframes ap-fade { from { opacity: 0; } }
-@keyframes ap-up { from { opacity: 0; transform: translate(var(--tx), 40px); } }
-@keyframes ap-l { from { opacity: 0; transform: translate(calc(var(--tx) - 30vw), 0); } }
-@keyframes ap-r { from { opacity: 0; transform: translate(calc(var(--tx) + 30vw), 0); } }
-@keyframes ap-hop { 0%, 100% { transform: translate(var(--tx), 0); } 30% { transform: translate(var(--tx), -5vh); } 60% { transform: translate(var(--tx), 0); } 80% { transform: translate(var(--tx), -1.5vh); } }
-@keyframes ap-zoom { from { opacity: 0; transform: translate(var(--tx), 0) scale(1.15); } }
+@keyframes ap-up { from { opacity: 0; transform: translate(var(--tx), 40px) scaleX(var(--sx)); } }
+@keyframes ap-l { from { opacity: 0; transform: translate(calc(var(--tx) - 30vw), 0) scaleX(var(--sx)); } }
+@keyframes ap-r { from { opacity: 0; transform: translate(calc(var(--tx) + 30vw), 0) scaleX(var(--sx)); } }
+@keyframes ap-hop { 0%, 100% { transform: translate(var(--tx), 0) scaleX(var(--sx)); } 30% { transform: translate(var(--tx), -5vh) scaleX(var(--sx)); } 60% { transform: translate(var(--tx), 0) scaleX(var(--sx)); } 80% { transform: translate(var(--tx), -1.5vh) scaleX(var(--sx)); } }
+@keyframes ap-zoom { from { opacity: 0; transform: translate(var(--tx), 0) scale(1.15) scaleX(var(--sx)); } }
 #talkBg .stand.ap-fade { animation: ap-fade .45s ease-out both; }
 #talkBg .stand.ap-up { animation: ap-up .5s ease-out both; }
 #talkBg .stand.ap-l { animation: ap-l .5s cubic-bezier(.2,.8,.3,1) both; }
@@ -45,8 +47,8 @@
 #talkBg .stand.ap-hop { animation: ap-hop .55s ease-out both; }
 #talkBg .stand.ap-zoom { animation: ap-zoom .45s ease-out both; }
 @keyframes off-fade { to { opacity: 0; } }
-@keyframes off-l { to { opacity: 0; transform: translate(calc(var(--tx) - 30vw), 0); } }
-@keyframes off-r { to { opacity: 0; transform: translate(calc(var(--tx) + 30vw), 0); } }
+@keyframes off-l { to { opacity: 0; transform: translate(calc(var(--tx) - 30vw), 0) scaleX(var(--sx)); } }
+@keyframes off-r { to { opacity: 0; transform: translate(calc(var(--tx) + 30vw), 0) scaleX(var(--sx)); } }
 #talkBg .stand.off-fade { animation: off-fade .4s ease-in both; }
 #talkBg .stand.off-l { animation: off-l .4s ease-in both; }
 #talkBg .stand.off-r { animation: off-r .4s ease-in both; }
