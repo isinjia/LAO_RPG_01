@@ -158,7 +158,37 @@
   function loadTiles() {
     return Promise.all(TILE_NAMES.map((n) => new Promise((r) => { const im = new Image(); im.onload = () => { TILE[n] = im; r(); }; im.onerror = r; im.src = `assets/tiles/${n}.webp`; })));
   }
-  function drawGround(G) {
+  // 지도 밖 PAD 칸까지 지형을 이어 그린다: 화면이 빈 바탕 없이 꽉 차고, 못 가는 바깥은 어둡게 덮어 구분한다
+  const PAD = 6;
+  const OUTER = 0x171f14, OUTER_CSS = '#171f14'; // 늘린 지형 너머의 판 색 (어둡게 덮인 풀빛)
+  function extendMap(G) {
+    const w = G.w + PAD * 2, h = G.h + PAD * 2, map = [];
+    const road = (c) => c === 'r' || c === '=';
+    for (let y = 0; y < h; y++) {
+      let row = '';
+      for (let x = 0; x < w; x++) {
+        const gx = x - PAD, gy = y - PAD;
+        if (R.inB(G, gx, gy)) { row += G.map[gy][gx]; continue; }
+        const cx = Math.max(0, Math.min(G.w - 1, gx)), cy = Math.max(0, Math.min(G.h - 1, gy));
+        let c = G.map[cy][cx];
+        const outX = gx !== cx, outY = gy !== cy;
+        if (road(c)) {
+          // 길·다리는 지도 끝에서 바깥으로 곧게 나가는 것만 잇는다 (끝줄을 따라 나란히 달리던 길은 넓은 판이 되지 않게)
+          const ix = outX && !outY ? cx + (gx < 0 ? 1 : -1) : cx, iy = outY && !outX ? cy + (gy < 0 ? 1 : -1) : cy;
+          const inner = R.inB(G, ix, iy) ? G.map[iy][ix] : null;
+          c = outX && outY ? '.' : inner && (road(inner) || inner === 'v' || inner === 'c') ? (c === '=' ? '=' : 'r') : c === '=' ? 'w' : '.';
+        } else if ('cvs#'.includes(c)) c = '.';
+        else if (c === 'm') c = hash(x, y, 11) < 0.6 ? 'm' : 'h';
+        if ((c === '.' || c === 'h') && hash(x, y, 12) > 0.72) c = 'f';
+        else if (c === 'f' && hash(x, y, 13) > 0.8) c = '.';
+        row += c;
+      }
+      map.push(row);
+    }
+    return { w, h, map };
+  }
+  function drawGround(G0) {
+    const G = extendMap(G0);
     const c = canvas(G.w * TS, G.h * TS), g = c.getContext('2d');
     const at = (x, y) => (R.inB(G, x, y) ? G.map[y][x] : null);
     const PAT = (TS * 3) / 384; // 질감 한 장 = 3칸
@@ -272,14 +302,33 @@
       rg.addColorStop(0, `rgba(20,25,10,${t === 'f' ? 0.4 : 0.3})`); rg.addColorStop(1, 'rgba(20,25,10,0)');
       g.fillStyle = rg; g.beginPath(); g.ellipse(cx, cy, TS * 0.5, TS * 0.3, 0, 0, 7); g.fill();
     }
-    // 격자
+    // 격자 (지도 안만)
+    const X0 = PAD * TS, Y0 = PAD * TS, X1 = (PAD + G0.w) * TS, Y1 = (PAD + G0.h) * TS;
     g.strokeStyle = 'rgba(0,0,0,.14)'; g.lineWidth = 1;
-    for (let x = 0; x <= G.w; x++) { g.beginPath(); g.moveTo(x * TS + 0.5, 0); g.lineTo(x * TS + 0.5, G.h * TS); g.stroke(); }
-    for (let y = 0; y <= G.h; y++) { g.beginPath(); g.moveTo(0, y * TS + 0.5); g.lineTo(G.w * TS, y * TS + 0.5); g.stroke(); }
-    // 가장자리 어둡게
-    const vg = g.createRadialGradient(c.width / 2, c.height / 2, Math.min(c.width, c.height) * 0.35, c.width / 2, c.height / 2, Math.max(c.width, c.height) * 0.75);
-    vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.35)');
-    g.fillStyle = vg; g.fillRect(0, 0, c.width, c.height);
+    for (let x = 0; x <= G0.w; x++) { g.beginPath(); g.moveTo(X0 + x * TS + 0.5, Y0); g.lineTo(X0 + x * TS + 0.5, Y1); g.stroke(); }
+    for (let y = 0; y <= G0.h; y++) { g.beginPath(); g.moveTo(X0, Y0 + y * TS + 0.5); g.lineTo(X1, Y0 + y * TS + 0.5); g.stroke(); }
+    // 못 가는 바깥: 어둡게 덮고 경계선
+    g.save();
+    g.beginPath(); g.rect(0, 0, c.width, c.height); g.rect(X0, Y0, X1 - X0, Y1 - Y0);
+    g.fillStyle = 'rgba(8,12,20,.5)'; g.fill('evenodd');
+    g.restore();
+    for (const [x, y, w, h, gx0, gy0, gx1, gy1] of [[X0, Y0, X1 - X0, TS * 0.4, 0, Y0, 0, Y0 + TS * 0.4], [X0, Y1 - TS * 0.4, X1 - X0, TS * 0.4, 0, Y1, 0, Y1 - TS * 0.4],
+      [X0, Y0, TS * 0.4, Y1 - Y0, X0, 0, X0 + TS * 0.4, 0], [X1 - TS * 0.4, Y0, TS * 0.4, Y1 - Y0, X1, 0, X1 - TS * 0.4, 0]]) {
+      const lg = g.createLinearGradient(gx0, gy0, gx1, gy1);
+      lg.addColorStop(0, 'rgba(0,0,0,.28)'); lg.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = lg; g.fillRect(x, y, w, h);
+    }
+    g.strokeStyle = 'rgba(255,224,140,.85)'; g.lineWidth = 4; g.setLineDash([18, 10]);
+    g.strokeRect(X0 + 2, Y0 + 2, X1 - X0 - 4, Y1 - Y0 - 4);
+    g.setLineDash([]);
+    // 맨 끝은 바깥 판 색으로 사라진다 (그 너머까지 보여도 끊긴 데가 없게)
+    const F = TS * 2.5;
+    for (const [gx0, gy0, gx1, gy1, x, y, w, h] of [[0, 0, 0, F, 0, 0, c.width, F], [0, c.height, 0, c.height - F, 0, c.height - F, c.width, F],
+      [0, 0, F, 0, 0, 0, F, c.height], [c.width, 0, c.width - F, 0, c.width - F, 0, F, c.height]]) {
+      const lg = g.createLinearGradient(gx0, gy0, gx1, gy1);
+      lg.addColorStop(0, OUTER_CSS); lg.addColorStop(1, 'rgba(23,31,20,0)');
+      g.fillStyle = lg; g.fillRect(x, y, w, h);
+    }
     return c;
   }
 
@@ -313,20 +362,16 @@
     const root = new THREE.Group();
     const night = !!G.stage.night;
     // 바닥 바깥 (어두운 판)
-    const outer = new THREE.Mesh(new THREE.PlaneGeometry(G.w + 60, G.h + 60), new THREE.MeshBasicMaterial({ color: night ? 0x070a14 : 0x141c30 }));
+    const outer = new THREE.Mesh(new THREE.PlaneGeometry(G.w + 80, G.h + 80), new THREE.MeshBasicMaterial({ color: night ? 0x0b0f1a : OUTER }));
     outer.rotation.x = -Math.PI / 2; outer.position.set(G.w / 2, -0.02, G.h / 2);
     root.add(outer);
     // 지면
     const gc = drawGround(G);
     const gt = new THREE.CanvasTexture(gc);
     gt.anisotropy = renderer.capabilities.getMaxAnisotropy();
-    const ground = new THREE.Mesh(new THREE.PlaneGeometry(G.w, G.h), new THREE.MeshBasicMaterial({ map: gt, color: night ? 0x7c88b8 : 0xffffff }));
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(G.w + PAD * 2, G.h + PAD * 2), new THREE.MeshBasicMaterial({ map: gt, color: night ? 0x7c88b8 : 0xffffff }));
     ground.rotation.x = -Math.PI / 2; ground.position.set(G.w / 2, 0, G.h / 2);
     root.add(ground);
-    // 판 테두리 (두께감)
-    const edge = new THREE.Mesh(new THREE.BoxGeometry(G.w + 0.3, 0.4, G.h + 0.3), new THREE.MeshBasicMaterial({ color: night ? 0x1a1f33 : 0x3a2e22 }));
-    edge.position.set(G.w / 2, -0.22, G.h / 2);
-    root.add(edge);
     // 물결 (움직이는 겹 무늬)
     const waveT = canvasTex(128, 128, (g) => {
       g.strokeStyle = 'rgba(220,240,255,.55)'; g.lineWidth = 2; g.lineCap = 'round';
@@ -390,6 +435,21 @@
         decos.push(prop(DECO.camp[hash(x, y, 3) > 0.5 ? 1 : 0], 0.36, x + 0.5, y + 0.88, night));
         if (hash(x, y, 9) > 0.6) decos.push(prop(DECO.camp[2], 0.34, x + 0.18, y + 0.5, night));
       }
+    }
+    // 지도 밖 숲·바위 (어둡게)
+    const E = extendMap(G);
+    for (let y = 0; y < E.h; y++) for (let x = 0; x < E.w; x++) {
+      const gx = x - PAD, gy = y - PAD;
+      if (R.inB(G, gx, gy)) continue;
+      const t = E.map[y][x], dim = [];
+      if (t === 'f') {
+        const n = 1 + (hash(x, y, 7) > 0.5 ? 1 : 0);
+        for (let i = 0; i < n; i++) {
+          const k = Math.floor(hash(x, y, i + 1) * 5);
+          dim.push(prop(DECO.tree[k], 0.7 + hash(x, y, i + 9) * 0.2, gx + [0.35, 0.7][i] + (hash(x, y, i) - 0.5) * 0.2, gy + [0.45, 0.8][i], night));
+        }
+      } else if (t === 'm') dim.push(prop(DECO.mount[hash(x, y, 2) > 0.5 ? 1 : 0], 0.62, gx + 0.5, gy + 0.8, night));
+      dim.forEach((s) => { s.material.color.multiplyScalar(0.55); decos.push(s); });
     }
     decos.forEach((s) => root.add(s));
     scene.add(root);
