@@ -104,6 +104,33 @@
       obj.position.fromArray(o.pos); obj.quaternion.fromArray(o.rot); obj.scale.fromArray(o.scl);
       scene.add(obj);
     }
+    // 지도 밖 바다: 지도 판 가장자리 높이 바로 아래에 넓게 깔고, 지도 안쪽은 비운다.
+    // 해안선을 따라 겹겹이 퍼지는 등고선(지도 안 등고선과 같은 결)이 천천히 밀려 나가고, 멀어질수록 어둠에 묻힌다
+    if (ground) {
+      const b = new THREE.Box3().setFromObject(ground);
+      const sea = new THREE.Mesh(new THREE.PlaneGeometry(80, 80).rotateX(-Math.PI / 2).translate((b.min.x + b.max.x) / 2, b.min.y - 0.01, (b.min.z + b.max.z) / 2),
+        new THREE.ShaderMaterial({
+          uniforms: { time, rect: { value: new THREE.Vector4(b.min.x, b.min.z, b.max.x, b.max.z) } },
+          vertexShader: 'varying vec3 vW; void main() { vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }',
+          fragmentShader: `uniform vec4 rect; uniform float time; varying vec3 vW;
+            void main() {
+              vec2 p = vW.xz, o = max(max(rect.xy - p, p - rect.zw), 0.0);
+              float d = length(o);
+              if (d <= 0.0) discard;
+              float dd = d + (0.09 * (sin(p.x * 3.1 + p.y * 1.3) + sin(p.y * 2.7 - p.x * 1.9)) + 0.04 * sin(p.x * 7.3 - p.y * 5.1)) * smoothstep(0.0, 0.5, d);
+              float k = dd * 9.0 - time * 0.1, w = fwidth(k);
+              float q = abs(fract(k + 0.5) - 0.5), line = 1.0 - smoothstep(0.03, 0.03 + w * 1.5, q); // q: 가장 가까운 등고선까지
+              float near = 1.0 - smoothstep(0.4, 5.0, d);
+              vec3 c = mix(vec3(0.02, 0.05, 0.12), vec3(0.08, 0.17, 0.33), near);
+              c += vec3(0.07, 0.12, 0.21) * line * (0.3 + 0.7 * near) * (1.0 - smoothstep(3.0, 7.0, d));
+              c += vec3(0.35, 0.28, 0.1) * exp(-d * 45.0);
+              gl_FragColor = vec4(c, 1.0);
+            }`,
+          extensions: { derivatives: true },
+        }));
+      sea.renderOrder = -2;
+      scene.add(sea);
+    }
     // 작전 지점 표시(원작 map_point 입자: 2초마다 하나, 커지며 흰색→빨강으로 사라짐)
     const marker = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex(S.marker), transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending }));
     marker.visible = false;
