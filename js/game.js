@@ -1576,8 +1576,69 @@
     const prev = mode;
     mode = 'talk';
     wipe();
-    await TALK.play(nodes);
+    const r = await TALK.play(nodes);
     mode = prev === 'talk' ? 'map' : prev;
+    return r;
+  }
+
+  // ── IF 서사 (js/ifstory.js): 원작 대본의 사령관 선택지 옆에 '잘못된 판단' 선택지를 하나 더 붙인다 ──
+  // 원래 대사와 선택지는 그대로 두고, 고른 갈래가 IF 장면으로 이어지면 IF 작전이 열리거나 바로 IF 엔딩(게임오버)이 된다
+  const ifList = () => (window.IFS && IFS.list) || [];
+  // 본편 작전의 대화 한 부분을 IF 갈래까지 붙여서 튼다. IF 로 갔으면 그 IF 자료를 돌려준다
+  async function storyPart(st, part) {
+    const S = window.STORY && STORY[st.idx];
+    if (!S || !S[part] || !S[part].length) return null;
+    const d = !st.kind && ifList().find((x) => x.idx === st.idx && x.part === part);
+    if (!d) { await story(S[part]); return null; }
+    const nodes = S[part].map((n) => (n.id === d.node ? Object.assign({}, n, { ch: n.ch.concat([[d.text, d.scene[0].id]]), must: true }) : n)).concat(d.scene);
+    const r = await story(nodes);
+    return r && r.flags.includes('if:' + d.id) ? d : null;
+  }
+  // IF 로 들어간 뒤: IF 작전이 있으면 출격 준비로, 없으면 IF 엔딩
+  function ifBranch(d, si, part) {
+    if (d.stage) prep(Object.assign({}, D.STAGES[si], d.stage, { kind: 'if', ifd: d, base: si, part, free: 0, turnLimit: d.stage.turnLimit || 0 }));
+    else ifEnding(d, si, part);
+  }
+  // IF 엔딩 = 게임오버 화면. 고른 순간으로 되돌아가 다시 고를 수 있다
+  function ifEnding(d, si, part) {
+    save.ifEnd = save.ifEnd || {};
+    const first = !save.ifEnd[d.id];
+    save.ifEnd[d.id] = 1; writeSave();
+    leaveMap();
+    AU.bgm(null); AU.play('fail', 0.7);
+    const n = Object.keys(save.ifEnd).length;
+    screen(`<div class="ifend"><div class="ifend-in">
+      <div class="ifend-go">GAME OVER</div>
+      <div class="ifend-no">IF ENDING ${String(d.ending.no).padStart(2, '0')}${first ? '<em>NEW</em>' : ''}</div>
+      <h2>${d.ending.title}</h2>
+      <p>${d.ending.desc}</p>
+      <div class="ifend-note">${CHAPTERS[(D.STAGES[si].ch || 1) - 1].no}지역 · ${D.STAGES[si].idx} ${D.STAGES[si].title}에서 내린 판단 · IF 기록 ${n} / ${ifList().length}</div>
+      <div class="ifend-btns"><button class="wgo" id="ifBack"><b>선택의 순간으로</b><small>RETRY</small></button><button class="lo-btn dark" id="ifMap">월드맵으로</button></div>
+    </div></div>`);
+    $('ifBack').onclick = () => { AU.play('lo_click', 0.7); AU.play('lo_trans_in', 0.5); if (part === 'start') startStage(si); else replayEnd(si); };
+    $('ifMap').onclick = () => { AU.play('lo_click', 0.7); stageSelect(); };
+  }
+  // 작전 뒤 대화에서 IF 로 갔을 때 되돌아오기: 전투는 이긴 그대로 두고 뒤 대화만 다시
+  async function replayEnd(si) {
+    const st = D.STAGES[si], S = STORY[st.idx];
+    hideScreen();
+    AU.bgm(S.bgmEnd);
+    const d = await storyPart(st, 'end');
+    if (d) return ifBranch(d, si, 'end');
+    save.clear = Math.max(save.clear, st.id); writeSave();
+    afterWin(st, si);
+  }
+  // IF 기록: 찾은 IF 엔딩 목록 (못 찾은 것은 지역과 작전만 알려 준다)
+  function ifRecord() {
+    const got = save.ifEnd || {};
+    const rows = ifList().map((d) => {
+      const s = D.STAGES.find((x) => x.idx === d.idx);
+      return got[d.id]
+        ? `<div class="ifrow on"><b>IF ${String(d.ending.no).padStart(2, '0')}</b><span>${d.ending.title}<small>${s.idx} ${s.title}</small></span></div>`
+        : `<div class="ifrow"><b>IF ${String(d.ending.no).padStart(2, '0')}</b><span>???<small>${save.clear >= s.id - 1 ? s.idx + ' 어딘가의 판단' : '아직 가 보지 못한 지역'}</small></span></div>`;
+    }).join('');
+    modal(`<h3>IF 기록 <small style="color:#8d95a8;font:13px LO_M">${Object.keys(got).length} / ${ifList().length}</small></h3>
+      <p style="color:#9aa6c4;font-size:13px">사령관의 판단 하나로 갈라지는 또 다른 결말. 중요한 순간의 선택지를 잘못 고르면 이 길로 들어섭니다.</p><div class="iflist">${rows}</div><div class="opts"><button class="gold" data-a="ok">닫기</button></div>`);
   }
   function talk(lines) { // 간단한 대사 [[화자, 얼굴, 문장]] (도움말 등)
     return story(lines.map(([who, face, t], i) => ({ id: i + 1, who, face, t, bg: '', cg: '', next: i + 2 <= lines.length ? i + 2 : null, ch: [] })));
@@ -1710,7 +1771,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.30';
+  const GAME_VERSION = '0.31';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -1819,7 +1880,7 @@
       <div class="whead"><button class="wback" id="sBack" aria-label="뒤로"></button>
         <div class="wtitle"><small>CHAPTER ${String(CH.no).padStart(2, '0')}</small><b>${CH.name}</b></div>
         ${chOpen() > 0 ? `<div class="wchap"><button id="sPrev" ${ch > 0 ? '' : 'disabled'} aria-label="이전 지역">‹</button><span>${CH.no} / ${chOpen() + 1}</span><button id="sNext" ${ch < chOpen() ? '' : 'disabled'} aria-label="다음 지역">›</button></div>` : ''}</div>
-      <div class="wtools"><button class="lo-btn dark" id="sHero">부대 현황</button></div>
+      <div class="wtools"><button class="lo-btn dark" id="sHero">부대 현황</button><button class="lo-btn dark" id="sIf">IF 기록</button></div>
       <button class="wchlbtn" id="sChlBtn"><small>CHAPTER</small><b>${String(CH.no).padStart(2, '0')}</b><span>챕터 목록</span></button>
       <div class="wchl" id="sChl"><div class="wchl-h"><small>CHAPTER LIST</small><b>챕터 선택</b><button class="wchl-x" id="sChlX" aria-label="닫기"></button></div>
         <div class="wchl-l">${CH_LIST.map((c, i) => { const open = c.inGame && i <= chOpen(); return `<button class="wch ${i === ch ? 'on' : ''} ${open ? '' : 'lock'}" data-i="${i}">
@@ -1828,6 +1889,7 @@
       <div class="winfo" id="sInfo"></div></div>`);
     $('sBack').onclick = () => { AU.play('lo_click', 0.6); title(); };
     $('sHero').onclick = () => { AU.play('lo_click', 0.6); heroRoster(); };
+    $('sIf').onclick = () => { AU.play('lo_click', 0.6); ifRecord(); };
     const goCh = (to) => { AU.play('lo_click', 0.6); AU.play('lo_trans_in', 0.5); save.chapter = to; save.node = null; writeSave(); stageSelect(); };
     if ($('sPrev')) $('sPrev').onclick = () => goCh(ch - 1);
     if ($('sNext')) $('sNext').onclick = () => goCh(ch + 1);
@@ -2151,7 +2213,11 @@
     hideScreen();
     const S = window.STORY && STORY[st.idx];
     AU.play('lo_trans_in', 0.5);
-    if (S) { AU.bgm(S.bgmStart); await story(S.start); }
+    if (S) {
+      AU.bgm(S.bgmStart);
+      const d = await storyPart(st, 'start');
+      if (d) return ifBranch(d, si, 'start');
+    }
     prep(si);
   }
 
@@ -2281,6 +2347,7 @@
       }
       rows.push(row);
     }
+    const clear0 = save.clear;
     if (win && !st.kind) save.clear = Math.max(save.clear, st.id);
     if (win && st.kind === 'side') { save.side = save.side || {}; save.side[st.idx] = 'done'; }
     window.GAME_LAST = { idx: st.idx, win, turn: g.turn, wave: g.wave + 1, alive: g.units.filter((u) => u.side === 'p').map((u) => u.name + (u.alive ? ':' + Math.round(u.hp) : 'x')).join(' ') };
@@ -2289,9 +2356,24 @@
     leaveMap();
     await result(st, win, gain, rows, g.turn);
     // 이야기: 본편과 의뢰는 끝 대화 (소탕전은 없음)
+    if (st.kind === 'if') { // IF 작전: 이기면 IF 뒷이야기와 IF 엔딩, 지면 다시 도전
+      if (win) { AU.bgm(st.ifd.bgmEnd || 'lo_talk3'); await story(st.ifd.outro); ifEnding(st.ifd, st.base, st.part); }
+      else stageSelect();
+      busy = false;
+      return;
+    }
     const S = st.kind !== 'repeat' && window.STORY && STORY[st.idx];
-    if (win && S) { AU.bgm(S.bgmEnd); await story(S.end); }
-    if (win) {
+    if (win && S) {
+      AU.bgm(S.bgmEnd);
+      const d = !st.kind ? await storyPart(st, 'end') : (await story(S.end), null);
+      if (d) { save.clear = clear0; writeSave(); busy = false; return ifBranch(d, si, 'end'); } // 잘못된 판단: 이 작전은 아직 마치지 못한 것으로
+    }
+    if (win) afterWin(st, si);
+    busy = false;
+  }
+  // 이긴 뒤 월드맵으로: 지역을 마쳤으면 다음 지역 지도와 안내
+  function afterWin(st, si) {
+    {
       const chDone = !st.kind && (si === D.STAGES.length - 1 || chOf(si + 1) !== chOf(si)), C0 = CHAPTERS[chOf(si)];
       if (chDone && si < D.STAGES.length - 1) { save.chapter = chOf(si + 1); save.node = null; writeSave(); } // 다음 지역 지도로
       stageSelect();
