@@ -144,12 +144,11 @@
 
 /* ── 작전 선택 (원작 3D 지역 지도 + 작전 지점) ─────────────── */
 .wscr { position: fixed; inset: 0; overflow: hidden; background: #02040a; --n: max(0.62px, var(--u)); }
-.wmap { position: absolute; left: 50%; top: 50%; width: max(100vw, 177.78vh); height: max(56.25vw, 100vh); transform: translate(-50%, -50%) scale(1.04);
-  background: center/100% 100% no-repeat; animation: wdrift 30s ease-in-out infinite alternate; }
-@keyframes wdrift { to { transform: translate(-50%, -50.8%) scale(1.06); } } /* 화면을 꽉 채운 채 천천히 움직인다 */
-.wmap svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
-.wmap polyline { fill: none; stroke: var(--lo-y); stroke-width: 2.2; stroke-dasharray: 7 6; opacity: .85; filter: drop-shadow(0 0 4px rgba(255, 204, 0, .8)); animation: wdash 1.2s linear infinite; vector-effect: non-scaling-stroke; }
-@keyframes wdash { to { stroke-dashoffset: -26; } }
+.wmap { position: absolute; inset: 0; z-index: 0; isolation: isolate; } /* 원작 3D 지도(그림판) 위에 지점 단추·부대 말을 매 순간 3D 자리에 맞춰 붙인다 */
+.wmap .w3d { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity .6s; }
+.wmap .w3d.on { opacity: 1; }
+.wmap:not(.ready) .wnode, .wmap:not(.ready) .wtoken { visibility: hidden; }
+.wmap .wtoken { transition: none; }
 .wvig { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 40% 55%, transparent 40%, rgba(0,0,0,.65)), linear-gradient(rgba(0,0,0,.55), transparent 22%); }
 .wnode { position: absolute; width: calc(120 * var(--n)); height: calc(150 * var(--n)); transform: translate(-50%, -82%); background: none; border: 0; border-radius: 0; padding: 0; cursor: pointer; }
 .wnode i { position: absolute; left: 50%; background: center/contain no-repeat; pointer-events: none; }
@@ -208,7 +207,6 @@
 @keyframes wshine { from { background-position: 150% 0; } to { background-position: -100% 0; } }
 .roster .heroes { max-height: 60vh; overflow-y: auto; }
 @media (orientation: portrait) {
-  .wmap { width: 200vw; height: 112.5vw; top: calc(44px + var(--safe-t)); transform: translateX(-52%); animation: none; }
   .wscr { --n: max(0.5px, calc(var(--u) * 1.1)); }
   .winfo { left: 0; right: 0; top: auto; width: auto; height: 49vh; padding: 22px 16px calc(14px + var(--safe-b)); background: linear-gradient(transparent, rgba(8, 11, 18, .94) 26px); }
   .wtools { bottom: auto; top: calc(51vh - 58px); left: auto; right: calc(10px + var(--safe-r)); }
