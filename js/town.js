@@ -97,6 +97,7 @@
         { t: 'deco', art: 'town/r_cafe4_3', x: 10, y: 2, w: 1, h: 1, hh: 1.7, block: 1 },
         { t: 'deco', art: 'town/r_cafe2_3', x: 1, y: 2, w: 1, h: 1, hh: 0.8, block: 1 },
         { t: 'npc', id: 'amy', x: 2, y: 6, dir: 1 },
+        { t: 'npc', id: 'scathy', x: 11, y: 6, dir: -1 },
       ],
     },
   };

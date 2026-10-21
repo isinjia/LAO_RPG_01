@@ -54,6 +54,8 @@
     wall: { name: '화이트 셸 방벽', cd: 3, tgt: 'self', radius: 1, buff: { df: 0.4 }, fx: 'shield', sfx: 'energy', desc: '자신과 주변 1칸 아군 방어 +40%' },
     command: { name: '군단 지휘', cd: 3, tgt: 'self', radius: 2, buff: { at: 0.25 }, fx: 'buff', sfx: 'charge', desc: '주변 2칸 아군 공격 +25% (적 차례가 끝날 때까지)' },
     satellite: { name: '위성 포격', cd: 4, tgt: 'tile', range: 5, area: 'sq', power: 0.9, fx: 'laser', sfx: 'laserBig', desc: '사거리 5, 3x3 범위에 위성 포격' },
+    hack: { name: '전자전 해킹', cd: 3, tgt: 'enemy', range: 3, area: 0, power: 1.0, slow: 2, fx: 'laser', sfx: 'elec', desc: '사거리 3 적 하나를 해킹해 공격하고 다음 차례 이동 -2' },
+    emp: { name: 'EMP 교란', cd: 4, tgt: 'tile', range: 4, area: 1, power: 0.8, slow: 1, fx: 'laser', sfx: 'elec', desc: '사거리 4 십자 범위에 전자기파 (이동 -1)' },
     tackle: { name: '셸 돌진', cd: 3, tgt: 'enemy', range: 1, area: 0, power: 1.3, slow: 1, fx: 'slash', sfx: 'expM', desc: '인접한 적 하나를 들이받고 다음 차례 이동 -1' },
     // 철충
     shell: { name: '포격', cd: 3, tgt: 'tile', range: 3, area: 1, power: 0.8, fx: 'fire', sfx: 'cannon', desc: '사거리 3 십자 범위 포격' },
@@ -61,6 +63,7 @@
     ambush: { name: '납치 공작', cd: 3, tgt: 'enemy', range: 3, area: 0, power: 1.4, slow: 2, fx: 'slash', sfx: 'slash', desc: '사거리 3 적 하나를 기습하고 다음 차례 이동 -2' },
     acid: { name: '부식액 살포', cd: 3, tgt: 'tile', range: 3, area: 1, power: 0.7, slow: 1, fx: 'fire', sfx: 'spray', desc: '사거리 3 십자 범위에 부식액 (이동 -1)' },
     rampage: { name: '광폭 돌진', cd: 2, tgt: 'self', area: 'adj', power: 1.4, fx: 'slash', sfx: 'expB', desc: '인접한 적 전체를 들이받는다' },
+    plasma: { name: '소멸 레이저', cd: 3, tgt: 'line', len: 6, power: 1.2, fx: 'laser', sfx: 'laserBig', desc: '한 방향 직선 6칸의 적 모두를 플라즈마로 태운다' },
     devour: { name: '포식', cd: 3, tgt: 'self', area: 'adj', power: 1.3, fx: 'slash', sfx: 'swing', desc: '인접한 적 전체를 물어뜯는다' },
   };
 
@@ -81,6 +84,9 @@
     e_legion: { name: '레기온 무리', short: '레기온', rig: 'e_Legion_N', icon: 'e_Legion_N', kind: 'inf', hp: 64, at: 16, df: 12, mov: 3, sfx: 'rifle' },
     e_sniper: { name: '칙 스나이퍼 무리', short: '스나이퍼', rig: 'e_NightChickSP_N', icon: 'e_NightChickSP_N', kind: 'arch', hp: 40, at: 17, df: 6, mov: 3, sfx: 'rifle' },
     e_wasp: { name: '와습 무리', short: '와습', rig: 'e_Wasp_N', icon: 'e_Wasp_N', kind: 'fly', hp: 48, at: 15, df: 8, mov: 5, sfx: 'mg' },
+    e_drone: { name: '드론 편대', short: '드론', rig: 'e_Drone_N', icon: 'e_Drone_N', kind: 'fly', hp: 46, at: 15, df: 9, mov: 5, sfx: 'mg' },
+    e_amg: { name: 'AMG-11 포대', short: 'AMG', rig: 'e_AMG11_N', icon: 'e_AMG11_N', kind: 'arch', hp: 50, at: 17, df: 10, mov: 3, sfx: 'mg' },
+    e_pupp: { name: '경비 펍 헤드 무리', short: '펍 헤드', rig: 'e_PuppHead_N', icon: 'e_PuppHead_N', kind: 'cav', hp: 56, at: 16, df: 11, mov: 5, sfx: 'gun' },
     e_cannon: { name: '나이트 칙 캐논 무리', short: '캐논', rig: 'e_NightChickC_N', icon: 'e_NightChickC_N', kind: 'arch', hp: 42, at: 15, df: 6, mov: 3, sfx: 'cannon' },
   };
 
@@ -158,6 +164,17 @@
       ],
       bio: '블랙 리버가 만든 최고의 지휘관 모델. 스틸라인 부대를 이끌며 남은 위성으로 포격을 내립니다.',
     },
+    // 5지역 합류
+    scathy: {
+      name: '스카디', full: '스카디', rig: 'scathy', icon: 'c_BR_Scathy_N', face: 'BR_Scathy_N', sfx: 'elec',
+      kind: 'mage', move: 'foot', rng: 2, // 전자전 전문가: 멀리서 해킹으로 적을 묶는다
+      tiers: [
+        { cls: '전자전 전문가', hp: 84, at: 27, df: 11, mov: 3, troops: ['gunner', 'guard'], skills: ['hack'] },
+        { cls: '사이버 워페어', hp: 96, at: 31, df: 13, mov: 3, troops: ['gunner', 'guard', 'flyer'], skills: ['hack', 'emp'] },
+        { cls: '네트워크의 여왕', hp: 110, at: 36, df: 15, mov: 3, troops: ['gunner', 'guard', 'flyer'], skills: ['hack', 'emp'] },
+      ],
+      bio: '블랙 리버의 전자전 전문가. 떨어진 비행기에서 구출되어 합류했습니다. 해킹으로 적을 공격하고 발을 묶습니다.',
+    },
     // 2지역 합류
     amy: {
       name: '에이미', full: '에이미 레이저', rig: 'amy', icon: 'c_BR_Amy_N', face: 'BR_Amy_N', sfx: 'gun',
@@ -181,7 +198,7 @@
     },
   };
   const TIER_LV = [1, 5, 10];
-  const MAX_LV = 70; // 지역이 늘수록 원작 적 레벨도 오르므로 넉넉히
+  const MAX_LV = 99; // 지역이 늘수록 원작 적 레벨도 오르므로 넉넉히
 
   // ── 철충 (영웅 자리에 서는 개체 + 거느린 병사) ─────────
   const ENEMIES = {
@@ -211,6 +228,20 @@
     scarab: { name: '스캐럽', rig: 'e_Scarab_N', icon: 'e_Scarab_N', kind: 'pike', move: 'foot', rng: 1, hp: 96, at: 19, df: 22, mov: 3, troop: 'e_shielder', sfx: 'cannon' },
     raider: { name: '레이더', rig: 'e_Raider_B04', icon: 'e_Raider_B04', kind: 'cav', move: 'horse', rng: 1, hp: 320, at: 30, df: 20, mov: 5, troop: null, skills: ['rampage'], big: true, sfx: 'expM' },
     raiderx: { name: '광폭화 레이더', rig: 'e_Raider_B04', icon: 'e_Raider_B04', kind: 'cav', move: 'horse', rng: 1, hp: 380, at: 35, df: 20, mov: 5, troop: null, skills: ['rampage'], big: true, sfx: 'expB' },
+    // 5지역: 사설 명령 체계에 묶여 침입자를 쏘는 AGS
+    g_fallen: { name: '경비용 폴른', rig: 'e_Fallen_N', icon: 'e_Fallen_N', kind: 'arch', move: 'foot', rng: 2, hp: 60, at: 19, df: 10, mov: 3, troop: 'e_amg', skills: ['shell'], sfx: 'cannon' },
+    g_rampart: { name: '경비용 램파트', rig: 'e_Rampart_N', icon: 'e_Rampart_N', kind: 'pike', move: 'foot', rng: 1, hp: 96, at: 16, df: 24, mov: 3, troop: 'e_pupp', sfx: 'gun' },
+    g_drone: { name: '경비용 드론', rig: 'e_Drone_N', icon: 'e_Drone_N', kind: 'fly', move: 'fly', rng: 1, hp: 46, at: 17, df: 9, mov: 5, troop: 'e_drone', sfx: 'mg' },
+    g_amg: { name: '경비용 AMG-11', rig: 'e_AMG11_N', icon: 'e_AMG11_N', kind: 'arch', move: 'foot', rng: 3, hp: 48, at: 19, df: 9, mov: 2, troop: 'e_amg', sfx: 'mg' },
+    g_pupphead: { name: '경비용 펍 헤드', rig: 'e_PuppHead_N', icon: 'e_PuppHead_N', kind: 'cav', move: 'horse', rng: 1, hp: 62, at: 18, df: 12, mov: 5, troop: 'e_pupp', sfx: 'gun' },
+    g_stinger: { name: '양산형 스팅어', rig: 'e_Stinger_N', icon: 'e_Stinger_N', kind: 'fly', move: 'fly', rng: 2, hp: 50, at: 19, df: 9, mov: 5, troop: 'e_drone', sfx: 'missile' },
+    g_gigantes: { name: '양산형 기간테스', rig: 'e_Gigantes_N', icon: 'e_Gigantes_N', kind: 'pike', move: 'foot', rng: 1, hp: 150, at: 23, df: 24, mov: 3, troop: 'e_amg', skills: ['shell'], big: true, sfx: 'expM' },
+    g_seljuq: { name: '양산형 셀주크', rig: 'e_Seljuq_N', icon: 'e_Seljuq_N', kind: 'arch', move: 'foot', rng: 3, hp: 56, at: 20, df: 10, mov: 3, troop: 'e_amg', sfx: 'mg' },
+    // 5지역 보스: 언더왓쳐 (몸통은 움직이지 않는다)
+    underwatcher: { name: '언더왓쳐', rig: 'e_UnderWatcher_B05', icon: 'e_UnderWatcher_B05', kind: 'arch', move: 'foot', rng: 4, hp: 520, at: 34, df: 24, mov: 0, troop: null, skills: ['plasma'], big: true, sfx: 'laserBig' },
+    uw_arm: { name: '언더왓쳐 암', rig: 'e_UnderWatcherArm_B05', icon: 'e_UnderWatcherArm_B05', kind: 'pike', move: 'foot', rng: 1, hp: 220, at: 30, df: 22, mov: 2, troop: null, skills: ['rampage'], big: true, sfx: 'expM' },
+    uw_gen: { name: '언더왓쳐 제네레이터', rig: 'e_UnderWatcherGenerator_B05', icon: 'e_UnderWatcherGenerator_B05', kind: 'arch', move: 'foot', rng: 3, hp: 180, at: 22, df: 20, mov: 0, troop: null, skills: ['shell'], big: true, sfx: 'elec' },
+    uw_sensor: { name: '언더왓쳐 센서', rig: 'e_UnderWatcherSensor_B05', icon: 'e_UnderWatcherSensor_B05', kind: 'arch', move: 'foot', rng: 5, hp: 140, at: 24, df: 14, mov: 0, troop: null, skills: ['snipe'], big: true, sfx: 'laserBig' },
     predator: { name: '프레데터', rig: 'e_Predator_N', icon: 'e_Predator_N', kind: 'demon', move: 'foot', rng: 1, hp: 300, at: 28, df: 18, mov: 4, troop: null, skills: ['devour'], big: true, sfx: 'swing' },
   };
 
@@ -224,6 +255,7 @@
     { id: 'ch02', no: 2, name: '즐거운 나의 집' },
     { id: 'ch03', no: 3, name: '호문쿨루스' },
     { id: 'ch04', no: 4, name: '깊고 깊은 미궁' },
+    { id: 'ch05', no: 5, name: '기억 보관소' },
   ];
   const STAGES = [
     {
@@ -1019,6 +1051,209 @@
         { turn: 1, at: [6, 3], units: [C('wasp', 49), C('scarab', 49), C('raider', 50), C('scarab', 49), C('wasp', 49), C('scout', 49), C('heavyscout', 49)] },
         { turn: 4, at: [6, 2], boss: 'raiderx', units: [C('scarab', 49), C('heavyscout', 49), C('wasp', 49), C('wasp', 49), C('raiderx', 50), C('scarab', 49), C('heavyscout', 49)] },
       ],
+    },
+    // ── 본작 5지역 「기억 보관소」: 열차가 닿은 비밀 시설. 침입자를 쏘는 AGS와 언더왓쳐를 뚫고 서버를 해킹한다 ──
+    {
+      id: 33, ch: 5, idx: '5-1', title: '역사 건너편', bgm: 'lo_battle1', night: true, goal: '적 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      heroes: ['constantia', 'marie', 'griffon', 'amy', 'coco', 'lrl'],
+      map: [
+        '##cccc##cccc##',
+        '#............#',
+        '#.##..##..##.#',
+        '#.##..##..##.#',
+        '#............#',
+        '#....ssss....#',
+        '#............#',
+        'rrrrrrrrrrrrrr',
+        '..............',
+        'rrrrrrrrrrrrrr',
+        '#............#',
+        '#.....##.....#',
+        '#............#',
+      ],
+      starts: [[5, 12], [8, 12], [4, 12], [9, 12], [6, 12], [7, 12]],
+      waves: [
+        { turn: 1, at: [6, 4], units: [C('g_fallen', 50), C('g_rampart', 50), C('g_drone', 50), C('g_amg', 50), C('g_fallen', 50)] },
+        { turn: 3, at: [11, 1], units: [C('g_pupphead', 50), C('g_amg', 50), C('g_rampart', 50), C('g_pupphead', 50), C('g_amg', 50)] },
+        { turn: 5, at: [2, 1], units: [C('g_rampart', 50), C('g_drone', 50), C('g_pupphead', 50), C('g_amg', 50), C('g_rampart', 50), C('g_fallen', 50)] },
+      ],
+    },
+    {
+      id: 34, ch: 5, idx: '5-2', title: '적이 된 로봇', bgm: 'lo_battle2', night: true, goal: '적 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      heroes: ['constantia', 'marie', 'griffon', 'amy', 'coco', 'lrl'],
+      map: [
+        '##############',
+        '#cc.c#..#c.cc#',
+        '#....#..#....#',
+        '#............#',
+        '###.##..##.###',
+        '#............#',
+        '#.cc......cc.#',
+        '#.cc..ss..cc.#',
+        '#............#',
+        '###.##..##.###',
+        '#............#',
+        '#.....rr.....#',
+        '######rr######',
+      ],
+      starts: [[6, 11], [7, 11], [6, 12], [7, 12], [5, 11], [8, 11]],
+      waves: [
+        { turn: 1, at: [6, 5], units: [C('g_rampart', 52), C('g_pupphead', 52), C('g_amg', 52), C('g_stinger', 52), C('g_rampart', 52), C('g_pupphead', 52)] },
+        { turn: 3, at: [11, 2], units: [C('g_drone', 52), C('g_stinger', 52), C('g_amg', 52), C('g_fallen', 52), C('g_drone', 52), C('g_stinger', 52)] },
+        { turn: 5, at: [2, 2], units: [C('g_drone', 52), C('g_gigantes', 53), C('g_amg', 52), C('g_stinger', 52), C('g_drone', 52), C('g_stinger', 52)] },
+      ],
+    },
+    {
+      id: 35, ch: 5, idx: '5-3', title: '1번 서버 구역', bgm: 'lo_battle2', night: true, goal: '적 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      heroes: ['constantia', 'marie', 'griffon', 'amy', 'coco', 'lrl'],
+      // 서버실: 서버 장비 줄 사이 통로
+      map: [
+        '##############',
+        '#............#',
+        '#.cc.cc.cc.c.#',
+        '#............#',
+        '#.cc.cc.cc.c.#',
+        '#............#',
+        '#.cc.cc.cc.c.#',
+        '#............#',
+        '#.cc.cc.cc.c.#',
+        '#............#',
+        '#.....ss.....#',
+        '#............#',
+        '######rr######',
+      ],
+      starts: [[6, 11], [7, 11], [6, 12], [7, 12], [5, 11], [8, 11]],
+      waves: [
+        { turn: 1, at: [6, 5], units: [C('g_rampart', 54), C('g_pupphead', 54), C('g_pupphead', 54), C('g_amg', 54), C('g_rampart', 54), C('g_pupphead', 54)] },
+        { turn: 3, at: [11, 1], units: [C('g_drone', 54), C('g_amg', 54), C('g_rampart', 54), C('g_seljuq', 54), C('g_drone', 54), C('g_fallen', 54)] },
+        { turn: 5, at: [2, 1], units: [C('g_rampart', 54), C('g_pupphead', 54), C('g_seljuq', 54), C('g_pupphead', 54), C('g_amg', 54), C('g_seljuq', 54)] },
+      ],
+    },
+    {
+      id: 36, ch: 5, idx: '5-4', title: '옆 길 데이터', bgm: 'lo_battle1', night: true, goal: '트릭스터 격파', lose: '콘스탄챠 퇴각', win: 'boss',
+      heroes: ['constantia', 'marie', 'griffon', 'amy', 'lrl', 'fallen'],
+      map: [
+        '##############',
+        '#cc..#..#..cc#',
+        '#....#..#....#',
+        '#..........s.#',
+        '##.###..###.##',
+        '#............#',
+        '#.##.c..c.##.#',
+        '#.##......##.#',
+        '#............#',
+        '##.###..###.##',
+        '#.s..........#',
+        '#.....rr.....#',
+        '######rr######',
+      ],
+      starts: [[6, 11], [7, 11], [6, 12], [7, 12], [5, 11], [8, 11]],
+      waves: [
+        { turn: 1, at: [6, 5], units: [C('g_rampart', 56), C('g_amg', 56), C('g_pupphead', 56), C('g_fallen', 56), C('g_rampart', 56), C('g_amg', 56)] },
+        { turn: 3, at: [6, 1], boss: 'trickster', units: [C('g_drone', 56), C('g_seljuq', 56), C('g_gigantes', 56), C('trickster', 57), C('g_stinger', 56), C('g_drone', 56), C('g_seljuq', 56)] },
+      ],
+    },
+    {
+      id: 37, ch: 5, idx: '5-5', title: '전문가가 필요해!', bgm: 'lo_battle1', goal: '적 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      heroes: ['constantia', 'marie', 'griffon', 'amy', 'coco', 'lrl'],
+      map: [
+        'mm...ff...hhmm',
+        'm...fff....h.m',
+        '....f..rr.....',
+        '.hh....r..ff..',
+        '.h.....r.fff..',
+        '.......r......',
+        'ss..rrrr...ss.',
+        's...r.......s.',
+        '....r..ff.....',
+        '.ff.r.fff..hh.',
+        'fff.r..f...h..',
+        '.f..r.........',
+        '....r.........',
+      ],
+      starts: [[4, 12], [3, 12], [5, 11], [3, 11], [5, 12], [4, 11]],
+      waves: [
+        { turn: 1, at: [7, 5], units: [C('g_rampart', 58), C('g_pupphead', 58), C('g_drone', 58), C('g_seljuq', 58), C('g_rampart', 58), C('g_pupphead', 58)] },
+        { turn: 3, at: [11, 7], units: [C('g_rampart', 58), C('g_seljuq', 58), C('g_amg', 58), C('g_rampart', 58), C('g_fallen', 58), C('g_amg', 58)] },
+        { turn: 5, at: [8, 2], units: [C('g_rampart', 58), C('g_pupphead', 58), C('g_gigantes', 58), C('g_seljuq', 58), C('g_rampart', 58), C('g_pupphead', 58)] },
+        { turn: 7, at: [2, 2], units: [C('g_gigantes', 58), C('g_pupphead', 58), C('g_seljuq', 58), C('g_stinger', 58), C('g_stinger', 58), C('g_seljuq', 58)] },
+      ],
+    },
+    {
+      id: 38, ch: 5, idx: '5-6', title: '스카디', bgm: 'lo_battle2', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      heroes: ['constantia', 'griffon', 'lrl', 'marie', 'amy', 'coco'],
+      // 비행기가 떨어진 숲: 가운데 잔해 둘레로 철충이 몰려든다
+      map: [
+        'ffff....ffffff',
+        'fff..hh...ffff',
+        'ff...h......ff',
+        'f.....##.....f',
+        '.....#ss#.....',
+        '.ff...ss...ff.',
+        'fff........fff',
+        '.f...rrrr...f.',
+        '.....r..r.....',
+        'ff...r..r...ff',
+        'fff..r..r..fff',
+        'ff...r..r...ff',
+        'f....r..r....f',
+      ],
+      starts: [[5, 12], [8, 12], [5, 11], [8, 11], [6, 12], [7, 12]],
+      waves: [
+        { turn: 1, at: [6, 5], units: [C('scout', 60), C('wasp', 60), C('scarab', 60), C('heavyscout', 60), C('scout', 60), C('wasp', 60)] },
+        { turn: 2, at: [1, 7], units: [C('scout', 60), C('wasp', 60), C('scarab', 60), C('heavyscout', 60), C('scout', 60), C('wasp', 60)] },
+        { turn: 3, at: [12, 7], units: [C('heavyscout', 60), C('scarab', 60), C('wasp', 60), C('heavyscout', 60), C('heavyscout', 60), C('scarab', 60)] },
+        { turn: 5, at: [4, 1], units: [C('legion', 60), C('sniper', 60), C('detector', 60), C('phalanx', 60), C('phalanx', 60), C('sniper', 60)] },
+        { turn: 7, at: [9, 1], units: [C('legion', 60), C('phalanx', 60), C('centurion', 64), C('sniper', 60), C('sniper', 60), C('phalanx', 60), C('phalanx', 60)] },
+      ],
+    },
+    {
+      id: 39, ch: 5, idx: '5-7', title: '해킹 시작', bgm: 'lo_battle2', night: true, goal: '적 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      heroes: ['constantia', 'marie', 'griffon', 'scathy', 'coco', 'lrl'],
+      map: [
+        '##############',
+        '#c..c....c..c#',
+        '#............#',
+        '#.##.####.##.#',
+        '#............#',
+        '#..s..cc..s..#',
+        '#.....cc.....#',
+        '#............#',
+        '#.##.####.##.#',
+        '#............#',
+        '#.c........c.#',
+        '#.....rr.....#',
+        '######rr######',
+      ],
+      starts: [[6, 11], [7, 11], [6, 12], [7, 12], [5, 11], [8, 11]],
+      waves: [
+        { turn: 1, at: [6, 4], units: [C('g_rampart', 62), C('g_amg', 62), C('g_pupphead', 62), C('g_fallen', 62), C('g_seljuq', 62), C('g_rampart', 62), C('g_amg', 62)] },
+        { turn: 3, at: [11, 2], units: [C('g_drone', 62), C('g_stinger', 62), C('g_gigantes', 62), C('g_pupphead', 62), C('g_seljuq', 62), C('g_drone', 62), C('g_stinger', 62)] },
+        { turn: 5, at: [2, 2], units: [C('g_gigantes', 62), C('g_amg', 62), C('g_seljuq', 62), C('g_rampart', 62), C('g_rampart', 62), C('g_pupphead', 62), C('g_seljuq', 62)] },
+      ],
+    },
+    {
+      id: 40, ch: 5, idx: '5-8', title: '깊고 깊은 감시자', bgm: 'lo_boss1', night: true, goal: '언더왓쳐 격파', lose: '콘스탄챠 퇴각', win: 'boss',
+      heroes: ['constantia', 'marie', 'griffon', 'scathy', 'coco', 'lrl'],
+      // 심연의 방: 맨 위에 버틴 언더왓쳐 몸통과 팔·발전기·센서
+      map: [
+        '##############',
+        '#cc........cc#',
+        '#c..........c#',
+        '#............#',
+        '#..s......s..#',
+        '#............#',
+        '#.##......##.#',
+        '#.##......##.#',
+        '#............#',
+        '#..s......s..#',
+        '#............#',
+        '#.....rr.....#',
+        '#.....rr.....#',
+        '######rr######',
+      ],
+      starts: [[6, 12], [7, 12], [6, 11], [7, 11], [5, 12], [8, 12]],
+      waves: [{ turn: 1, at: [6, 2], boss: 'underwatcher', units: [C('uw_sensor', 70), C('underwatcher', 70), C('uw_gen', 70), C('uw_arm', 70)] }],
     },
   ];
 

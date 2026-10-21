@@ -42,7 +42,8 @@ UNITS = {
 # 대화 일러스트 (원작 2DModel 프리팹 + 로비 움직임): "p_<영웅>" -> 모델 이름
 PORTRAITS = {"p_constantia": "3P_ConstantiaS2_N", "p_griffon": "BR_PA00EL_N", "p_johanna": "DS_Johanna_N", "p_lrl": "PECS_LRL_N",
              "p_pupphead": "PECS_PuppHead_N", "p_fallen": "AGS_Fallen_N",
-             "p_amy": "BR_Amy_N", "p_coco": "PECS_CoCoWhiteShell_N", "p_marie": "BR_Marie_N"}
+             "p_amy": "BR_Amy_N", "p_coco": "PECS_CoCoWhiteShell_N", "p_marie": "BR_Marie_N",
+             "p_scathy": "BR_Scathy_N"}
 PORTRAIT_DIR = ROOT + "/AssetBundleResource/Character_2D"
 FACE_DIR = ROOT + "/AssetBundleResource/Texture/face"
 PORTRAIT_ATLAS = (0.62, 0.42)  # 일러스트는 화면 높이만큼 크게 그리므로 원본 해상도 기준으로 더 크게 남긴다 (PC, 휴대폰)

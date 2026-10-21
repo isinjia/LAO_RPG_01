@@ -122,7 +122,7 @@
   }
   // 모서리 인물 그림: 아군 영웅은 대화용 전신 그림의 윗몸, 그림이 없는 적은 얼굴 아이콘을 틀에 넣는다
   const STAND = { constantia: '3P_ConstantiaS2_N_Resolve', griffon: 'BR_PA00EL_N_Resolve', johanna: 'DS_Johanna_N_Serious', lrl: 'PECS_LRL_N_Idle', pupphead: 'PECS_PuppHead_N', fallen: 'AGS_Fallen_N',
-    amy: 'BR_Amy_N_Serious', coco: 'PECS_CoCoWhiteShell_N_Smile', marie: 'BR_Marie_N_Pride' };
+    amy: 'BR_Amy_N_Serious', coco: 'PECS_CoCoWhiteShell_N_Smile', marie: 'BR_Marie_N_Pride', scathy: 'BR_Scathy_N_Elegance' };
   const WHOLE = new Set(['pupphead', 'fallen']); // 기계 몸이라 전신을 통째로 줄여 넣는다
   function shakeBust(side) { const b = el().querySelector('.fcorner.' + side + ' .fbust'); b.classList.remove('hit'); void b.offsetWidth; b.classList.add('hit'); }
 
