@@ -78,6 +78,32 @@ def bgm(n):
     return {'07 BGM_Talk_01': 'lo_talk1', '08 BGM_Talk_02': 'lo_talk2', '09 BGM_Talk_03': 'lo_talk3'}.get(n) or ('lo_' + n.split(' ', 1)[-1].replace('BGM_', '').lower() if n else 'lo_talk1')
 
 
+def rewrite(story):
+    """원작 대본에서 게임에 맞지 않는 곳을 고친다.
+    1-1 이름 등록: 원작은 닉네임 입력 창이 뜨지만 여기엔 없으므로, 이름이 기억나지 않는다고 답하고
+    콘스탄챠가 '사령관님'이라고 불러도 되는지 묻고 사령관이 받아들이는 흐름으로 바꾼다."""
+    s = story.get('1-1')
+    if not s:
+        return
+    nodes = s['start']
+    ask = next((n for n in nodes if '사령관 이름 등록' in (n['t'] or '')), None)
+    done = next((n for n in nodes if (n['t'] or '').startswith('사령관님이시군요')), None)
+    if not ask or not done:
+        return
+    cast = lambda face: [[p, face if p == 'R' else st, d] for p, st, d in done['cast']]
+    i = nodes.index(done)
+    ask['ch'] = [['…이름이 기억나지 않아.', 9101]]
+    new = [
+        {**done, 'id': 9101, 'face': '3P_ConstantiaS2_N_Worry', 'cast': cast('3P_ConstantiaS2_N_Worry'), 'next': 9102, 'ch': [],
+         't': '이름이 기억나지 않으세요?\n깨어나신 지 얼마 안 되셔서 그런 걸까요…'},
+        {**done, 'id': 9102, 'face': '3P_ConstantiaS2_N_Smile', 'cast': cast('3P_ConstantiaS2_N_Smile'), 'next': None,
+         'ch': [['일단 그렇게 하자.', done['id']]],
+         't': "그럼… 저희에게 명령을 내려 주실 분이니,\n우선 '사령관님'이라고 불러도 될까요?"},
+    ]
+    done['t'] = '네, 사령관님.\n바이오로이드 데이터베이스에 임시 등록을 완료했어요.'
+    nodes[i:i] = new
+
+
 def main():
     S = json.load(open(os.path.join(ROOT, 'tools', 'story_%s.json' % CH), encoding='utf8'))
     story = {}
@@ -105,6 +131,7 @@ def main():
                 if n.get('fade'): o['fade'] = n['fade']
             parts[part] = nodes
         story[s['idx']] = {'name': s['name'], 'desc': s['desc'], 'bgmStart': bgm(s.get('bgm_start')), 'bgmEnd': bgm(s.get('bgm_end')), **parts}
+    rewrite(story)
     with open(os.path.join(ROOT, 'js', 'story.js'), 'w', encoding='utf8') as f:
         f.write('// tools/build_story.py 로 생성: 본작 메인 스토리 대본 (선택지 갈래 포함)\nwindow.STORY = Object.assign(window.STORY || {}, ' + json.dumps(story, ensure_ascii=False) + ');\n')
     # 초상화를 js/assets.js 에 합친다
