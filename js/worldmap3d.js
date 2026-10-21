@@ -1,6 +1,6 @@
 // 원작 3D 지역 지도를 브라우저에서 그대로 그린다 (tools/build_world3d.py 로 만든 assets/world/<장>/scene.*).
 // 원작 셰이더(홀로그램 가산·바닥 단색·그림 조각)를 같은 식으로 옮겼고, 원작은 감마 색 공간이라 색 변환 없이 값 그대로 더한다.
-// 카메라는 작전마다 원작 애니메이터 클립(초당 15번 표본)을 그대로 돌리고, 작전을 바꾸면 지금 자세에서 부드럽게 이어 간다.
+// 카메라는 위에서 비스듬히 내려다보는 쿼터뷰로 고정하고, 유저가 끌어서 돌리고 휠·두 손가락으로 당기고 민다.
 (function () {
   const VS = 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }';
   // LastOne/LO_Hologram_additive_worldmap
@@ -115,60 +115,73 @@
     return { S, scene, clips, ground, marker, scroll, stages: S.stages.map((s) => s.pos), town: S.town, center: S.stages.reduce((a, s) => a.add(new THREE.Vector3().fromArray(s.pos)), new THREE.Vector3()).multiplyScalar(1 / S.stages.length) };
   }
 
-  // ── 카메라 ──
+  // ── 카메라: 위에서 비스듬히 내려다보는 쿼터뷰 고정. 끌어서 돌리고, 휠·두 손가락으로 당기고 민다 ──
+  // 처음 방향은 원작 지도 카메라(전체 둘러보기 클립의 첫 자세)가 보던 쪽. 돌린 방향·거리는 다시 들어와도 그대로
   const camera = new THREE.PerspectiveCamera(45, 16 / 9, 0.3, 1000);
-  const cam = { clip: null, start: 0, from: null, blend: 0 };
-  const _p = new THREE.Vector3(), _q = new THREE.Quaternion(), _p2 = new THREE.Vector3(), _q2 = new THREE.Quaternion();
-  function sample(c, t, P, Q) {
-    const n = c.d.length / 7 - 1, f = ((t % c.len) / c.len) * n, i = Math.min(n - 1, Math.floor(f)), k = f - i, a = i * 7, b = a + 7, d = c.d;
-    P.set(d[a] + (d[b] - d[a]) * k, d[a + 1] + (d[b + 1] - d[a + 1]) * k, d[a + 2] + (d[b + 2] - d[a + 2]) * k);
-    Q.set(d[a + 3], d[a + 4], d[a + 5], d[a + 6]);
-    _q2.set(d[b + 3], d[b + 4], d[b + 5], d[b + 6]);
-    Q.slerp(_q2, k);
+  const PITCH = (45 * Math.PI) / 180, DIST = 1.5, DMIN = 0.6, DMAX = 2.6;
+  const orbit = { yaw: null, dist: DIST };
+  const _p = new THREE.Vector3();
+  function initYaw() {
+    const c = cur.clips[cur.S.overview].d; // 첫 표본: 위치 3 + 회전 4
+    const f = new THREE.Vector3(0, 0, -1).applyQuaternion(new THREE.Quaternion(c[3], c[4], c[5], c[6]));
+    orbit.yaw = Math.atan2(-f.x, -f.z); // 카메라가 서는 쪽(보는 방향의 반대)
   }
-  // 작전 바꾸기: 그 작전의 원작 카메라 클립을 처음부터, 지금 자세에서 BLEND초 동안 섞어 들어간다
-  const BLEND = 1.8, MAXD = 1.5;
-  function setClip(name, instant) {
-    if (!cur || !cur.clips[name]) return;
-    if (cam.clip === cur.clips[name]) return;
-    cam.from = instant || !cam.clip ? null : { p: camera.position.clone(), q: camera.quaternion.clone() };
-    cam.clip = cur.clips[name];
-    cam.start = time.value;
-  }
-  // 확인용: ?wm=상태@초 → 그 클립의 그 순간에 카메라를 세운다 (tools/unity_ref 의 ref_*.png 와 견주기)
-  const FREEZE = (/[?&]wm=([\w]+)@([\d.]+)/.exec(location.search) || []).slice(1);
   function updateCamera() {
-    if (FREEZE.length && cur.clips[FREEZE[0]]) { cam.clip = cur.clips[FREEZE[0]]; cam.from = null; cam.start = time.value - +FREEZE[1]; }
-    if (!cam.clip) return;
-    const t = time.value - cam.start;
-    sample(cam.clip, t, _p, _q);
-    if (cam.from && t < BLEND) {
-      const k = t / BLEND, e = k * k * (3 - 2 * k);
-      _p2.copy(cam.from.p).lerp(_p, e); _q2.copy(cam.from.q).slerp(_q, e);
-      camera.position.copy(_p2); camera.quaternion.copy(_q2);
-    } else { cam.from = null; camera.position.copy(_p); camera.quaternion.copy(_q); }
-    // 원작 클립의 먼 장면은 작전 지점이 겹쳐 누르기 어려워, 작전 지점들의 가운데를 향해 maxD 거리까지 당긴다.
-    // 그 가운데를 잇는 선 위로만 움직이므로 화면 속 자리와 원작 카메라 각도는 그대로, 크기만 커진다 (가까운 장면은 그대로)
-    if (!FREEZE.length) {
-      _p2.copy(cur.center).sub(camera.position);
-      const d = _p2.length();
-      if (d > maxD) camera.position.addScaledVector(_p2, (d - maxD) / d);
-    }
+    const d = orbit.dist * distK, c = cur.center;
+    camera.position.set(c.x + Math.sin(orbit.yaw) * Math.cos(PITCH) * d, c.y + Math.sin(PITCH) * d, c.z + Math.cos(orbit.yaw) * Math.cos(PITCH) * d);
+    camera.lookAt(c);
     camera.updateMatrixWorld();
   }
 
   // 원작은 16:9 가로 기준(세로 시야 45°). 더 좁은 화면에서는 가로 시야를 지키도록 세로 시야를 넓히고,
-  // 가로로 보이는 폭이 좁아진 만큼 카메라를 더 당겨(maxD) 지점 간격을 16:9 때와 비슷하게 둔다.
-  // 세로 화면은 원작 구도대로면 지점들이 옆으로 잘리므로 지점들 가운데를 가로 가운데에 두고, 아래를 덮는 정보 창을 피해 조금 위로 올린다
+  // 가로로 보이는 폭이 좁아진 만큼 조금 더 당겨(distK) 지점 간격을 16:9 때와 비슷하게 둔다.
+  // 세로 화면은 아래 절반을 정보 창이 덮으므로 그림을 위로 조금 올린다
   const TAN = Math.tan((22.5 * Math.PI) / 180);
-  let maxD = MAXD;
+  let distK = 1;
   function fit(w, h) {
     const a = w / h, ref = a < 1 ? 1 : 16 / 9;
     camera.aspect = a;
     camera.fov = a >= ref ? 45 : (2 * Math.atan(TAN * (ref / a)) * 180) / Math.PI;
-    camera.clearViewOffset();
+    if (a < 1) camera.setViewOffset(w, h, 0, h * 0.12, w, h); else camera.clearViewOffset();
     camera.updateProjectionMatrix();
-    maxD = MAXD * Math.sqrt(Math.min(1, (Math.tan((camera.fov * Math.PI) / 360) * a) / (TAN * 16 / 9)));
+    distK = Math.sqrt(Math.min(1, (Math.tan((camera.fov * Math.PI) / 360) * a) / (TAN * 16 / 9)));
+  }
+
+  // 끌기: 6px 넘게 움직이면 돌리기로 보고, 그 뒤 따라오는 누르기(걷기·지점 고르기)는 막는다
+  const ptrs = new Map();
+  let drag = null, eatClick = false;
+  function bindInput(el) {
+    if (el._wm3d) return;
+    el._wm3d = true;
+    el.addEventListener('pointerdown', (e) => {
+      ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (ptrs.size === 1) drag = { x: e.clientX, y: e.clientY, yaw: orbit.yaw, moved: false };
+      else if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; drag = { pinch: Math.hypot(a.x - b.x, a.y - b.y), dist: orbit.dist, moved: true }; }
+    });
+    el.addEventListener('pointermove', (e) => {
+      if (!ptrs.has(e.pointerId) || !drag) return;
+      ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (drag.pinch) {
+        if (ptrs.size < 2) return;
+        const [a, b] = [...ptrs.values()];
+        orbit.dist = Math.min(DMAX, Math.max(DMIN, drag.dist * drag.pinch / Math.max(1, Math.hypot(a.x - b.x, a.y - b.y))));
+        return;
+      }
+      const dx = e.clientX - drag.x;
+      if (!drag.moved && Math.hypot(dx, e.clientY - drag.y) < 6) return;
+      if (!drag.moved) { drag.moved = true; try { el.setPointerCapture(e.pointerId); } catch (_) {} }
+      orbit.yaw = drag.yaw - (dx / Math.max(320, el.clientWidth)) * Math.PI * 1.5;
+    });
+    const up = (e) => {
+      ptrs.delete(e.pointerId);
+      if (drag && drag.moved) eatClick = true;
+      if (!ptrs.size) drag = null;
+    };
+    el.addEventListener('pointerup', up);
+    el.addEventListener('pointercancel', up);
+    el.addEventListener('click', (e) => { if (eatClick) { eatClick = false; e.stopPropagation(); e.preventDefault(); } }, true);
+    el.addEventListener('pointerdown', () => { eatClick = false; }, true);
+    el.addEventListener('wheel', (e) => { e.preventDefault(); orbit.dist = Math.min(DMAX, Math.max(DMIN, orbit.dist * Math.exp(e.deltaY * 0.001))); }, { passive: false });
   }
 
   let marker = null;
@@ -192,11 +205,6 @@
       cur.marker.material.opacity = k < 0.691 ? 1 : 1 - (k - 0.691) / 0.309;
     }
     updateCamera();
-    if (w < h) {
-      camera.clearViewOffset(); camera.updateProjectionMatrix();
-      const cx = _p.copy(cur.center).project(camera).x * w / 2;
-      camera.setViewOffset(w, h, cx, h * 0.08, w, h); camera.updateProjectionMatrix();
-    }
     R.render(cur.scene, camera);
     for (const cb of frameCbs) cb();
   }
@@ -204,7 +212,7 @@
   window.WM3D = {
     load,
     // 지도 화면 안 el 에 그림판을 붙이고 그리기 시작. 그림판이 화면에서 빠지면 저절로 멈춘다
-    async mount(el, ch, clip) {
+    async mount(el, ch) {
       host = el; frameCbs = []; marker = null;
       if (!R) {
         canvas = document.createElement('canvas');
@@ -215,8 +223,8 @@
       canvas.classList.remove('on');
       cur = await load(ch);
       if (host !== el || !el.isConnected) return false;
-      cam.clip = null;
-      setClip(clip, true);
+      if (orbit.yaw == null) initYaw();
+      bindInput(el);
       fit(el.clientWidth || 16, el.clientHeight || 9);
       time.value = (performance.now() - t0) / 1000;
       updateCamera();
@@ -226,7 +234,6 @@
     },
     get ready() { return !!(cur && running && canvas && canvas.isConnected); },
     get data() { return cur; },
-    setClip,
     // 작전 지점 표시를 그 자리(3D)에. null 이면 끈다
     setMarker(p) { marker = p; if (cur) { cur.marker.visible = !!p; if (p) cur.marker.position.set(p[0], p[1] + 0.012, p[2]); } },
     onFrame(cb) { frameCbs.push(cb); },
