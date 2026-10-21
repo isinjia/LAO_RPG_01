@@ -533,22 +533,22 @@
 }
 
 /* ── 월드맵 챕터 목록 (원작 월드맵 탭 그림: 노랑 = 지금 챕터, 회색 = 다른 챕터) ── */
-.wchapbtn { position: absolute; z-index: 3; right: 0; top: calc(78px + var(--safe-t)); width: 132px; height: 72px; padding: 6px 14px 14px 30px; border: 0; border-radius: 0;
+.wchlbtn { position: absolute; z-index: 3; right: 0; top: calc(78px + var(--safe-t)); width: 132px; height: 72px; padding: 6px 14px 14px 30px; border: 0; border-radius: 0;
   background: url(../assets/ui/UI_WolrdMap_tab_active.png) 0 0 / 100% 100% no-repeat; color: #111; text-align: left; display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: 6px; filter: drop-shadow(0 3px 8px #0009); }
-.wchapbtn small { grid-column: 1 / -1; font: 10px 'LO_B', sans-serif; letter-spacing: 2px; }
-.wchapbtn b { font: 26px/1 'LO_B', sans-serif; }
-.wchapbtn span { align-self: end; font: 12px 'LO_B', sans-serif; }
-.wchapbtn:hover { filter: drop-shadow(0 3px 8px #0009) brightness(1.08); }
-.wchap { position: absolute; z-index: 4; right: 0; top: 0; bottom: 0; width: min(380px, 86vw); padding: calc(14px + var(--safe-t)) calc(12px + var(--safe-r)) calc(12px + var(--safe-b)) 18px;
+.wchlbtn small { grid-column: 1 / -1; font: 10px 'LO_B', sans-serif; letter-spacing: 2px; }
+.wchlbtn b { font: 26px/1 'LO_B', sans-serif; }
+.wchlbtn span { align-self: end; font: 12px 'LO_B', sans-serif; }
+.wchlbtn:hover { filter: drop-shadow(0 3px 8px #0009) brightness(1.08); }
+.wchl { position: absolute; z-index: 4; right: 0; top: 0; bottom: 0; width: min(380px, 86vw); padding: calc(14px + var(--safe-t)) calc(12px + var(--safe-r)) calc(12px + var(--safe-b)) 18px;
   background: linear-gradient(90deg, rgba(8, 11, 18, .0), rgba(8, 11, 18, .92) 28px); transform: translateX(105%); transition: transform .28s ease; display: flex; flex-direction: column; }
-.wchap.on { transform: none; }
-.wchap-h { position: relative; display: flex; flex-direction: column; padding: 4px 70px 8px 16px; margin-bottom: 10px; border: 0 solid transparent; border-image: url(../assets/ui/UI_WolrdMap_Titlebg.png) 0 64 0 3 fill / 0 64px 0 3px; }
-.wchap-h small { color: var(--lo-y); font: 11px 'LO_B', sans-serif; letter-spacing: 2px; }
-.wchap-h b { color: #fff; font: 20px 'LO_B', sans-serif; }
-.wchap-x { position: absolute; right: -4px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; padding: 0; border: 0; background: none; }
-.wchap-x::before, .wchap-x::after { content: ''; position: absolute; left: 8px; right: 8px; top: 17px; height: 2px; background: #fff; transform: rotate(45deg); }
-.wchap-x::after { transform: rotate(-45deg); }
-.wchap-l { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 4px; }
+.wchl.on { transform: none; }
+.wchl-h { position: relative; display: flex; flex-direction: column; padding: 4px 70px 8px 16px; margin-bottom: 10px; border: 0 solid transparent; border-image: url(../assets/ui/UI_WolrdMap_Titlebg.png) 0 64 0 3 fill / 0 64px 0 3px; }
+.wchl-h small { color: var(--lo-y); font: 11px 'LO_B', sans-serif; letter-spacing: 2px; }
+.wchl-h b { color: #fff; font: 20px 'LO_B', sans-serif; }
+.wchl-x { position: absolute; right: -4px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; padding: 0; border: 0; background: none; }
+.wchl-x::before, .wchl-x::after { content: ''; position: absolute; left: 8px; right: 8px; top: 17px; height: 2px; background: #fff; transform: rotate(45deg); }
+.wchl-x::after { transform: rotate(-45deg); }
+.wchl-l { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 4px; }
 .wch { position: relative; flex: none; display: flex; align-items: center; gap: 10px; height: 74px; padding: 6px 16px 10px 22px; border: 0; border-radius: 0; text-align: left; color: #fff;
   background: url(../assets/ui/UI_WolrdMap_tab_deactive.png) 0 0 / 100% 100% no-repeat; }
 .wch.on { background-image: url(../assets/ui/UI_WolrdMap_tab_active.png); color: #111; }
@@ -563,8 +563,15 @@
 .wch .lk { position: absolute; left: 36px; top: 20px; width: 34px; height: 34px; background: url(../assets/ui/UI_WolrdMap_Chapter_Icon_Lock_Yel.png) center / contain no-repeat; pointer-events: none; }
 .wch:not(.on):not(.lock):hover { filter: brightness(1.15); }
 @media (orientation: portrait) {
-  .wchapbtn { top: calc(70px + var(--safe-t)); width: 112px; height: 62px; padding: 5px 10px 12px 24px; }
-  .wchapbtn b { font-size: 22px; }
+  .wchlbtn { top: calc(70px + var(--safe-t)); width: 112px; height: 62px; padding: 5px 10px 12px 24px; }
+  .wchlbtn b { font-size: 22px; }
 }
-.wscr:has(.winfo.on) .wchapbtn { opacity: 0; pointer-events: none; }
-.wchapbtn { transition: opacity .2s; }
+.wscr:has(.winfo.on) .wchlbtn { opacity: 0; pointer-events: none; }
+.wchlbtn { transition: opacity .2s; }
+/* 월드맵 지역 넘기기: 제목 옆의 깎인 단추 두 개 (지나온 지역을 다시 찾아갈 때) */
+.wchap { display: flex; align-items: center; gap: 2px; margin-left: 10px; font: 13px 'LO_B', sans-serif; color: #cfd5e2; }
+.wchap span { padding: 0 8px; min-width: 44px; text-align: center; letter-spacing: 1px; }
+.wchap button { width: 30px; height: 30px; padding: 0; border: 0; border-radius: 0; background: rgba(10, 14, 22, .85); color: var(--lo-y); font: 20px 'LO_B', sans-serif; line-height: 1;
+  box-shadow: inset 0 0 0 1px rgba(255, 204, 0, .5); clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%); }
+.wchap button:disabled { color: #4b5263; box-shadow: inset 0 0 0 1px var(--lo-line); cursor: default; }
+.wchap button:not(:disabled):hover { background: var(--lo-y); color: #111; }

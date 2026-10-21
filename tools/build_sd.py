@@ -34,11 +34,16 @@ UNITS = {
     "brownie": "BR_Brownie_N", "gnome": "BR_Gnome_N", "leprechaun": "BR_Leprechaun_N", "sylphid": "BR_Sylphid_N", "harpy": "BR_Harpy_N",
     # 이후 지역용
     "labiata": "3P_Labiata_N", "leona": "BR_Leona_N", "khan": "BR_Khan_N", "daphne": "3P_Daphne_N", "brunhild": "BR_Brunhild_N", "fafnir": "BR_Fafnir_N",
+    # 2~6지역 본작 스토리 합류 인원
+    "amy": "BR_Amy_N", "coco": "PECS_CoCoWhiteShell_N", "marie": "BR_Marie_N", "aeda": "AGS_Aeda_N", "tomoe": "BR_Tomoe_N",
+    "vanilla": "3P_Vanilla_N", "scathy": "BR_Scathy_N", "may": "BR_May_N", "nightangel": "BR_NightAngel_N", "daika": "BR_Daika_N",
 }
 
 # 대화 일러스트 (원작 2DModel 프리팹 + 로비 움직임): "p_<영웅>" -> 모델 이름
 PORTRAITS = {"p_constantia": "3P_ConstantiaS2_N", "p_griffon": "BR_PA00EL_N", "p_johanna": "DS_Johanna_N", "p_lrl": "PECS_LRL_N",
-             "p_pupphead": "PECS_PuppHead_N", "p_fallen": "AGS_Fallen_N"}
+             "p_pupphead": "PECS_PuppHead_N", "p_fallen": "AGS_Fallen_N",
+             "p_amy": "BR_Amy_N", "p_coco": "PECS_CoCoWhiteShell_N", "p_marie": "BR_Marie_N",
+             "p_scathy": "BR_Scathy_N"}
 PORTRAIT_DIR = ROOT + "/AssetBundleResource/Character_2D"
 FACE_DIR = ROOT + "/AssetBundleResource/Texture/face"
 PORTRAIT_ATLAS = (0.62, 0.42)  # 일러스트는 화면 높이만큼 크게 그리므로 원본 해상도 기준으로 더 크게 남긴다 (PC, 휴대폰)
@@ -72,6 +77,13 @@ def v3_from(d, dv):
 ENEMIES = {k: "Model_MP_" + k for k in """NightChick_N NightChickM_N NightChickS_N BigChick_N Stalker_B0108
 Drone_N Legion_N Phalangites_N BlackKnight_N EmperorChick_N Goltarion_N Executioner_EW IronPrince_N""".split()}
 ENEMIES["Predator_N"] = "Model_MP_Predator_EW"
+# 2~6지역 철충·적 AGS (원작 Table_Monster 의 MonsterModelID)
+ENEMIES.update({k: "Model_MP_" + k for k in """Scout_N Scout_V2 NightChickC_N FABigChick_N NightChickSI_N Zapper_N Kidnapper_B0504
+NightChickSP_N NightChickDE_N Wasp_N NightChickCM_N Scarab_N Raider_B04 Harvester_N Centurion_N
+Fallen_N Rampart_N PuppHead_N Gigantes_N AMG11_N Stinger_N Seljuq_N
+UnderWatcher_B05 UnderWatcherArm_B05 UnderWatcherGenerator_B05 UnderWatcherSensor_B05
+NightChickQM_N LegionSP_N Tortoise_N CenturionCF_N ExpGoblinT_N ExpGoblinA_N ExpGenerator2_N ExecutionerLB_B06 ExecutionerRB_B06
+ProgramMobTS_N ProgramMobTN_N ProgramMobMT_N ProgramMobTT_N ProgramMobMN_N ProgramMobMS_N ProgramMobAS_N ProgramMobAN_N ProgramMobAT_N""".split()})
 MONSTER_DIR = ROOT + "/AssetBundleResource/monster"
 
 CLIPS = {

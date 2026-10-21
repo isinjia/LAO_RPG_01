@@ -4,7 +4,8 @@
 // 리그를 불러오는 동안에는 같은 구도의 정지 그림(assets/story/stand)을 대신 그린다.
 (function () {
   // 대본의 그림 이름 앞부분(모델) -> 리그
-  const MODELS = { '3P_ConstantiaS2_N': 'p_constantia', BR_PA00EL_N: 'p_griffon', DS_Johanna_N: 'p_johanna', PECS_LRL_N: 'p_lrl', PECS_PuppHead_N: 'p_pupphead', AGS_Fallen_N: 'p_fallen' };
+  const MODELS = { '3P_ConstantiaS2_N': 'p_constantia', BR_PA00EL_N: 'p_griffon', DS_Johanna_N: 'p_johanna', PECS_LRL_N: 'p_lrl', PECS_PuppHead_N: 'p_pupphead', AGS_Fallen_N: 'p_fallen',
+    BR_Amy_N: 'p_amy', PECS_CoCoWhiteShell_N: 'p_coco', BR_Marie_N: 'p_marie', BR_Scathy_N: 'p_scathy' };
   const rigOf = (stand) => {
     if (!stand || stand.includes('_Dialog0')) return null; // 도입부 컷 그림은 정지 그림
     for (const m in MODELS) if (stand === m || stand.startsWith(m + '_')) return MODELS[m];
@@ -47,14 +48,20 @@
       x0 = N; y0 = N; x1 = -1; y1 = -1;
       const cam = new THREE.OrthographicCamera(cx - half, cx + half, cy + half, cy - half, -1000, 1000);
       cam.position.z = 100;
+      // 움직임 한 바퀴 전체를 촘촘히 한 장에 겹쳐 그린 뒤 한 번 읽는다
+      // (콘스탄챠의 개처럼 긴 움직임 끝에 잠깐 크게 뛰쳐나가는 부위도 잘리지 않게)
       p.c.play('idle', null, true);
-      for (const dt of [0, 3, 3, 3, 3, 3]) { // 움직임 중 여러 순간을 겹쳐 잰다
-        p.c.update(dt);
-        r.setRenderTarget(rt); r.setClearColor(0x000000, 0); r.clear(); r.render(scene, cam);
-        r.readRenderTargetPixels(rt, 0, 0, N, N, px);
-        for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (px[(y * N + x) * 4 + 3] > 8) {
-          if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
-        }
+      const dur = (p.c.clip && p.c.clip.dur) || 6, K = Math.max(24, Math.ceil(dur / 0.1));
+      r.setRenderTarget(rt); r.setClearColor(0x000000, 0); r.clear();
+      r.autoClear = false; // 지우지 않고 겹친다
+      for (let k = 0; k <= K; k++) {
+        p.c.update(k ? dur / K : 0);
+        r.render(scene, cam);
+      }
+      r.autoClear = true;
+      r.readRenderTargetPixels(rt, 0, 0, N, N, px);
+      for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (px[(y * N + x) * 4 + 3] > 8) {
+        if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
       }
       if (x1 < 0 || (x0 > 0 && y0 > 0 && x1 < N - 1 && y1 < N - 1)) break;
       const u0 = (2 * half) / N;
@@ -96,6 +103,7 @@
     p.still = new Image();
     p.still.onload = () => drawStill(p);
     p.still.src = `assets/story/stand/${stand}.webp`;
+    if (!uid) return p; // 움직이는 일러스트가 없는 인물은 정지 그림 그대로
     SD.prepare(uid).then(() => {
       if (!live.has(p) || !SD.ready(uid)) return;
       p.c = SD.create(uid);

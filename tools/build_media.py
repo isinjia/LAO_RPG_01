@@ -2,7 +2,7 @@
 
 python tools/build_media.py
 """
-import glob, os, re, shutil, subprocess
+import glob, os, re, shutil, subprocess, sys
 from PIL import Image
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
@@ -32,7 +32,12 @@ SFX = {
 SFX_ABS = {'lo_click': O + 'Resources/Sounds/UI/UI_Click.wav'}
 # 인물 음성 (원작 Sounds/Voice/<폴더>/Voice_<모델>_<상황>.mp3) -> assets/voice/<영웅>_<상황>.mp3
 HERO_VOICE = {'constantia': ('ConstantiaS2', '3P_ConstantiaS2'), 'griffon': ('PA00EL', 'BR_PA00EL'), 'johanna': ('Johanna', 'DS_Johanna'),
-              'lrl': ('LRL', 'PECS_LRL_N'), 'pupphead': ('PuppHead', 'PECS_PuppHead'), 'fallen': ('Fallen', 'AGS_Fallen')}
+              'lrl': ('LRL', 'PECS_LRL_N'), 'pupphead': ('PuppHead', 'PECS_PuppHead'), 'fallen': ('Fallen', 'AGS_Fallen'),
+              # 2~6지역 합류
+              'amy': ('Amy', 'BR_Amy'), 'coco': ('CoCoWhiteShell', 'PECS_CoCoWhiteShell'), 'marie': ('Marie', 'BR_Marie'),
+              'aeda': ('Aeda', 'AGS_Aeda'), 'tomoe': ('Tomoe', 'BR_Tomoe'), 'vanilla': ('Vanilla', '3P_Vanilla'),
+              'scathy': ('Scathy', 'BR_Scathy'), 'may': ('May', 'BR_May'), 'nightangel': ('NightAngel', 'BR_NightAngel'),
+              'daika': ('Daika', 'BR_Daika'), 'labiata': ('Labiata', '3P_Labiata')}
 VOICE_KIND = ['Join', 'SortiePick', 'SquadJoin', 'StageStart', 'MVP', 'Retreat', 'ActionApprove', 'SpSkill', 'BattleFocus', 'Leader', 'Login', 'SearchEnd', 'Reinforce']
 VOICE = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8',
          'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4',
@@ -81,7 +86,18 @@ def fonts():
         print(out, os.path.getsize(os.path.join(d, out)) // 1024, 'KB')
 
 
+def voices():
+    for hero, (folder, model) in HERO_VOICE.items():
+        for kind in VOICE_KIND:
+            src = [f for f in glob.glob(G + 'Sounds/Voice/%s/Voice_*_%s.*' % (folder, kind)) if not f.endswith('.meta')]
+            src = [f for f in src if os.path.basename(f).startswith('Voice_' + model.split('_N')[0])] or src
+            if src:
+                to_mp3(sorted(src, key=len)[0], os.path.join(A, 'voice', '%s_%s.mp3' % (hero, kind)), 96)
+
+
 def main():
+    if sys.argv[1:] == ['voice']:  # 인물 음성과 글꼴만 (새 대본·새 영웅을 넣었을 때)
+        voices(); fonts(); return
     for k, v in BGM.items():
         to_mp3(G + 'Sounds/BGM/' + v + '.mp3', os.path.join(A, 'bgm', k + '.mp3'), 128)
     for k, v in SFX.items():
