@@ -121,19 +121,22 @@
           'vec3 transformed = vec3(sk, 0.0);',
         ].join('\n'));
     }
-    stShader(sh);
+    stShader(sh, mat);
   }
-  function stShader(sh) {
+  function stShader(sh, mat) {
+    const fl = mat && mat.userData.flash; // 피격 번쩍임: 0 = 원래 색, 1 = 하얗게
+    if (fl) sh.uniforms.sdFlash = fl;
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', '#include <common>\nattribute vec4 st;\nattribute vec4 trect;\nvarying vec4 vSt;\nvarying vec4 vRect;')
       .replace('#include <uv_vertex>', '#include <uv_vertex>\nvSt = st;\nvRect = trect;');
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', '#include <common>\nvarying vec4 vSt;\nvarying vec4 vRect;')
+      .replace('#include <common>', '#include <common>\nvarying vec4 vSt;\nvarying vec4 vRect;' + (fl ? '\nuniform float sdFlash;' : ''))
       .replace('#include <map_fragment>', [
         'vec2 uvx = vUv;',
         'if (vSt.x != 0.0) { vec2 l = (vUv - vRect.xy) / vRect.zw; uvx = vRect.xy + fract(l * vSt.xy + vSt.zw) * vRect.zw; }',
         'vec4 texelColor = mapTexelToLinear(texture2D(map, uvx));',
         'diffuseColor *= texelColor;',
+        fl ? 'diffuseColor.rgb = mix(diffuseColor.rgb, vec3(1.0), sdFlash);' : '',
       ].join('\n'));
   }
 
@@ -701,16 +704,18 @@
       geo.setIndex(tpl.index);
       tpl.groups.forEach(([s, c, m]) => { if (c) geo.addGroup(s, c, m); });
       if (!this.gpu) for (const r of tpl.rends) if (r.kind === 1) this.uv.set(r.uv, r.v * 2);
+      this.flashU = { value: 0 };
       const mk = (add, side) => {
         const m = new THREE.MeshBasicMaterial({
           map: tpl.atlas.tex, vertexColors: true, transparent: true, depthTest: false, depthWrite: false,
           alphaTest: 0.02, side, blending: add ? THREE.AdditiveBlending : THREE.NormalBlending,
         });
+        m.userData.flash = this.flashU;
         if (this.gpu) {
           m.userData.sd = this.sdU;
           m.onBeforeCompile = (sh) => sdShader(sh, m);
           m.customProgramCacheKey = () => 'sdgpu';
-        } else m.onBeforeCompile = stShader;
+        } else m.onBeforeCompile = (sh) => stShader(sh, m);
         return m;
       };
       // material index = additive + 2 * cull mode (see matIndex)
@@ -1327,6 +1332,8 @@
 
     setTint(r, g, b) { for (const m of this.mats) m.color.setRGB(r, g, b); }
 
+    setFlash(v) { this.flashU.value = v; } // 하얗게 번쩍 (0~1)
+
     setOpacity(a) { for (const m of this.mats) m.opacity = a; }
 
     dispose() {
@@ -1408,7 +1415,7 @@
       if (p && p.length) {
         const c = p.pop();
         c.speed = 1; c.onEnd = null; c.loop = false;
-        c.setTint(1, 1, 1); c.setOpacity(1);
+        c.setTint(1, 1, 1); c.setOpacity(1); c.setFlash(0);
         c.root.position.set(0, 0, 0); c.root.scale.set(1, 1, 1); c.root.visible = true;
         c.clip = null; // a reused instance starts clean (no crossfade from its previous life)
         c.play('idle');
