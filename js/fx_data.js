@@ -13,6 +13,7 @@ window.FXDATA = {"hit_bullet":{"src":"assets/fx/hit_bullet.webp","cols":4,"rows"
   "muzzle_heavy":{"src":"assets/fx/muzzle_heavy.webp","cols":4,"rows":5,"n":17,"fps":24,"w":256,"h":216,"size":[12.482,10.532],"anchor":[0.2969,0.3357],"loop":0,"peak":7,"from":"leprechaun_fire"},
   "bullet":{"src":"assets/fx/bullet.webp","cols":1,"rows":10,"n":10,"fps":20,"w":128,"h":8,"size":[4.98,0.311],"anchor":[0.2807,0.5],"loop":1,"peak":0,"from":"Brownie_bullet"},
   "bullet_bug":{"src":"assets/fx/bullet_bug.webp","cols":4,"rows":5,"n":20,"fps":20,"w":128,"h":92,"size":[6.506,4.676],"anchor":[0.3193,0.5808],"loop":1,"peak":19,"from":"FX_bullet_bug"},
+  "missile":{"src":"assets/fx/missile.webp","cols":4,"rows":5,"n":20,"fps":20,"w":160,"h":124,"size":[5.165,4.003],"anchor":[0.729,0.5373],"loop":1,"peak":13,"from":"FX_bullet_hand_Missile"},
   "heal":{"src":"assets/fx/heal.webp","cols":6,"rows":4,"n":24,"fps":20,"w":208,"h":256,"size":[12.445,15.317],"anchor":[0.5,0.4435],"loop":0,"peak":1,"from":"daphne_hit"},
   "buff":{"src":"assets/fx/buff.webp","cols":5,"rows":5,"n":24,"fps":20,"w":256,"h":228,"size":[29.521,26.293],"anchor":[0.5206,0.4606],"loop":0,"peak":3,"from":"Azazel_skill2_buff_FX"},
   "debuff":{"src":"assets/fx/debuff.webp","cols":6,"rows":4,"n":24,"fps":20,"w":180,"h":256,"size":[19.127,27.203],"anchor":[0.5,0.4929],"loop":0,"peak":3,"from":"Faucre_skill2_Debuff_prefab"},

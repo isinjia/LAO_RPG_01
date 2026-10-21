@@ -49,6 +49,8 @@
     siren: { name: '경찰 출동', cd: 3, tgt: 'self', radius: 2, buff: { at: 0.2 }, fx: 'buff', sfx: 'charge', desc: '주변 2칸 아군 공격 +20% (적 차례가 끝날 때까지)' },
     arrest: { name: '현행범 체포', cd: 3, tgt: 'enemy', range: 1, area: 0, power: 1.0, slow: 2, fx: 'shot', sfx: 'gun', desc: '인접한 적 하나를 공격하고 다음 차례 이동 -2' },
     barrage: { name: '집중 포격', cd: 4, tgt: 'tile', range: 4, area: 'sq', power: 0.8, fx: 'fire', sfx: 'expB', desc: '사거리 4, 3x3 범위 포격' },
+    headshot: { name: '정밀 저격', cd: 3, tgt: 'enemy', range: 3, area: 0, power: 1.3, fx: 'shot', sfx: 'rifle', desc: '사거리 3 적 하나를 저격 (반격 없음)' },
+    suppress: { name: '제압 포화', cd: 3, tgt: 'line', len: 3, power: 0.9, slow: 1, fx: 'fire', sfx: 'mg', desc: '한 방향 직선 3칸에 포화를 퍼붓고 다음 차례 이동 -1' },
     // 2지역 합류 인원
     intel: { name: '첩보 교란', cd: 3, tgt: 'enemy', range: 3, area: 0, power: 0.8, slow: 2, fx: 'shot', sfx: 'gun', desc: '사거리 3 적 하나를 공격하고 다음 차례 이동 -2' },
     raid: { name: '그림자 습격', cd: 3, tgt: 'enemy', range: 2, area: 0, power: 1.4, fx: 'slash', sfx: 'slash', desc: '사거리 2 적 하나에 기습 (반격 없음)' },
@@ -108,9 +110,9 @@
       passives: [{ tier: 0, name: '정밀 사격 지원', troopUp: 0.15, desc: '병사 공격 +15%' }, { tier: 1, name: '호위대장의 반격', counterUp: 0.3, desc: '반격 피해 +30%' }], // 수동 특기 (tier 단계에 풀림)
       kind: 'arch', move: 'foot', rng: 2, lead: true, // 궁병
       tiers: [
-        { cls: '가정경비 바이오로이드', hp: 92, at: 21, df: 14, mov: 3, troops: ['gunner', 'guard'], skills: ['repair'] },
-        { cls: '오르카 호위대장', hp: 106, at: 24, df: 16, mov: 3, troops: ['gunner', 'guard', 'shield'], skills: ['repair', 'cover'] },
-        { cls: '사령관의 그림자', hp: 122, at: 28, df: 19, mov: 3, troops: ['gunner', 'guard', 'shield', 'flyer'], skills: ['repair', 'cover'] },
+        { cls: '가정경비 바이오로이드', hp: 92, at: 21, df: 14, mov: 3, troops: ['gunner', 'guard'], skills: ['repair', 'cover'] },
+        { cls: '오르카 호위대장', hp: 106, at: 24, df: 16, mov: 3, troops: ['gunner', 'guard', 'shield'], skills: ['repair', 'cover', 'headshot'] },
+        { cls: '사령관의 그림자', hp: 122, at: 28, df: 19, mov: 3, troops: ['gunner', 'guard', 'shield', 'flyer'], skills: ['repair', 'cover', 'headshot'] },
       ],
       bio: '가정경비용 바이오로이드. 마지막 인간을 찾아낸 오르카의 맏언니 역할. 쓰러지면 패배합니다.',
     },
@@ -120,7 +122,7 @@
       passives: [{ tier: 0, name: '공중 기동', noZoc: 1, desc: '지배 영역을 무시하고 지나간다' }, { tier: 1, name: '강습 편대', troopUp: 0.15, desc: '병사 공격 +15%' }], // 수동 특기 (tier 단계에 풀림)
       kind: 'fly', move: 'fly', rng: 1, sizeK: 1.15, // 제트 팩으로 날아다니는 비병
       tiers: [
-        { cls: '기동공격 바이오로이드', hp: 80, at: 25, df: 11, mov: 5, troops: ['flyer', 'raider'], skills: ['missile'] },
+        { cls: '기동공격 바이오로이드', hp: 80, at: 25, df: 11, mov: 5, troops: ['flyer', 'raider'], skills: ['missile', 'jet'] },
         { cls: '강습 비행대장', hp: 92, at: 29, df: 13, mov: 5, troops: ['flyer', 'raider'], skills: ['missile', 'jet'] },
         { cls: '하늘의 그리폰', hp: 106, at: 33, df: 15, mov: 5, troops: ['flyer', 'raider', 'gunner', 'hacker'], skills: ['missile', 'jet'] },
       ],
@@ -132,7 +134,7 @@
       passives: [{ tier: 0, name: '기사의 반격', counterUp: 0.4, desc: '반격 피해 +40%' }, { tier: 1, name: '성역', regen: 0.1, desc: '차례 시작 시 영웅·병사 체력 10% 회복' }], // 수동 특기 (tier 단계에 풀림)
       kind: 'pike', move: 'foot', rng: 1,
       tiers: [
-        { cls: '사제여왕', hp: 115, at: 21, df: 21, mov: 3, troops: ['shield', 'guard'], skills: ['oath'] },
+        { cls: '사제여왕', hp: 115, at: 21, df: 21, mov: 3, troops: ['shield', 'guard'], skills: ['oath', 'judgment'] },
         { cls: '수호 기사', hp: 133, at: 24, df: 24, mov: 3, troops: ['shield', 'guard', 'raider'], skills: ['oath', 'judgment'] },
         { cls: '동방의 기사여왕', hp: 152, at: 27, df: 28, mov: 3, troops: ['shield', 'guard', 'raider'], skills: ['oath', 'judgment'] },
       ],
@@ -144,7 +146,7 @@
       passives: [{ tier: 0, name: '심연의 재생', regen: 0.08, desc: '차례 시작 시 영웅·병사 체력 8% 회복' }, { tier: 1, name: '돌격 본능', first: 0.15, desc: '먼저 공격할 때 피해 +15%' }], // 수동 특기 (tier 단계에 풀림)
       kind: 'inf', move: 'foot', rng: 1,
       tiers: [
-        { cls: '등대 근무 바이오로이드', hp: 101, at: 28, df: 15, mov: 3, troops: ['guard', 'shield'], skills: ['beam'] },
+        { cls: '등대 근무 바이오로이드', hp: 101, at: 28, df: 15, mov: 3, troops: ['guard', 'shield'], skills: ['beam', 'abyss'] },
         { cls: '심연의 공주', hp: 115, at: 32, df: 17, mov: 3, troops: ['guard', 'shield', 'raider'], skills: ['beam', 'abyss'] },
         { cls: '싸이클롭스 프린세스', hp: 131, at: 37, df: 19, mov: 3, troops: ['guard', 'shield', 'raider', 'blade'], skills: ['beam', 'abyss'] },
       ],
@@ -156,7 +158,7 @@
       passives: [{ tier: 0, name: '추적 주행', noZoc: 1, desc: '지배 영역을 무시하고 지나간다' }, { tier: 1, name: '진압 장비', counterUp: 0.25, desc: '반격 피해 +25%' }], // 수동 특기 (tier 단계에 풀림)
       kind: 'cav', move: 'horse', rng: 1,
       tiers: [
-        { cls: '경찰·헌병 로봇', hp: 87, at: 20, df: 15, mov: 5, troops: ['raider', 'guard'], skills: ['siren'] },
+        { cls: '경찰·헌병 로봇', hp: 87, at: 20, df: 15, mov: 5, troops: ['raider', 'guard'], skills: ['siren', 'arrest'] },
         { cls: '기동 순찰대', hp: 101, at: 23, df: 17, mov: 5, troops: ['raider', 'guard'], skills: ['siren', 'arrest'] },
         { cls: '특수기동대장', hp: 115, at: 27, df: 20, mov: 5, troops: ['raider', 'guard', 'flyer'], skills: ['siren', 'arrest'] },
       ],
@@ -168,9 +170,9 @@
       passives: [{ tier: 0, name: '대응 포격', rangeCounter: 1, desc: '멀리서 공격받아도 반격한다' }, { tier: 1, name: '탄막', troopUp: 0.2, desc: '병사 공격 +20%' }], // 수동 특기 (tier 단계에 풀림)
       kind: 'arch', move: 'foot', rng: 2,
       tiers: [
-        { cls: '지원 포격 AGS', hp: 97, at: 27, df: 13, mov: 3, troops: ['gunner', 'shield'], skills: ['barrage'] },
-        { cls: '중포병', hp: 110, at: 31, df: 15, mov: 3, troops: ['gunner', 'shield'], skills: ['barrage'] },
-        { cls: '요새 포대', hp: 126, at: 36, df: 18, mov: 3, troops: ['gunner', 'shield', 'guard', 'hacker'], skills: ['barrage'] },
+        { cls: '지원 포격 AGS', hp: 97, at: 27, df: 13, mov: 3, troops: ['gunner', 'shield'], skills: ['barrage', 'suppress'] },
+        { cls: '중포병', hp: 110, at: 31, df: 15, mov: 3, troops: ['gunner', 'shield'], skills: ['barrage', 'suppress'] },
+        { cls: '요새 포대', hp: 126, at: 36, df: 18, mov: 3, troops: ['gunner', 'shield', 'guard', 'hacker'], skills: ['barrage', 'suppress'] },
       ],
       bio: '언어 모듈이 고장 난 AGS 포격 로봇. 사거리 2의 포격과 넓은 범위 포격 특기를 씁니다.',
     },
@@ -181,7 +183,7 @@
       passives: [{ tier: 0, name: '전장 장악', counterUp: 0.2, desc: '반격 피해 +20%' }, { tier: 1, name: '군단 재정비', regen: 0.1, desc: '차례 시작 시 영웅·병사 체력 10% 회복' }], // 수동 특기 (tier 단계에 풀림)
       kind: 'inf', move: 'foot', rng: 1, // 스틸라인 지휘관: 주변 아군을 북돋우고 위성으로 포격한다
       tiers: [
-        { cls: '스틸라인 지휘관', hp: 118, at: 26, df: 20, mov: 3, troops: ['guard', 'shield', 'gunner'], skills: ['command'] },
+        { cls: '스틸라인 지휘관', hp: 118, at: 26, df: 20, mov: 3, troops: ['guard', 'shield', 'gunner'], skills: ['command', 'satellite'] },
         { cls: '불굴의 군단장', hp: 135, at: 30, df: 23, mov: 3, troops: ['guard', 'shield', 'gunner', 'raider'], skills: ['command', 'satellite'] },
         { cls: '블랙 리버의 장군', hp: 155, at: 34, df: 26, mov: 3, troops: ['guard', 'shield', 'gunner', 'raider'], skills: ['command', 'satellite'] },
       ],
@@ -194,7 +196,7 @@
       passives: [{ tier: 0, name: '맏언니의 인내', regen: 0.1, desc: '차례 시작 시 영웅·병사 체력 10% 회복' }, { tier: 1, name: '거인 사냥', antiBig: 0.3, desc: '큰 철충에게 피해 +30%' }], // 수동 특기 (tier 단계에 풀림)
       kind: 'inf', move: 'foot', rng: 1, // 최초의 바이오로이드: 맨주먹으로 적을 부순다
       tiers: [
-        { cls: '최초의 바이오로이드', hp: 140, at: 36, df: 22, mov: 3, troops: ['guard', 'shield', 'raider'], skills: ['proto'] },
+        { cls: '최초의 바이오로이드', hp: 140, at: 36, df: 22, mov: 3, troops: ['guard', 'shield', 'raider'], skills: ['proto', 'sister'] },
         { cls: '바이오로이드의 맏언니', hp: 160, at: 41, df: 25, mov: 3, troops: ['guard', 'shield', 'raider', 'gunner', 'blade'], skills: ['proto', 'sister'] },
         { cls: '라비아타 프로토타입', hp: 184, at: 47, df: 29, mov: 3, troops: ['guard', 'shield', 'raider', 'gunner', 'blade'], skills: ['proto', 'sister'] },
       ],
@@ -207,7 +209,7 @@
       passives: [{ tier: 0, name: '역해킹', rangeCounter: 1, desc: '멀리서 공격받아도 반격한다' }, { tier: 1, name: '네트워크 장악', troopUp: 0.15, desc: '병사 공격 +15%' }], // 수동 특기 (tier 단계에 풀림)
       kind: 'mage', move: 'foot', rng: 2, // 전자전 전문가: 멀리서 해킹으로 적을 묶는다
       tiers: [
-        { cls: '전자전 전문가', hp: 84, at: 27, df: 11, mov: 3, troops: ['gunner', 'guard', 'hacker'], skills: ['hack'] },
+        { cls: '전자전 전문가', hp: 84, at: 27, df: 11, mov: 3, troops: ['gunner', 'guard', 'hacker'], skills: ['hack', 'emp'] },
         { cls: '사이버 워페어', hp: 96, at: 31, df: 13, mov: 3, troops: ['gunner', 'guard', 'flyer', 'hacker'], skills: ['hack', 'emp'] },
         { cls: '네트워크의 여왕', hp: 110, at: 36, df: 15, mov: 3, troops: ['gunner', 'guard', 'flyer', 'hacker'], skills: ['hack', 'emp'] },
       ],
@@ -220,7 +222,7 @@
       passives: [{ tier: 0, name: '그림자 이동', noZoc: 1, desc: '지배 영역을 무시하고 지나간다' }, { tier: 1, name: '약점 포착', antiBig: 0.25, desc: '큰 철충에게 피해 +25%' }], // 수동 특기 (tier 단계에 풀림)
       kind: 'cav', move: 'horse', rng: 1, // 군사용 첩보 유닛: 빠른 발로 파고들어 교란한다
       tiers: [
-        { cls: '군사용 첩보 유닛', hp: 86, at: 25, df: 13, mov: 5, troops: ['raider', 'guard'], skills: ['intel'] },
+        { cls: '군사용 첩보 유닛', hp: 86, at: 25, df: 13, mov: 5, troops: ['raider', 'guard'], skills: ['intel', 'raid'] },
         { cls: '그림자 첩보원', hp: 99, at: 29, df: 15, mov: 5, troops: ['raider', 'guard', 'flyer', 'blade'], skills: ['intel', 'raid'] },
         { cls: '레이저 에이전트', hp: 113, at: 33, df: 17, mov: 5, troops: ['raider', 'guard', 'flyer', 'blade'], skills: ['intel', 'raid'] },
       ],
@@ -232,7 +234,7 @@
       passives: [{ tier: 0, name: '셸 반격', counterUp: 0.3, desc: '반격 피해 +30%' }, { tier: 1, name: '긴급 수리 장치', regen: 0.12, desc: '차례 시작 시 영웅·병사 체력 12% 회복' }], // 수동 특기 (tier 단계에 풀림)
       kind: 'pike', move: 'foot', rng: 1, // 화이트 셸에 탄 방어형
       tiers: [
-        { cls: '화이트 셸 조종사', hp: 128, at: 19, df: 24, mov: 3, troops: ['shield', 'guard'], skills: ['wall'] },
+        { cls: '화이트 셸 조종사', hp: 128, at: 19, df: 24, mov: 3, troops: ['shield', 'guard'], skills: ['wall', 'tackle'] },
         { cls: '마리 부대 방패', hp: 147, at: 22, df: 27, mov: 3, troops: ['shield', 'guard', 'gunner'], skills: ['wall', 'tackle'] },
         { cls: '불굴의 화이트 셸', hp: 168, at: 25, df: 31, mov: 3, troops: ['shield', 'guard', 'gunner'], skills: ['wall', 'tackle'] },
       ],

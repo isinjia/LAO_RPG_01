@@ -495,6 +495,9 @@
     return { bb, rig };
   }
   function addView(u) {
+    // 아직 읽지 않은 리그(처음 나오는 증원·병사)면 먼저 읽고 나서 그린다 (틀이 없어 멈추지 않게)
+    const need = [u.rig, u.troop && u.troop.rig].filter((r) => r && !SD.template(r));
+    if (need.length) { Promise.all(need.map((r) => SD.prepare(r))).then(() => { if (G && u.alive && !views.has(u.uid)) addView(u); }); return null; }
     const g = new THREE.Group();
     const native = u.side === 'p' ? 1 : -1, f = u.side === 'p' ? 1 : -1;
     const hero = billboard(u.rig, (u.def.big ? 1.2 : 0.88) * (u.def.sizeK || 1), native, f);
@@ -1396,6 +1399,7 @@
     faceTo(a, d.x); faceTo(d, a.x);
     const res = R.combat(G, a, d, a.x, a.y, Math.random);
     if (save.opts.fight) {
+      await Promise.all([a, d].flatMap((u) => [u.rig, u.troop && u.troop.rig]).filter((r) => r && !SD.template(r)).map((r) => SD.prepare(r))); // 처음 보는 리그도 전투 장면 전에
       mode = 'fight';
       $('hud').classList.add('hidden');
       $('banner').classList.add('hidden');
@@ -1466,7 +1470,7 @@
     if (!window.FXLIB || !world) return 0;
     const d = Math.hypot(fx1 - fx0, fy1 - fy0), base = Math.min(0.55, 0.18 + d * 0.06), dur = base / speedK; // base: 배속 1 기준 초
     const missile = kind === 'fire';
-    const h = FXLIB.spawn(world.root, missile ? 'muzzle_heavy' : 'bullet', { x: fx0 + 0.5, y: 0.6, z: fy0 + 0.5, height: missile ? 0.7 : 0.08, loop: true, life: base + 0.05,
+    const h = FXLIB.spawn(world.root, missile ? 'missile' : 'bullet', { x: fx0 + 0.5, y: 0.6, z: fy0 + 0.5, height: missile ? 0.6 : 0.08, loop: true, life: base + 0.05, // 원작 그리폰 미사일
       tint: missile ? 0xffffff : 0x9fd8ff, renderOrder: 4600 });
     if (!h) return 0;
     if (!missile) h.mesh.scale.x *= 9;

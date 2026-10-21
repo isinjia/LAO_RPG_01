@@ -12,6 +12,7 @@ muzzle_rifle     brownie_shoot                                    17장 224x176 
 muzzle_heavy     leprechaun_fire                                  17장 256x216  0.7초  12.5×10.5 단위   67KB
 bullet           Brownie_bullet                                   10장 128x8    0.5초   5.0×0.3  단위    1KB
 bullet_bug       FX_bullet_bug                                    20장 128x92   1.0초   6.5×4.7  단위   40KB
+missile          FX_bullet_hand_Missile                           20장 160x124  1.0초   5.2×4.0  단위   64KB
 heal             daphne_hit                                       24장 208x256  1.2초  12.4×15.3 단위  229KB
 buff             Azazel_skill2_buff_FX                            24장 256x228  1.2초  29.5×26.3 단위  249KB
 debuff           Faucre_skill2_Debuff_prefab                      24장 180x256  1.2초  19.1×27.2 단위  156KB
@@ -22,4 +23,4 @@ dust_fall        FX_falldown_dust_F                               21장 256x240 
 dust_step        vfx_Frontstep_Dust                               15장 224x160  0.8초  13.7×9.8  단위   63KB
 land_crack       FX_jump_hitground                                40장 256x132  2.0초   7.0×3.6  단위    9KB
 big_flash        FX_big_glow_flash                                18장 252x256  0.9초 354.9×360.5단위  130KB
-합계 2346KB
+합계 2410KB

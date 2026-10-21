@@ -472,7 +472,7 @@
       let sc = f[t.y * G.w + t.x];
       if (u.hp < u.hpMax * 0.35 && u.side === 'p') sc = -sc * 0.3;
       sc -= terrDef(G, u, t.x, t.y) * 0.5;
-      sc += moveRisk(t.x, t.y) * 1.5;
+      sc += Math.min(5, moveRisk(t.x, t.y) * 1.5); // 위험한 칸은 피하되, 상한을 두어 언젠가는 다가간다 (잠든 적 앞에서 멈춰 서지 않게)
       if (!mv || sc < mv.sc) mv = { sc, t };
     }
     return mv ? { to: [mv.t.x, mv.t.y], act: 'wait' } : { to: [u.x, u.y], act: 'wait' };

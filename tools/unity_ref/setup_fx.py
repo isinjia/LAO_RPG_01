@@ -85,6 +85,7 @@ FX = {
     # 날아가는 탄
     'bullet':          ('Bullet_Effect/Brownie_bullet.prefab', 128, 20, 0.5, 'loop=0.5'),        # 주황 예광탄 (계속 재생)
     'bullet_bug':      ('Bullet_Effect/FX_bullet_bug.prefab', 128, 20, 1.0, 'loop=1'),          # 철충 녹색 탄 (계속 재생)
+    'missile':         ('Bullet_Effect/FX_bullet_hand_Missile.prefab', 160, 20, 1.0, 'loop=1'),  # 그리폰(PA00EL) 손 미사일 (계속 재생, 날아가는 탄)
     # 보조
     'heal':            (C + 'daphne_skill/skill_1/daphne_hit.prefab', 256, 20, 2.0, ''),          # 나노봇 회복
     'buff':            (C + 'Azazel_skill/skill2/Azazel_skill2_buff_FX.prefab', 256, 20, 2.0, ''),  # 황금빛 강화

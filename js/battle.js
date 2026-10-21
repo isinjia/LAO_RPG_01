@@ -355,7 +355,7 @@
     const targets = to.filter((f) => f.alive);
     const tf = targets[Math.floor(Math.random() * targets.length)] || to[0], d = tf.rig.g.position;
     const x0 = s.x + dir * 0.4, y0 = s.y + lift(src) + (src.hero ? 1.2 : 0.7), x1 = d.x + (Math.random() - 0.5) * 0.4, y1 = d.y + lift(tf) + 0.5 + Math.random() * 0.4;
-    if (window.FXLIB) { tracer(x0, y0, x1, y1, au.side === 'e', TRAVEL * (0.9 + Math.random() * 0.2)); return; }
+    if (window.FXLIB) { tracer(x0, y0, x1, y1, au.side === 'e', TRAVEL * (0.9 + Math.random() * 0.2), (src.hero ? au.def.sfx : au.troop && au.troop.def.sfx) === 'missile'); return; }
     const col = au.side === 'p' ? 0x9fd8ff : 0xff9a7a;
     const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, color: col, transparent: true, depthTest: false, blending: THREE.AdditiveBlending }));
     m.renderOrder = 520;
@@ -375,7 +375,7 @@
     const w = weaponOf(src, au);
     if (ranged && !far && src.alive) {
       const s = src.rig.g.position, sx = s.x + (src.side === 'L' ? 0.4 : -0.4), sy = s.y + lift(src) + (src.hero ? 1.2 : 0.7);
-      if (window.FXLIB && w !== 'energy') tracer(sx, sy, p.x, p.y + up + h * 0.6, au.side === 'e', 0.12);
+      if (window.FXLIB && w !== 'energy') { const mis = (src.hero ? au.def.sfx : au.troop && au.troop.def.sfx) === 'missile'; tracer(sx, sy, p.x, p.y + up + h * 0.6, au.side === 'e', mis ? 0.22 : 0.12, mis); }
       else beam(sx, sy, p.x, p.y + up + h * 0.6, au.side === 'p' ? 0x9fd8ff : 0xff9a7a);
     }
     const hx = p.x + (Math.random() - 0.5) * 0.4, hy = p.y + up + h * (0.4 + Math.random() * 0.5);
@@ -417,7 +417,7 @@
   const MUZZLE_FX = { gun: 'muzzle_rifle', mg: 'muzzle_small', heavy: 'muzzle_heavy', energy: 'muzzle_small' };
   // 효과마다 장면에서의 낱장 세로 (병사 키 1.5 기준으로 눈대중)
   const FXH = { hit_bullet: 1.5, hit_crit: 2.4, hit_heavy: 3.2, hit_slash: 2.4, slash_line: 2.2, hit_energy: 2.6, explosion_small: 2.6, explosion_big: 5.2,
-    muzzle_rifle: 1.2, muzzle_heavy: 1.5, muzzle_small: 0.9, dust_fall: 1.8, dust_step: 1.5, bullet: 0.09, bullet_bug: 0.5 };
+    muzzle_rifle: 1.2, muzzle_heavy: 1.5, muzzle_small: 0.9, dust_fall: 1.8, dust_step: 1.5, bullet: 0.09, bullet_bug: 0.5, missile: 0.75 };
   let fxhs = [];
   function fx(name, x, y, o = {}) {
     if (!window.FXLIB || !window.FXDATA || !FXDATA[name]) return null;
@@ -433,9 +433,10 @@
     fx(MUZZLE_FX[w], p.x + dir * (f.hero ? 0.6 : 0.42), p.y + lift(f) + (f.hero ? 1.0 : 0.62), { flipX: dir < 0, k: f.hero ? 1.1 : 0.7, tint: w === 'energy' ? 0x9fd8ff : 0xffffff, renderOrder: 515 });
   }
   // 날아가는 탄 (예광탄): 원작 탄 효과를 반복 재생하며 x0,y0 에서 x1,y1 로 옮긴다
-  function tracer(x0, y0, x1, y1, bug, life) {
-    const h = fx(bug ? 'bullet_bug' : 'bullet', x0, y0, { loop: true, life: life + 0.1, rotation: Math.atan2(y1 - y0, x1 - x0), renderOrder: 520, tint: bug ? 0xffffff : 0xffe2a0 });
-    if (h) { if (!bug) h.mesh.scale.x *= 1.6; fxs.push({ fxh: h, t: 0, life, path: [x0, y0, x1, y1] }); }
+  function tracer(x0, y0, x1, y1, bug, life, missile) {
+    const name = missile ? 'missile' : bug ? 'bullet_bug' : 'bullet'; // 미사일 무기는 원작 미사일
+    const h = fx(name, x0, y0, { loop: true, life: life + 0.1, rotation: Math.atan2(y1 - y0, x1 - x0), renderOrder: 520, tint: bug || missile ? 0xffffff : 0xffe2a0, k: missile ? 1 : 1 });
+    if (h) { if (!bug && !missile) h.mesh.scale.x *= 1.6; fxs.push({ fxh: h, t: 0, life, path: [x0, y0, x1, y1] }); }
   }
 
   function finish() {
@@ -454,6 +455,7 @@
     if (cb) cb();
   }
   FIGHT.skip = finish;
+  FIGHT.actors = () => actors; // 시험용
 
   FIGHT.update = function (dt) {
     if (!active) return;

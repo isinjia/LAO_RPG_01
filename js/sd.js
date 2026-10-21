@@ -776,6 +776,9 @@
       this.time = 0;
       this.onEnd = onEnd || null;
       this.apply();
+      // 뿌리 고정 기준은 섞기 전 이 동작의 첫 자세에서 잰다 (앞 동작과 섞인 자세로 재면 그만큼 밀려 버린다)
+      const pb = this.tpl.pinBone && this.tpl.pinBone[name];
+      if (pb != null) { this.worldPass(); this.pinRef = [this.W[pb * 12 + 9], this.W[pb * 12 + 10]]; }
       if (this.fadeD) this.blend();
       this.render();
     }
