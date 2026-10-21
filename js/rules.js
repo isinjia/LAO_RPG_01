@@ -181,20 +181,29 @@
     return { toT, toH, rel: R.typeRel(a.troop && sa.thp > 0 ? a.troop.kind : a.kind, dKind) };
   }
   // 공격자 a가 (ax, ay)에서 방어자 d를 공격. rnd가 없으면 기댓값(예상치)
+  // 랑그릿사식 동시 전투: 교전을 ROUNDS 번의 짧은 접전으로 나눠 양쪽이 동시에 친다.
+  // 접전마다 그 순간 남은 병사 수로 공격력이 정해지므로, 싸우는 도중 병사가 줄면 그만큼 약해진다.
+  R.ROUNDS = 6;
   R.combat = function (G, a, d, ax = a.x, ay = a.y, rnd = null) {
     const dist = R.dist(ax, ay, d.x, d.y);
     const sa = { hp: a.hp, thp: a.troop ? a.troop.hp : 0, x: ax, y: ay };
     const sd = { hp: d.hp, thp: d.troop ? d.troop.hp : 0, x: d.x, y: d.y };
+    const counter = dist <= d.rng;
+    const N = R.ROUNDS, rounds = [];
+    let rel = 0;
+    for (let i = 0; i < N && sa.hp > 0.5 && sd.hp > 0.5; i++) {
+      const s1 = strike(G, a, sa, d, sd, dist, 1 / N, rnd);
+      const s2 = counter ? strike(G, d, sd, a, sa, dist, 0.8 / N, rnd) : { toT: 0, toH: 0 };
+      if (!i) rel = s1.rel;
+      sd.thp -= s1.toT; sd.hp -= s1.toH; sa.thp -= s2.toT; sa.hp -= s2.toH; // 동시에
+      rounds.push({ dT: s1.toT, dH: s1.toH, aT: s2.toT, aH: s2.toH });
+    }
+    const sum = (k) => rounds.reduce((s, x) => s + x[k], 0);
     const r = (v) => (rnd ? Math.round(v) : v);
-    const s1 = strike(G, a, sa, d, sd, dist, 1, rnd);
-    s1.toT = r(s1.toT); s1.toH = r(s1.toH);
-    sd.thp -= s1.toT; sd.hp -= s1.toH;
-    let s2 = { toT: 0, toH: 0, rel: 0 };
-    const counter = dist <= d.rng && sd.hp > 0.5;
-    if (counter) { s2 = strike(G, d, sd, a, sa, dist, 0.8, rnd); s2.toT = r(s2.toT); s2.toH = r(s2.toH); }
+    const dT = r(sum('dT')), dH = r(sum('dH')), aT = r(sum('aT')), aH = r(sum('aH'));
     return {
-      dT: s1.toT, dH: s1.toH, aT: s2.toT, aH: s2.toH, counter, dist, rel: s1.rel,
-      dDead: d.hp - s1.toH <= 0.5, aDead: a.hp - s2.toH <= 0.5,
+      dT, dH, aT, aH, counter, dist, rel, rounds,
+      dDead: d.hp - dH <= 0.5, aDead: a.hp - aH <= 0.5,
     };
   };
   R.apply = function (u, toT, toH) {

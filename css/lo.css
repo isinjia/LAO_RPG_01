@@ -356,3 +356,11 @@
 /* 결과 화면 최우수 인물 */
 .rmvp { background: none; display: flex; align-items: flex-end; justify-content: center; }
 .rmvp canvas { height: 100%; width: auto; max-width: 100%; object-fit: contain; object-position: bottom; }
+
+/* 원거리 공격 화면 분할: 가운데 비스듬한 경계선 (렌더는 반쪽씩, 이음매를 이 띠가 덮는다) */
+#fight .fsplit { display: none; position: absolute; left: 50%; top: -8%; bottom: -8%; width: 52px; transform: translateX(-50%) rotate(2.5deg); pointer-events: none;
+  background: linear-gradient(90deg, transparent 0, #05070c 18%, #05070c 38%, var(--lo-y) 38%, #fff6c8 50%, var(--lo-y) 62%, #05070c 62%, #05070c 82%, transparent 100%);
+  filter: drop-shadow(0 0 10px rgba(255, 204, 0, .7)); }
+#fight.split .fsplit { display: block; animation: fsplit .35s cubic-bezier(.2, .8, .3, 1) both; }
+@keyframes fsplit { from { transform: translateX(-50%) rotate(2.5deg) scaleY(0); } }
+#fight.split .fvs { display: none; }

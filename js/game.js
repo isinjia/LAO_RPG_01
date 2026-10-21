@@ -1737,7 +1737,7 @@
     }
     if (mode === 'fight') {
       FIGHT.update(dt);
-      renderer.render(FIGHT.scene(), FIGHT.camera());
+      FIGHT.render(renderer);
       return;
     }
     if (!G || !world) { renderer.render(scene, camera); return; }
