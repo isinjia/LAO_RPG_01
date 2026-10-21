@@ -1425,9 +1425,9 @@
   }
   function sideStage(idx) {
     const s = sideList().find((x) => x.idx === idx), b = D.STAGES[s.base - 1];
-    const waves = s.waves.map((units, i) => ({ turn: i ? 1 + i * 2 : 1, at: b.waves[i % b.waves.length].at, units }));
+    const waves = s.waves.map((units, i) => ({ turn: 1 + i * 3, at: b.waves[i % b.waves.length].at, units })); // 원작은 무리를 하나씩 상대: 증원 간격을 넉넉히
     return Object.assign({}, b, { kind: 'side', side: s, base: s.base - 1, idx: s.idx, title: s.title, goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all', turnLimit: 0, waves,
-      free: Math.max(3, b.starts.length), heroes: null, bgm: s.kind === 'Ex' ? 'lo_battle2' : b.bgm });
+      free: 4, heroes: null, bgm: s.kind === 'Ex' ? 'lo_battle2' : b.bgm });
   }
 
   let stageSel = -1; // 예전 이름 유지: 선택(정보 창)한 지점
@@ -1743,7 +1743,11 @@
       }
       save.joined.push(id);
     }
-    st.heroes.forEach((id, i) => R.makeHero(G, id, save.heroes[id], save.troops[id], st.starts[i][0], st.starts[i][1]));
+    st.heroes.forEach((id, i) => {
+      // 시작 칸이 모자라면 (자유 편성으로 인원이 많을 때) 첫 시작 칸 근처 빈칸
+      const p = st.starts[i] || R.freeAround(G, st.starts[0][0], st.starts[0][1], D.HEROES[id].move, 1)[0];
+      R.makeHero(G, id, save.heroes[id], save.troops[id], p[0], p[1]);
+    });
     R.spawnWave(G, 0);
     stageStart = { lv: Object.fromEntries(st.heroes.map((id) => [id, save.heroes[id].lv])) };
     const rigs = new Set();

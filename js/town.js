@@ -299,7 +299,7 @@
   function draw() {
     const W = cv.width, H = cv.height;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.fillStyle = map.indoor ? '#05070c' : '#1f5f93'; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = map.indoor ? '#05070c' : '#0c1410'; ctx.fillRect(0, 0, W, H);
     const vw = W / S, vh = H / S, mw = map.w * TILE, mh = map.h * TILE;
     const ppx = pfx * TILE + TILE / 2, ppy = pfy * TILE + TILE / 2;
     camX = mw < vw ? (mw - vw) / 2 : Math.max(0, Math.min(mw - vw, ppx - vw / 2));
