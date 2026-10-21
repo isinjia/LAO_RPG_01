@@ -370,7 +370,11 @@
 .pcard .pimg canvas { position: absolute; left: 50%; top: calc(26% - var(--fy, 0.16) * 190%); height: 190%; width: auto; transform: translateX(calc(var(--fx, 0.5) * -100%)); }
 .pcard .pimg.whole canvas { top: 6%; height: 92%; }
 /* 그리폰은 얼굴 가운데 맞춤이 왼쪽으로 쏠려 보여 살짝 오른쪽으로 */
-.pcard .pimg canvas[data-stand^="BR_PA00EL"] { left: calc(55% + 5px); }
+.pcard .pimg canvas[data-stand^="BR_PA00EL"] { left: calc(55% + 2px); top: calc(26% - var(--fy, 0.16) * 190% + 5px); }
+/* 엘알엘은 커 보여서 80% 크기 (눈높이 선은 그대로) */
+.pcard .pimg canvas[data-stand^="PECS_LRL"] { height: 152%; top: calc(26% - var(--fy, 0.16) * 152%); }
+/* 폴른은 왼쪽으로 20픽셀 */
+.pcard .pimg canvas[data-stand^="AGS_Fallen"] { left: calc(50% - 20px); }
 /* 결과 화면 최우수 인물 */
 .rmvp { background: none; display: flex; align-items: flex-end; justify-content: center; }
 .rmvp canvas { height: 100%; width: auto; max-width: 100%; object-fit: contain; object-position: bottom; }

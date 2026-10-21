@@ -468,17 +468,22 @@
   const views = new Map(); // uid -> 표시 객체
   function rr(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
   const ringTex = {};
+  // 발밑 표지 (원작 전투 칸 결): 빛나는 육각 테두리, 지휘관·보스는 노란 겹테
   function getRingTex(side, big) {
     const k = side + big;
     if (ringTex[k]) return ringTex[k];
     return (ringTex[k] = canvasTex(128, 128, (g) => {
-      const c = side === 'p' ? '74,168,255' : '255,90,80';
-      const rg = g.createRadialGradient(64, 64, 10, 64, 64, 62);
-      rg.addColorStop(0, 'rgba(0,0,0,.45)'); rg.addColorStop(0.6, `rgba(${c},.35)`); rg.addColorStop(0.85, `rgba(${c},.9)`); rg.addColorStop(1, `rgba(${c},0)`);
-      g.fillStyle = rg; g.beginPath(); g.arc(64, 64, 62, 0, 7); g.fill();
-      if (big) { g.strokeStyle = 'rgba(255,215,106,.95)'; g.lineWidth = 6; g.beginPath(); g.arc(64, 64, 50, 0, 7); g.stroke(); }
+      const c = side === 'p' ? '63,180,255' : '255,59,92';
+      const hex = (r) => { g.beginPath(); for (let i = 0; i < 6; i++) { const a = Math.PI / 6 + (i * Math.PI) / 3; g[i ? 'lineTo' : 'moveTo'](64 + Math.cos(a) * r, 64 + Math.sin(a) * r); } g.closePath(); };
+      const rg = g.createRadialGradient(64, 64, 6, 64, 64, 60);
+      rg.addColorStop(0, 'rgba(0,0,0,.5)'); rg.addColorStop(0.7, `rgba(${c},.28)`); rg.addColorStop(1, `rgba(${c},0)`);
+      hex(58); g.fillStyle = rg; g.fill();
+      g.shadowColor = `rgba(${c},1)`; g.shadowBlur = 10;
+      hex(52); g.strokeStyle = `rgba(${c},.95)`; g.lineWidth = 5; g.stroke();
+      if (big) { hex(42); g.strokeStyle = 'rgba(255,204,0,.95)'; g.shadowColor = 'rgba(255,204,0,1)'; g.lineWidth = 4; g.stroke(); }
     }));
   }
+
   function billboard(rigId, h, native, f) {
     const bb = new THREE.Group();
     const rig = new Rig(rigId, h, native);
@@ -521,22 +526,27 @@
     refreshView(u);
     return v;
   }
+  // 지도 유닛 막대 (원작 전투 막대 결): 짙은 사선 판 위 병사·영웅 사선 막대, 왼쪽 칸에 남은 병사 수
   function drawBadge(v) {
     const u = v.u, g = v.bc.getContext('2d'), W = v.bc.width;
     const acted = u.acted && u.side === G.side && u.side === 'p';
+    const para = (x, y, w, h, sk) => { g.beginPath(); g.moveTo(x + sk, y); g.lineTo(x + w, y); g.lineTo(x + w - sk, y + h); g.lineTo(x, y + h); g.closePath(); };
     g.clearRect(0, 0, W, 40);
-    g.fillStyle = 'rgba(0,0,0,.6)'; rr(g, 0, 2, W, 36, 8); g.fill();
+    para(0, 3, W, 34, 8); g.fillStyle = 'rgba(12,14,18,.82)'; g.fill();
+    g.strokeStyle = u.side === 'p' ? 'rgba(63,180,255,.9)' : 'rgba(255,59,92,.9)'; g.lineWidth = 2; g.stroke();
     const bar = (y, k, c0, c1) => {
-      g.fillStyle = '#1a2036'; rr(g, 16, y, W - 22, 11, 4); g.fill();
-      if (k > 0) { const lg = g.createLinearGradient(16, 0, W - 6, 0); lg.addColorStop(0, acted ? '#777' : c0); lg.addColorStop(1, acted ? '#999' : c1); g.fillStyle = lg; rr(g, 16, y, Math.max(6, (W - 22) * k), 11, 4); g.fill(); }
+      para(24, y, W - 30, 10, 4); g.fillStyle = '#05070a'; g.fill();
+      if (k > 0) { const lg = g.createLinearGradient(24, 0, W - 6, 0); lg.addColorStop(0, acted ? '#666' : c0); lg.addColorStop(1, acted ? '#999' : c1); g.fillStyle = lg; para(24, y, Math.max(8, (W - 30) * k), 10, 4); g.fill(); }
     };
-    if (u.troop) bar(8, u.troop.hp / u.troop.hpMax, u.side === 'p' ? '#3a8cff' : '#ff8a3a', u.side === 'p' ? '#9cd0ff' : '#ffc890');
-    bar(u.troop ? 22 : 15, u.hp / u.hpMax, u.side === 'p' ? '#2fc46c' : '#e8402f', u.side === 'p' ? '#9dffbc' : '#ff9a8a');
-    g.fillStyle = u.lead || u.boss ? '#ffd76a' : D.KIND[R.troopAlive(u) ? u.troop.kind : u.kind].color;
-    g.font = 'bold 16px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillText(u.troop ? String(R.soldiers(u)) : (u.lead || u.boss ? '★' : '●'), 9, 21);
+    if (u.troop) bar(9, u.troop.hp / u.troop.hpMax, u.side === 'p' ? '#2a7cff' : '#ff7a2a', u.side === 'p' ? '#8fd0ff' : '#ffc070');
+    bar(u.troop ? 22 : 15, u.hp / u.hpMax, u.side === 'p' ? '#21c060' : '#e8203f', u.side === 'p' ? '#a6ffc4' : '#ff8aa0');
+    para(4, 7, 20, 26, 5); g.fillStyle = u.lead || u.boss ? '#ffcc00' : u.side === 'p' ? '#1d6fd0' : '#c0183a'; g.fill();
+    g.fillStyle = u.lead || u.boss ? '#111' : '#fff';
+    g.font = '16px LO_B, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(u.troop ? String(R.soldiers(u)) : (u.lead || u.boss ? '★' : '●'), 14, 21);
     v.bt.needsUpdate = true;
   }
+
   function refreshView(u) {
     const v = views.get(u.uid);
     if (!v) return;
@@ -583,12 +593,31 @@
   // 피해 표시: 병사(주황)·영웅(빨강)
   function popDmg(u, t, h) {
     if (t > 0) { const lost = R.soldiers(u, u.troop.hp + t) - R.soldiers(u); pop(u.x, u.y, lost > 0 ? `병사 -${lost}명` : '병사 -' + Math.round(t), 'tdmg', 1.15); }
-    if (h > 0) wait(140).then(() => pop(u.x, u.y, '-' + Math.round(h), 'dmg', 0.8));
+    if (h > 0) wait(140).then(() => popNum(u.x, u.y, h, u.side === 'p' ? 'me' : 'base', 0.8));
+  }
+  // 원작 피해 숫자 글꼴로 띄우기 (kind: base 적이 받은 피해 · me 아군이 받은 피해 · heal 회복 · cri 강한 일격)
+  function popNum(x, y, n, kind, dy = 0.9) {
+    const s = toScreen(new THREE.Vector3(x + 0.5, dy, y + 0.5));
+    LOHUD.float(LOHUD.num(n, kind, kind === 'heal' ? 30 : 36, kind === 'heal' ? '+' : ''), s.x, s.y, kind === 'cri' ? 'big' : '');
   }
 
   // 지도 위 이펙트
   const mapFx = [];
+  // 원작 효과 플립북(js/fx.js)이 있으면 그것으로: 특기 갈래 → 원작 효과 이름, 지도 칸 기준 낱장 세로
+  const MAP_FX = { fire: ['explosion_small', 1.3], bolt: ['hit_energy', 1.4], heal: ['heal', 1.3], buff: ['buff', 1.5], shield: ['shield', 1.4], slash: ['hit_slash', 1.2],
+    laser: ['hit_energy', 1.3], shot: ['hit_bullet', 0.9], spawn: ['cast', 1.4], hit: ['hit_bullet', 0.9], heavy: ['hit_heavy', 1.6], energy: ['hit_energy', 1.2],
+    melee: ['hit_slash', 1.2], boom: ['explosion_small', 1.4], bigboom: ['explosion_big', 2.6], dust: ['dust_fall', 1.0], debuff: ['debuff', 1.3], cast: ['cast', 1.5],
+    charge: ['charge', 1.8], crit: ['hit_crit', 1.2], crack: ['land_crack', 1.6], slashline: ['slash_line', 1.1], muzzle: ['muzzle_heavy', 0.9] };
   function fxAt(x, y, kind, delay = 0) {
+    const mf = window.FXLIB && MAP_FX[kind];
+    if (mf && FXDATA[mf[0]]) {
+      wait(delay).then(() => {
+        if (!world) return;
+        const h = FXLIB.spawn(world.root, mf[0], { x: x + 0.5, y: 0.35, z: y + 0.55, height: mf[1], renderOrder: 4500 });
+        if (h) h.group.quaternion.copy(camera.quaternion); // 지도 카메라를 바라보게
+      });
+      return;
+    }
     const map = { fire: 'fx_firehit', bolt: 'fx_bolt', heal: 'fx_glow', buff: 'fx_ring', shield: 'fx_ring', slash: 'fx_cross', laser: 'fx_glow', shot: 'fx_spark', spawn: 'fx_ring', hit: 'fx_spark' }[kind] || 'fx_glow';
     const col = { heal: 0x70ff9a, buff: 0xffc14d, shield: 0x7fc8ff, laser: 0xff7ad5, spawn: 0xff6655 }[kind] || 0xffffff;
     wait(delay).then(() => {
@@ -666,7 +695,7 @@
   cv.addEventListener('contextmenu', (e) => { e.preventDefault(); if (mode === 'map') cancel(); });
   cv.addEventListener('pointerdown', (e) => {
     if (mode !== 'map') return;
-    cv.setPointerCapture(e.pointerId);
+    try { cv.setPointerCapture(e.pointerId); } catch (_) { /* 이미 끝난 손가락 */ }
     ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY });
     if (ptrs.size === 1) drag = { moved: false, x: e.clientX, y: e.clientY, btn: e.button };
     if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), z: cam.zoom }; drag && (drag.moved = true); }
@@ -886,15 +915,39 @@
     if (!world) return;
     const OS = 32, g = world.oc.getContext('2d');
     g.clearRect(0, 0, world.oc.width, world.oc.height);
-    const fillTiles = (list, fill, stroke) => {
+    // 원작 전투 칸 결: 가장자리가 밝은 판 + 얇은 테 + 네 모서리 꺾쇠, 공격·위험 칸은 사선 빗금
+    const hatch = (g.__hatch = g.__hatch || (() => {
+      const c = document.createElement('canvas'); c.width = c.height = 8;
+      const h = c.getContext('2d'); h.strokeStyle = 'rgba(255,255,255,.22)'; h.lineWidth = 1.5;
+      h.beginPath(); h.moveTo(-2, 10); h.lineTo(10, -2); h.moveTo(6, 10); h.lineTo(10, 6); h.moveTo(-2, 2); h.lineTo(2, -2); h.stroke();
+      return g.createPattern(c, 'repeat');
+    })());
+    const fillTiles = (list, rgb, a, hatched, corner = true) => {
       if (!list) return;
       for (const [x, y] of list) {
-        g.fillStyle = fill; rr(g, x * OS + 1.5, y * OS + 1.5, OS - 3, OS - 3, 5); g.fill();
-        if (stroke) { g.strokeStyle = stroke; g.lineWidth = 1.5; g.stroke(); }
+        const x0 = x * OS + 1.5, y0 = y * OS + 1.5, w = OS - 3;
+        const lg = g.createRadialGradient(x0 + w / 2, y0 + w / 2, 2, x0 + w / 2, y0 + w / 2, w * 0.75);
+        lg.addColorStop(0, `rgba(${rgb},${a * 0.45})`); lg.addColorStop(1, `rgba(${rgb},${a})`);
+        g.fillStyle = lg; rr(g, x0, y0, w, w, 3); g.fill();
+        if (hatched) { g.fillStyle = hatch; g.fill(); }
+        g.strokeStyle = `rgba(${rgb},${Math.min(1, a + 0.45)})`; g.lineWidth = 1.2; g.stroke();
+        if (corner) { // 모서리 꺾쇠
+          g.strokeStyle = 'rgba(255,255,255,.85)'; g.lineWidth = 1.6; const k = 6, m = 3;
+          g.beginPath();
+          g.moveTo(x0 + m, y0 + m + k); g.lineTo(x0 + m, y0 + m); g.lineTo(x0 + m + k, y0 + m);
+          g.moveTo(x0 + w - m - k, y0 + w - m); g.lineTo(x0 + w - m, y0 + w - m); g.lineTo(x0 + w - m, y0 + w - m - k);
+          g.stroke();
+        }
       }
     };
-    if (OV.danger) fillTiles(OV.danger, 'rgba(255,60,70,.22)', 'rgba(255,90,90,.35)');
-    if (OV.aura) {
+    if (OV.danger) fillTiles(OV.danger, '255,60,80', 0.24, true, false);
+    fillTiles(OV.ghost, '63,180,255', 0.18, false, false);
+    fillTiles(OV.atk, '255,59,92', 0.45, true);
+    fillTiles(OV.move, '40,150,255', 0.55);
+    fillTiles(OV.skill, '170,90,255', 0.45, true);
+    fillTiles(OV.area, '255,170,40', 0.6, true);
+    fillTiles(OV.targets, '255,40,70', 0.55, true);
+    if (OV.aura) { // 지휘 재능 범위: 이동 칸 위에 노란 테두리
       const set = new Set(OV.aura.map(([x, y]) => x + ',' + y));
       g.fillStyle = 'rgba(255,214,100,.16)';
       for (const [x, y] of OV.aura) g.fillRect(x * OS, y * OS, OS, OS);
@@ -906,19 +959,18 @@
         if (!set.has((x + 1) + ',' + y)) { g.beginPath(); g.moveTo(x * OS + OS - 1, y * OS); g.lineTo(x * OS + OS - 1, y * OS + OS); g.stroke(); }
       }
     }
-    fillTiles(OV.ghost, 'rgba(70,150,255,.18)', 'rgba(160,210,255,.45)');
-    fillTiles(OV.atk, 'rgba(255,50,60,.42)', 'rgba(255,150,150,.85)');
-    fillTiles(OV.move, 'rgba(40,130,255,.55)', 'rgba(200,230,255,.95)');
-    fillTiles(OV.skill, 'rgba(150,70,255,.42)', 'rgba(220,180,255,.9)');
-    fillTiles(OV.area, 'rgba(255,150,50,.55)', 'rgba(255,220,150,.95)');
-    fillTiles(OV.targets, 'rgba(255,40,40,.5)', 'rgba(255,200,200,.95)');
     if (OV.path && OV.path.length > 1) {
-      g.strokeStyle = 'rgba(255,240,180,.95)'; g.lineWidth = 5; g.lineCap = 'round'; g.lineJoin = 'round';
-      g.beginPath();
-      OV.path.forEach(([x, y], i) => { const px = x * OS + OS / 2, py = y * OS + OS / 2; if (i) g.lineTo(px, py); else g.moveTo(px, py); });
-      g.stroke();
-      const [ex, ey] = OV.path[OV.path.length - 1];
-      g.fillStyle = 'rgba(255,240,180,.95)'; g.beginPath(); g.arc(ex * OS + OS / 2, ey * OS + OS / 2, 6, 0, 7); g.fill();
+      // 이동 길: 노란 띠 + 끝에 원작 결 꺾쇠 화살
+      g.lineCap = 'round'; g.lineJoin = 'round';
+      const trace = () => { g.beginPath(); OV.path.forEach(([x, y], i) => { const px = x * OS + OS / 2, py = y * OS + OS / 2; if (i) g.lineTo(px, py); else g.moveTo(px, py); }); };
+      trace(); g.strokeStyle = 'rgba(0,0,0,.45)'; g.lineWidth = 8; g.stroke();
+      trace(); g.strokeStyle = 'rgba(255,204,0,.95)'; g.lineWidth = 4; g.stroke();
+      const [ex, ey] = OV.path[OV.path.length - 1], [px0, py0] = OV.path[OV.path.length - 2];
+      const ang = Math.atan2(ey - py0, ex - px0), cx = ex * OS + OS / 2, cy = ey * OS + OS / 2;
+      g.save(); g.translate(cx, cy); g.rotate(ang);
+      g.fillStyle = '#ffcc00'; g.strokeStyle = 'rgba(0,0,0,.6)'; g.lineWidth = 2;
+      g.beginPath(); g.moveTo(9, 0); g.lineTo(-5, -9); g.lineTo(-1, 0); g.lineTo(-5, 9); g.closePath(); g.stroke(); g.fill();
+      g.restore();
     }
     world.ot.needsUpdate = true;
   }
@@ -976,13 +1028,14 @@
       el.classList.remove('hidden'); syncInfoH(); return;
     }
     const t = R.terr(G, u.x, u.y);
-    const pct = (k) => { const b = R.buffK(u, k); return b > 1.001 ? ` <span class="up">(+${Math.round((b - 1) * 100)}%)</span>` : ''; };
+    const pct = (k) => { const b = R.buffK(u, k) * R.auraK(G, u, k); return b > 1.001 ? ` <span class="up">(+${Math.round((b - 1) * 100)}%)</span>` : ''; };
     const sk = R.skillsOf(u).map((s) => D.SKILLS[s].name + (u.cd[s] > 0 ? `<span class="cd">(${u.cd[s]})</span>` : '')).join(', ') || '없음';
     const troopLine = u.troop ? `<div class="tline"><img src="${IMG[u.troop.icon]}">${u.troop.name} ${kindTag(u.troop.kind)} 공격 <b>${Math.round(R.atk(u, 'T'))}</b> · 방어 <b>${Math.round(R.def(u, 'T'))}</b></div>` : '<div class="tline">병사 없음</div>';
     el.innerHTML = `<div class="pic ${u.side}" style="background-image:url(${IMG[u.icon]})"><span class="lv">Lv${u.lv}</span></div>
       <div class="nm">${u.name}${kindTag(u.kind)}<small>${u.cls}</small></div>
       ${bars(u)}
-      <div class="st">공격 <b>${Math.round(R.atk(u, 'H'))}</b>${pct('at')} · 방어 <b>${Math.round(R.def(u, 'H'))}</b>${pct('df')} · 이동 <b>${R.mov(u)}</b> · 사거리 <b>${u.rng}</b></div>
+      <div class="st">공격 <b>${Math.round(R.atk(u, 'H') * R.auraK(G, u, 'at'))}</b>${pct('at')} · 방어 <b>${Math.round(R.def(u, 'H') * R.auraK(G, u, 'df'))}</b>${pct('df')} · 이동 <b>${R.mov(u)}</b> · 사거리 <b>${u.rng}</b></div>
+      ${R.talentOf(u) ? `<div class="tal"><b>재능 · ${R.talentOf(u).name}</b> ${R.talentOf(u).desc}</div>` : ''}
       <div class="ex">${troopLine}특기: ${sk}${u.side === 'p' ? ` · 경험치 <b>${u.exp}</b>/100` : ''} · 지형 ${t.name}${u.move !== 'fly' && t.def ? ` (${t.def > 0 ? '+' : ''}${Math.round(t.def * 100)}%)` : ''}</div>`;
     el.classList.remove('hidden');
     syncInfoH();
@@ -1094,12 +1147,20 @@
       default: break;
     }
   }
+  // 지휘 재능(주변 아군 강화)의 범위: 노란 테두리
+  function auraTiles(u) {
+    const t = R.talentOf(u);
+    if (!t || !t.aura) return null;
+    const out = [];
+    for (let y = 0; y < G.h; y++) for (let x = 0; x < G.w; x++) if (R.dist(u.x, u.y, x, y) <= t.aura.r) out.push([x, y]);
+    return out;
+  }
   function inspect(u) {
     showInfo(u);
     const rg = ranges(u, R.reach(G, u));
     OV.move = u.side === 'e' ? null : rg.mv;
     OV.atk = u.side === 'e' ? [...rg.mv, ...rg.atk] : rg.atk;
-    OV.aura = null; OV.path = null; OV.targets = null; OV.skill = null; OV.area = null;
+    OV.aura = auraTiles(u); OV.path = null; OV.targets = null; OV.skill = null; OV.area = null;
     drawOverlay();
     setHint(u.side === 'e' ? `${u.name}: 이동·공격 가능 범위` : '');
   }
@@ -1109,7 +1170,7 @@
     ui.sel = u; ui.state = 'move'; ui.from = [u.x, u.y];
     ui.reach = R.reach(G, u);
     const rg = ranges(u, ui.reach);
-    OV.move = rg.mv; OV.atk = rg.atk; OV.aura = null; OV.path = null; OV.targets = null;
+    OV.move = rg.mv; OV.atk = rg.atk; OV.aura = auraTiles(u); OV.path = null; OV.targets = null;
     drawOverlay();
     showInfo(u);
     showActs([{ label: '제자리', sub: '이동 안 함', fn: openActions }, { label: '취소', fn: deselect }]);
@@ -1118,7 +1179,7 @@
   }
   function deselect() {
     ui.sel = null; ui.state = 'idle'; ui.reach = null; ui.target = null;
-    clearOv(); showActs(null); setHint(''); $('forecast').classList.add('hidden');
+    clearOv(); showActs(null); setHint(''); $('forecast').classList.add('hidden'); LOHUD.target(null);
     showInfo(null);
     renderRoster();
   }
@@ -1243,17 +1304,18 @@
       <div class="rel">${rel}${near} · 적 지형 ${terr.name}${d.move !== 'fly' && terr.def ? ` ${terr.def > 0 ? '+' : ''}${Math.round(terr.def * 100)}%` : ''}${p.dDead ? ' · <span class="good">격파 예상</span>' : ''}</div>
       <div class="btns"><button class="gold" id="fcGo">공격</button><button id="fcNo">취소</button></div>`;
     el.classList.remove('hidden');
+    { const sp = toScreen(new THREE.Vector3(d.x + 0.5, d.def.big ? 2.1 : 1.6, d.y + 0.5)); LOHUD.target(sp.x, sp.y, 'r'); } // 원작 TARGET 표지
     $('fcGo').onclick = () => confirmAttack();
     $('fcNo').onclick = () => backToTarget();
     showInfo(d);
     showActs(null);
     setHint('같은 적을 한 번 더 누르면 공격합니다');
   }
-  function backToTarget() { $('forecast').classList.add('hidden'); ui.target = null; openActions(); }
+  function backToTarget() { $('forecast').classList.add('hidden'); LOHUD.target(null); ui.target = null; openActions(); }
   async function confirmAttack() {
     const a = ui.sel, d = ui.target;
     if (!a || !d) return;
-    $('forecast').classList.add('hidden');
+    $('forecast').classList.add('hidden'); LOHUD.target(null);
     busy = true; showActs(null); clearOv(); setHint('');
     await attack(a, d);
     busy = false;
@@ -1262,7 +1324,7 @@
   }
   function cancel() {
     if (busy) return;
-    $('forecast').classList.add('hidden');
+    $('forecast').classList.add('hidden'); LOHUD.target(null);
     switch (ui.state) {
       case 'move': deselect(); break;
       case 'menu': {
@@ -1320,12 +1382,18 @@
     await Promise.all(deaths);
     if (deaths.length) await wait(200);
   }
+  let shakeT = 0, shakeA = 0;
+  function shake(sec, amp) { if (save.opts.shake === false) return; shakeT = sec; shakeA = amp; }
+  // 무기 갈래 (공격 소리 기준) → 지도 효과 갈래
+  const weaponKind = (u) => ({ cannon: 'heavy', missile: 'heavy', expM: 'heavy', expB: 'heavy', laserBig: 'energy', elec: 'energy', energy: 'energy', charge: 'energy', spray: 'energy',
+    slash: 'melee', swing: 'melee' }[u.def.sfx] || 'hit');
   async function mapClash(a, d, res) {
     const va = views.get(a.uid), vd = views.get(d.uid);
     va.rig.once('atk', Math.max(1, va.rig.dur('atk') / 1.0) * speedK);
     AU.play(a.def.sfx, 0.7);
+    if (weaponKind(a) !== 'melee') fxAt(a.x, a.y, 'muzzle', 120); // 연출을 꺼도 지도에서 총구 번쩍임
     await wait(380);
-    fxAt(d.x, d.y, 'hit');
+    fxAt(d.x, d.y, weaponKind(a));
     vd.rig.c.setFlash(1);
     await wait(120);
     vd.rig.c.setFlash(0);
@@ -1333,8 +1401,9 @@
     if (res.counter) {
       vd.rig.once('atk', Math.max(1, vd.rig.dur('atk') / 1.0) * speedK);
       AU.play(d.def.sfx, 0.6);
+      if (weaponKind(d) !== 'melee') fxAt(d.x, d.y, 'muzzle', 120);
       await wait(380);
-      fxAt(a.x, a.y, 'hit');
+      fxAt(a.x, a.y, weaponKind(d));
       va.rig.c.setFlash(1);
       await wait(120);
       va.rig.c.setFlash(0);
@@ -1345,6 +1414,7 @@
     u.alive = false; u.hp = 0;
     const v = views.get(u.uid);
     pop(u.x, u.y, u.side === 'p' ? '퇴각' : '격파!', 'info big', 1.3);
+    fxAt(u.x, u.y, u.side === 'e' ? (u.def.big ? 'bigboom' : 'boom') : 'dust'); // 원작 효과: 철충은 폭발
     if (v) {
       for (const r of [v.rig, ...v.soldiers.map((s) => s.rig)]) if (r.c.has('die')) r.once('die', 1.4 * speedK, true);
       await animateP(0.9, (k) => { for (const r of [v.rig, ...v.soldiers.map((s) => s.rig)]) r.c.setOpacity(1 - k * k); });
@@ -1353,19 +1423,43 @@
     if (u.boss || u.lead) AU.play(u.side === 'p' ? 'fail' : 'expB', 0.6);
     updateDanger();
   }
+  // 특기 갈래마다 다른 원작 효과 연출 (지도 위)
+  //  fire: 칸마다 차례로 터지는 폭발 + 가운데 땅 갈라짐 + 화면 흔들림
+  //  laser: 시전자에서 먼 칸으로 이어지는 에너지 타격 + 화면 번쩍임
+  //  slash: 칼날 타격 + 베기 선 + 강한 일격, shot: 총구 번쩍임 + 총탄 타격 + 강한 일격
+  //  heal·buff·shield: 대상마다 원작 회복·강화·방어막
+  function skillFx(u, s, area, tx, ty) {
+    const byDist = area.slice().sort((a, b) => R.dist(u.x, u.y, a[0], a[1]) - R.dist(u.x, u.y, b[0], b[1]));
+    if (s.fx === 'fire') {
+      byDist.forEach(([x, y], i) => fxAt(x, y, i % 3 ? 'boom' : 'heavy', i * 70));
+      fxAt(tx, ty, 'crack', 60);
+      shake(0.35, 0.12); LOHUD.flash('rgba(255,160,40,.35)', 260);
+    } else if (s.fx === 'laser') {
+      byDist.forEach(([x, y], i) => fxAt(x, y, 'energy', i * 55));
+      LOHUD.flash('rgba(160,200,255,.45)', 300); shake(0.25, 0.08);
+    } else if (s.fx === 'slash') {
+      byDist.forEach(([x, y], i) => { fxAt(x, y, 'melee', i * 60); fxAt(x, y, 'slashline', i * 60 + 40); fxAt(x, y, 'crit', i * 60 + 90); });
+      shake(0.25, 0.1);
+    } else if (s.fx === 'shot') {
+      fxAt(u.x, u.y, 'muzzle', 0);
+      byDist.forEach(([x, y], i) => { fxAt(x, y, 'hit', 80 + i * 50); fxAt(x, y, 'crit', 140 + i * 50); });
+    } else byDist.forEach(([x, y], i) => { if (R.unitAt(G, x, y) || s.fx !== 'heal') fxAt(x, y, s.fx, i * 40); });
+  }
   async function useSkill(u, sk, tx, ty) {
     const s = D.SKILLS[sk];
     u.cd[sk] = s.cd + 1; // 다음 차례 시작에 1 줄어 s.cd 턴 동안 못 쓴다
     faceTo(u, tx);
     const v = views.get(u.uid);
     panTo(tx, ty);
-    banner(s.name, u.name, u.side === 'e' ? 'e' : 'gold');
-    if (v && v.rig.c.has('skill')) v.rig.once('skill', Math.max(1, v.rig.dur('skill') / 1.6) * speedK);
+    LOHUD.cutin(u, s.name, speedK); // 원작식 특기 컷인
+    fxAt(u.x, u.y, s.power ? 'charge' : 'cast', 300); // 시전자 둘레에 원작 기 모으기 효과
     AU.play('charge', 0.5);
+    await wait(950);
+    if (v && v.rig.c.has('skill')) v.rig.once('skill', Math.max(1, v.rig.dur('skill') / 1.6) * speedK);
     OV.area = R.skillArea(G, u, sk, tx, ty); drawOverlay();
-    await wait(800);
+    await wait(500);
     AU.play(s.sfx, 0.8);
-    OV.area.forEach(([x, y], i) => fxAt(x, y, s.fx, i * 40));
+    skillFx(u, s, OV.area, tx, ty);
     await wait(350);
     const deaths = [];
     for (const r of R.skillEffect(G, u, sk, tx, ty, Math.random)) {
@@ -1373,13 +1467,13 @@
         R.apply(r.u, r.toT, r.toH);
         u.dealt = (u.dealt || 0) + r.toT + r.toH;
         popDmg(r.u, r.toT, r.toH);
-        if (s.slow) r.u.slowNext = s.slow;
+        if (s.slow) { r.u.slowNext = s.slow; fxAt(r.u.x, r.u.y, 'debuff', 200); }
         refreshView(r.u);
         if (r.u.hp <= 0) deaths.push(kill(r.u));
       } else {
         if (r.hH || r.hT) {
           r.u.hp += r.hH; if (r.u.troop) r.u.troop.hp += r.hT;
-          pop(r.u.x, r.u.y, '+' + Math.round(r.hH + r.hT), 'heal');
+          popNum(r.u.x, r.u.y, r.hH + r.hT, 'heal');
         }
         if (r.buff) {
           r.u.buffs = r.u.buffs.filter((b) => !Object.keys(s.buff).some((k) => b[k]));
@@ -1414,7 +1508,7 @@
     }
     clearOv(); setTop();
     if (side === 'p' && G.stage.turnLimit && G.turn > G.stage.turnLimit) { await endStage(false, '제한 턴을 넘겼습니다'); return; }
-    banner(side === 'p' ? `${G.turn}턴 · 아군 차례` : '적 차례', side === 'p' && G.stage.turnLimit ? `제한 ${G.stage.turnLimit}턴` : '', side === 'e' ? 'e' : '');
+    LOHUD.phase(side, G.turn, side === 'p' && G.stage.turnLimit ? `제한 ${G.stage.turnLimit}턴` : '', speedK);
     AU.play(side === 'p' ? 'start' : 'warning', 0.5);
     await wait(900);
     let healed = false;
@@ -1425,13 +1519,13 @@
       const a = Math.min(u.hpMax - u.hp, Math.round(u.hpMax * h)), b = u.troop ? Math.min(u.troop.hpMax - u.troop.hp, Math.round(u.troop.hpMax * h)) : 0;
       if (a + b <= 0) continue;
       u.hp += a; if (u.troop) u.troop.hp += b;
-      pop(u.x, u.y, '+' + (a + b), 'heal'); healed = true;
+      popNum(u.x, u.y, a + b, 'heal'); healed = true;
     }
     if (healed) { AU.play('energy', 0.4); await wait(500); }
     if (side === 'e') { // 정해진 턴의 적 차례에 증원
       for (const i of R.wavesAt(G, G.turn)) {
         const list = R.spawnWave(G, i);
-        banner('철충 증원!', `${list.length}기 출현`, 'e');
+        LOHUD.caution('철충 증원!', `${list.length}기 출현`);
         AU.play('reinforce', 0.7);
         for (const u of list) { addView(u); fxAt(u.x, u.y, 'spawn'); }
         if (list[0]) panTo(list[0].x, list[0].y, true);
@@ -1456,11 +1550,21 @@
     const g0 = G; // 도중에 작전이 바뀌면(포기·재시작) 멈춘다
     const near = (u) => Math.min(99, ...G.units.filter((o) => o.alive && o.side !== side).map((o) => R.dist(o.x, o.y, u.x, u.y)));
     const list = G.units.filter((u) => u.alive && u.side === side && !u.acted).sort((a, b) => (a.lead || a.boss ? 1 : 0) - (b.lead || b.boss ? 1 : 0) || near(a) - near(b));
-    for (const u of list) {
+    // 매번 남은 유닛 중 이번에 가장 좋은 수(격파·큰 피해·특기)를 가진 유닛부터 움직인다 (협공으로 마무리하도록).
+    // 공격할 것이 없는 유닛은 원래 순서(가까운 유닛부터)대로 뒤에 움직인다
+    const left = list.slice();
+    while (left.length) {
       if (G !== g0 || mode === 'screen') return false;
-      if (!u.alive) continue;
       if (side === 'p' && !autoOn) return true;
-      const plan = R.plan(G, u, fields);
+      let pick = 0, plan = null, best = -Infinity;
+      left.forEach((o, i) => {
+        if (!o.alive) return;
+        const p = R.plan(G, o, fields);
+        const sc = p.act === 'wait' ? -1e9 - i : p.sc + (p.act === 'attack' && p.target && R.combat(G, o, p.target, p.to[0], p.to[1]).dDead ? 5 : 0);
+        if (sc > best) { best = sc; pick = i; plan = p; }
+      });
+      const u = left.splice(pick, 1)[0];
+      if (!u.alive || !plan) continue;
       u.acted = true;
       const moved = plan.to[0] !== u.x || plan.to[1] !== u.y;
       if (!moved && plan.act === 'wait') { refreshView(u); continue; }
@@ -1729,6 +1833,8 @@
       <p><b>적의 움직임</b> · 적은 아군이 자기 공격 범위(위험 범위)에 들어와야 움직이기 시작합니다. 「위험」 단추로 범위를 확인하고 하나씩 끌어내세요. 증원은 정해진 턴에 나타나며, 그 전에 적을 모두 쓰러뜨리면 승리합니다.</p>
       <p><b>경험치</b> · 전투가 끝나면 참가한 영웅 전원이 같은 양을 받습니다.</p>
       <p><b>특기</b> · 쓰고 나면 정해진 턴 동안 다시 쓸 수 없습니다(괄호 안 숫자).</p>
+      <p><b>지배 영역</b> · 적과 맞닿는 칸에 들어서면 그 자리에서 멈춥니다. 적 사이를 빠져나갈 수 없으니 길목을 막아 지키세요 (적도 마찬가지).</p>
+      <p><b>재능</b> · 영웅마다 늘 켜져 있는 고유 재능이 있습니다 (지휘 범위 강화, 선제공격 강화, 피해 감소 등). 영웅 정보에서 확인하세요.</p>
       <p><b>지형</b> · 숲 +20%, 산·언덕·기지 +10%, 폐허·마을 +5% 방어. 기병은 숲·산에서 느려지고, 비병은 지형의 영향을 받지 않습니다. 적 칸은 지나갈 수 없습니다.</p>
       <p><b>조작</b> · 누르기: 선택·이동·공격 / 끌기: 지도 이동 / 두 손가락·휠: 확대 / 오른쪽 클릭·Esc: 취소 / 키보드: 방향키 커서 · Enter 결정 · Esc 취소 · Tab 다음 영웅 · A 공격 · W 대기 · E 턴 종료 (전체 목록은 전투 중 H)</p>
       <div class="opts"><button class="gold" data-a="ok">확인</button></div>`, cb);
@@ -2269,6 +2375,8 @@
     setTop();
     if (st.id === 1 && !st.kind && !save.tutSeen) { save.tutSeen = true; writeSave(); await new Promise((r) => help(r)); }
     AU.play('lo_battle_start', 0.7);
+    LOHUD.start(`${st.idx} ${st.title}`, `승리 조건 · ${st.goal}`);
+    await wait(1900);
     await startPhase('p');
   }
   function leaveMap() {
@@ -2279,7 +2387,7 @@
     mapFx.length = 0;
     G = null;
     $('hud').classList.add('hidden');
-    $('forecast').classList.add('hidden');
+    $('forecast').classList.add('hidden'); LOHUD.target(null);
     showActs(null);
     $('info').classList.add('hidden');
     $('modal').classList.add('hidden');
@@ -2324,7 +2432,7 @@
     busy = true;
     const g = G, st = G.stage;
     await wait(400);
-    banner(win ? '작전 성공!' : '작전 실패', why || (win ? st.goal + ' 달성' : '콘스탄챠가 퇴각했습니다'), win ? 'gold' : 'e');
+    LOHUD.result(win, why || (win ? st.goal + ' 달성' : '콘스탄챠가 퇴각했습니다'));
     AU.bgm(null);
     AU.play(win ? 'lo_win' : 'fail', 0.8);
     await wait(1700);
@@ -2423,12 +2531,20 @@
       a.fn(k);
       if (k >= 1) { anims.splice(i, 1); a.done && a.done(); }
     }
+    if (window.FXLIB) FXLIB.update(dt * speedK); // 원작 효과 플립북
     if (mode === 'fight') {
       FIGHT.update(dt);
       FIGHT.render(renderer);
       return;
     }
     if (!G || !world) { renderer.render(scene, camera); return; }
+    // 화면 흔들림 (큰 특기·폭발)
+    if (shakeT > 0) {
+      shakeT -= dt;
+      const k = Math.max(0, shakeT) * shakeA * 10;
+      camera.position.x += (Math.random() - 0.5) * k; camera.position.z += (Math.random() - 0.5) * k;
+      if (shakeT <= 0) placeCamera();
+    }
     // 카메라 부드럽게 이동
     if (cam.tx != null) {
       const k = 1 - Math.pow(0.0015, dt);
@@ -2445,6 +2561,16 @@
       v.ring.scale.setScalar(ui.sel === v.u ? 1 + Math.sin(t * 6) * 0.08 : 1);
       if (v.u.move === 'fly') v.bb.position.y = 0.06 + Math.sin(t * 2.2 + v.bob) * 0.04;
     }
+    // 고른 영웅 머리 위 원작 손 표지 (UI_Battle_main_Field_cursor_g), 위아래로 까딱인다
+    if (!world.selMark) {
+      const m = (world.selMark = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthTest: false })));
+      m.renderOrder = 5200; m.center.set(0.5, 0); m.visible = false;
+      world.root.add(m);
+      loadTex('assets/ui/UI_Battle_main_Field_cursor_g.png').then((tx) => { if (tx) { m.material.map = tx; m.material.needsUpdate = true; } });
+    }
+    const sv = ui.sel && views.get(ui.sel.uid);
+    world.selMark.visible = !!(sv && world.selMark.material.map && mode === 'map');
+    if (sv) { world.selMark.position.set(sv.g.position.x, (sv.u.def.big ? 1.6 : 1.2) + Math.abs(Math.sin(t * 4)) * 0.12, sv.g.position.z); world.selMark.scale.set(0.34, 0.4, 1); }
     if (world.water) world.water.material.map.offset.set(t * 0.03, t * 0.02);
     if (world.cursor.visible) world.cursor.scale.setScalar(1 + Math.sin(t * 5) * 0.04);
     for (let i = mapFx.length - 1; i >= 0; i--) {
@@ -2473,7 +2599,9 @@
     $('boot').classList.add('hidden');
     requestAnimationFrame(frame);
     title();
-    WM3D.load(CHAPTERS[curCh()].id).catch(() => {}); // 월드맵 3D 자료는 타이틀 동안 미리 받아 둔다
+    WM3D.load(CHAPTERS[curCh()].id).catch(() => {});
+    if (window.FXLIB) FXLIB.preload(); // 원작 전투 효과 그림도 미리
+    LOHUD.speedOf = () => speedK; // 배너·컷인 길이를 배속에 맞춘다 // 월드맵 3D 자료는 타이틀 동안 미리 받아 둔다
     // 첫 터치에서 배경음 시작 (모바일 정책)
     const kick = () => { AU.bgm(AU.bgmName || 'lo_title'); removeEventListener('pointerdown', kick); };
     addEventListener('pointerdown', kick);

@@ -71,6 +71,8 @@ button.red { background: linear-gradient(#a8343a, #6d1e25); }
 #info .st .dn { color: #ff8a7a; }
 #info .ex { grid-column: 1 / -1; font-size: 12px; color: var(--dim); border-top: 1px solid var(--line); padding-top: 5px; }
 #info .ex b { color: var(--gold); }
+#info .tal { grid-column: 1 / -1; font-size: 12px; color: #cfe8ff; }
+#info .tal b { color: #7fe0ff; margin-right: 4px; }
 
 /* ── 행동 메뉴 ── */
 #acts { position: fixed; z-index: 6; display: flex; gap: 8px; }

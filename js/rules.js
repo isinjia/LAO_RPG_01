@@ -122,7 +122,9 @@
   R.skillsOf = (u) => (u.side === 'p' ? u.def.tiers[u.tier].skills : u.def.skills || []);
 
   // ── 이동 범위 ──────────────────────────────────────────
-  // 적 칸은 지나갈 수 없고, 아군 칸은 지나가기만 한다 (적과 맞닿아도 멈추지 않는다)
+  // 적 칸은 지나갈 수 없고, 아군 칸은 지나가기만 한다.
+  // 지배 영역(랑그릿사): 적과 맞닿는 칸에 들어서면 거기서 멈춘다 (처음부터 맞닿아 있던 칸에서는 떠날 수 있다)
+  R.zoc = (G, u, x, y) => G.units.some((o) => o.alive && o.side !== u.side && Math.abs(o.x - x) + Math.abs(o.y - y) === 1);
   R.reach = function (G, u, movOverride) {
     const mov = movOverride != null ? movOverride : R.mov(u);
     const best = new Map();
@@ -133,6 +135,7 @@
       q.sort((a, b) => a[2] - b[2]);
       const [x, y, c] = q.shift();
       if (c > best.get(key(x, y)).c) continue;
+      if (c > 0 && R.zoc(G, u, x, y)) { best.get(key(x, y)).zoc = true; continue; } // 지배 영역에 들어선 칸에서는 더 못 간다
       for (const [dx, dy] of DIRS) {
         const nx = x + dx, ny = y + dy;
         if (!R.inB(G, nx, ny)) continue;
@@ -158,6 +161,43 @@
   };
   R.targetsFrom = (G, u, x, y) => G.units.filter((o) => o.alive && o.side !== u.side && R.dist(x, y, o.x, o.y) >= 1 && R.dist(x, y, o.x, o.y) <= u.rng);
 
+  // ── 재능 (랑그릿사 모바일의 영웅 고유 재능) ─────────────
+  // HEROES[id].talent = { name, desc, ...효과 }. 효과 종류:
+  //   aura: { r, at, df }  주변 r칸 아군(자신 제외) 공격·방어 보정
+  //   first: 먼저 공격할 때 피해 +   guard: 공격받을 때(반격 포함 모든 방어) 받는 피해 -
+  //   hpHigh: [비율, +] 영웅 체력이 비율 이상이면 피해 +   hpLow: [비율, +] 영웅 체력이 비율 이하면 피해 +
+  //   chase: [비율, +] 상대 총체력이 비율 이하면 피해 +   far: 2칸 이상 떨어져 공격할 때 피해 +
+  //   slowed: 이동 감소가 걸린 상대에게 피해 +   troopGuard: 병사가 받는 피해 -
+  const BOSS_TALENT = { name: '지휘 개체 장갑', guard: 0.15, desc: '받는 피해 -15% (큰 철충의 기본 재능)' };
+  R.talentOf = (u) => (u.def && (u.def.talent || (u.side === 'e' && u.def.big ? BOSS_TALENT : null))) || null;
+  R.auraK = function (G, u, k) {
+    let v = 0;
+    for (const o of G.units) {
+      if (!o.alive || o === u || o.side !== u.side) continue;
+      const t = R.talentOf(o);
+      if (t && t.aura && t.aura[k] && R.dist(o.x, o.y, u.x, u.y) <= t.aura.r) v = Math.max(v, t.aura[k]);
+    }
+    return 1 + v;
+  };
+  // a가 d를 칠 때 재능 배율 (init: a가 먼저 공격한 쪽인지, front: 맞는 쪽이 병사인지, sa·sd: 그 순간 상태)
+  R.talentK = function (G, a, d, init, dist, sa, sd, front) {
+    let k = 1;
+    const ta = R.talentOf(a), td = R.talentOf(d);
+    if (ta) {
+      if (ta.first && init) k *= 1 + ta.first;
+      if (ta.hpHigh && sa.hp >= a.hpMax * ta.hpHigh[0]) k *= 1 + ta.hpHigh[1];
+      if (ta.hpLow && sa.hp <= a.hpMax * ta.hpLow[0]) k *= 1 + ta.hpLow[1];
+      if (ta.chase && sd.hp + sd.thp <= R.totalMax(d) * ta.chase[0]) k *= 1 + ta.chase[1];
+      if (ta.far && dist >= 2) k *= 1 + ta.far;
+      if (ta.slowed && (d.slow || d.slowNext)) k *= 1 + ta.slowed;
+    }
+    if (td) {
+      if (td.guard) k *= 1 - td.guard;
+      if (td.troopGuard && front === 'T') k *= 1 - td.troopGuard;
+    }
+    return k;
+  };
+
   // ── 전투 ───────────────────────────────────────────────
   // 상성: REL[공격][방어] 만큼 유리(+30% 등), 반대로 불리하면 그만큼 나눈다. 원거리 병종이 붙어서 싸우면 30%만.
   R.relX = (a, b) => (REL[a] && REL[a][b]) || 0;
@@ -168,15 +208,16 @@
   const isRanged = (k) => !!(KIND[k] && KIND[k].ranged);
   const terrDef = (G, u, x, y) => (u.move === 'fly' ? 0 : R.terr(G, x, y).def);
   // a(상태 sa)가 d(상태 sd)를 한 번 친다. 상태 = { hp, thp, x, y }. 반환: 병사·영웅 피해
-  function strike(G, a, sa, d, sd, dist, k, rnd) {
+  function strike(G, a, sa, d, sd, dist, k, rnd, init) {
     const front = d.troop && sd.thp > 0 ? 'T' : 'H';
     const dKind = front === 'T' ? d.troop.kind : d.kind;
-    const dDef = R.def(d, front) * (1 + terrDef(G, d, sd.x, sd.y));
+    const dDef = R.def(d, front) * (1 + terrDef(G, d, sd.x, sd.y)) * R.auraK(G, d, 'df');
+    const aAt = R.auraK(G, a, 'at');
     // 피해 = 공격 x 상성 x 공/(공+방) x 1.1 (방어가 높아도 0이 되지 않는다)
     const part = (A, kind) => A * relK(kind, dKind) * (A / (A + dDef)) * 1.1 * (isRanged(kind) && dist === 1 ? R.MELEE_RANGED : 1);
-    let dmg = part(R.atk(a, 'H'), a.kind);
-    if (a.troop && sa.thp > 0) dmg += part(R.atk(a, 'T'), a.troop.kind) * (R.soldiers(a, sa.thp) / R.SQUAD); // 남은 병사 수만큼
-    dmg *= k * (rnd ? 0.9 + rnd() * 0.2 : 1);
+    let dmg = part(R.atk(a, 'H') * aAt, a.kind);
+    if (a.troop && sa.thp > 0) dmg += part(R.atk(a, 'T') * aAt, a.troop.kind) * (R.soldiers(a, sa.thp) / R.SQUAD); // 남은 병사 수만큼
+    dmg *= k * R.talentK(G, a, d, init, dist, sa, sd, front) * (rnd ? 0.9 + rnd() * 0.2 : 1);
     const toT = front === 'T' ? Math.min(sd.thp, dmg) : 0;
     const toH = Math.min(sd.hp, dmg - toT); // 병사가 다 쓰러지면 남은 피해는 영웅에게
     return { toT, toH, rel: R.typeRel(a.troop && sa.thp > 0 ? a.troop.kind : a.kind, dKind) };
@@ -193,8 +234,8 @@
     const N = R.ROUNDS, rounds = [];
     let rel = 0;
     for (let i = 0; i < N && sa.hp > 0.5 && sd.hp > 0.5; i++) {
-      const s1 = strike(G, a, sa, d, sd, dist, 1 / N, rnd);
-      const s2 = counter ? strike(G, d, sd, a, sa, dist, 0.8 / N, rnd) : { toT: 0, toH: 0 };
+      const s1 = strike(G, a, sa, d, sd, dist, 1 / N, rnd, true);
+      const s2 = counter ? strike(G, d, sd, a, sa, dist, 0.8 / N, rnd, false) : { toT: 0, toH: 0 };
       if (!i) rel = s1.rel;
       sd.thp -= s1.toT; sd.hp -= s1.toH; sa.thp -= s2.toT; sa.hp -= s2.toH; // 동시에
       rounds.push({ dT: s1.toT, dH: s1.toH, aT: s2.toT, aH: s2.toH });
@@ -255,8 +296,8 @@
       if (!o) continue;
       if (s.power && o.side !== u.side) {
         const front = R.troopAlive(o) ? 'T' : 'H';
-        const A = R.atk(u, 'H') * s.power, Df = R.def(o, front) * (1 + terrDef(G, o, o.x, o.y));
-        const dmg = A * (A / (A + Df)) * 1.8 * (rnd ? 0.9 + rnd() * 0.2 : 1);
+        const A = R.atk(u, 'H') * s.power * R.auraK(G, u, 'at'), Df = R.def(o, front) * (1 + terrDef(G, o, o.x, o.y)) * R.auraK(G, o, 'df');
+        const dmg = A * (A / (A + Df)) * 1.8 * R.talentK(G, u, o, true, R.dist(u.x, u.y, o.x, o.y), { hp: u.hp, thp: u.troop ? u.troop.hp : 0 }, { hp: o.hp, thp: o.troop ? o.troop.hp : 0 }, front) * (rnd ? 0.9 + rnd() * 0.2 : 1);
         const toT = front === 'T' ? Math.min(o.troop.hp, dmg) : 0;
         const toH = Math.min(o.hp, dmg - toT);
         res.push({ u: o, toT: rnd ? Math.round(toT) : toT, toH: rnd ? Math.round(toH) : toH });
