@@ -1535,7 +1535,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.18';
+  const GAME_VERSION = '0.19';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -1625,8 +1625,10 @@
         <i class="ico" style="background-image:url(assets/ui/${town ? 'UI_WolrdMap_Chapter_Icon_Story_WH' : `UI_WolrdMap_Chapter_Icon_Main_${col}`}.png)"></i>
         <b class="tag">${tag}</b>${em}${mark}</button>`;
     }).join('');
+    // 앞뒤 작전끼리 잇는 선: 둘 다 깬 길은 실선, 다음 작전으로 가는 길은 흐르는 점선
+    const links = D.STAGES.map((_, i) => [i, i + 1]).filter(([a, b]) => b < D.STAGES.length && nodeOpen(a) && nodeOpen(b));
     screen(`<div class="wscr">
-      <div class="wmap">${pins}
+      <div class="wmap"><svg class="wlink">${links.map(([a, b]) => `<line class="${b < save.clear ? 'done' : 'next'}"/>`).join('')}</svg>${pins}
         <div class="wtoken" id="wTok"><img src="${IMG[D.HEROES.constantia.icon]}" alt=""></div></div>
       <div class="wvig"></div>
       <div class="whead"><button class="wback" id="sBack" aria-label="뒤로"></button>
@@ -1638,9 +1640,14 @@
     // 원작 3D 지도를 깔고, 지점 단추와 부대 말은 매 순간 3D 자리를 화면에 비춰 붙인다
     let moving = 0, tokPos = null;
     const map = $('screen').querySelector('.wscr .wmap'), tok = $('screen').querySelector('#wTok');
-    const pinEls = [...map.querySelectorAll('.wnode')];
+    const pinEls = [...map.querySelectorAll('.wnode')], lineEls = [...map.querySelectorAll('.wlink line')];
     const SPEED = 0.35; // 지도 단위 / 초
     function place() {
+      links.forEach(([a, b], i) => {
+        const p = WM3D.project(nodePos(a)), q = WM3D.project(nodePos(b)), l = lineEls[i];
+        l.style.visibility = p && q ? '' : 'hidden';
+        if (p && q) { l.setAttribute('x1', p.x); l.setAttribute('y1', p.y); l.setAttribute('x2', q.x); l.setAttribute('y2', q.y); }
+      });
       for (const b of pinEls) {
         const s = WM3D.project(nodePos(b.dataset.n === WT ? WT : +b.dataset.n));
         b.style.visibility = s ? '' : 'hidden';
