@@ -718,8 +718,12 @@
   // 치트: 타이틀에서 "치트활성화온"을 치면 켜진다. 한글·영문 입력 상태와 상관없이 눌린 자판 위치(e.code)로 알아본다
   // (두벌식: 치=cl 트=xm 활=ghkf 성=tjd 화=ghk 온=dhs). 켜진 뒤 전투 중 Y = 적을 모두 지우고 바로 승리
   const CHEAT_KEYS = 'clxmghkftjdghkdhs';
-  // 챕터 목록 (지금은 1장만. 2장을 넣으면 H/J 치트로 오갈 수 있다)
-  const CHAPTERS = [{ id: 'ch01', name: '1장 지구의 마지막 인간' }];
+  // 챕터 목록: 원작 본편 지역(표의 챕터 이름·기록 그림). ready = 이 게임에 들어 있는 챕터 (지금은 1장만)
+  const CHAPTERS = [
+    ['01N', '지구의 마지막 인간', true], ['02N', '즐거운 나의 집'], ['03N', '호문쿨루스'], ['04N', '깊고 깊은 미궁'], ['05N', '기억 보관소'],
+    ['06N', '두 개의 묘'], ['07N', '바다의 부름'], ['08N', '철의 왕자의 유적'], ['09N', '흑과 백'], ['10N', '보은과 복수'], ['11N', '결말과 결실'],
+    ['12N01N', '눈물의 도시'], ['13N01N', '새벽의 설원'],
+  ].map(([img, title, ready], i) => ({ id: 'ch' + String(i + 1).padStart(2, '0'), no: i + 1, title, name: `${i + 1}장 ${title}`, img: `assets/ui/chapter/${img}.webp`, ready: !!ready }));
   let cheatBuf = '', cheatWin = false;
   function toast(msg) {
     let t = $('toast');
@@ -754,7 +758,7 @@
         }
         if (e.code === 'KeyH' || e.code === 'KeyJ') {
           const to = (save.chapter || 0) + (e.code === 'KeyH' ? -1 : 1);
-          if (to < 0 || to >= CHAPTERS.length) { toast(e.code === 'KeyH' ? '이전 챕터가 없습니다' : '다음 챕터가 없습니다 (지금은 1장만 있음)'); return; }
+          if (to < 0 || to >= CHAPTERS.length || !CHAPTERS[to].ready) { toast(e.code === 'KeyH' ? '이전 챕터가 없습니다' : '다음 챕터가 없습니다 (지금은 1장만 있음)'); return; }
           save.chapter = to; writeSave();
           toast(`치트: ${CHAPTERS[to].name}(으)로 이동`); stageSelect(); return;
         }
@@ -766,6 +770,8 @@
       if (!m.classList.contains('hidden')) { e.preventDefault(); m.click(); return; }
       if (mode === 'town') { const out = document.querySelector('#townHud .tn-out'); if (out) out.click(); return; }
       if (mode === 'screen') {
+        const chapL = $('screen').querySelector('.wscr .wchap.on');
+        if (chapL) { chapL.classList.remove('on'); return; }
         const info = $('screen').querySelector('.wscr .winfo.on'); // 전환용으로 복제해 둔 옛 화면(#wipeOld)은 빼고
         if (info) { info.classList.remove('on'); return; }
         const back = $('screen').querySelector('#pBack, #sBack');
@@ -1770,6 +1776,7 @@
   }
 
   let stageSel = -1; // 예전 이름 유지: 선택(정보 창)한 지점
+  const curChapter = () => CHAPTERS[save.chapter || 0] && CHAPTERS[save.chapter || 0].ready ? CHAPTERS[save.chapter || 0] : CHAPTERS[0];
   function stageSelect() {
     leaveMap();
     AU.bgm('lo_lobby');
@@ -1798,11 +1805,31 @@
         <div class="wtoken" id="wTok"><img src="${IMG[D.HEROES.constantia.icon]}" alt=""></div></div>
       <div class="wvig"></div>
       <div class="whead"><button class="wback" id="sBack" aria-label="뒤로"></button>
-        <div class="wtitle"><small>CHAPTER 01</small><b>지구의 마지막 인간</b></div></div>
+        <div class="wtitle"><small>CHAPTER ${String(curChapter().no).padStart(2, '0')}</small><b>${curChapter().title}</b></div></div>
       <div class="wtools"><button class="lo-btn dark" id="sHero">부대 현황</button></div>
+      <button class="wchapbtn" id="sChapBtn"><small>CHAPTER</small><b>${String(curChapter().no).padStart(2, '0')}</b><span>챕터 목록</span></button>
+      <div class="wchap" id="sChap"><div class="wchap-h"><small>CHAPTER LIST</small><b>챕터 선택</b><button class="wchap-x" id="sChapX" aria-label="닫기"></button></div>
+        <div class="wchap-l">${CHAPTERS.map((c, i) => `<button class="wch ${c === curChapter() ? 'on' : ''} ${c.ready ? '' : 'lock'}" data-i="${i}">
+          <i class="th" style="background-image:url(${c.img})"></i><span><small>CHAPTER ${String(c.no).padStart(2, '0')}</small><b>${c.title}</b>${c.ready ? '' : '<em>준비 중</em>'}</span>
+          ${c.ready ? '' : '<i class="lk"></i>'}</button>`).join('')}</div></div>
       <div class="winfo" id="sInfo"></div></div>`);
     $('sBack').onclick = () => { AU.play('lo_click', 0.6); title(); };
     $('sHero').onclick = () => { AU.play('lo_click', 0.6); heroRoster(); };
+    // 챕터 목록: 오른쪽 버튼으로 열고, 준비된 챕터만 이동
+    const chap = $('sChap');
+    $('sChapBtn').onclick = () => { AU.play('lo_click', 0.6); $('sInfo').classList.remove('on'); chap.classList.toggle('on'); };
+    $('sChapX').onclick = () => { AU.play('lo_click', 0.5); chap.classList.remove('on'); };
+    chap.querySelectorAll('.wch').forEach((b) => {
+      b.onclick = () => {
+        const c = CHAPTERS[+b.dataset.i];
+        if (!c.ready) { AU.play('fail', 0.4); toast(`${c.name} · 아직 준비 중인 챕터입니다`); return; }
+        AU.play('lo_click', 0.6);
+        if (c === curChapter()) { chap.classList.remove('on'); return; }
+        save.chapter = +b.dataset.i; writeSave();
+        toast(`${c.name}(으)로 이동`);
+        stageSelect();
+      };
+    });
     // 원작 3D 지도를 깔고, 지점 단추와 부대 말은 매 순간 3D 자리를 화면에 비춰 붙인다
     let moving = 0, tokPos = null;
     const map = $('screen').querySelector('.wscr .wmap'), tok = $('screen').querySelector('#wTok');
