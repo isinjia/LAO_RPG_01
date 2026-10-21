@@ -940,7 +940,7 @@
         }
       }
     };
-    if (OV.danger) fillTiles(OV.danger, '255,60,80', 0.24, true, false);
+    if (OV.danger) fillTiles(OV.danger, '255,60,80', ui.state === 'idle' ? 0.24 : 0.1, ui.state === 'idle', false); // 고르는 동안은 옅게
     fillTiles(OV.ghost, '63,180,255', 0.18, false, false);
     fillTiles(OV.atk, '255,59,92', 0.45, true);
     fillTiles(OV.move, '40,150,255', 0.55);
@@ -974,7 +974,7 @@
     }
     world.ot.needsUpdate = true;
   }
-  function clearOv(keepDanger = true) { for (const k in OV) if (!(keepDanger && k === 'danger')) OV[k] = null; drawOverlay(); }
+  function clearOv(keepDanger = true) { for (const k in OV) if (!(keepDanger && k === 'danger')) OV[k] = null; drawOverlay(); skillPreview(null); }
   // 이동 칸 + 그 칸들에서 칠 수 있는 칸
   function ranges(u, reach) {
     const mv = [], atk = new Map();
@@ -1036,6 +1036,7 @@
       ${bars(u)}
       <div class="st">공격 <b>${Math.round(R.atk(u, 'H') * R.auraK(G, u, 'at'))}</b>${pct('at')} · 방어 <b>${Math.round(R.def(u, 'H') * R.auraK(G, u, 'df'))}</b>${pct('df')} · 이동 <b>${R.mov(u)}</b> · 사거리 <b>${u.rng}</b></div>
       ${R.talentOf(u) ? `<div class="tal"><b>재능 · ${R.talentOf(u).name}</b> ${R.talentOf(u).desc}</div>` : ''}
+      ${R.passivesOf(u).map((t) => `<div class="tal pas"><b>수동 · ${t.name}</b> ${t.desc}</div>`).join('')}
       <div class="ex">${troopLine}특기: ${sk}${u.side === 'p' ? ` · 경험치 <b>${u.exp}</b>/100` : ''} · 지형 ${t.name}${u.move !== 'fly' && t.def ? ` (${t.def > 0 ? '+' : ''}${Math.round(t.def * 100)}%)` : ''}</div>`;
     el.classList.remove('hidden');
     syncInfoH();
@@ -1261,6 +1262,7 @@
     if (s.tgt === 'self') {
       ui.skillTile = [u.x, u.y];
       OV.area = R.skillArea(G, u, sk, u.x, u.y);
+      skillPreview(u, sk, [u.x, u.y]);
       showActs([{ label: '발동', cls: 'gold', sub: s.name, fn: doSkill }, { label: '취소', fn: cancel }]);
       setHint(s.desc);
     } else {
@@ -1276,6 +1278,27 @@
     const tt = ok ? t : ui.skillTile;
     OV.area = tt ? R.skillArea(G, u, sk, tt[0], tt[1]) : null;
     drawOverlay();
+    skillPreview(u, sk, tt);
+  }
+  // 특기 예상 숫자 (대상 머리 위): 피해는 빨강(격파면 「격파」), 회복은 초록, 강화는 노랑
+  let skPre = [];
+  function skillPreview(u, sk, tt) {
+    skPre.forEach((p) => p.el.remove()); skPre = [];
+    if (!u || !sk || !tt) return;
+    const s = D.SKILLS[sk];
+    for (const r of R.skillEffect(G, u, sk, tt[0], tt[1])) {
+      const el = document.createElement('div');
+      if (r.toT != null) { const n = Math.round(r.toT + r.toH), kill = r.toH >= r.u.hp - 0.5; el.className = 'skpre dmg' + (kill ? ' kill' : ''); el.innerHTML = `-${n}${kill ? '<b>격파</b>' : ''}${s.slow ? `<small>이동 -${s.slow}</small>` : ''}`; }
+      else if (r.hH || r.hT) { el.className = 'skpre heal'; el.textContent = '+' + Math.round(r.hH + r.hT); }
+      else if (r.buff) { el.className = 'skpre buff'; el.textContent = Object.entries(r.buff).map(([k, v]) => ({ at: '공격', df: '방어', mov: '이동' }[k] + '+' + Math.round(v * 100) + '%')).join(' '); }
+      else continue;
+      $('lofx').appendChild(el);
+      skPre.push({ el, u: r.u });
+    }
+    placeSkillPreview();
+  }
+  function placeSkillPreview() {
+    for (const p of skPre) { const sp = toScreen(new THREE.Vector3(p.u.x + 0.5, p.u.def.big ? 1.9 : 1.45, p.u.y + 0.5)); p.el.style.left = sp.x + 'px'; p.el.style.top = sp.y + 'px'; }
   }
   async function doSkill() {
     const u = ui.sel, sk = ui.skill, [tx, ty] = ui.skillTile;
@@ -1298,10 +1321,15 @@
       : R.relX(dK, aK) ? `<span class="bad">▼ 상성 불리 (${D.KIND[dK].name} ▶ ${D.KIND[aK].name})</span>` : '상성 없음';
     const near = p.dist === 1 && [aK, a.kind].some((k) => D.KIND[k].ranged) ? ' · <span class="bad">원거리 병종 근접전 (피해 30%)</span>' : '';
     const terr = R.terr(G, d.x, d.y);
+    const sa0 = { hp: a.hp, thp: a.troop ? a.troop.hp : 0 }, sd0 = { hp: d.hp, thp: d.troop ? d.troop.hp : 0 };
+    const tA = R.activeTraits(a, d, true, p.dist, sa0, sd0, R.troopAlive(d) ? 'T' : 'H'), tD = [...R.guardTraits(d, R.troopAlive(d) ? 'T' : 'H'), ...(p.counter ? R.activeTraits(d, a, false, p.dist, sd0, sa0, R.troopAlive(a) ? 'T' : 'H') : [])];
+    const auA = R.auraK(G, a, 'at') > 1.001, auD = R.auraK(G, d, 'df') > 1.001;
+    const traitLine = [...tA.map((n) => `<span class="good">${n}</span>`), ...(auA ? ['<span class="good">지휘 공격 강화</span>'] : []), ...tD.map((n) => `<span class="bad">적 ${n}</span>`), ...(auD ? ['<span class="bad">적 지휘 방어 강화</span>'] : [])].join(' · ');
     const side = (u, t, h, cls) => `<div class="side ${cls}"><img src="${IMG[u.icon]}"><div><div class="n">${u.name}</div>
       ${u.troop ? `<div class="h" style="font-size:14px">병사 ${Math.round(u.troop.hp)}<em>→ ${Math.max(0, Math.round(u.troop.hp - t))}</em></div>` : ''}
       <div class="h" style="font-size:16px">영웅 ${Math.round(u.hp)}<em>→ ${Math.max(0, Math.round(u.hp - h))}</em></div></div></div>`;
     el.innerHTML = `<div class="row">${side(a, p.aT, p.aH, '')}<div class="mid">예상<b>⚔</b>${p.counter ? '반격 있음' : '반격 없음'}</div>${side(d, p.dT, p.dH, 'R')}</div>
+      ${traitLine ? `<div class="rel trait">${traitLine}</div>` : ''}
       <div class="rel">${rel}${near} · 적 지형 ${terr.name}${d.move !== 'fly' && terr.def ? ` ${terr.def > 0 ? '+' : ''}${Math.round(terr.def * 100)}%` : ''}${p.dDead ? ' · <span class="good">격파 예상</span>' : ''}</div>
       <div class="btns"><button class="gold" id="fcGo">공격</button><button id="fcNo">취소</button></div>`;
     el.classList.remove('hidden');
@@ -1433,15 +1461,35 @@
   //  laser: 시전자에서 먼 칸으로 이어지는 에너지 타격 + 화면 번쩍임
   //  slash: 칼날 타격 + 베기 선 + 강한 일격, shot: 총구 번쩍임 + 총탄 타격 + 강한 일격
   //  heal·buff·shield: 대상마다 원작 회복·강화·방어막
+  // 시전자에서 목표로 날아가는 투사체 (원작 탄 효과를 반복 재생하며 포물선으로 옮긴다). 걸리는 시간(ms)을 돌려준다
+  function projectile(fx0, fy0, fx1, fy1, kind) {
+    if (!window.FXLIB || !world) return 0;
+    const d = Math.hypot(fx1 - fx0, fy1 - fy0), base = Math.min(0.55, 0.18 + d * 0.06), dur = base / speedK; // base: 배속 1 기준 초
+    const missile = kind === 'fire';
+    const h = FXLIB.spawn(world.root, missile ? 'muzzle_heavy' : 'bullet', { x: fx0 + 0.5, y: 0.6, z: fy0 + 0.5, height: missile ? 0.7 : 0.08, loop: true, life: base + 0.05,
+      tint: missile ? 0xffffff : 0x9fd8ff, renderOrder: 4600 });
+    if (!h) return 0;
+    if (!missile) h.mesh.scale.x *= 9;
+    h.group.quaternion.copy(camera.quaternion);
+    const a = toScreen(new THREE.Vector3(fx0 + 0.5, 0.6, fy0 + 0.5)), b = toScreen(new THREE.Vector3(fx1 + 0.5, 0.5, fy1 + 0.5));
+    h.mesh.rotation.z = -Math.atan2(b.y - a.y, b.x - a.x); // 화면에서 날아가는 방향으로 (그림은 오른쪽을 향한다)
+    const arc = missile ? 0.8 : 0.1;
+    animate(dur, (k) => h.group.position.set(fx0 + 0.5 + (fx1 - fx0) * k, 0.6 + Math.sin(k * Math.PI) * arc - 0.1 * k, fy0 + 0.5 + (fy1 - fy0) * k));
+    return base * 1000; // wait() 는 배속을 스스로 나누므로 배속 1 기준 ms
+  }
   function skillFx(u, s, area, tx, ty) {
     const byDist = area.slice().sort((a, b) => R.dist(u.x, u.y, a[0], a[1]) - R.dist(u.x, u.y, b[0], b[1]));
     if (s.fx === 'fire') {
-      byDist.forEach(([x, y], i) => fxAt(x, y, i % 3 ? 'boom' : 'heavy', i * 70));
-      fxAt(tx, ty, 'crack', 60);
-      shake(0.35, 0.12); LOHUD.flash('rgba(255,160,40,.35)', 260);
+      const t = projectile(u.x, u.y, tx, ty, 'fire'); // 미사일·포탄이 날아간 뒤 터진다
+      byDist.forEach(([x, y], i) => fxAt(x, y, i % 3 ? 'boom' : 'heavy', t + i * 70));
+      fxAt(tx, ty, 'crack', t + 60);
+      wait(t).then(() => { shake(0.35, 0.12); LOHUD.flash('rgba(255,160,40,.35)', 260); });
+      return t;
     } else if (s.fx === 'laser') {
-      byDist.forEach(([x, y], i) => fxAt(x, y, 'energy', i * 55));
+      const far = byDist[byDist.length - 1] || [tx, ty], t = projectile(u.x, u.y, far[0], far[1], 'laser');
+      byDist.forEach(([x, y], i) => fxAt(x, y, 'energy', t * 0.4 + i * 55));
       LOHUD.flash('rgba(160,200,255,.45)', 300); shake(0.25, 0.08);
+      return t * 0.4;
     } else if (s.fx === 'slash') {
       byDist.forEach(([x, y], i) => { fxAt(x, y, 'melee', i * 60); fxAt(x, y, 'slashline', i * 60 + 40); fxAt(x, y, 'crit', i * 60 + 90); });
       shake(0.25, 0.1);
@@ -1449,6 +1497,7 @@
       fxAt(u.x, u.y, 'muzzle', 0);
       byDist.forEach(([x, y], i) => { fxAt(x, y, 'hit', 80 + i * 50); fxAt(x, y, 'crit', 140 + i * 50); });
     } else byDist.forEach(([x, y], i) => { if (R.unitAt(G, x, y) || s.fx !== 'heal') fxAt(x, y, s.fx, i * 40); });
+    return 0;
   }
   async function useSkill(u, sk, tx, ty) {
     const s = D.SKILLS[sk];
@@ -1464,8 +1513,8 @@
     OV.area = R.skillArea(G, u, sk, tx, ty); drawOverlay();
     await wait(500);
     AU.play(s.sfx, 0.8);
-    skillFx(u, s, OV.area, tx, ty);
-    await wait(350);
+    const travel = skillFx(u, s, OV.area, tx, ty);
+    await wait(350 + travel);
     const deaths = [];
     for (const r of R.skillEffect(G, u, sk, tx, ty, Math.random)) {
       if (r.toT != null) {
@@ -1519,7 +1568,7 @@
     let healed = false;
     for (const u of G.units) {
       if (!u.alive || u.side !== side) continue;
-      const h = R.terr(G, u.x, u.y).heal;
+      const h = (R.terr(G, u.x, u.y).heal || 0) + R.trait(u, 'regen'); // 지형 회복 + 수동 특기(재생)
       if (!h) continue;
       const a = Math.min(u.hpMax - u.hp, Math.round(u.hpMax * h)), b = u.troop ? Math.min(u.troop.hpMax - u.troop.hp, Math.round(u.troop.hpMax * h)) : 0;
       if (a + b <= 0) continue;
@@ -2456,6 +2505,8 @@
         const prev = h.tiers[s.tier - 1];
         const ns = h.tiers[s.tier].skills.filter((k) => !prev.skills.includes(k)), nt = h.tiers[s.tier].troops.filter((k) => !prev.troops.includes(k));
         if (ns.length) row.notes.push(`새 특기 · ${ns.map((k) => D.SKILLS[k].name).join(', ')}`);
+        const np = (h.passives || []).filter((p) => p.tier === s.tier);
+        if (np.length) row.notes.push(`새 수동 특기 · ${np.map((p) => p.name).join(', ')}`);
         if (nt.length) row.notes.push(`새 병사 · ${nt.map((k) => D.TROOPS[k].short).join(', ')}`);
       }
       rows.push(row);
@@ -2576,6 +2627,7 @@
       const d = ui.target, sp = toScreen(new THREE.Vector3(d.x + 0.5, d.def.big ? 2.1 : 1.6, d.y + 0.5));
       LOHUD.target(sp.x, sp.y, 'r');
     }
+    if (skPre.length) placeSkillPreview();
     const sv = ui.sel && views.get(ui.sel.uid);
     world.selMark.visible = !!(sv && world.selMark.material.map && mode === 'map');
     if (sv) { world.selMark.position.set(sv.g.position.x, (sv.u.def.big ? 1.6 : 1.2) + Math.abs(Math.sin(t * 4)) * 0.12, sv.g.position.z); world.selMark.scale.set(0.34, 0.4, 1); }

@@ -211,18 +211,19 @@
             f.x += adv;
           });
         };
-        charge(att, attSide, Math.min(2.0, VW * 0.11));
-        if (res.counter) charge(def, defSide, Math.min(1.0, VW * 0.06));
+        // 맞붙되 두 부대 앞줄 사이에 틈을 남긴다 (한 덩어리로 겹치지 않게)
+        charge(att, attSide, Math.min(0.7, VW * 0.045));
+        if (res.counter) charge(def, defSide, Math.min(0.3, VW * 0.02));
         t0 += 0.5 / sp;
       }
       // 재능 발동 판 (원작 패시브 표시): 이번 교전에 효과가 있는 재능만
       const sa = { hp: a.hp, thp: a.troop ? a.troop.hp : 0 }, sd0 = { hp: d.hp, thp: d.troop ? d.troop.hp : 0 };
-      const ta = RULES.talentOf(a), td = RULES.talentOf(d);
       const frontD = d.troop && sd0.thp > 0 ? 'T' : 'H', frontA = a.troop && sa.thp > 0 ? 'T' : 'H';
-      const onA = ta && RULES.talentK(null, a, { def: {} }, true, res.dist, sa, sd0, frontD) > 1.001 || (ta && ta.chase && RULES.talentK(null, a, d, true, res.dist, sa, sd0, frontD) > 1.001);
-      const onD = td && (RULES.talentK(null, { def: {} }, d, true, res.dist, sa, sd0, frontD) < 0.999 || (res.counter && RULES.talentK(null, d, { def: {} }, false, res.dist, sd0, sa, frontA) > 1.001));
-      if (onA) tl.push({ t: enter * 0.6, fn: () => passivePlate(attSide, ta.name) });
-      if (onD) tl.push({ t: enter * 0.6 + 0.15, fn: () => passivePlate(defSide, td.name) });
+      const namesA = RULES.activeTraits(a, d, true, res.dist, sa, sd0, frontD);
+      const namesD = [...RULES.guardTraits(d, frontD), ...(res.counter ? RULES.activeTraits(d, a, false, res.dist, sd0, sa, frontA) : [])];
+      if (res.counter && res.dist > d.rng) namesD.push(...RULES.traits(d).filter((t) => t.rangeCounter).map((t) => t.name));
+      [...new Set(namesA)].slice(0, 2).forEach((n, i) => tl.push({ t: enter * 0.6 + i * 0.25, fn: () => passivePlate(attSide, n, i) }));
+      [...new Set(namesD)].slice(0, 2).forEach((n, i) => tl.push({ t: enter * 0.6 + 0.15 + i * 0.25, fn: () => passivePlate(defSide, n, i) }));
       const end = brawl(att, def, attSide, defSide, a, d, res, t0, sp, st);
       tl.push({ t: end + 0.7 / sp, fn: () => finish() });
       tl.sort((p, q) => p.t - q.t);
@@ -330,9 +331,10 @@
     const p = h.rig.g.position, [sx, sy] = toScreen(p.x, p.y + lift(h) + 2.9, h.side);
     LOHUD.float(LOHUD.word(k, 40 * Math.min(1.3, Math.max(0.8, innerHeight / 800))), sx, sy, 'big', el().querySelector('.fnums'), 1100);
   }
-  function passivePlate(side, name) {
+  function passivePlate(side, name, i = 0) {
     const e = document.createElement('div');
     e.className = 'lopassive ' + side;
+    e.style.marginTop = i * 52 + 'px'; // 둘째 판은 아래에
     e.innerHTML = `<small>PASSIVE</small><b>${name}</b>`;
     el().querySelector('.fnums').appendChild(e);
     setTimeout(() => e.remove(), 1700);

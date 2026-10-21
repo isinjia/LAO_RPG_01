@@ -46,12 +46,19 @@
   // ── 배너 ──
   let bTimer = 0;
   H.speedOf = () => 1; // 게임 배속 (game.js 가 바꿔 끼운다). 배너 길이를 배속만큼 줄인다
-  function show(html, cls, ms) {
+  function show(html, cls, ms, overlay) {
     const el = layer();
     const b = document.createElement('div');
     b.className = 'lobanner ' + cls;
     b.innerHTML = html;
-    el.querySelectorAll('.lobanner').forEach((o) => o.remove());
+    if (overlay) { // 특기 컷인은 다른 배너를 지우지 않고 위에 겹친다
+      const sp = Math.max(1, H.speedOf()), real = ms / sp;
+      b.style.setProperty('--d', Math.max(0.3, (real - 260) / 1000) + 's');
+      el.appendChild(b);
+      setTimeout(() => b.remove(), real);
+      return b;
+    }
+    el.querySelectorAll('.lobanner:not(.cutin)').forEach((o) => o.remove());
     const sp = Math.max(1, H.speedOf()), real = ms / sp;
     b.style.setProperty('--d', Math.max(0.3, (real - 260) / 1000) + 's'); // 사라지기 시작하는 때
     b.style.setProperty('--sp', sp);
@@ -89,7 +96,7 @@
     const pic = stand ? `<img class="lc-stand" src="assets/story/stand/${stand}.webp" alt="">` : `<img class="lc-icon" src="${(window.IMG && IMG[u.icon]) || ''}" alt="">`;
     const b = show(`<div class="lc-band">${pic}</div><div class="lc-flash"></div>
       <div class="lc-txt"><small>${u.side === 'p' ? 'ACTIVE SKILL' : 'ENEMY SKILL'}</small><b>${skillName}</b><span>${u.name}</span></div>`,
-    'cutin ' + (u.side === 'p' ? 'p' : 'e'), 1300);
+    'cutin ' + (u.side === 'p' ? 'p' : 'e'), 1300, true);
     return b;
   };
 

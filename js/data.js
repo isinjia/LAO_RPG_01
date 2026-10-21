@@ -32,7 +32,8 @@
     mage: { name: '법사', color: '#ff9ad5', ranged: true },
     assassin: { name: '암살자', color: '#b0b0c8', ranged: true },
   };
-  const REL = { inf: { pike: 0.3 }, pike: { cav: 0.3 }, cav: { inf: 0.3 }, arch: { fly: 0.4 }, priest: { demon: 0.8 } };
+  const REL = { inf: { pike: 0.3 }, pike: { cav: 0.3 }, cav: { inf: 0.3 }, arch: { fly: 0.4 }, fly: { inf: 0.2, mage: 0.3 }, mage: { pike: 0.3 }, assassin: { arch: 0.3, mage: 0.3 }, priest: { demon: 0.8 } };
+  // 비병은 보병·법사를 위에서 덮치고, 법사는 창병의 굳은 대열을 깨며, 암살자는 뒤에 선 궁병·법사를 노린다
 
   // ── 특기 (재사용 대기 턴 cd) ───────────────────────────
   // tgt: self(자신 중심) | ally | enemy | tile | line, area: 0 단일 / 1 십자 / 'sq' 3x3 / 'adj' 인접 전체
@@ -102,6 +103,7 @@
     constantia: {
       name: '콘스탄챠', full: '콘스탄챠 S2', rig: 'constantia', icon: 'c_3P_ConstantiaS2_N', face: '3P_ConstantiaS2_N', sfx: 'rifle',
       talent: { name: '맏언니의 지휘', aura: { r: 2, at: 0.1 }, desc: '주변 2칸 아군 공격 +10%' },
+      passives: [{ tier: 0, name: '정밀 사격 지원', troopUp: 0.15, desc: '병사 공격 +15%' }, { tier: 1, name: '호위대장의 반격', counterUp: 0.3, desc: '반격 피해 +30%' }], // 수동 특기 (tier 단계에 풀림)
       kind: 'arch', move: 'foot', rng: 2, lead: true, // 궁병
       tiers: [
         { cls: '가정경비 바이오로이드', hp: 92, at: 21, df: 14, mov: 3, troops: ['gunner', 'guard'], skills: ['repair'] },
@@ -113,6 +115,7 @@
     griffon: {
       name: '그리폰', full: 'P/A-00 그리폰', rig: 'griffon', icon: 'c_BR_PA00EL_N', face: 'BR_PA00EL_N', sfx: 'missile',
       talent: { name: '급강하 강습', first: 0.2, desc: '먼저 공격할 때 피해 +20%' },
+      passives: [{ tier: 0, name: '공중 기동', noZoc: 1, desc: '지배 영역을 무시하고 지나간다' }, { tier: 1, name: '강습 편대', troopUp: 0.15, desc: '병사 공격 +15%' }], // 수동 특기 (tier 단계에 풀림)
       kind: 'fly', move: 'fly', rng: 1, sizeK: 1.15, // 제트 팩으로 날아다니는 비병
       tiers: [
         { cls: '기동공격 바이오로이드', hp: 80, at: 25, df: 11, mov: 5, troops: ['flyer', 'raider'], skills: ['missile'] },
@@ -124,6 +127,7 @@
     johanna: {
       name: '요안나', full: '프레스터 요안나', rig: 'johanna', icon: 'c_DS_Johanna_N', face: 'DS_Johanna_N', sfx: 'slash',
       talent: { name: '철벽의 맹세', guard: 0.2, desc: '공격받을 때 받는 피해 -20%' },
+      passives: [{ tier: 0, name: '기사의 반격', counterUp: 0.4, desc: '반격 피해 +40%' }, { tier: 1, name: '성역', regen: 0.1, desc: '차례 시작 시 영웅·병사 체력 10% 회복' }], // 수동 특기 (tier 단계에 풀림)
       kind: 'pike', move: 'foot', rng: 1,
       tiers: [
         { cls: '사제여왕', hp: 115, at: 21, df: 21, mov: 3, troops: ['shield', 'guard'], skills: ['oath'] },
@@ -135,6 +139,7 @@
     lrl: {
       name: 'LRL', full: 'LRL', rig: 'lrl', icon: 'c_PECS_LRL_N', face: 'PECS_LRL_N', sfx: 'swing',
       talent: { name: '싸이클롭스의 긍지', hpHigh: [0.7, 0.2], desc: '영웅 체력 70% 이상이면 피해 +20%' },
+      passives: [{ tier: 0, name: '심연의 재생', regen: 0.08, desc: '차례 시작 시 영웅·병사 체력 8% 회복' }, { tier: 1, name: '돌격 본능', first: 0.15, desc: '먼저 공격할 때 피해 +15%' }], // 수동 특기 (tier 단계에 풀림)
       kind: 'inf', move: 'foot', rng: 1,
       tiers: [
         { cls: '등대 근무 바이오로이드', hp: 101, at: 28, df: 15, mov: 3, troops: ['guard', 'shield'], skills: ['beam'] },
@@ -146,6 +151,7 @@
     pupphead: {
       name: '펍 헤드', full: 'SD-3M 펍 헤드', rig: 'pupphead', icon: 'c_PECS_PuppHead_N', face: '', sfx: 'gun',
       talent: { name: '추격 본능', chase: [0.5, 0.25], desc: '총체력 50% 이하인 적에게 피해 +25%' },
+      passives: [{ tier: 0, name: '추적 주행', noZoc: 1, desc: '지배 영역을 무시하고 지나간다' }, { tier: 1, name: '진압 장비', counterUp: 0.25, desc: '반격 피해 +25%' }], // 수동 특기 (tier 단계에 풀림)
       kind: 'cav', move: 'horse', rng: 1,
       tiers: [
         { cls: '경찰·헌병 로봇', hp: 87, at: 20, df: 15, mov: 5, troops: ['raider', 'guard'], skills: ['siren'] },
@@ -157,6 +163,7 @@
     fallen: {
       name: '폴른', full: 'CT2199W 폴른', rig: 'fallen', icon: 'c_AGS_Fallen_N', face: '', sfx: 'cannon',
       talent: { name: '원거리 포격', far: 0.2, desc: '2칸 이상 떨어져 공격할 때 피해 +20%' },
+      passives: [{ tier: 0, name: '대응 포격', rangeCounter: 1, desc: '멀리서 공격받아도 반격한다' }, { tier: 1, name: '탄막', troopUp: 0.2, desc: '병사 공격 +20%' }], // 수동 특기 (tier 단계에 풀림)
       kind: 'arch', move: 'foot', rng: 2,
       tiers: [
         { cls: '지원 포격 AGS', hp: 97, at: 27, df: 13, mov: 3, troops: ['gunner', 'shield'], skills: ['barrage'] },
@@ -169,6 +176,7 @@
     marie: {
       name: '마리', full: '불굴의 마리', rig: 'marie', icon: 'c_BR_Marie_N', face: 'BR_Marie_N', sfx: 'rifle',
       talent: { name: '불굴의 지휘', aura: { r: 2, df: 0.12 }, desc: '주변 2칸 아군 방어 +12%' },
+      passives: [{ tier: 0, name: '전장 장악', counterUp: 0.2, desc: '반격 피해 +20%' }, { tier: 1, name: '군단 재정비', regen: 0.1, desc: '차례 시작 시 영웅·병사 체력 10% 회복' }], // 수동 특기 (tier 단계에 풀림)
       kind: 'inf', move: 'foot', rng: 1, // 스틸라인 지휘관: 주변 아군을 북돋우고 위성으로 포격한다
       tiers: [
         { cls: '스틸라인 지휘관', hp: 118, at: 26, df: 20, mov: 3, troops: ['guard', 'shield', 'gunner'], skills: ['command'] },
@@ -181,6 +189,7 @@
     labiata: {
       name: '라비아타', full: '라비아타 프로토타입', rig: 'labiata', icon: 'c_3P_Labiata_N', face: '3P_Labiata_N', sfx: 'expM',
       talent: { name: '최초의 투지', hpLow: [0.5, 0.3], desc: '영웅 체력 50% 이하면 피해 +30%' },
+      passives: [{ tier: 0, name: '맏언니의 인내', regen: 0.1, desc: '차례 시작 시 영웅·병사 체력 10% 회복' }, { tier: 1, name: '거인 사냥', antiBig: 0.3, desc: '큰 철충에게 피해 +30%' }], // 수동 특기 (tier 단계에 풀림)
       kind: 'inf', move: 'foot', rng: 1, // 최초의 바이오로이드: 맨주먹으로 적을 부순다
       tiers: [
         { cls: '최초의 바이오로이드', hp: 140, at: 36, df: 22, mov: 3, troops: ['guard', 'shield', 'raider'], skills: ['proto'] },
@@ -193,6 +202,7 @@
     scathy: {
       name: '스카디', full: '스카디', rig: 'scathy', icon: 'c_BR_Scathy_N', face: 'BR_Scathy_N', sfx: 'elec',
       talent: { name: '해킹 표적', slowed: 0.3, desc: '이동 감소가 걸린 적에게 피해 +30%' },
+      passives: [{ tier: 0, name: '역해킹', rangeCounter: 1, desc: '멀리서 공격받아도 반격한다' }, { tier: 1, name: '네트워크 장악', troopUp: 0.15, desc: '병사 공격 +15%' }], // 수동 특기 (tier 단계에 풀림)
       kind: 'mage', move: 'foot', rng: 2, // 전자전 전문가: 멀리서 해킹으로 적을 묶는다
       tiers: [
         { cls: '전자전 전문가', hp: 84, at: 27, df: 11, mov: 3, troops: ['gunner', 'guard'], skills: ['hack'] },
@@ -205,6 +215,7 @@
     amy: {
       name: '에이미', full: '에이미 레이저', rig: 'amy', icon: 'c_BR_Amy_N', face: 'BR_Amy_N', sfx: 'gun',
       talent: { name: '그림자 기습', first: 0.15, guard: 0.1, desc: '먼저 공격할 때 피해 +15%, 받는 피해 -10%' },
+      passives: [{ tier: 0, name: '그림자 이동', noZoc: 1, desc: '지배 영역을 무시하고 지나간다' }, { tier: 1, name: '약점 포착', antiBig: 0.25, desc: '큰 철충에게 피해 +25%' }], // 수동 특기 (tier 단계에 풀림)
       kind: 'cav', move: 'horse', rng: 1, // 군사용 첩보 유닛: 빠른 발로 파고들어 교란한다
       tiers: [
         { cls: '군사용 첩보 유닛', hp: 86, at: 25, df: 13, mov: 5, troops: ['raider', 'guard'], skills: ['intel'] },
@@ -216,6 +227,7 @@
     coco: {
       name: '코코', full: '코코 인 화이트셸', rig: 'coco', icon: 'c_PECS_CoCoWhiteShell_N', face: 'PECS_CoCoWhiteShell_N', sfx: 'cannon',
       talent: { name: '화이트 셸 장갑', troopGuard: 0.2, desc: '병사가 받는 피해 -20%' },
+      passives: [{ tier: 0, name: '셸 반격', counterUp: 0.3, desc: '반격 피해 +30%' }, { tier: 1, name: '긴급 수리 장치', regen: 0.12, desc: '차례 시작 시 영웅·병사 체력 12% 회복' }], // 수동 특기 (tier 단계에 풀림)
       kind: 'pike', move: 'foot', rng: 1, // 화이트 셸에 탄 방어형
       tiers: [
         { cls: '화이트 셸 조종사', hp: 128, at: 19, df: 24, mov: 3, troops: ['shield', 'guard'], skills: ['wall'] },

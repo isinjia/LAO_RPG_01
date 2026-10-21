@@ -127,6 +127,7 @@
   R.zoc = (G, u, x, y) => G.units.some((o) => o.alive && o.side !== u.side && Math.abs(o.x - x) + Math.abs(o.y - y) === 1);
   R.reach = function (G, u, movOverride) {
     const mov = movOverride != null ? movOverride : R.mov(u);
+    const noZoc = R.trait(u, 'noZoc') > 0;
     const best = new Map();
     const key = (x, y) => y * 64 + x;
     best.set(key(u.x, u.y), { x: u.x, y: u.y, c: 0, prev: null });
@@ -135,7 +136,7 @@
       q.sort((a, b) => a[2] - b[2]);
       const [x, y, c] = q.shift();
       if (c > best.get(key(x, y)).c) continue;
-      if (c > 0 && R.zoc(G, u, x, y)) { best.get(key(x, y)).zoc = true; continue; } // 지배 영역에 들어선 칸에서는 더 못 간다
+      if (c > 0 && !noZoc && R.zoc(G, u, x, y)) { best.get(key(x, y)).zoc = true; continue; } // 지배 영역에 들어선 칸에서는 더 못 간다
       for (const [dx, dy] of DIRS) {
         const nx = x + dx, ny = y + dy;
         if (!R.inB(G, nx, ny)) continue;
@@ -170,6 +171,12 @@
   //   slowed: 이동 감소가 걸린 상대에게 피해 +   troopGuard: 병사가 받는 피해 -
   const BOSS_TALENT = { name: '지휘 개체 장갑', guard: 0.15, desc: '받는 피해 -15% (큰 철충의 기본 재능)' };
   R.talentOf = (u) => (u.def && (u.def.talent || (u.side === 'e' && u.def.big ? BOSS_TALENT : null))) || null;
+  // 수동 특기 (랑그릿사의 패시브): 전직 단계에 따라 풀린다. 재능과 같은 효과 칸을 쓰고, 아래 효과가 더 있다
+  //   counterUp: 반격 피해 +   rangeCounter: 사거리 밖에서 맞아도 반격   noZoc: 지배 영역 무시
+  //   regen: 차례 시작 회복   troopUp: 병사 공격 +   antiBig: 큰 철충에게 피해 +
+  R.passivesOf = (u) => (u.side === 'p' && u.def && u.def.passives ? u.def.passives.filter((p) => p.tier <= u.tier) : []);
+  R.traits = (u) => { const t = R.talentOf(u); return t ? [t, ...R.passivesOf(u)] : R.passivesOf(u); };
+  R.trait = (u, k) => R.traits(u).reduce((s, t) => s + (t[k] || 0), 0);
   R.auraK = function (G, u, k) {
     let v = 0;
     for (const o of G.units) {
@@ -182,21 +189,34 @@
   // a가 d를 칠 때 재능 배율 (init: a가 먼저 공격한 쪽인지, front: 맞는 쪽이 병사인지, sa·sd: 그 순간 상태)
   R.talentK = function (G, a, d, init, dist, sa, sd, front) {
     let k = 1;
-    const ta = R.talentOf(a), td = R.talentOf(d);
-    if (ta) {
+    for (const ta of a.def ? R.traits(a) : []) {
       if (ta.first && init) k *= 1 + ta.first;
       if (ta.hpHigh && sa.hp >= a.hpMax * ta.hpHigh[0]) k *= 1 + ta.hpHigh[1];
       if (ta.hpLow && sa.hp <= a.hpMax * ta.hpLow[0]) k *= 1 + ta.hpLow[1];
       if (ta.chase && sd.hp + sd.thp <= R.totalMax(d) * ta.chase[0]) k *= 1 + ta.chase[1];
       if (ta.far && dist >= 2) k *= 1 + ta.far;
       if (ta.slowed && (d.slow || d.slowNext)) k *= 1 + ta.slowed;
+      if (ta.counterUp && !init) k *= 1 + ta.counterUp;
+      if (ta.antiBig && d.def && d.def.big) k *= 1 + ta.antiBig;
     }
-    if (td) {
+    for (const td of d.def ? R.traits(d) : []) {
       if (td.guard) k *= 1 - td.guard;
       if (td.troopGuard && front === 'T') k *= 1 - td.troopGuard;
     }
     return k;
   };
+
+  // 이번 교전에서 효과를 내는 재능·수동 특기 이름들. side: 'a' 공격하는 쪽 효과 / 'd' 막는 쪽 효과
+  R.activeTraits = function (a, d, init, dist, sa, sd, front) {
+    const out = [];
+    for (const t of R.traits(a)) {
+      if ((t.first && init) || (t.hpHigh && sa.hp >= a.hpMax * t.hpHigh[0]) || (t.hpLow && sa.hp <= a.hpMax * t.hpLow[0]) ||
+        (t.chase && sd.hp + sd.thp <= R.totalMax(d) * t.chase[0]) || (t.far && dist >= 2) || (t.slowed && (d.slow || d.slowNext)) ||
+        (t.counterUp && !init) || (t.antiBig && d.def && d.def.big) || (t.troopUp && sa.thp > 0)) out.push(t.name);
+    }
+    return out;
+  };
+  R.guardTraits = (d, front) => R.traits(d).filter((t) => t.guard || (t.troopGuard && front === 'T')).map((t) => t.name);
 
   // ── 전투 ───────────────────────────────────────────────
   // 상성: REL[공격][방어] 만큼 유리(+30% 등), 반대로 불리하면 그만큼 나눈다. 원거리 병종이 붙어서 싸우면 30%만.
@@ -216,7 +236,7 @@
     // 피해 = 공격 x 상성 x 공/(공+방) x 1.1 (방어가 높아도 0이 되지 않는다)
     const part = (A, kind) => A * relK(kind, dKind) * (A / (A + dDef)) * 1.1 * (isRanged(kind) && dist === 1 ? R.MELEE_RANGED : 1);
     let dmg = part(R.atk(a, 'H') * aAt, a.kind);
-    if (a.troop && sa.thp > 0) dmg += part(R.atk(a, 'T') * aAt, a.troop.kind) * (R.soldiers(a, sa.thp) / R.SQUAD); // 남은 병사 수만큼
+    if (a.troop && sa.thp > 0) dmg += part(R.atk(a, 'T') * aAt * (1 + R.trait(a, 'troopUp')), a.troop.kind) * (R.soldiers(a, sa.thp) / R.SQUAD); // 남은 병사 수만큼
     dmg *= k * R.talentK(G, a, d, init, dist, sa, sd, front) * (rnd ? 0.9 + rnd() * 0.2 : 1);
     const toT = front === 'T' ? Math.min(sd.thp, dmg) : 0;
     const toH = Math.min(sd.hp, dmg - toT); // 병사가 다 쓰러지면 남은 피해는 영웅에게
@@ -230,7 +250,7 @@
     const dist = R.dist(ax, ay, d.x, d.y);
     const sa = { hp: a.hp, thp: a.troop ? a.troop.hp : 0, x: ax, y: ay };
     const sd = { hp: d.hp, thp: d.troop ? d.troop.hp : 0, x: d.x, y: d.y };
-    const counter = dist <= d.rng;
+    const counter = dist <= d.rng || (dist <= 3 && R.trait(d, 'rangeCounter') > 0); // 대응 포격: 멀리서 맞아도 반격
     const N = R.ROUNDS, rounds = [];
     let rel = 0;
     for (let i = 0; i < N && sa.hp > 0.5 && sd.hp > 0.5; i++) {
@@ -380,7 +400,11 @@
     }
     const tiles = [...reach.values()].filter((t) => t.stop && (u.ai !== 'guard' || R.dist(t.x, t.y, u.home[0], u.home[1]) <= 2));
     const th = caution(u) ? (fields.threat || (fields.threat = R.threatMap(G, u.side))) : null;
-    const risk = (x, y) => (th ? Math.max(0, th[y * G.w + x] - 1) * caution(u) : 0);
+    // 상성 위험: 나(병사가 살아 있으면 병사 병종)를 상성으로 이기는 적이 다음 차례에 닿을 수 있는 칸은 피한다
+    const myKind = R.troopAlive(u) ? u.troop.kind : u.kind;
+    const foes = G.units.filter((o) => o.alive && o.side !== u.side && R.relX(R.troopAlive(o) ? o.troop.kind : o.kind, myKind));
+    const relRisk = (x, y) => foes.reduce((n, o) => n + (R.dist(o.x, o.y, x, y) <= R.mov(o) + o.rng ? 2.2 : 0), 0);
+    const risk = (x, y) => (th ? Math.max(0, th[y * G.w + x] - 1) * caution(u) : 0) + relRisk(x, y);
     const myMax = R.totalMax(u);
     let best = null;
     const consider = (sc, p) => { if (!best || sc > best.sc) best = { sc, ...p }; };
@@ -394,18 +418,27 @@
         consider(sc, { to: [t.x, t.y], act: 'attack', target: o });
       }
     }
+    // 특기: 제자리뿐 아니라 이동한 칸에서 쓰는 경우도 따진다 (특기가 닿을 만한 칸만 골라 계산을 줄인다)
+    const ox = u.x, oy = u.y;
     for (const sk of R.skillsOf(u)) {
       if (!R.skillReady(u, sk)) continue;
       const s = SKILLS[sk];
-      for (const [tx, ty] of R.skillTargets(G, u, sk)) {
-        let sc = 0;
-        for (const r of R.skillEffect(G, u, sk, tx, ty)) {
-          if (r.toT != null) sc += ((r.toT + r.toH * 1.6) / R.totalMax(r.u)) * 10 * value(r.u) + (r.toH >= r.u.hp - 0.5 ? 6 : 0);
-          if (r.hH != null) sc += ((r.hH * 1.6 + r.hT) / R.totalMax(r.u)) * 9 * value(r.u) + (r.buff ? 0.8 : 0);
+      const reachR = (s.range || 0) + (s.len || 0) + (s.radius || 0) + 2;
+      const spots = tiles.filter((t) => (t.x === ox && t.y === oy) || G.units.some((o) => o.alive && R.dist(o.x, o.y, t.x, t.y) <= reachR))
+        .sort((a, b) => a.c - b.c).slice(0, 14);
+      for (const t of spots) {
+        u.x = t.x; u.y = t.y; // 그 칸에 섰다고 치고
+        for (const [tx, ty] of R.skillTargets(G, u, sk)) {
+          let sc = 0;
+          for (const r of R.skillEffect(G, u, sk, tx, ty)) {
+            if (r.toT != null) sc += ((r.toT + r.toH * 1.6) / R.totalMax(r.u)) * 10 * value(r.u) + (r.toH >= r.u.hp - 0.5 ? 6 : 0);
+            if (r.hH != null) sc += ((r.hH * 1.6 + r.hT) / R.totalMax(r.u)) * 9 * value(r.u) + (r.buff ? 0.8 : 0);
+          }
+          if (s.buff && !G.units.some((o) => o.alive && o.side !== u.side && R.dist(o.x, o.y, t.x, t.y) <= 6)) sc = 0;
+          consider(sc - 0.5 - risk(t.x, t.y) - (t.x !== ox || t.y !== oy ? 0.2 : 0), { to: [t.x, t.y], act: 'skill', skill: sk, tx, ty });
         }
-        if (s.buff && !G.units.some((o) => o.alive && o.side !== u.side && R.dist(o.x, o.y, u.x, u.y) <= 6)) sc = 0;
-        consider(sc - 0.5 - risk(u.x, u.y), { to: [u.x, u.y], act: 'skill', skill: sk, tx, ty });
       }
+      u.x = ox; u.y = oy;
     }
     if (best && best.sc > -1) return best;
     if (u.ai === 'guard') return { to: [u.x, u.y], act: 'wait' };

@@ -136,7 +136,7 @@
 .lobanner.cutin.p .lc-band { box-shadow: inset 0 3px 0 var(--lo-y), inset 0 -3px 0 var(--lo-y); }
 .lobanner.cutin.e .lc-band { box-shadow: inset 0 3px 0 var(--lb-red), inset 0 -3px 0 var(--lb-red); }
 .lobanner.cutin .lc-stand { position: absolute; left: 14%; top: -2%; height: 250%; animation: lcStand 1.2s cubic-bezier(.15, .85, .3, 1) both; filter: drop-shadow(0 0 20px rgba(0, 0, 0, .6)); }
-.lobanner.cutin .lc-icon { position: absolute; left: 22%; top: calc(50% - 75px); width: 150px; height: 150px; object-fit: cover; border: 3px solid var(--lb-red);
+.lobanner.cutin .lc-icon { position: absolute; left: 20%; top: calc(50% - 100px); width: 200px; height: 200px; box-shadow: 0 0 24px rgba(255, 59, 92, .6); object-fit: cover; border: 3px solid var(--lb-red);
   clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%); animation: lcStand 1.2s cubic-bezier(.15, .85, .3, 1) both; }
 .lobanner.cutin .lc-flash { position: absolute; inset: -20% 0; background: #fff; mix-blend-mode: overlay; animation: lcFlash .35s ease-out both; pointer-events: none; }
 .lobanner.cutin .lc-txt { position: absolute; right: 12%; top: 50%; transform: translateY(-50%); text-align: right; animation: lcTxt .5s cubic-bezier(.2, .9, .3, 1.15) .1s both; }
@@ -214,3 +214,17 @@
   #fight .ftot b { font-size: calc(14px + 1.4vh); }
   #fight .lopassive { top: calc(92px + 22vh + 30px + var(--safe-t)); }
 }
+
+#info .tal.pas { background: linear-gradient(90deg, rgba(255, 204, 0, .12), transparent); border-left-color: var(--lo-y); }
+#info .tal.pas b { color: var(--lo-y); }
+
+/* 특기 예상 숫자 */
+.skpre { position: absolute; transform: translate(-50%, -100%); padding: 2px 9px 1px; font: 15px 'LO_B', sans-serif; white-space: nowrap; background: rgba(10, 12, 16, .88);
+  clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%); pointer-events: none; }
+.skpre.dmg { color: #ff6b7e; border-bottom: 2px solid var(--lb-red); }
+.skpre.dmg.kill { color: #fff; background: linear-gradient(90deg, #c2163a, #ff3b5c); }
+.skpre b { margin-left: 5px; font-size: 12px; color: var(--lo-y); }
+.skpre small { margin-left: 5px; font-size: 11px; color: #c6a2ff; }
+.skpre.heal { color: #7dffa0; border-bottom: 2px solid #2fc46c; }
+.skpre.buff { color: var(--lo-y); border-bottom: 2px solid var(--lo-y); font-size: 12px; }
+#forecast .rel.trait { margin-top: 4px; font-size: 12px; }
