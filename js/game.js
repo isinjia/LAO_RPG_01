@@ -841,7 +841,7 @@
 
   // ── 지도 단축키 (도움말: H) ──
   // 방향키 커서 · Enter/Space/Z 결정 · Esc/X/Backspace 취소 · Tab 다음 영웅(목표 고를 때는 다음 적) · 1~9 영웅
-  // 행동 버튼: A 공격 · S 특기 · W 대기 · C 제자리 (버튼에 글자 표시) · 특기 목록은 1~9
+  // 행동 버튼: A 공격 · S 특기 · Space 대기 (버튼에 글자 표시) · 특기 목록은 1~9
   // E 턴 종료 · Q 자동 · V 배속 · F 연출 · R 위험 범위 · M 메뉴 · +/- 확대 · C 카메라를 선택한 영웅에게 · H 단축키 보기
   const keyOf = (code) => (/^Key[A-Z]$/.test(code) ? code[3] : /^(Digit|Numpad)[1-9]$/.test(code) ? code.slice(-1) : code);
   function setCursor(x, y, pan = true) {
@@ -886,7 +886,7 @@
     const mv = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }[k];
     if (mv) { e.preventDefault(); setCursor(Math.max(0, Math.min(G.w - 1, kcur[0] + mv[0])), Math.max(0, Math.min(G.h - 1, kcur[1] + mv[1]))); return; }
     if (busy || G.side !== 'p') return;
-    // 떠 있는 행동 버튼의 글자 (공격 A · 특기 S · 대기 W · 제자리 C · 특기 목록 1~9)
+    // 떠 있는 행동 버튼의 글자 (공격 A · 특기 S · 대기 Space · 특기 목록 1~9): 행동 버튼이 떠 있으면 Space 는 결정보다 대기
     const btn = [...$('acts').querySelectorAll('button[data-key]')].find((b) => b.dataset.key === key);
     if (btn) { e.preventDefault(); if (!btn.disabled) btn.click(); return; }
     if (k === 'Enter' || k === 'Space' || k === 'KeyZ' || k === 'NumpadEnter') {
@@ -921,7 +921,7 @@
       ${row('Esc · X · Backspace', '취소 · 뒤로 (아무것도 안 골랐으면 메뉴)')}
       ${row('Tab / Shift+Tab', '다음 / 이전 영웅 · 공격할 적을 고를 때는 다음 적')}
       ${row('1 ~ 9', '영웅 바로 고르기 (왼쪽 목록 순서) · 특기 목록에서는 그 특기')}
-      ${row('A · S · W · C', '공격 · 특기 · 대기 · 제자리 (행동 버튼에 표시)')}
+      ${row('A · S', '공격 · 특기 (행동 버튼에 표시)')}${row('Space', '행동 버튼이 떠 있을 때는 대기 (이 영웅의 차례 끝내기)')}
       ${row('E', '턴 종료')}${row('Q', '자동 전투')}${row('V', '배속 ×1 → ×2 → ×3')}${row('F', '전투 장면 켜기·끄기')}
       ${row('R', '적의 공격 범위 (위험)')}${row('C', '카메라를 고른 영웅에게')}${row('+ / −', '확대 · 축소 (휠도 됩니다)')}
       ${row('M', '메뉴')}${row('H · F1', '이 창')}
@@ -1069,7 +1069,7 @@
     const el = $('acts');
     if (!list) { el.classList.add('hidden'); el.innerHTML = ''; return; }
     el.innerHTML = '';
-    const ACT_KEY = { 공격: 'A', 특기: 'S', 대기: 'W', 제자리: 'C' };
+    const ACT_KEY = { 공격: 'A', 특기: 'S', 대기: 'Space' };
     for (const a of list) {
       const b = document.createElement('button');
       const key = a.key || ACT_KEY[a.label];
@@ -1195,8 +1195,8 @@
     drawOverlay();
     showInfo(u);
     panTo(u.x, u.y); // 정보창·버튼에 가리면 보이는 곳으로
-    showActs([{ label: '제자리', sub: '이동 안 함', fn: openActions }, { label: '취소', fn: deselect }]);
-    setHint('파란 칸: 이동 · 빨간 칸의 적을 누르면 다가가 공격');
+    showActs([{ label: '취소', fn: deselect }]);
+    setHint('파란 칸: 이동 · 빨간 칸의 적을 누르면 다가가 공격 · 영웅을 다시 누르면 제자리에서 행동');
     renderRoster();
   }
   function deselect() {
@@ -1248,8 +1248,10 @@
   function openActions() {
     const u = ui.sel;
     ui.state = 'menu';
-    OV.move = null; OV.atk = null; OV.path = null; OV.aura = null;
-    OV.ghost = ui.reach ? ranges(u, ui.reach).mv : null; // 다른 파란 칸을 누르면 다시 옮긴다
+    OV.move = null; OV.path = null; OV.aura = null;
+    // 다른 파란 칸을 누르면 다시 옮긴다: 이동·공격 가능 범위(파랑·빨강)를 그대로 남긴다
+    const rg = ui.reach ? ranges(u, ui.reach) : null;
+    OV.ghost = rg && rg.mv; OV.atk = rg && rg.atk;
     const tg = R.targetsFrom(G, u, u.x, u.y);
     OV.targets = tg.map((o) => [o.x, o.y]);
     drawOverlay();
@@ -1276,7 +1278,7 @@
   function pickSkill(sk) {
     const u = ui.sel, s = D.SKILLS[sk];
     ui.skill = sk; ui.skillTile = null; ui.state = 'skill';
-    OV.targets = null; OV.aura = null;
+    OV.targets = null; OV.aura = null; OV.atk = null; // 특기 범위와 섞이지 않게
     OV.skill = R.skillTargets(G, u, sk);
     OV.area = null;
     if (s.tgt === 'self') {
