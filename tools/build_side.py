@@ -11,7 +11,8 @@ CHS = sys.argv[1:] or ['ch01']
 # 원작 철충 -> 이 게임의 철충 종류. 원작 표의 모델 이름(MonsterModelID)으로 같은 계열을 고른다 (위에서부터 먼저 맞는 것)
 MOB = [(r'Stalker', 'stalker'), (r'Predator', 'predator'), (r'Kidnapper', 'trickster'), (r'Centurion', 'centurion'),
        (r'FABigChick|Juggernaut|Mammoth', 'fabigchick'), (r'BigChick', 'bigchick'), (r'Legion', 'legion'), (r'Zapper', 'zapper'),
-       (r'Phalangites', 'phalanx'), (r'HeavyScout|Scout_V2', 'heavyscout'),
+       (r'Phalangites', 'phalanx'), (r'HeavyScout|Scout_V2', 'heavyscout'), (r'Raider', 'raider'), (r'Wasp', 'wasp'), (r'Scarab', 'scarab'),
+       (r'NightChickSP', 'sniper'), (r'NightChickDE', 'detector'), (r'NightChickCM', 'chemical'),
        (r'Scout', 'scout'), (r'Harvester', 'harvester'), (r'NightChickC_|NightChickCEX', 'cannon'), (r'NightChickSI', 'shielderx'),
        (r'NightChickM|NightChickSP', 'launcher'), (r'NightChickS', 'shielder'), (r'NightChick', 'chick')]
 GIVER = {'콘스탄챠': 'constantia', '그리폰': 'griffon', '요안나': 'johanna', 'LRL': 'lrl', '포츈': 'fortune', '펍 헤드': 'pupphead', '폴른': 'fallen',
