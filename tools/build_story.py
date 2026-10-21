@@ -149,6 +149,20 @@ def main():
     img, _ = json.JSONDecoder().raw_decode(t[i:])
     for k, src in ICONS.items():
         img[k] = data_url(TEX + src)
+    # js/data.js 에 쓰인 초상화 중 아직 없는 것: 영웅은 편성 아이콘, 철충은 패널 아이콘에서 (모델 이름 그대로)
+    import re
+    for k in sorted(set(re.findall(r"icon: '([ce]_[A-Za-z0-9_]+)'", open(os.path.join(ROOT, 'js', 'data.js'), encoding='utf8').read()))):
+        if k in img:
+            continue
+        m = k[2:]
+        alt = re.sub(r'_(B\d+|CH|EW|TU\d*)$', '_N', m)
+        cands = ['FormationIcon/FormationIcon_%s.png' % m] if k.startswith('c_') else [
+            'PassivePanelIcon/PanelIcon_MP_%s.png' % m, 'ChallengeBossTx/Challenge_PanelIcon_MP_%s.png' % m, 'PassivePanelIcon/PanelIcon_MP_%s.png' % alt]
+        src = next((c for c in cands if os.path.exists(TEX + c)), None)
+        if src:
+            img[k] = data_url(TEX + src)
+        else:
+            print('초상화 없음:', k)
     with open(p, 'w', encoding='utf8') as f:
         f.write(t[:i] + json.dumps(img) + ';\n')
     print('장면', len(story), '대사', sum(len(v['start']) + len(v['mid']) + len(v['end']) for v in story.values()))
