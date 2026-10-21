@@ -36,6 +36,23 @@ UNITS = {
     "labiata": "3P_Labiata_N", "leona": "BR_Leona_N", "khan": "BR_Khan_N", "daphne": "3P_Daphne_N", "brunhild": "BR_Brunhild_N", "fafnir": "BR_Fafnir_N",
 }
 
+# 대화 일러스트 (원작 2DModel 프리팹 + 로비 움직임): "p_<영웅>" -> 모델 이름
+PORTRAITS = {"p_constantia": "3P_ConstantiaS2_N", "p_griffon": "BR_PA00EL_N", "p_johanna": "DS_Johanna_N", "p_lrl": "PECS_LRL_N",
+             "p_pupphead": "PECS_PuppHead_N", "p_fallen": "AGS_Fallen_N"}
+PORTRAIT_DIR = ROOT + "/AssetBundleResource/Character_2D"
+FACE_DIR = ROOT + "/AssetBundleResource/Texture/face"
+PORTRAIT_ATLAS = (0.62, 0.42)  # 일러스트는 화면 높이만큼 크게 그리므로 원본 해상도 기준으로 더 크게 남긴다 (PC, 휴대폰)
+
+
+def portrait_source(uid):
+    """일러스트 프리팹과 움직임: 로비 반복 움직임(_lobby)을 idle 로"""
+    model = PORTRAITS[uid]
+    prefab = PORTRAIT_DIR + "/2DModel_" + model + ".prefab"
+    anims = controller_anims(prefab)
+    lobby = [p for k, p in anims.items() if k.endswith("_lobby")] or [p for k, p in anims.items() if "lobby" in k and "start" not in k and "tep" not in k]
+    return model, prefab, ({"idle": lobby[0]} if lobby else {})
+
+
 # enemy image key (data.js) -> monster prefab
 LAYER_NAMES = ["3D_BG", "FX_back", "Default", "BG_top", "FX_self", "bone_and_ik", "UI", "OverFX"]
 LAYER_IDS = {175830887: 0, 2320800499: 1, 0: 2, 3417033155: 3, 3865075951: 4, 4047528637: 5, 3106374313: 6, 211725069: 7}
@@ -723,6 +740,8 @@ def apply_unity_meshes(nodes, uid, atlas):
                 if g:
                     t = atlas.texture(g.group(1))
                     tex = -1 if t is None else t
+        if not part.get("shader") and tex == -1:
+            continue  # 재질이 비어 있는 조각: 유니티에서도 그려지지 않는다
         layer = LAYER_NAMES.index(part["layer"]) if part["layer"] in LAYER_NAMES else 2
         if layer == GIZMO_LAYER:
             continue
@@ -838,7 +857,7 @@ def tex_image(path, hires=False):
     return im
 
 
-def packed_atlas(paths, hires=False):
+def packed_atlas(paths, hires=False, scales=None):
     """One atlas per rig, packed here instead of on the phone: same shelf packing as js/sd.js packAtlas
     (tallest first, 2048 wide, white tile last), gaps so neighbours survive downscaling, saved at ATLAS_SCALE."""
     imgs = [tex_image(p, hires) for p in paths] + [Image.new("RGBA", (8, 8), (255, 255, 255, 255))]
@@ -857,7 +876,8 @@ def packed_atlas(paths, hires=False):
     # wider shelves until the desktop atlas fits a 4096 texture (phones and many GPUs stop there)
     W = max([im.width for im in imgs] + ([2048] if len(imgs) > 1 else [0]))
     pos, H = shelf(W)
-    while H * ATLAS_SCALE > 4096 and W * 2 * ATLAS_SCALE <= 4096:
+    s50, s35 = scales or (ATLAS_SCALE, MOBILE_ATLAS_SCALE)
+    while H * s50 > 4096 and W * 2 * s50 <= 4096:
         W *= 2
         pos, H = shelf(W)
     atlas = Image.new("RGBA", (W, H), (0, 0, 0, 0))
@@ -867,12 +887,12 @@ def packed_atlas(paths, hires=False):
         rects.append([round(pos[i][0] / W, 6), round((H - pos[i][1] - im.height) / H, 6), round(im.width / W, 6), round(im.height / H, 6)])
     # one file per display scale (desktop 0.5, phones 0.35): the page loads only its own, no runtime downscale
     files = {}
-    for tag, sc, q in (("a50", ATLAS_SCALE, 90), ("a35", MOBILE_ATLAS_SCALE, 88)):
+    for tag, sc, q in (("a50", s50, 90), ("a35", s35, 88)):
         im = atlas.resize((max(4, round(W * sc)), max(4, round(H * sc))), Image.LANCZOS)
         buf = io.BytesIO()
         im.save(buf, "WEBP", quality=q, method=6)
         files[tag] = "data:image/webp;base64," + base64.b64encode(buf.getvalue()).decode()
-    return {"rects": rects, "s": ATLAS_SCALE, "v": [ATLAS_SCALE, MOBILE_ATLAS_SCALE]}, files
+    return {"rects": rects, "s": s50, "v": [s50, s35]}, files
 
 
 def tex_uri(path):
@@ -889,6 +909,8 @@ def build(uid):
         model = ENEMIES[uid[2:]]
         prefab = MONSTER_DIR + "/" + model + ".prefab"
         anim_paths = pick_clips(controller_anims(prefab))
+    elif uid.startswith("p_"):
+        model, prefab, anim_paths = portrait_source(uid)
     else:
         model = UNITS[uid]
         char_dir, prefab = find_char(model)
@@ -921,13 +943,35 @@ def build(uid):
             clips[k] = build_clip(p, atlas)
         except Exception as e:  # keep going; a missing clip just falls back to idle
             print("  clip fail", uid, k, e)
+    faces = {}
+    if uid.startswith("p_"):
+        fdir = FACE_DIR + "/" + model
+        face_node = next((n for n in nodes if n["path"].split("/")[-1] == "face"), None)
+        if face_node and os.path.isdir(fdir):
+            for f in sorted(os.listdir(fdir)):
+                if not f.endswith(".png"):
+                    continue
+                g = re.search(r"guid: ([0-9a-f]+)", open(os.path.join(fdir, f + ".meta"), encoding="utf-8").read())
+                key = g and atlas.sprite({"guid": g.group(1), "fileID": 21300000})
+                if key:
+                    faces[f[:-4]] = key
+            if faces and face_node.get("sr"):
+                # 프리팹의 얼굴 자리는 비어 있다 (원작은 실행 중에 표정을 끼움): 기본 표정을 끼워 둔다
+                names = list(faces)
+                dflt = next((k for k in names if k.lower().endswith("_idle")), None) or next((k for k in names if k.lower().endswith("_smile")), None) or next((k for k in names if "smile" in k.lower()), names[0])
+                face_node["sr"]["s"] = faces[dflt]
+                face_node["sr"]["e"] = 1
+                clips["faces"] = {"dur": round(1.0 / FPS, 4), "n": 1, "loop": 0, "tracks": [{"p": face_node["path"], "k": "sp", "d": list(faces.values())}]}
     nodes = prune(nodes, clips)
     quantize_clips(clips)
-    atlas_meta, atlas_files = packed_atlas([p for _, p, _, _ in atlas.textures], uid in hires_ids())
+    atlas_meta, atlas_files = packed_atlas([p for _, p, _, _ in atlas.textures], uid in hires_ids() or uid.startswith("p_"),
+                                           PORTRAIT_ATLAS if uid.startswith("p_") else None)
     data = {
         "fmt": FORMAT, "id": uid, "model": model, "nodes": nodes, "clips": clips,
         "sprites": atlas.sprites, "atlas": atlas_meta,
     }
+    if faces:
+        data["faces"] = faces
     # Unity's own sprite meshes (tight sheets would bleed neighbouring sprites through a full-rect quad)
     mpath = os.path.join(UNITY_MESH, uid + ".json")
     if os.path.exists(mpath):
@@ -951,6 +995,8 @@ if __name__ == "__main__":
     args = sys.argv[1:]
     if args == ["enemies"]:
         args = ["e_" + k for k in ENEMIES]
+    if args == ["portraits"]:
+        args = list(PORTRAITS)
     ids = args or list(UNITS)
     for uid in ids:
         build(uid)

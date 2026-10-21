@@ -46,6 +46,8 @@ def copy_asset(src, copied):
 
 def main():
     ids = sys.argv[1:] or DEFAULT
+    if ids == ["portraits"]:
+        ids = list(B.PORTRAITS)
     if ids == ["all"]:
         ids = list(B.UNITS) + ["e_" + k for k in B.ENEMIES]
     os.makedirs(os.path.join(PROJ, "Assets", "Editor"), exist_ok=True)
@@ -67,6 +69,8 @@ def main():
         if uid.startswith("e_"):
             prefab = B.MONSTER_DIR + "/" + B.ENEMIES[uid[2:]] + ".prefab"
             anims = B.pick_clips(B.controller_anims(prefab))
+        elif uid.startswith("p_"):
+            _, prefab, anims = B.portrait_source(uid)
         else:
             char_dir, prefab = B.find_char(B.UNITS[uid])
             anims = B.find_anims(char_dir, B.UNITS[uid])

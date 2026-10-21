@@ -34,6 +34,7 @@
   const IMGPRE = {};
 
   function preload(list) {
+    if (window.PORTRAIT) PORTRAIT.preload(list);
     for (const n of list) {
       const urls = [];
       if (n.bg) urls.push(`assets/story/bg/${n.bg}.webp`);
@@ -53,6 +54,7 @@
       root.classList.remove('hidden'); bgEl.classList.remove('hidden');
       root.classList.remove('nobox', 'logon');
       layers.forEach((l) => { l.style.backgroundImage = ''; l.style.opacity = 0; });
+      stage.querySelectorAll('.stand').forEach((im) => window.PORTRAIT && PORTRAIT.detach(im));
       stage.innerHTML = ''; cgEl.removeAttribute('src'); cgEl.dataset.k = '';
       fxEl.className = 'tfx'; fxEl.style.opacity = 0;
       placeEl.classList.remove('on');
@@ -91,13 +93,21 @@
       if (im.classList.contains('leaving')) return;
       const cls = OFF[(n.off || {})[p]] || 'off-fade';
       im.classList.add('leaving', cls);
-      tw(450).then(() => im.remove());
+      tw(450).then(() => { if (window.PORTRAIT) PORTRAIT.detach(im); im.remove(); });
     });
     for (const [p, [s, d]] of want) {
+      // 움직이는 일러스트가 있는 인물은 <canvas>, 없으면(컷 그림 등) 정지 그림 <img>
+      const live = !!(window.PORTRAIT && PORTRAIT.rigOf(s));
       let im = stage.querySelector(`.stand[data-p="${p}"]:not(.leaving)`);
+      if (im && (im.tagName === 'CANVAS') !== live) { if (window.PORTRAIT) PORTRAIT.detach(im); im.remove(); im = null; }
       const fresh = !im;
-      if (fresh) { im = document.createElement('img'); im.className = 'stand'; im.dataset.p = p; stage.appendChild(im); }
-      if (im.dataset.s !== s) { im.src = `assets/story/stand/${s}.webp`; im.dataset.s = s; }
+      if (fresh) { im = document.createElement(live ? 'canvas' : 'img'); im.className = 'stand'; im.dataset.p = p; stage.appendChild(im); }
+      if (im.dataset.s !== s) {
+        if (!live) im.src = `assets/story/stand/${s}.webp`;
+        else if (fresh || !im._portrait || PORTRAIT.rigOf(im.dataset.s) !== PORTRAIT.rigOf(s)) { PORTRAIT.detach(im); PORTRAIT.attach(im, s); }
+        else PORTRAIT.change(im, s);
+        im.dataset.s = s;
+      }
       im.classList.toggle('cut', s.includes('_Dialog0'));
       im.classList.toggle('dim', lit && d !== 1);
       const eff = (n.app || {})[p] || ((n.fade || {})[p] ? 'fade' : fresh ? 'fade' : 0);
@@ -232,6 +242,8 @@
     nodes = null; cur = null; done = null; typing = null; busy = false;
     bgEl.style.transform = '';
     root.classList.add('hidden'); bgEl.classList.add('hidden');
+    stage.querySelectorAll('.stand').forEach((im) => window.PORTRAIT && PORTRAIT.detach(im));
+    stage.innerHTML = '';
     root.classList.remove('logon', 'asking');
     if (cb) cb();
   }
@@ -239,6 +251,7 @@
 
   function update(dt) {
     now += dt;
+    if (window.PORTRAIT) PORTRAIT.update(dt);
     for (let i = timers.length - 1; i >= 0; i--) if (timers[i].t <= now) { const r = timers[i].r; timers.splice(i, 1); r(); }
     for (let i = tweens.length - 1; i >= 0; i--) {
       const a = tweens[i];

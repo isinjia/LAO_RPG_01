@@ -345,3 +345,6 @@
 
 /* 타이틀 버전 표시 (화면 아래 가운데) */
 .title2 .tver { position: absolute; left: 0; right: 0; bottom: calc(30px + var(--safe-b)); text-align: center; font: 13px 'LO_B', sans-serif; letter-spacing: 2px; color: rgba(255,255,255,.75); text-shadow: 0 1px 3px #000; }
+
+/* 움직이는 일러스트 캔버스: 그림 비율 그대로 화면 높이에 맞춘다 */
+#talkBg canvas.stand { width: auto; max-width: none; }
