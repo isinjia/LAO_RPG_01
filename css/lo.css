@@ -646,7 +646,13 @@
 .ccn.closed, .ccn.lock { opacity: .5; } .ccn.closed img, .ccn.lock img { filter: grayscale(1); }
 .ccn.sel { background: linear-gradient(90deg, rgba(255, 204, 0, .25), rgba(12, 17, 28, .85)); border-color: var(--lo-y); opacity: 1; }
 .cc-info { display: flex; flex-direction: column; gap: 10px; }
-.cc-st { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.cc-st { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.cc-form { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.cc-form div { padding: 8px 10px; background: rgba(255, 204, 0, .08); border-left: 3px solid var(--lo-y); }
+.cc-form label { display: block; font-size: 11px; color: #8d97b0; margin-bottom: 2px; }
+.cc-form b { font: 16px 'LO_B', sans-serif; color: #fff; }
+.cc-form .kind { font-size: 13px; }
+.cc-chg { display: block; font-style: normal; font-size: 11px; color: var(--lo-y); margin-top: 2px; }
 .cc-st div { padding: 8px 10px; background: rgba(255,255,255,.05); }
 .cc-st label { display: block; font-size: 11px; color: #8d97b0; }
 .cc-st b { font: 20px 'LO_B', sans-serif; color: #fff; }

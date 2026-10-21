@@ -1880,7 +1880,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.37';
+  const GAME_VERSION = '0.38';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2182,7 +2182,7 @@
       const h = D.HEROES[id], s = save.heroes[id], c = CL.stats(id, s);
       return `<div class="pcard rcard" data-h="${id}"><div class="pimg ${id === 'pupphead' || id === 'fallen' ? 'whole' : ''}"><canvas class="pcv" data-stand="${standOf(id)}"></canvas></div>
         ${CL.canChange(id, s) ? '<i class="pcc">전직 가능</i>' : ''}
-        <div class="pfoot"><span class="plv">Lv.${s.lv}</span><b>${h.name}</b><small>${kindTag(h.kind)} · ${c.cls}</small></div>
+        <div class="pfoot"><span class="plv">Lv.${s.lv}</span><b>${h.name}</b><small>${kindTag(c.kind)} · ${c.cls}</small></div>
         <div class="ptroop rst"><span>체력 ${c.hp}</span><span>공격 ${c.at}</span><span>방어 ${c.df}</span></div></div>`;
     }).join('');
     $('modal').classList.add('wide');
@@ -2197,7 +2197,7 @@
   const joined = () => new Set(D.STAGES.slice(0, Math.min(D.STAGES.length, save.clear + 1)).flatMap((s) => s.heroes));
   function heroStatLine(id) {
     const h = D.HEROES[id], c = CL.stats(id, save.heroes[id]);
-    return `${kindTag(h.kind)} 체력 <b>${c.hp}</b> · 공격 <b>${c.at}</b> · 방어 <b>${c.df}</b> · 이동 <b>${c.mov}</b> · 사거리 <b>${h.rng}</b>`;
+    return `${kindTag(c.kind)} 체력 <b>${c.hp}</b> · 공격 <b>${c.at}</b> · 방어 <b>${c.df}</b> · 이동 <b>${c.mov}</b> · 사거리 <b>${c.rng}</b>`;
   }
   function heroCards() {
     const j = joined();
@@ -2233,17 +2233,22 @@
     const nodeBtn = (k) => {
       const n = nodes[k], stt = stateOf(n);
       return `<button class="ccn ${stt} ${key(sel) === k ? 'sel' : ''}" data-k="${k}"><img src="${iconFor(n)}" alt=""><span>
-        <small>${n.tier ? `Lv.${D.TIER_LV[n.tier]} · ${CL.BR_NAME[n.br]}` : '기본 직업'}</small><b>${n.cls}</b>
+        <small>${n.tier ? `Lv.${D.TIER_LV[n.tier]} · ` : ''}${D.KIND[n.kind].name}</small><b>${n.cls}</b>
         <em>${{ cur: '현재 직업', done: '전직 완료', ready: '전직 가능', next: `Lv.${D.TIER_LV[n.tier]}부터`, closed: '다른 갈래', lock: '잠김' }[stt]}</em></span></button>`;
     };
     const info = () => {
-      const n = sel, c0 = CL.stats(id, s), c1 = CL.stats(id, s, n.tier, n.br), t0 = h.tiers[s.tier], t1 = h.tiers[n.tier];
+      const n = sel, c0 = CL.stats(id, s), c1 = CL.stats(id, s, n.tier, n.br), t0 = CL.cur(id, s), t1 = n;
+      const MOVE = { foot: '보행', horse: '기마', fly: '비행' };
       const d = (a, b) => (b > a ? `<em class="up">▲${b - a}</em>` : b < a ? `<em class="dn">▼${a - b}</em>` : '');
       const ns = t1.skills.filter((k) => !t0.skills.includes(k)), nt = t1.troops.filter((k) => !t0.troops.includes(k));
       const can = opts.some((o) => key(o) === key(n)) && CL.canChange(id, s);
-      return `<div class="cc-st"><div><label>체력</label><b>${c1.hp}</b>${d(c0.hp, c1.hp)}</div><div><label>공격</label><b>${c1.at}</b>${d(c0.at, c1.at)}</div>
-        <div><label>방어</label><b>${c1.df}</b>${d(c0.df, c1.df)}</div><div><label>이동</label><b>${c1.mov}</b></div></div>
-        <div class="cc-tag">${n.tier ? `${CL.BR_NAME[n.br]} 갈래 · ${n.br === 'A' ? '공격 +8% · 방어 −4%' : '체력·방어 +8% · 공격 −4%'}` : '기본 직업'}</div>
+      const chg = (a, b, txt) => (a !== b ? `<em class="cc-chg">${txt}</em>` : '');
+      return `<div class="cc-form"><div><label>병종</label>${kindTag(t1.kind)}${chg(t0.kind, t1.kind, `← ${D.KIND[t0.kind].name}`)}</div>
+          <div><label>이동</label><b>${MOVE[t1.move]} ${t1.mov}</b>${chg(t0.move + t0.mov, t1.move + t1.mov, `← ${MOVE[t0.move]} ${t0.mov}`)}</div>
+          <div><label>사거리</label><b>${t1.rng}</b>${chg(t0.rng, t1.rng, `← ${t0.rng}`)}</div></div>
+        <div class="cc-st"><div><label>체력</label><b>${c1.hp}</b>${d(c0.hp, c1.hp)}</div><div><label>공격</label><b>${c1.at}</b>${d(c0.at, c1.at)}</div>
+        <div><label>방어</label><b>${c1.df}</b>${d(c0.df, c1.df)}</div></div>
+        <div class="cc-tag">${n.desc || (n.tier ? '' : '기본 직업')}</div>
         <div class="cc-new">${ns.length ? `<div><label>새 특기</label>${ns.map((k) => `<b>${D.SKILLS[k].name}</b><small>${D.SKILLS[k].desc}</small>`).join('')}</div>` : ''}
           ${nt.length ? `<div><label>새 병사</label>${nt.map((k) => `<span><img src="${IMG[D.TROOPS[k].icon]}" alt="">${D.TROOPS[k].name}</span>`).join('')}</div>` : ''}
           <div><label>특기</label>${t1.skills.map((k) => D.SKILLS[k].name).join(' · ')}</div><div><label>배속 병사</label>${t1.troops.map((k) => D.TROOPS[k].short).join(' · ')}</div></div>
@@ -2288,6 +2293,7 @@
   const standOf = (id) => CL.standOf(id, save.heroes[id]) || HERO_STAND[id];
   const iconOf = (id) => CL.iconOf(id, save.heroes[id]);
   const clsOf = (id) => CL.cur(id, save.heroes[id]).cls;
+  const formOf = (id) => CL.cur(id, save.heroes[id]); // 지금 직업: kind·move·rng·mov·troops·skills
   // 화면 안의 일러스트 캔버스(data-stand)를 움직이는 일러스트로 (js/portrait.js). 화면이 바뀌면 알아서 정리된다
   function liveCards() {
     document.querySelectorAll('canvas[data-stand]').forEach((cv) => {
@@ -2306,7 +2312,7 @@
     }
     const pick = {};
     for (const id of roster) {
-      const t = D.HEROES[id].tiers[save.heroes[id].tier];
+      const t = formOf(id);
       pick[id] = t.troops.includes(save.troops[id]) ? save.troops[id] : t.troops[0];
     }
     const j = joined();
@@ -2323,7 +2329,7 @@
       return `<button class="pcard ${id === cur ? 'sel' : ''} ${st.heroes.includes(id) ? '' : 'off'}" data-h="${id}">
         <div class="pimg ${id === 'pupphead' || id === 'fallen' ? 'whole' : ''}"><canvas class="pcv" data-stand="${standOf(id)}"></canvas></div>
         ${(save.joined || []).includes(id) ? '' : '<i class="pnew">NEW</i>'}${CL.canChange(id, s) ? '<i class="pcc">전직 가능</i>' : ''}
-        <div class="pfoot"><span class="plv">Lv.${s.lv}</span><b>${h.name}</b><small>${kindTag(h.kind)} · ${t.cls}</small></div>
+        <div class="pfoot"><span class="plv">Lv.${s.lv}</span><b>${h.name}</b><small>${kindTag(t.kind)} · ${t.cls}</small></div>
         <div class="ptroop"><img src="${IMG[tr.icon]}" alt=""><span>${tr.short} ×${R.SQUAD}</span></div><i class="psel"></i><i class="poff">대기</i></button>`;
     };
     const detail = () => {
@@ -2337,8 +2343,8 @@
       return `<div class="pd-head"><b>${h.full}</b><span>${t.cls}</span></div>${sortie}
         <div class="pd-lv"><span>Lv.<b>${s.lv}</b></span><div class="pd-exp"><i style="width:${Math.min(100, s.exp)}%"></i></div>${next ? `<small>Lv.${next}에 전직</small>` : '<small>최종 전직</small>'}</div>
         <button class="pd-cc ${CL.canChange(id, s) ? 'ready' : ''}" id="pCC"><b>전직</b><small>${CL.canChange(id, s) ? '전직할 수 있습니다' : next ? `Lv.${next}부터 · 전직 나무 보기` : '최종 전직 완료 · 전직 나무 보기'}</small></button>
-        <div class="pd-stats"><div><label>병종</label>${kindTag(h.kind)}</div><div><label>체력</label><b>${hp}</b></div><div><label>공격</label><b>${at}</b></div>
-          <div><label>방어</label><b>${df}</b></div><div><label>이동</label><b>${t.mov}</b></div><div><label>사거리</label><b>${h.rng}</b></div></div>
+        <div class="pd-stats"><div><label>병종</label>${kindTag(t.kind)}</div><div><label>체력</label><b>${hp}</b></div><div><label>공격</label><b>${at}</b></div>
+          <div><label>방어</label><b>${df}</b></div><div><label>이동</label><b>${t.mov}</b></div><div><label>사거리</label><b>${t.rng}</b></div></div>
         <div class="wi-sub">특기</div><div class="pd-skills">${t.skills.map((k) => { const sk = D.SKILLS[k]; return `<div><b>${sk.name}</b><small>재사용 ${sk.cd}턴 · ${sk.desc}</small></div>`; }).join('')}</div>
         <div class="wi-sub">병사 배속 <small>공격받으면 병사가 먼저 피해를 받습니다</small></div><div class="pd-troops">${troops}</div>`;
     };
@@ -2370,7 +2376,7 @@
     // 전직 버튼: 전직 창을 열고, 전직하면 카드(스킨 일러스트)까지 다시 그린다
     const bindCC = () => {
       const b = $('pCC');
-      if (b) b.onclick = () => { AU.play('lo_click', 0.6); classChange(cur, (changed) => { if (changed) { const t = D.HEROES[cur].tiers[save.heroes[cur].tier]; if (!t.troops.includes(pick[cur])) pick[cur] = t.troops[0]; render(); bindCC(); } }); };
+      if (b) b.onclick = () => { AU.play('lo_click', 0.6); classChange(cur, (changed) => { if (changed) { const t = formOf(cur); if (!t.troops.includes(pick[cur])) pick[cur] = t.troops[0]; render(); bindCC(); } }); };
     };
     // 고를 때는 화면 전체를 다시 그리지 않고 바뀐 곳만 (움직이는 일러스트가 처음부터 다시 시작하지 않게)
     const bindTroops = () => {
@@ -2441,7 +2447,7 @@
     }
     st.heroes.forEach((id, i) => {
       // 시작 칸이 모자라면 (자유 편성으로 인원이 많을 때) 첫 시작 칸 근처 빈칸
-      const p = st.starts[i] || R.freeAround(G, st.starts[0][0], st.starts[0][1], D.HEROES[id].move, 1)[0];
+      const p = st.starts[i] || R.freeAround(G, st.starts[0][0], st.starts[0][1], formOf(id).move, 1)[0];
       R.makeHero(G, id, save.heroes[id], save.troops[id], p[0], p[1]);
     });
     R.spawnWave(G, 0);
