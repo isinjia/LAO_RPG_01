@@ -333,9 +333,8 @@ button, h2, h3, .tname, #banner, #turnNo, .nm, .stg .tt, .result .big, #fight .f
 .keys td { padding: 4px 6px; border-bottom: 1px solid #ffffff14; color: var(--dim); }
 .keys td:first-child { white-space: nowrap; width: 1%; }
 .keys kbd { display: inline-block; padding: 1px 7px; font: 700 12px/18px sans-serif; color: #fff; background: #1c2742; border: 1px solid #ffffff33; border-bottom-width: 2px; border-radius: 5px; }
-@media (hover: hover) and (pointer: fine) {
-  #acts kbd { display: inline; }
-  .tbtns button[data-key] { position: relative; }
-  .tbtns button[data-key]::after { content: attr(data-key); position: absolute; right: 2px; bottom: -9px; padding: 0 3px; font: 700 9px/12px sans-serif; color: #cfe0ff; background: #0b1324; border: 1px solid #ffffff33; border-radius: 3px; pointer-events: none; }
-  #roster .rh::after { content: attr(data-n); position: absolute; left: 2px; top: 1px; font: 800 11px/14px sans-serif; color: #fff; text-shadow: 0 1px 2px #000, 0 0 3px #000; }
-}
+/* html.kbd: 터치가 없는 PC에서 켜지고, 터치 기기라도 실제로 키보드를 누르면 켜진다 (js/game.js) */
+html.kbd #acts kbd { display: inline; }
+html.kbd .tbtns button[data-key] { position: relative; }
+html.kbd .tbtns button[data-key]::after { content: attr(data-key); position: absolute; right: 2px; bottom: -9px; padding: 0 3px; font: 700 9px/12px sans-serif; color: #cfe0ff; background: #0b1324; border: 1px solid #ffffff33; border-radius: 3px; pointer-events: none; }
+html.kbd #roster .rh::after { content: attr(data-n); position: absolute; left: 2px; top: 1px; font: 800 11px/14px sans-serif; color: #fff; text-shadow: 0 1px 2px #000, 0 0 3px #000; }

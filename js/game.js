@@ -789,7 +789,12 @@
     await endStage(true, '치트로 자동 클리어');
     cheatWin = false;
   }
+  // 단축키 글자(행동 버튼·상단 버튼·영웅 번호)는 키보드를 쓰는 기기에서만 보인다:
+  // 터치가 없고 마우스가 있는 PC면 처음부터, 터치 기기는 실제로 키보드를 누른 뒤부터
+  const touchDev = navigator.maxTouchPoints > 0 || 'ontouchstart' in window;
+  if (!touchDev && matchMedia('(hover: hover) and (pointer: fine)').matches) document.documentElement.classList.add('kbd');
   addEventListener('keydown', (e) => {
+    if (e.code && e.code !== 'Unidentified' && e.key !== 'Unidentified' && e.key !== 'Process' && !(e.target.closest && e.target.closest('input, textarea'))) document.documentElement.classList.add('kbd'); // 화면 키보드(한글 조합 등)는 빼고
     if (/^Key[A-Z]$/.test(e.code)) {
       cheatBuf = (cheatBuf + e.code[3].toLowerCase()).slice(-CHEAT_KEYS.length);
       if (cheatBuf === CHEAT_KEYS && $('screen').querySelector('.title2')) {
