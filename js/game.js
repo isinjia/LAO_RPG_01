@@ -1099,6 +1099,33 @@
       el.appendChild(b);
     }
     el.classList.remove('hidden');
+    placeActs();
+  }
+  // PC(가로 화면): 행동 메뉴를 고른 영웅 바로 옆에 세로로 (파이어 엠블렘식). 오른쪽·왼쪽·아래·위 가운데
+  // 영웅과 가까운 유닛들, 정보창을 가장 덜 가리는 첫 자리. 세로 화면은 아래 버튼 그대로
+  function placeActs() {
+    const el = $('acts'), u = ui.sel;
+    if (el.classList.contains('hidden')) return;
+    if (!(innerWidth > innerHeight) || !u || !G || !u.alive || el.children.length < 2) { el.classList.remove('pc'); el.style.left = el.style.top = ''; return; } // 취소 하나뿐(이동·목표 고르는 중)이면 칸을 가리지 않게 구석에
+    el.classList.add('pc');
+    const w = el.offsetWidth, h = el.offsetHeight, gap = 46;
+    const scr = (o) => toScreen(new THREE.Vector3(o.x + 0.5, 1.0, o.y + 0.5));
+    const body = (p, big) => (big ? [p.x - 70, p.y - 110, p.x + 70, p.y + 50] : [p.x - 45, p.y - 70, p.x + 45, p.y + 40]);
+    const me = scr(u);
+    const avoid = [body(me, u.def.big), ...G.units.filter((o) => o.alive && o !== u && R.dist(o.x, o.y, u.x, u.y) <= 3).map((o) => body(scr(o), o.def.big))];
+    const info = $('info');
+    if (!info.classList.contains('hidden')) { const r = info.getBoundingClientRect(); avoid.push([r.left, r.top, r.right, r.bottom]); }
+    const top = ($('top').getBoundingClientRect().bottom || 60) + 8;
+    const over = (a, b) => Math.max(0, Math.min(a[2], b[2]) - Math.max(a[0], b[0])) * Math.max(0, Math.min(a[3], b[3]) - Math.max(a[1], b[1]));
+    const cands = [[me.x + gap, me.y - h / 2], [me.x - gap - w, me.y - h / 2], [me.x - w / 2, me.y + 50], [me.x - w / 2, me.y - 100 - h]];
+    let best = null;
+    for (const c of cands) {
+      const x = Math.max(8, Math.min(innerWidth - w - 8, c[0])), y = Math.max(top, Math.min(innerHeight - h - 8, c[1]));
+      const box = [x, y, x + w, y + h], cost = avoid.reduce((n, b, i) => n + over(box, b) * (i === 0 ? 4 : 1), 0); // 영웅 자신은 더 피한다
+      if (!best || cost < best.cost - 1) best = { x, y, cost };
+      if (cost === 0) break;
+    }
+    el.style.left = best.x + 'px'; el.style.top = best.y + 'px';
   }
   function banner(text, sub, cls = '') {
     const el = $('banner');
@@ -2003,7 +2030,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.53';
+  const GAME_VERSION = '0.55';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2892,6 +2919,7 @@
       if (cam.tx != null) placeForecast(); // 카메라가 움직이는 동안 자리도 다시
     }
     if (skPre.length) placeSkillPreview();
+    if (cam.tx != null && !$('acts').classList.contains('hidden')) placeActs(); // 카메라가 움직이면 행동 메뉴도 영웅 곁으로
     const sv = ui.sel && views.get(ui.sel.uid);
     world.selMark.visible = !!(sv && world.selMark.material.map && mode === 'map');
     if (sv) { world.selMark.position.set(sv.g.position.x, (sv.u.def.big ? 1.6 : 1.2) + Math.abs(Math.sin(t * 4)) * 0.12, sv.g.position.z); world.selMark.scale.set(0.34, 0.4, 1); }

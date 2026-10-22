@@ -248,3 +248,11 @@
 
 /* PC(가로 화면): 예상 창은 누른 목표 바로 옆에 조금 크게 (left·top 은 game.js 가 정한다) */
 #forecast.pc { top: 50%; transform: translate(-50%, -50%) scale(1.15); transform-origin: 50% 50%; }
+
+/* PC(가로 화면): 행동 메뉴는 고른 영웅 바로 옆에 세로로 작게 (left·top 은 game.js 의 placeActs) */
+@media (orientation: landscape) {
+  #acts.pc { right: auto; bottom: auto; flex-direction: column; gap: 4px; animation: actsIn .14s ease-out; }
+  #acts.pc button { min-width: 132px; padding: 8px 16px 7px 18px; font-size: 15px; }
+  #acts.pc button small { display: none; }
+}
+@keyframes actsIn { from { opacity: 0; transform: translateX(-8px); } }
