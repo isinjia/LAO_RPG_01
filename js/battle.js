@@ -66,7 +66,7 @@
   };
 
   const figN = (u, thp) => RULES.soldiers(u, thp);
-  // 발밑 그림자: 비병은 몸만 떠 있고 그림자는 땅에 남는다 (랑그릿사처럼)
+  // 발밑 그림자: 공중병은 몸만 떠 있고 그림자는 땅에 남는다 (랑그릿사처럼)
   let shadowGeo = null, shadowMat = null;
   function addShadow(f) {
     if (!shadowGeo) {
@@ -87,7 +87,7 @@
     m.renderOrder = 5; // 배경 위, 모든 유닛 아래
     f.rig.g.add(m);
     f.shadow = m;
-    // 비병: 리그만 들어 올리고 천천히 오르내린다
+    // 공중병: 리그만 들어 올리고 천천히 오르내린다
     f.by0 = f.rig.c.root.position.y;
     f.bob = Math.random() * Math.PI * 2;
   }

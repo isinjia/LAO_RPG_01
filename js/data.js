@@ -3,7 +3,7 @@
 (function () {
   // ── 지형 ────────────────────────────────────────────────
   // cost: 이동 방식별 이동력 소모 (99 = 못 들어감), def: 방어 보정(비행은 무시), heal: 차례 시작 회복(최대 체력 비율)
-  // 랑그릿사 모바일 지형표 기준 (보행 foot / 기마 horse / 비행 fly). 99 = 못 들어감. def = 방어 보정(비병은 지형 영향 없음)
+  // 랑그릿사 모바일 지형표 기준 (보행 foot / 기마 horse / 비행 fly). 99 = 못 들어감. def = 방어 보정(공중병은 지형 영향 없음)
   const TERRAIN = {
     '.': { name: '평지', cost: { foot: 1, horse: 1, fly: 1 }, def: 0, bg: 'plain' },
     'r': { name: '도로', cost: { foot: 1, horse: 1, fly: 1 }, def: 0, bg: 'ruins' },
@@ -55,18 +55,18 @@
   // 상성은 병사 병종 기준(영웅끼리는 영웅 병종). REL[공격][방어] = 유리 배율 (+30% 등). 반대 방향은 그만큼 불리.
   const KIND = {
     inf: { name: '보병', color: '#7fd0ff' },
-    pike: { name: '창병', color: '#ffd36e' },
-    cav: { name: '기병', color: '#ff8a7a' },
-    fly: { name: '비병', color: '#c8a2ff' },
-    arch: { name: '궁병', color: '#9dffa8', ranged: true },
-    priest: { name: '승려', color: '#fff3a8' },
-    demon: { name: '마물', color: '#d07aff' },
+    pike: { name: '중장병', color: '#ffd36e' },
+    cav: { name: '기동병', color: '#ff8a7a' },
+    fly: { name: '공중병', color: '#c8a2ff' },
+    arch: { name: '사격병', color: '#9dffa8', ranged: true },
+    priest: { name: '의무병', color: '#fff3a8' },
+    demon: { name: '변이체', color: '#d07aff' },
     water: { name: '수병', color: '#6fd8ff' },
-    mage: { name: '법사', color: '#ff9ad5', ranged: true },
-    assassin: { name: '암살자', color: '#b0b0c8' }, // 칼을 쓰는 근접 암살자 (붙어 싸워도 손해가 없다)
+    mage: { name: '전자전병', color: '#ff9ad5', ranged: true },
+    assassin: { name: '침투병', color: '#b0b0c8' }, // 칼을 쓰는 근접 침투병 (붙어 싸워도 손해가 없다)
   };
   const REL = { inf: { pike: 0.3 }, pike: { cav: 0.3 }, cav: { inf: 0.3 }, arch: { fly: 0.4 }, fly: { inf: 0.2, mage: 0.3 }, mage: { pike: 0.3 }, assassin: { arch: 0.3, mage: 0.3 }, priest: { demon: 0.8 } };
-  // 비병은 보병·법사를 위에서 덮치고, 법사는 창병의 굳은 대열을 깨며, 암살자는 뒤에 선 궁병·법사를 노린다
+  // 공중병은 보병·전자전병를 위에서 덮치고, 전자전병는 중장병의 굳은 대열을 깨며, 침투병는 뒤에 선 사격병·전자전병를 노린다
 
   // ── 특기 (재사용 대기 턴 cd) ───────────────────────────
   // tgt: self(자신 중심) | ally | enemy | tile | line, area: 0 단일 / 1 십자 / 'sq' 3x3 / 'adj' 인접 전체
@@ -110,12 +110,12 @@
   // 병사 10명이 한 부대. hp = 부대 전체 체력, mov = 병종 이동력
   const TROOPS = {
     guard: { name: '브라우니 보병', short: '보병', rig: 'brownie', icon: 'c_BR_Brownie_N', kind: 'inf', hp: 70, at: 16, df: 11, mov: 3, sfx: 'rifle' },
-    shield: { name: '노움 창병', short: '창병', rig: 'gnome', icon: 'c_BR_Gnome_N', kind: 'pike', hp: 76, at: 15, df: 13, mov: 3, sfx: 'cannon' },
-    raider: { name: '실피드 기병', short: '기병', rig: 'sylphid', icon: 'c_BR_Sylphid_N', kind: 'cav', hp: 76, at: 20, df: 12, mov: 5, sfx: 'gun' },
-    gunner: { name: '레프리콘 궁병', short: '궁병', rig: 'leprechaun', icon: 'c_BR_Leprechaun_N', kind: 'arch', hp: 62, at: 18, df: 8, mov: 3, sfx: 'mg' },
-    flyer: { name: '하르페이아 비병', short: '비병', rig: 'harpy', icon: 'c_BR_Harpy_N', kind: 'fly', hp: 70, at: 20, df: 10, mov: 5, sfx: 'missile' },
-    hacker: { name: '나이트 엔젤 전자전병', short: '법사', rig: 'nightangel', icon: 'c_BR_NightAngel_N', kind: 'mage', hp: 58, at: 21, df: 8, mov: 3, sfx: 'elec' },
-    blade: { name: '토모 검사', short: '암살자', rig: 'tomoe', icon: 'c_BR_Tomoe_N', kind: 'assassin', hp: 62, at: 22, df: 9, mov: 4, sfx: 'slash' },
+    shield: { name: '노움 중장병', short: '중장병', rig: 'gnome', icon: 'c_BR_Gnome_N', kind: 'pike', hp: 76, at: 15, df: 13, mov: 3, sfx: 'cannon' },
+    raider: { name: '실피드 기동병', short: '기동병', rig: 'sylphid', icon: 'c_BR_Sylphid_N', kind: 'cav', hp: 76, at: 20, df: 12, mov: 5, sfx: 'gun' },
+    gunner: { name: '레프리콘 사격병', short: '사격병', rig: 'leprechaun', icon: 'c_BR_Leprechaun_N', kind: 'arch', hp: 62, at: 18, df: 8, mov: 3, sfx: 'mg' },
+    flyer: { name: '하르페이아 공중병', short: '공중병', rig: 'harpy', icon: 'c_BR_Harpy_N', kind: 'fly', hp: 70, at: 20, df: 10, mov: 5, sfx: 'missile' },
+    hacker: { name: '나이트 엔젤 전자전병', short: '전자전병', rig: 'nightangel', icon: 'c_BR_NightAngel_N', kind: 'mage', hp: 58, at: 21, df: 8, mov: 3, sfx: 'elec' },
+    blade: { name: '토모 검사', short: '침투병', rig: 'tomoe', icon: 'c_BR_Tomoe_N', kind: 'assassin', hp: 62, at: 22, df: 9, mov: 4, sfx: 'slash' },
     // 철충 병사
     e_chick: { name: '나이트 칙 무리', short: '나이트 칙', rig: 'e_NightChick_N', icon: 'e_NightChick_N', kind: 'inf', hp: 52, at: 12, df: 8, mov: 3, sfx: 'gun' },
     e_launcher: { name: '나이트 칙 런처 무리', short: '런처', rig: 'e_NightChickM_N', icon: 'e_NightChickM_N', kind: 'arch', hp: 44, at: 13, df: 6, mov: 3, sfx: 'cannon' },
@@ -141,7 +141,7 @@
       name: '콘스탄챠', full: '콘스탄챠 S2', rig: 'constantia', icon: 'c_3P_ConstantiaS2_N', face: '3P_ConstantiaS2_N', sfx: 'rifle',
       talent: { name: '맏언니의 지휘', aura: { r: 2, at: 0.1 }, desc: '주변 2칸 아군 공격 +10%' },
       passives: [{ tier: 0, name: '정밀 사격 지원', troopUp: 0.15, desc: '병사 공격 +15%' }, { tier: 1, name: '호위대장의 반격', counterUp: 0.3, desc: '반격 피해 +30%' }], // 수동 특기 (tier 단계에 풀림)
-      kind: 'arch', move: 'foot', rng: 2, lead: true, // 궁병
+      kind: 'arch', move: 'foot', rng: 2, lead: true, // 사격병
       tiers: [
         { cls: '가정경비 바이오로이드', hp: 92, at: 21, df: 14, mov: 3, troops: ['gunner', 'guard'], skills: ['repair', 'cover'] },
         { cls: '오르카 호위대장', hp: 106, at: 24, df: 16, mov: 3, troops: ['gunner', 'guard', 'shield'], skills: ['repair', 'cover', 'headshot'] },
@@ -153,13 +153,13 @@
       name: '그리폰', full: 'P/A-00 그리폰', rig: 'griffon', icon: 'c_BR_PA00EL_N', face: 'BR_PA00EL_N', sfx: 'missile',
       talent: { name: '급강하 강습', first: 0.2, desc: '먼저 공격할 때 피해 +20%' },
       passives: [{ tier: 0, name: '공중 기동', noZoc: 1, desc: '지배 영역을 무시하고 지나간다' }, { tier: 1, name: '강습 편대', troopUp: 0.15, desc: '병사 공격 +15%' }], // 수동 특기 (tier 단계에 풀림)
-      kind: 'fly', move: 'fly', rng: 1, sizeK: 1.15, // 제트 팩으로 날아다니는 비병
+      kind: 'fly', move: 'fly', rng: 1, sizeK: 1.15, // 제트 팩으로 날아다니는 공중병
       tiers: [
         { cls: '기동공격 바이오로이드', hp: 80, at: 25, df: 11, mov: 5, troops: ['flyer', 'raider'], skills: ['missile', 'jet'] },
         { cls: '강습 비행대장', hp: 92, at: 29, df: 13, mov: 5, troops: ['flyer', 'raider'], skills: ['missile', 'jet'] },
         { cls: '하늘의 그리폰', hp: 106, at: 33, df: 15, mov: 5, troops: ['flyer', 'raider', 'gunner', 'hacker'], skills: ['missile', 'jet'] },
       ],
-      bio: '기동공격용 바이오로이드. 비병이라 지형을 무시하고 날아다니지만 궁병에 약합니다.',
+      bio: '기동공격용 바이오로이드. 공중병이라 지형을 무시하고 날아다니지만 사격병에 약합니다.',
     },
     johanna: {
       name: '요안나', full: '프레스터 요안나', rig: 'johanna', icon: 'c_DS_Johanna_N', face: 'DS_Johanna_N', sfx: 'slash',
