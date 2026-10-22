@@ -54,19 +54,19 @@
   // ── 병종 (랑그릿사 모바일) ───────────────────────────
   // 상성은 병사 병종 기준(영웅끼리는 영웅 병종). REL[공격][방어] = 유리 배율 (+30% 등). 반대 방향은 그만큼 불리.
   const KIND = {
-    inf: { name: '보병', color: '#7fd0ff' },
+    inf: { name: '소총병', color: '#7fd0ff' },
     pike: { name: '중장병', color: '#ffd36e' },
     cav: { name: '기동병', color: '#ff8a7a' },
     fly: { name: '공중병', color: '#c8a2ff' },
     arch: { name: '사격병', color: '#9dffa8', ranged: true },
     priest: { name: '의무병', color: '#fff3a8' },
     demon: { name: '변이체', color: '#d07aff' },
-    water: { name: '수병', color: '#6fd8ff' },
+    water: { name: '해병', color: '#6fd8ff' },
     mage: { name: '전자전병', color: '#ff9ad5', ranged: true },
     assassin: { name: '침투병', color: '#b0b0c8' }, // 칼을 쓰는 근접 침투병 (붙어 싸워도 손해가 없다)
   };
   const REL = { inf: { pike: 0.3 }, pike: { cav: 0.3 }, cav: { inf: 0.3 }, arch: { fly: 0.4 }, fly: { inf: 0.2, mage: 0.3 }, mage: { pike: 0.3 }, assassin: { arch: 0.3, mage: 0.3 }, priest: { demon: 0.8 } };
-  // 공중병은 보병·전자전병를 위에서 덮치고, 전자전병는 중장병의 굳은 대열을 깨며, 침투병는 뒤에 선 사격병·전자전병를 노린다
+  // 공중병은 소총병·전자전병을 위에서 덮치고, 전자전병은 중장병의 굳은 대열을 깨며, 침투병은 뒤에 선 사격병·전자전병을 노린다
 
   // ── 특기 (재사용 대기 턴 cd) ───────────────────────────
   // tgt: self(자신 중심) | ally | enemy | tile | line, area: 0 단일 / 1 십자 / 'sq' 3x3 / 'adj' 인접 전체
@@ -109,7 +109,7 @@
   // 영웅마다 고를 수 있는 병사가 정해져 있다. 병사 능력치는 영웅 레벨과 영웅 능력치(공방의 25%)로 오른다.
   // 병사 10명이 한 부대. hp = 부대 전체 체력, mov = 병종 이동력
   const TROOPS = {
-    guard: { name: '브라우니 보병', short: '보병', rig: 'brownie', icon: 'c_BR_Brownie_N', kind: 'inf', hp: 70, at: 16, df: 11, mov: 3, sfx: 'rifle' },
+    guard: { name: '브라우니 소총병', short: '소총병', rig: 'brownie', icon: 'c_BR_Brownie_N', kind: 'inf', hp: 70, at: 16, df: 11, mov: 3, sfx: 'rifle' },
     shield: { name: '노움 중장병', short: '중장병', rig: 'gnome', icon: 'c_BR_Gnome_N', kind: 'pike', hp: 76, at: 15, df: 13, mov: 3, sfx: 'cannon' },
     raider: { name: '실피드 기동병', short: '기동병', rig: 'sylphid', icon: 'c_BR_Sylphid_N', kind: 'cav', hp: 76, at: 20, df: 12, mov: 5, sfx: 'gun' },
     gunner: { name: '레프리콘 사격병', short: '사격병', rig: 'leprechaun', icon: 'c_BR_Leprechaun_N', kind: 'arch', hp: 62, at: 18, df: 8, mov: 3, sfx: 'mg' },
@@ -127,7 +127,7 @@
     e_drone: { name: '드론 편대', short: '드론', rig: 'e_Drone_N', icon: 'e_Drone_N', kind: 'fly', hp: 46, at: 15, df: 9, mov: 5, sfx: 'mg' },
     e_amg: { name: 'AMG-11 포대', short: 'AMG', rig: 'e_AMG11_N', icon: 'e_AMG11_N', kind: 'arch', hp: 50, at: 17, df: 10, mov: 3, sfx: 'mg' },
     e_pupp: { name: '경비 펍 헤드 무리', short: '펍 헤드', rig: 'e_PuppHead_N', icon: 'e_PuppHead_N', kind: 'cav', hp: 56, at: 16, df: 11, mov: 5, sfx: 'gun' },
-    e_pmi: { name: '사념체 보병 무리', short: '사념 보병', rig: 'e_ProgramMobTS_N', icon: 'e_ProgramMobTS_N', kind: 'inf', hp: 56, at: 17, df: 11, mov: 3, sfx: 'rifle' },
+    e_pmi: { name: '사념체 소총병 무리', short: '사념 소총병', rig: 'e_ProgramMobTS_N', icon: 'e_ProgramMobTS_N', kind: 'inf', hp: 56, at: 17, df: 11, mov: 3, sfx: 'rifle' },
     e_pmf: { name: '사념체 비행 편대', short: '사념 비행', rig: 'e_ProgramMobMT_N', icon: 'e_ProgramMobMT_N', kind: 'fly', hp: 48, at: 16, df: 9, mov: 5, sfx: 'mg' },
     e_pma: { name: '사념체 장갑 무리', short: '사념 장갑', rig: 'e_ProgramMobTT_N', icon: 'e_ProgramMobTT_N', kind: 'pike', hp: 66, at: 15, df: 15, mov: 3, sfx: 'cannon' },
     e_goblin: { name: '실험체 고블린 무리', short: '고블린', rig: 'e_ExpGoblinT_N', icon: 'e_ExpGoblinT_N', kind: 'inf', hp: 58, at: 18, df: 10, mov: 3, sfx: 'swing' },
@@ -324,7 +324,7 @@
     legionsp: { name: '레기온 스나이퍼', rig: 'e_LegionSP_N', icon: 'e_LegionSP_N', kind: 'arch', move: 'foot', rng: 4, hp: 56, at: 21, df: 10, mov: 3, troop: 'e_legion', skills: ['snipe'], sfx: 'rifle' },
     tortoise: { name: '토터스', rig: 'e_Tortoise_N', icon: 'e_Tortoise_N', kind: 'pike', move: 'foot', rng: 1, hp: 150, at: 20, df: 30, mov: 2, troop: 'e_shielder', big: true, sfx: 'cannon' },
     chieftain: { name: '센츄리온 치프틴', rig: 'e_CenturionCF_N', icon: 'e_CenturionCF_N', kind: 'inf', move: 'foot', rng: 1, hp: 210, at: 28, df: 22, mov: 3, troop: 'e_legion', skills: ['shell'], big: true, sfx: 'expM' },
-    pm_ts: { name: '철충 사념체 (보병)', rig: 'e_ProgramMobTS_N', icon: 'e_ProgramMobTS_N', kind: 'inf', move: 'foot', rng: 1, hp: 56, at: 18, df: 11, mov: 3, troop: 'e_pmi', sfx: 'rifle' },
+    pm_ts: { name: '철충 사념체 (소총병)', rig: 'e_ProgramMobTS_N', icon: 'e_ProgramMobTS_N', kind: 'inf', move: 'foot', rng: 1, hp: 56, at: 18, df: 11, mov: 3, troop: 'e_pmi', sfx: 'rifle' },
     pm_tn: { name: '철충 사념체 (저격병)', rig: 'e_ProgramMobTN_N', icon: 'e_ProgramMobTN_N', kind: 'arch', move: 'foot', rng: 4, hp: 44, at: 21, df: 8, mov: 3, troop: 'e_pmi', skills: ['snipe'], sfx: 'laserBig' },
     pm_mt: { name: '철충 사념체 (호위기)', rig: 'e_ProgramMobMT_N', icon: 'e_ProgramMobMT_N', kind: 'fly', move: 'fly', rng: 1, hp: 52, at: 17, df: 11, mov: 5, troop: 'e_pmf', sfx: 'mg' },
     pm_tt: { name: '철충 사념체 (장갑병)', rig: 'e_ProgramMobTT_N', icon: 'e_ProgramMobTT_N', kind: 'pike', move: 'foot', rng: 1, hp: 80, at: 16, df: 20, mov: 3, troop: 'e_pma', sfx: 'cannon' },
