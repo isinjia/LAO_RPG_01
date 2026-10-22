@@ -2458,8 +2458,9 @@
         <div class="pfoot"><span class="plv">Lv.${s.lv}</span><b>${h.name}</b><small>${kindTag(t.kind)} · ${t.cls}</small></div>
         <div class="ptroop"><img src="${IMG[tr.icon]}" alt=""><span>${tr.short} ×${R.SQUAD}</span></div><i class="psel"></i></button>`;
     };
-    // 출전 칸: 자유 편성이면 st.free 칸(최대 8칸)을 보여 주고, 빈 칸을 누르면 영웅 목록이 열린다
-    const slotN = () => st.free || st.heroes.length;
+    // 출전 칸: 자유 편성이면 지금까지 합류한 영웅 수만큼(최대 st.free 칸, 본편은 8칸) 보여 주고, 빈 칸을 누르면 영웅 목록이 열린다
+    const cap = st.free ? Math.min(st.free, roster.length) : st.heroes.length;
+    const slotN = () => cap;
     const empty = () => `<button class="pcard pempty" data-slot="1"><i class="pplus">＋</i><b>빈 자리</b><small>눌러서 출전 영웅 고르기</small></button>`;
     const slots = () => `<div class="pcards ${slotN() > 6 ? 'many' : ''}" style="--pc:${Math.ceil(slotN() / 2)}">${
       Array.from({ length: slotN() }, (_, i) => (st.heroes[i] ? card(st.heroes[i]) : empty())).join('')}</div>`;
@@ -2468,8 +2469,8 @@
       const next = D.TIER_LV[s.tier + 1];
       const troops = t.troops.map((k) => { const tr = D.TROOPS[k]; return `<button class="ptr ${pick[id] === k ? 'on' : ''}" data-t="${k}"><img src="${IMG[tr.icon]}" alt="">
         <span><b>${tr.name}</b>${kindTag(tr.kind)}<small>체력 ${tr.hp} · 공격 ${tr.at} · 방어 ${tr.df} · 이동 ${tr.mov}</small></span></button>`; }).join('');
-      const sortie = !st.free ? '' : id === 'constantia' ? '<div class="pd-sortie lead">지휘관 · 항상 출전</div>'
-        : lock.includes(id) ? `<div class="pd-sortie lead">${(save.joined || []).includes(id) ? '이번 작전 대본에 나옵니다' : '이번 작전에서 합류합니다'} · 반드시 출전</div>`
+      // 고정 인원(카드의 '필수' 표시)은 안내 없이, 고를 수 있는 영웅만 바꾸기 / 빼기
+      const sortie = !st.free || lock.includes(id) ? ''
         : '<div class="pd-swap"><button class="pd-sortie on" id="pSwap">다른 영웅으로 바꾸기</button><button class="pd-sortie" id="pOut">출전에서 빼기</button></div>';
       return `<div class="pd-head"><b>${h.full}</b><span>${t.cls}</span></div>${sortie}
         <div class="pd-lv"><span>Lv.<b>${s.lv}</b></span><div class="pd-exp"><i style="width:${Math.min(100, s.exp)}%"></i></div>${next ? `<small>Lv.${next}에 전직</small>` : '<small>최종 전직</small>'}</div>
@@ -2479,7 +2480,7 @@
         <div class="wi-sub">특기</div><div class="pd-skills">${t.skills.map((k) => { const sk = D.SKILLS[k]; return `<div><b>${sk.name}</b><small>재사용 ${sk.cd}턴 · ${sk.desc}</small></div>`; }).join('')}</div>
         <div class="wi-sub">병사 배속 <small>공격받으면 병사가 먼저 피해를 받습니다</small></div><div class="pd-troops">${troops}</div>`;
     };
-    const count = () => (st.free ? `<span class="pcnt">출전 ${st.heroes.length} / ${st.free}</span>` : '');
+    const count = () => (st.free ? `<span class="pcnt">출전 ${st.heroes.length} / ${cap}</span>` : '');
     const render = () => {
       screen(`<div class="pscr">
         <div class="pbg"></div>
@@ -2527,7 +2528,7 @@
       const ov = document.createElement('div');
       ov.className = 'ppick';
       ov.innerHTML = `<div class="ppbox"><div class="pphead"><b>${at >= 0 ? `${D.HEROES[st.heroes[at]].name} 대신 출전할 영웅` : '출전할 영웅 고르기'}</b>
-        <small>출전 ${st.heroes.length} / ${st.free} · 대기 중인 영웅 ${list.length}명</small><button class="wclose" id="ppX">✕</button></div>
+        <small>출전 ${st.heroes.length} / ${cap} · 대기 중인 영웅 ${list.length}명</small><button class="wclose" id="ppX">✕</button></div>
         <div class="pplist">${list.length ? list.map(row).join('') : '<p class="ppnone">대기 중인 영웅이 없습니다.<br>이야기를 진행하면 동료가 더 합류합니다.</p>'}</div></div>`;
       document.querySelector('.pscr').appendChild(ov);
       const close = () => ov.remove();
@@ -2536,7 +2537,7 @@
       ov.querySelectorAll('.ppk').forEach((b) => (b.onclick = () => {
         const id = b.dataset.h;
         if (at >= 0) st.heroes[at] = id;
-        else if (st.heroes.length < st.free) st.heroes.push(id);
+        else if (st.heroes.length < cap) st.heroes.push(id);
         else return;
         cur = id; close();
         AU.play('lo_equip', 0.6); heroVoice(id, 'SquadJoin'); reslot();
