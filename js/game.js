@@ -2030,7 +2030,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.58';
+  const GAME_VERSION = '0.59';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2078,9 +2078,9 @@
     { name: '등대 아래 비밀기지', sub: '오르카 임시 거점', look: 'coast', desc: '등대 아래에 숨겨진 옛 비밀기지. 오르카의 임시 거점이다.' },
     { name: '폐허 속 피난처', sub: '무너진 주택가의 은신처', look: 'ruin', desc: '철충이 휩쓸고 간 주택가 한쪽, 아직 지붕이 남은 건물들을 고쳐 쓴 피난처.' },
     { name: '숲속 전진 기지', sub: '연구 구역 외곽 야영지', look: 'forest', desc: '연구 구역을 내려다보는 숲 가장자리에 세운 전진 기지.' },
-    { name: '지하 입구 야영지', sub: '미궁 앞 보급 거점', look: 'ruin', desc: '깊은 미궁으로 내려가는 입구 앞에 꾸린 야영지. 내려가기 전에 숨을 고른다.' },
+    { name: '지하 입구 야영지', sub: '미궁 앞 보급 거점', look: 'cave', desc: '깊은 미궁으로 내려가는 입구 앞에 꾸린 야영지. 내려가기 전에 숨을 고른다.' },
     { name: '해안 정박지', sub: '보관소 앞 임시 항구', look: 'harbor', desc: '보관소가 보이는 해안에 배를 대고 꾸린 임시 항구.' },
-    { name: '언덕 위 쉼터', sub: '묘역 너머 마지막 거점', look: 'forest', desc: '두 묘역 사이 언덕에 마련한 마지막 쉼터.' },
+    { name: '언덕 위 쉼터', sub: '묘역 너머 마지막 거점', look: 'hill', desc: '두 묘역 사이 언덕에 마련한 마지막 쉼터.' },
   ];
   const TOWN = { unlock: 3 }; // 포츈(병사 훈련)이 기지에 오는 때
   const townOf = (c = curCh()) => TOWNS[c] || TOWNS[TOWNS.length - 1];

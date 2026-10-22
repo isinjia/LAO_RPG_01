@@ -65,7 +65,7 @@
     cmd: {
       name: '지휘실', rows: room(13, 9), indoor: 1, bg: 'town/r_train_0', fl: 365,
       objects: [
-        { t: 'exit', x: 6, y: 8, w: 1, h: 1, to: ['base', 6, 9] },
+        { t: 'exit', x: 6, y: 8, w: 1, h: 1, to: 'back' },
         { t: 'deco', art: 'town/r_andr2_42', x: 2, y: 2, w: 2, h: 1, hh: 1.8, block: 1 },
         { t: 'deco', art: 'town/r_mk4_1', x: 9, y: 2, w: 1, h: 1, hh: 1.4, block: 1 },
         { t: 'deco', art: 'town/r_mk4_2', x: 10, y: 2, w: 1, h: 1, hh: 1.3, block: 1 },
@@ -78,7 +78,7 @@
     shop: {
       name: '정비실', rows: room(13, 9), indoor: 1, bg: 'town/r_dis2_0', fl: 353,
       objects: [
-        { t: 'exit', x: 6, y: 8, w: 1, h: 1, to: ['base', 18, 9] },
+        { t: 'exit', x: 6, y: 8, w: 1, h: 1, to: 'back' },
         { t: 'deco', art: 'town/r_iron1_5', x: 1, y: 2, w: 1, h: 1, hh: 1.8, block: 1 },
         { t: 'deco', art: 'town/r_iron1_6', x: 2, y: 2, w: 1, h: 1, hh: 1.8, block: 1 },
         { t: 'deco', art: 'town/r_iron1_9', x: 10, y: 2, w: 2, h: 1, hh: 1.6, block: 1 },
@@ -92,7 +92,7 @@
     cafe: {
       name: '휴게실', rows: room(13, 9), indoor: 1, bg: 'town/r_cafe4_0', fl: 268,
       objects: [
-        { t: 'exit', x: 6, y: 8, w: 1, h: 1, to: ['base', 11, 14] },
+        { t: 'exit', x: 6, y: 8, w: 1, h: 1, to: 'back' },
         { t: 'deco', art: 'town/r_cafe4_1', x: 3, y: 4, w: 3, h: 1, hh: 1.2, block: 1 },
         { t: 'deco', art: 'town/r_cafe4_1', x: 8, y: 5, w: 3, h: 1, hh: 1.2, block: 1 },
         { t: 'deco', art: 'town/r_cafe4_3', x: 10, y: 2, w: 1, h: 1, hh: 1.7, block: 1 },
@@ -102,24 +102,97 @@
       ],
     },
   };
-  // 장마다 다른 마을: 같은 배치에 꾸밈만 바꾼다. coast 는 1장 등대 기지 그대로
-  const BASE0 = MAPS.base;
-  const SWAP = {
-    ruin: { 'town/b_palm1': 'town/b_ruin2', 'town/b_palm2': 'town/b_ruin1', 'town/b_bench': 'town/b_barricade' },
-    forest: { 'town/b_palm1': 'town/b_pine2', 'town/b_palm2': 'tiles/tree1', 'town/b_rock': 'tiles/tree2' },
-    harbor: { 'town/b_palm2': 'town/b_rock', 'town/b_ruin1': 'town/b_bench', 'town/b_ruin2': 'town/b_bench' },
+  // ── 장마다 다른 마을 지도 ──
+  // 바닥 칸: . 바탕  s 넓은 바닥  _ 길  ~ 물(막힘)  # 벼랑·잔해·숲 덤불(막힘). floor 는 그 칸들에 깔 원작 손그림 질감.
+  // 건물 셋(지휘실·정비실·휴게실)은 장마다 자리를 바꾸고, 방을 나서면 들어갔던 건물 문 앞으로 돌아온다
+  function grid(W, H, fill, paint) {
+    const g = []; for (let y = 0; y < H; y++) g.push(Array(W).fill(fill));
+    const R = (x, y, w, h, c) => { for (let yy = y; yy < y + h; yy++) for (let xx = x; xx < x + w; xx++) if (g[yy] && xx >= 0 && xx < W) g[yy][xx] = c; };
+    paint(R);
+    return g.map((r) => r.join(''));
+  }
+  const B3 = (cmd, shop, cafe) => [ // 건물 셋: [x, y] 왼쪽 위 칸
+    { t: 'building', x: cmd[0], y: cmd[1], w: 5, h: 4, art: 'town/b_center', label: '지휘실', door: cmd[0] + 2, to: ['cmd', 6, 7] },
+    { t: 'building', x: shop[0], y: shop[1], w: 6, h: 4, art: 'town/b_shop', label: '정비실', door: shop[0] + 2, to: ['shop', 6, 7] },
+    { t: 'building', x: cafe[0], y: cafe[1], w: 6, h: 2, art: 'town/b_cafe', label: '휴게실', door: cafe[0] + 2, to: ['cafe', 6, 7] },
+  ];
+  const D = (art, x, y, w, hh, h = 1) => ({ t: 'deco', art, x, y, w, h, hh, block: 1 });
+  const NPC = (g, l, f) => [{ t: 'npc', id: 'griffon', x: g[0], y: g[1], dir: g[2] || 1 }, { t: 'npc', id: 'lrl', x: l[0], y: l[1], dir: l[2] || 1 }, { t: 'npc', id: 'fallen', x: f[0], y: f[1], dir: f[2] || -1 }];
+  const TOWNMAPS = {
+    coast: MAPS.base, // 1장 등대 아래 비밀기지
+    // 2장 폐허 속 피난처: 무너진 주택가. 흙바닥에 금 간 콘크리트 광장, 둘레는 잔해 더미
+    ruin: {
+      rows: grid(24, 18, '.', (R) => {
+        R(0, 0, 24, 1, '#'); R(0, 0, 1, 18, '#'); R(23, 0, 1, 18, '#'); R(0, 17, 24, 1, '#'); R(1, 1, 3, 1, '#'); R(19, 1, 4, 1, '#');
+        R(7, 6, 10, 4, 's'); R(1, 10, 22, 1, '_'); R(11, 10, 2, 8, '_'); R(4, 7, 1, 3, '_'); R(19, 7, 1, 3, '_'); R(13, 14, 4, 1, '_');
+      }),
+      floor: { base: 'tiles/dirt', zone: 'tiles/concrete', path: 'tiles/asphalt', wall: 'tiles/concrete' }, start: [11, 16],
+      objects: [...B3([2, 3], [17, 3], [14, 12]),
+        D('tiles/wreck2', 11, 7, 2, 1.6), D('town/b_ruin1', 8, 1, 3, 1.6), D('town/b_ruin2', 13, 1, 3, 1.7), D('tiles/ruin0', 2, 13, 3, 1.4), D('tiles/ruin1', 6, 14, 3, 1.3),
+        D('tiles/bags0', 8, 12, 2, 0.8), D('tiles/bags1', 20, 15, 2, 0.9), D('tiles/barrel', 21, 9, 1, 1.1), D('tiles/wreck0', 1, 8, 2, 1.3), D('town/b_stop', 6, 11, 1, 1.7),
+        D('town/b_barricade', 10, 16, 1, 1.0), D('town/b_barricade', 13, 16, 1, 1.0), D('tiles/sign', 17, 9, 1, 1.4), D('town/b_lamp', 10, 5, 1, 2.1), D('town/b_lamp', 15, 5, 1, 2.1),
+        D('tiles/wreck1', 20, 12, 2, 1.3), D('tiles/crate1', 2, 15, 1, 1.0),
+        { t: 'exit', x: 11, y: 17, w: 2, h: 1 }, ...NPC([9, 8], [6, 8, -1], [20, 11])],
+    },
+    // 3장 숲속 전진 기지: 이끼 낀 숲 바닥 가운데 풀밭 공터, 개울을 다리로 건넌다
+    forest: {
+      rows: grid(26, 18, '.', (R) => {
+        R(0, 0, 26, 2, '#'); R(0, 0, 2, 18, '#'); R(24, 0, 2, 18, '#'); R(0, 17, 26, 1, '#'); R(2, 2, 3, 2, '#'); R(21, 2, 3, 2, '#'); R(2, 14, 2, 3, '#'); R(22, 13, 2, 4, '#');
+        R(4, 3, 11, 13, 's'); R(16, 2, 2, 15, '~'); R(5, 10, 17, 1, '_'); R(12, 10, 2, 8, '_'); R(7, 8, 1, 2, '_'); R(20, 8, 1, 2, '_'); R(7, 14, 5, 1, '_');
+      }),
+      floor: { base: 'tiles/forest', zone: 'tiles/grass', path: 'tiles/dirt', wall: 'tiles/forest', river: 1 }, start: [12, 16],
+      objects: [...B3([5, 4], [18, 4], [5, 12]),
+        D('tiles/tree0', 3, 6, 1, 2.3), D('tiles/tree1', 2, 9, 1, 2.2), D('tiles/tree2', 3, 12, 1, 2.3), D('tiles/tree4', 14, 3, 1, 2.0), D('town/b_pine2', 11, 3, 1, 2.4),
+        D('tiles/tree3', 22, 10, 1, 1.8), D('tiles/tree1', 23, 8, 1, 2.2), D('town/b_pine2', 19, 14, 1, 2.4), D('tiles/tree0', 21, 12, 1, 2.2), D('tiles/rock0', 14, 14, 2, 1.1),
+        D('tiles/mush0', 10, 8, 1, 0.8), D('tiles/mush1', 15, 12, 1, 0.8), D('tiles/crate0', 11, 6, 1, 0.9), D('tiles/crate1', 12, 6, 1, 1.0), D('tiles/barrel', 13, 7, 1, 1.1),
+        D('town/b_lamp', 11, 9, 1, 2.1), D('town/b_lamp', 14, 9, 1, 2.1), D('town/b_pine2', 3, 3, 1, 2.6), D('tiles/tree2', 22, 2, 1, 2.4), D('tiles/tree4', 2, 15, 1, 2.0),
+        { t: 'exit', x: 12, y: 17, w: 2, h: 1 }, ...NPC([12, 8], [9, 11], [22, 9])],
+    },
+    // 4장 지하 입구 야영지: 동굴 바위 바닥, 철판 깐 야영지, 빛나는 결정과 점액이 자란 벽
+    cave: {
+      rows: grid(24, 18, '.', (R) => {
+        R(0, 0, 24, 2, '#'); R(0, 0, 1, 18, '#'); R(23, 0, 1, 18, '#'); R(0, 17, 24, 1, '#'); R(1, 2, 3, 3, '#'); R(20, 2, 3, 4, '#'); R(1, 12, 2, 5, '#'); R(21, 13, 2, 4, '#');
+        R(6, 6, 12, 5, 's'); R(11, 11, 2, 7, '_'); R(13, 14, 4, 1, '_');
+      }),
+      floor: { base: 'tiles/cave', zone: 'tiles/grate', path: 'tiles/concrete', wall: 'tiles/cave', dark: 0.55 }, start: [11, 16],
+      objects: [...B3([4, 2], [14, 2], [14, 12]),
+        D('tiles/crystal0', 2, 7, 1, 2.0), D('tiles/crystal1', 20, 8, 2, 1.8), D('tiles/goo0', 4, 14, 2, 0.8), D('tiles/goo1', 19, 15, 1, 1.6), D('tiles/rock1', 7, 13, 2, 1.3),
+        D('tiles/rock0', 9, 2, 2, 1.1), D('tiles/console', 11, 3, 2, 1.4), D('tiles/gas', 4, 11, 2, 1.5), D('tiles/crate0', 18, 11, 1, 0.9), D('tiles/barrel', 8, 11, 1, 1.1),
+        D('tiles/bags0', 9, 15, 2, 0.8), D('town/b_lamp', 5, 7, 1, 2.1), D('town/b_lamp', 18, 7, 1, 2.1), D('tiles/crystal0', 21, 6, 1, 1.6), D('tiles/goo1', 1, 9, 1, 1.4),
+        { t: 'exit', x: 11, y: 17, w: 2, h: 1 }, ...NPC([12, 7], [8, 9], [15, 9])],
+    },
+    // 5장 해안 정박지: 모래사장과 콘크리트 부두, 바다로 뻗은 잔교
+    harbor: {
+      rows: grid(26, 18, '.', (R) => {
+        R(0, 0, 26, 1, '~'); R(19, 0, 7, 18, '~'); R(15, 1, 4, 17, 's'); R(19, 7, 5, 2, 's'); R(19, 13, 4, 1, 's');
+        R(2, 10, 13, 1, '_'); R(9, 10, 2, 8, '_'); R(5, 7, 1, 3, '_'); R(11, 7, 1, 3, '_'); R(4, 15, 5, 1, '_');
+      }),
+      floor: { base: 'tiles/sand', zone: 'tiles/concrete', path: 'tiles/asphalt' }, start: [9, 16],
+      objects: [...B3([3, 3], [9, 3], [2, 13]),
+        D('town/b_palm1', 1, 7, 1, 2.6), D('town/b_palm2', 13, 13, 1, 2.6), D('town/b_palm1', 1, 16, 1, 2.4), D('tiles/crate0', 16, 3, 1, 0.9), D('tiles/crate1', 17, 3, 1, 1.0),
+        D('tiles/crate1', 16, 5, 1, 1.0), D('tiles/barrel', 18, 11, 1, 1.1), D('tiles/barrel', 17, 12, 1, 1.0), D('tiles/bags1', 12, 15, 2, 0.9), D('town/b_lamp', 14, 9, 1, 2.1),
+        D('town/b_lamp', 14, 12, 1, 2.1), D('town/b_bench', 11, 12, 2, 0.9), D('tiles/wreck1', 22, 15, 2, 1.3), D('town/b_rock', 23, 2, 2, 1.5), D('town/b_palm2', 7, 1, 1, 2.4),
+        { t: 'exit', x: 9, y: 17, w: 2, h: 1 }, ...NPC([17, 8], [8, 8], [21, 8])],
+    },
+    // 6장 언덕 위 쉼터: 풀 언덕 위 돌바닥 광장과 분수, 뒤는 벼랑, 기념비가 선 흙길
+    hill: {
+      rows: grid(24, 18, '.', (R) => {
+        R(0, 0, 24, 3, '#'); R(0, 0, 1, 18, '#'); R(23, 0, 1, 18, '#'); R(0, 17, 24, 1, '#');
+        R(8, 5, 8, 5, 's'); R(11, 10, 2, 8, '_'); R(3, 12, 8, 1, '_'); R(13, 12, 8, 1, '_'); R(4, 9, 1, 3, '_'); R(19, 9, 1, 3, '_'); R(13, 16, 4, 1, '_');
+      }),
+      floor: { base: 'tiles/grass', zone: 'tiles/tomb', path: 'tiles/dirt', wall: 'tiles/cave' }, start: [11, 16],
+      objects: [...B3([2, 5], [17, 5], [14, 14]),
+        { t: 'deco', art: 'town/b_fountain', x: 11, y: 6, w: 2, h: 2, hh: 2.0, block: 1 }, D('town/b_tree1', 8, 3, 1, 2.4), D('town/b_tree2', 15, 3, 1, 2.4), D('tiles/tree0', 1, 10, 1, 2.2),
+        D('tiles/tree2', 22, 11, 1, 2.2), D('tiles/wall', 5, 14, 1, 1.8), D('tiles/wall', 8, 15, 1, 1.6), D('town/b_bench', 8, 10, 2, 0.9), D('town/b_bench', 14, 10, 2, 0.9),
+        D('town/b_lamp', 8, 5, 1, 2.1), D('town/b_lamp', 15, 5, 1, 2.1), D('tiles/rock0', 2, 15, 2, 1.0), D('town/b_rock', 20, 1, 2, 1.5), D('town/b_rock', 3, 1, 2, 1.4),
+        { t: 'exit', x: 11, y: 17, w: 2, h: 1 }, ...NPC([12, 9], [9, 8], [20, 13])],
+    },
   };
   function baseFor(look, name) {
-    const m = Object.assign({}, BASE0, { name: name || BASE0.name });
-    if (!look || look === 'coast') return m;
-    const sw = SWAP[look] || {};
-    m.objects = BASE0.objects.map((o) => {
-      if (o.kind === 'lighthouse') return look === 'harbor' ? { t: 'deco', art: 'town/b_fountain', x: 2, y: 3, w: 2, h: 2, hh: 2.0, block: 1 } : { t: 'deco', art: 'town/b_ruin1', x: 1, y: 4, w: 3, h: 1, hh: 1.6, block: 1 };
-      return o.art && sw[o.art] ? Object.assign({}, o, { art: sw[o.art] }) : o;
-    });
-    if (look !== 'harbor') m.rows = BASE0.rows.map((r, y) => (y < 2 ? r.replace(/~/g, 's') : r.replace(/~/g, y < 6 ? 's' : '~'))); // 바다 대신 빈터
-    return m;
+    const m = TOWNMAPS[look] || TOWNMAPS.coast;
+    return Object.assign({}, m, { name: name || TOWNMAPS.coast.name, bgm: 'lo_lobby' });
   }
+  let backTo = null; // 방에서 나가면 돌아갈 자리 (들어간 건물 문 앞)
   // 실내 방 그림: 원작 방 배경의 위쪽(뒷벽)과 아래쪽(바닥)을 나눠 쓴다 (라켓몬스터와 같은 방식)
   const ROOMWALL = { cmd: ['#5d6580', '#a3abc6'], shop: ['#6b5b62', '#b8a2ab'], cafe: ['#8f877a', '#ece7de'] };
 
@@ -188,7 +261,8 @@
     px = pfx = x; py = pfy = y; path = []; moving = 0;
     layer = buildLayer();
     // 그림이 아직 안 왔으면 오는 대로 바닥을 다시 그린다
-    const need = map.indoor ? [img(map.bg)] : ['tiles/grass', 'tiles/asphalt'].map(img);
+    const F = map.floor || {};
+    const need = map.indoor ? [img(map.bg)] : [...new Set([F.base || 'tiles/grass', F.zone || 'tiles/asphalt', F.path || 'tiles/asphalt', F.wall || 'tiles/grass'])].map(img);
     need.filter((im) => !ok(im)).forEach((im) => im.addEventListener('load', () => { if (map && map.id === id) layer = buildLayer(); }, { once: true }));
     banner = 2.4;
     hud.querySelector('.tn-name').textContent = map.name;
@@ -214,9 +288,14 @@
       lg.globalCompositeOperation = 'destination-in'; lg.drawImage(b, 0, 0);
       g.drawImage(l, 0, 0);
     };
-    g.fillStyle = pat('tiles/grass'); g.fillRect(0, 0, W, H);
-    layerOf((t) => t === 's' || t === '~', pat('tiles/asphalt', 0.9), TILE * 0.35);
-    layerOf((t) => t === '_', pat('tiles/asphalt'), TILE * 0.12);
+    const F = map.floor || {};
+    g.fillStyle = pat(F.base || 'tiles/grass'); g.fillRect(0, 0, W, H);
+    layerOf((t) => t === 's' || (t === '~' && !F.river), pat(F.zone || 'tiles/asphalt', 0.9), TILE * 0.35);
+    layerOf((t) => t === '_', pat(F.path || 'tiles/asphalt'), TILE * 0.12);
+    if (map.rows.some((r) => r.includes('#'))) { // 벼랑·잔해·덤불: 거친 질감을 어둡게
+      layerOf((t) => t === '#', pat(F.wall || F.base || 'tiles/grass', 0.6), TILE * 0.25);
+      layerOf((t) => t === '#', 'rgba(8,10,14,.5)', TILE * 0.3);
+    }
     layerOf((t) => t === '_', 'rgba(60,48,30,.18)', TILE * 0.06);
     // 바다
     const sea = g.createLinearGradient(0, 0, 0, TILE * 3);
@@ -228,7 +307,7 @@
     }
     // 가장자리 어둡게
     const vg = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.max(W, H) * 0.75);
-    vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.3)');
+    vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, `rgba(0,0,0,${F.dark || 0.3})`);
     g.fillStyle = vg; g.fillRect(0, 0, W, H);
     return c;
   }
@@ -376,9 +455,9 @@
   // 칸에 도착했을 때: 문·출구 확인
   function arrived() {
     for (const o of map.objects) {
-      if (o.t === 'building' && px === o.door && py === o.y + o.h - 1) { warp(o.to); return true; }
+      if (o.t === 'building' && px === o.door && py === o.y + o.h - 1) { backTo = ['base', o.door, o.y + o.h]; warp(o.to); return true; }
       if (o.t === 'exit' && px >= o.x && px < o.x + o.w && py >= o.y && py < o.y + o.h) {
-        if (o.to) warp(o.to); else leave();
+        if (o.to) warp(o.to === 'back' ? backTo || ['base', ...(MAPS.base.start || [12, 16])] : o.to); else leave();
         return true;
       }
     }
@@ -490,7 +569,7 @@
   function enter(o) {
     return new Promise((res) => {
       opts = o; done = res;
-      MAPS.base = baseFor(o.look, o.name);
+      MAPS.base = baseFor(o.look, o.name); backTo = null;
       sdInit();
       // 건물·소품·방 그림 미리 불러오기
       for (const m of Object.values(MAPS)) { if (m.bg) img(m.bg); for (const ob of m.objects) if (ob.art) img(ob.art); }
@@ -506,13 +585,13 @@
       addEventListener('resize', resize);
       resize();
       open = true; fade = 1; fadeTo = 0; busy = false; T = 0;
-      loadMap('base', 12, 16);
+      loadMap('base', ...(MAPS.base.start || [12, 16]));
       dir = 1;
     });
   }
 
   window.TOWNF = {
-    enter, update, get open() { return open; }, MAPS, debug: () => ({ map: map && map.id, px, py, busy, ents: ents.map((e) => e.id) }),
+    enter, update, get open() { return open; }, MAPS, TOWNMAPS, debug: () => ({ map: map && map.id, px, py, busy, ents: ents.map((e) => e.id) }),
     // 시험용: 칸으로 걷기, 사람에게 말 걸기
     goTo: (x, y) => goTo(x, y), talk: (id) => { const e = ents.find((x) => x.id === id); if (e) talkTo(e); return !!e; },
     shot: () => cv && cv.toDataURL('image/jpeg', 0.85),
