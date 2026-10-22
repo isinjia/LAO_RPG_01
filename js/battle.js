@@ -1,7 +1,7 @@
 // 전투 연출 (랑그릿사 모바일식): 영웅은 뒤(바깥쪽), 배속 병사는 영웅 앞(적 쪽)에 늘어선다.
 // 양쪽이 동시에 싸운다: RULES.combat 의 접전(rounds)마다 두 부대가 함께 공격하고, 그 접전의 피해가 동시에 들어간다.
 // 근접은 두 부대가 함께 돌진해 맞붙고, 원거리(2칸 이상)는 화면을 둘로 나눠 탄이 가운데 경계를 넘어 오간다.
-// 쓰러진 병사는 하얗게 질려 맞은 반대쪽 하늘 높이 솟구쳤다가 빙글 돌며 떨어져 사라진다. 아군은 항상 왼쪽, 적은 오른쪽.
+// 쓰러진 병사는 맞은 반대쪽으로 짧게 밀려나며 뒤로 젖혀지고, 하얗게 깜빡이다 사라진다. 아군은 항상 왼쪽, 적은 오른쪽.
 // 맞을 때마다 맞은 병사 머리 위에 피해 숫자가 튀어 오르고, 정보판 위 별 모양에 그 편이 받은 피해 합계가 쌓인다.
 (function () {
   const FIGHT = {};
@@ -302,8 +302,8 @@
 
   const isRanged = (src, au) => { const kind = src.hero ? au.kind : au.troop && au.troop.kind; return au.rng > 1 || kind === 'arch'; };
 
-  // 쓰러질 때 (랑그릿사식): 하얗게 질려 맞은 반대쪽 하늘 높이 솟구쳤다가, 빙글 돌며 원래 서 있던 높이까지 떨어지면 사라진다
-  const FLY_G = 22; // 날아오른 몸에 걸리는 중력
+  // 쓰러질 때 (랑그릿사식): 맞은 반대쪽으로 짧게 튕겨 밀려나며 뒤로 젖혀지고, 하얗게 깜빡이다 사라진다
+  const DIE_KNOCK = 0.22, DIE_END = 0.62; // 밀려나는 시간, 사라질 때까지
   function die(f) {
     if (!f || !f.alive) return;
     f.alive = false;
@@ -312,12 +312,12 @@
       else fx('dust_fall', p.x, p.y + 0.15, { k: f.hero ? 1 : 0.8, renderOrder: 95 }); }
     if (f.shadow) f.shadow.visible = false;
     const away = f.side === 'L' ? -1 : 1;
-    let k = f.hero ? 0.8 : 1;
-    if (PORT()) k *= 0.62; // 세로 화면은 좁아서 덜 솟구친다
-    f.fly = { vx: away * (1.4 + Math.random() * 1.8) * k, vy: (10 + Math.random() * 2.6) * k, w: -away * (5 + Math.random() * 5), t: 0, y0: f.rig.g.position.y, land: 0 };
+    let k = f.hero ? 0.7 : 1;
+    if (PORT()) k *= 0.7; // 세로 화면은 좁아서 덜 밀려난다
+    const g = f.rig.g.position;
+    f.fly = { t: 0, x0: g.x, y0: g.y, dx: away * (0.7 + Math.random() * 0.5) * k, hop: (0.18 + Math.random() * 0.12) * k, tilt: -away * (0.22 + Math.random() * 0.12) };
     f.rig.c.speed = 0.25; // 자세는 맞은 순간에서 거의 멈춘다
-    f.rig.c.mesh.renderOrder += 60; // 날아가는 동안 다른 병사 앞에
-    f.flashT = null; f.rig.c.setFlash(0.85); f.rig.c.setOpacity(0.8); // 하얀 실루엣 (부대를 덮지 않게 조금 옅게)
+    f.flashT = null; f.rig.c.setFlash(1);
   }
 
   // 피해 숫자: 맞은 몸 머리 위에서 크게 튀어나왔다가 위로 떠오르며 사라진다 (화면 좌표로 옮겨 HTML 글자로)
@@ -483,18 +483,16 @@
       f.rig.update(dt);
       if (f.air && f.alive) f.rig.c.root.position.y = f.by0 + lift(f);
       if (f.flashT != null) { const k = (T - f.flashT) / 0.18; f.rig.c.setFlash(k >= 1 ? 0 : k < 0.3 ? 1 : (1 - k) / 0.7); if (k >= 1) f.flashT = null; }
-      if (f.fly) { // 솟구쳤다 떨어지기: 원래 높이까지 떨어지면 바닥에 닿은 채 금세 사라진다
+      if (f.fly) { // 튕겨 밀려나기 → 하얗게 깜빡이며 옅어지다 사라짐
         const q = f.fly, g = f.rig.g;
         q.t += dt;
-        if (!q.land) {
-          q.vy -= FLY_G * dt;
-          g.position.x += q.vx * dt; g.position.y += q.vy * dt; g.rotation.z += q.w * dt;
-          if (q.vy < 0 && g.position.y <= q.y0) { g.position.y = q.y0; q.land = q.t; }
-        } else {
-          const k = (q.t - q.land) / 0.25;
-          f.rig.c.setOpacity(Math.max(0, 1 - k));
-          if (k >= 1) { g.visible = false; f.fly = null; }
-        }
+        const a = Math.min(1, q.t / DIE_KNOCK), e = 1 - (1 - a) * (1 - a); // 처음에 세게, 끝에 멈추듯
+        g.position.x = q.x0 + q.dx * e;
+        g.position.y = q.y0 + q.hop * Math.sin(Math.PI * a);
+        g.rotation.z = q.tilt * e;
+        f.rig.c.setFlash(Math.floor(q.t / 0.06) % 2 ? 0.15 : 0.9); // 깜빡임
+        f.rig.c.setOpacity(q.t < DIE_KNOCK ? 1 : Math.max(0, 1 - (q.t - DIE_KNOCK) / (DIE_END - DIE_KNOCK)));
+        if (q.t >= DIE_END) { g.visible = false; f.fly = null; }
       }
     }
     for (let i = fxs.length - 1; i >= 0; i--) {
