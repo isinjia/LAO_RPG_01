@@ -102,6 +102,24 @@
       ],
     },
   };
+  // 장마다 다른 마을: 같은 배치에 꾸밈만 바꾼다. coast 는 1장 등대 기지 그대로
+  const BASE0 = MAPS.base;
+  const SWAP = {
+    ruin: { 'town/b_palm1': 'town/b_ruin2', 'town/b_palm2': 'town/b_ruin1', 'town/b_bench': 'town/b_barricade' },
+    forest: { 'town/b_palm1': 'town/b_pine2', 'town/b_palm2': 'tiles/tree1', 'town/b_rock': 'tiles/tree2' },
+    harbor: { 'town/b_palm2': 'town/b_rock', 'town/b_ruin1': 'town/b_bench', 'town/b_ruin2': 'town/b_bench' },
+  };
+  function baseFor(look, name) {
+    const m = Object.assign({}, BASE0, { name: name || BASE0.name });
+    if (!look || look === 'coast') return m;
+    const sw = SWAP[look] || {};
+    m.objects = BASE0.objects.map((o) => {
+      if (o.kind === 'lighthouse') return look === 'harbor' ? { t: 'deco', art: 'town/b_fountain', x: 2, y: 3, w: 2, h: 2, hh: 2.0, block: 1 } : { t: 'deco', art: 'town/b_ruin1', x: 1, y: 4, w: 3, h: 1, hh: 1.6, block: 1 };
+      return o.art && sw[o.art] ? Object.assign({}, o, { art: sw[o.art] }) : o;
+    });
+    if (look !== 'harbor') m.rows = BASE0.rows.map((r, y) => (y < 2 ? r.replace(/~/g, 's') : r.replace(/~/g, y < 6 ? 's' : '~'))); // 바다 대신 빈터
+    return m;
+  }
   // 실내 방 그림: 원작 방 배경의 위쪽(뒷벽)과 아래쪽(바닥)을 나눠 쓴다 (라켓몬스터와 같은 방식)
   const ROOMWALL = { cmd: ['#5d6580', '#a3abc6'], shop: ['#6b5b62', '#b8a2ab'], cafe: ['#8f877a', '#ece7de'] };
 
@@ -472,6 +490,7 @@
   function enter(o) {
     return new Promise((res) => {
       opts = o; done = res;
+      MAPS.base = baseFor(o.look, o.name);
       sdInit();
       // 건물·소품·방 그림 미리 불러오기
       for (const m of Object.values(MAPS)) { if (m.bg) img(m.bg); for (const ob of m.objects) if (ob.art) img(ob.art); }

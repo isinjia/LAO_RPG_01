@@ -2030,7 +2030,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.57';
+  const GAME_VERSION = '0.58';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2072,17 +2072,40 @@
   // ── 월드맵 (창세기전식): 원작 3D 지역 지도 위 지점을 눌러 부대가 길을 따라 이동한다 ──
   // 지점 = 본편 작전 장소 8곳 + 마을(등대 아래 비밀기지). 아직 깨지 않은 본편 지점에 가면 이야기 전투,
   // 지나온 지점에서는 소탕전과 받아 둔 의뢰 전투, 마을 지점에서는 마을로 들어간다.
-  // 장(지역)마다 원작 3D 지역 지도 하나와 본편 작전 8곳. 마을은 1장 지도에만 있다
-  const TOWN = { name: '등대 아래 비밀기지', sub: '오르카 임시 거점', unlock: 3 };
+  // 장(지역)마다 원작 3D 지역 지도 하나와 본편 작전 8곳, 그리고 마을 하나.
+  // 1장 마을은 1-3을 깨면, 2장부터는 그 장의 첫 작전을 깨면 열린다. look: 마을 필드의 꾸밈 (js/town.js)
+  const TOWNS = [
+    { name: '등대 아래 비밀기지', sub: '오르카 임시 거점', look: 'coast', desc: '등대 아래에 숨겨진 옛 비밀기지. 오르카의 임시 거점이다.' },
+    { name: '폐허 속 피난처', sub: '무너진 주택가의 은신처', look: 'ruin', desc: '철충이 휩쓸고 간 주택가 한쪽, 아직 지붕이 남은 건물들을 고쳐 쓴 피난처.' },
+    { name: '숲속 전진 기지', sub: '연구 구역 외곽 야영지', look: 'forest', desc: '연구 구역을 내려다보는 숲 가장자리에 세운 전진 기지.' },
+    { name: '지하 입구 야영지', sub: '미궁 앞 보급 거점', look: 'ruin', desc: '깊은 미궁으로 내려가는 입구 앞에 꾸린 야영지. 내려가기 전에 숨을 고른다.' },
+    { name: '해안 정박지', sub: '보관소 앞 임시 항구', look: 'harbor', desc: '보관소가 보이는 해안에 배를 대고 꾸린 임시 항구.' },
+    { name: '언덕 위 쉼터', sub: '묘역 너머 마지막 거점', look: 'forest', desc: '두 묘역 사이 언덕에 마련한 마지막 쉼터.' },
+  ];
+  const TOWN = { unlock: 3 }; // 포츈(병사 훈련)이 기지에 오는 때
+  const townOf = (c = curCh()) => TOWNS[c] || TOWNS[TOWNS.length - 1];
+  const townUnlock = (c = curCh()) => (c === 0 ? TOWN.unlock : chFirst(c) + 1);
   const WT = 'T'; // 마을 지점 id
   const chOf = (si) => (D.STAGES[si].ch || 1) - 1; // 작전 번호(0부터) -> 장 번호(0부터)
   const chFirst = (c) => D.STAGES.findIndex((s) => (s.ch || 1) - 1 === c);
   const chOpen = () => chOf(Math.min(save.clear, D.STAGES.length - 1)); // 열린 마지막 장
   const curCh = () => Math.min(Math.max(0, save.chapter || 0), chOpen());
-  const nodeIds = () => D.STAGES.map((_, i) => i).filter((i) => chOf(i) === curCh()).concat(curCh() === 0 ? [WT] : []);
-  const nodeOpen = (id) => (id === WT ? save.clear >= TOWN.unlock : id <= Math.min(save.clear, D.STAGES.length - 1));
-  // 지점의 3D 자리
-  const nodePos = (id) => (id === WT ? WM3D.data.town : WM3D.data.stages[id - chFirst(curCh())]);
+  const nodeIds = () => D.STAGES.map((_, i) => i).filter((i) => chOf(i) === curCh()).concat([WT]);
+  const nodeOpen = (id) => (id === WT ? save.clear >= townUnlock() : id <= Math.min(save.clear, D.STAGES.length - 1));
+  // 지점의 3D 자리. 1장 마을은 옛 지도 자리, 다른 장은 이웃한 두 작전 사이에서 지점들 가운데 쪽으로 들인 자리 가운데
+  // 어느 작전 지점과도 가장 멀리 떨어진 곳 (지도 바깥 빈 곳으로 나가지 않게)
+  const nodePos = (id) => (id === WT ? WM3D.data.town || townPos() : WM3D.data.stages[id - chFirst(curCh())]);
+  function townPos() {
+    const P = WM3D.data.stages, c = WM3D.data.center;
+    let best = null;
+    for (let i = 0; i + 1 < P.length; i++) {
+      const a = P[i], b = P[i + 1], k = 0.4;
+      const q = [(a[0] + b[0]) / 2 * (1 - k) + c.x * k, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2 * (1 - k) + c.z * k];
+      const near = Math.min(...P.map((p) => Math.hypot(p[0] - q[0], p[2] - q[2])));
+      if (!best || near > best.near) best = { q, near };
+    }
+    return best.q;
+  }
   const sideList = () => (window.SIDE || []);
   const sideState = (idx) => (save.side || {})[idx];
   // 마을에서 받을 수 있는 의뢰 (아직 받지 않은 것)
@@ -2122,7 +2145,7 @@
       const col = town ? 'Grn' : st.win === 'boss' ? 'Red' : clear ? 'Grn' : 'Yel';
       const sides = town ? [] : sideList().filter((s) => s.base === id + 1 && sideState(s.idx) === 'open');
       const mark = town ? (sideNew().length ? '<b class="wq">!</b>' : '') : sides.length ? '<b class="wq s">!</b>' : '';
-      const tag = town ? TOWN.name : st.idx;
+      const tag = town ? townOf().name : st.idx;
       const em = town ? '<em class="town">TOWN</em>' : clear ? '<em>CLEAR</em>' : id === save.clear ? '<em class="new">NEW</em>' : '';
       return `<button class="wnode ${clear ? 'clear' : ''} ${town ? 'town' : ''} c${col}" data-n="${id}">
         <i class="ol" style="background-image:url(assets/ui/UI_WolrdMap_Chapter_Icon_Selected_OL_${col}.png)"></i>
@@ -2251,8 +2274,8 @@
     $('screen').querySelectorAll('.wnode').forEach((b) => b.classList.toggle('sel', b.dataset.n === String(id)));
     if (id === WT) {
       const nw = sideNew();
-      $('sInfo').innerHTML = `<button class="wclose" onclick="this.parentElement.classList.remove('on')">✕</button><div class="wi-top"><span class="wi-no wi-town">TOWN</span><div class="wi-name">${TOWN.name}<em class="town">${TOWN.sub}</em></div></div>
-        <p class="wi-desc">등대 아래에 숨겨진 옛 비밀기지. 오르카의 임시 거점이다.\n동료들과 이야기하고, 들어온 의뢰를 받을 수 있다.
+      $('sInfo').innerHTML = `<button class="wclose" onclick="this.parentElement.classList.remove('on')">✕</button><div class="wi-top"><span class="wi-no wi-town">TOWN</span><div class="wi-name">${townOf().name}<em class="town">${townOf().sub}</em></div></div>
+        <p class="wi-desc">${townOf().desc}\n동료들과 이야기하고, 들어온 의뢰를 받을 수 있다.
 정비실의 포츈에게 부품을 맡기면 병사를 훈련해 준다.</p>
         ${nw.length ? `<div class="wi-sub">새 의뢰 <small>${nw.length}건</small></div><div class="wi-list">${nw.map((s) => `<div><b>${s.title}</b><small>${s.desc}</small></div>`).join('')}</div>` : ''}
         <button class="wgo" id="sTown"><b>마을로 들어가기</b><small>ENTER</small></button>`;
@@ -2302,6 +2325,7 @@
     leaveMap();
     mode = 'town';
     await TOWNF.enter({
+      name: townOf().name, look: townOf().look,
       present: (id) => (id === 'fortune' ? save.clear >= TOWN.unlock : id !== 'constantia' && joined().has(id)),
       marker: (id) => sideNew().some((s) => s.giver === id),
       talk: async (id) => {
@@ -2836,7 +2860,7 @@
         modal(`<h3>${C0.no}지역 완료</h3><p>「${C0.name}」을(를) 모두 마쳤습니다.${nx ? '' : ' 플레이해 주셔서 감사합니다!'}</p>`
           + (nx ? `<p style="color:#9aa6c4">새 지역 「${nx.name}」이(가) 열렸습니다. 월드맵 위 화살표로 지나온 지역을 다시 찾아갈 수 있습니다.</p>` : '')
           + (sideNew().length ? `<p style="color:#9aa6c4">마을에 새 의뢰가 들어왔습니다.</p>` : '') + '<div class="opts"><button class="gold" data-a="ok">확인</button></div>');
-      } else if (!st.kind && sideNew().length) modal(`<h3>새 의뢰</h3><p>${TOWN.name}에 새 의뢰가 들어왔습니다.</p><div class="opts"><button class="gold" data-a="ok">확인</button></div>`);
+      } else if (!st.kind && sideNew().length) modal(`<h3>새 의뢰</h3><p>${townOf().name}에 새 의뢰가 들어왔습니다.</p><div class="opts"><button class="gold" data-a="ok">확인</button></div>`);
     }
     busy = false;
   }
