@@ -76,7 +76,7 @@
   function loadSave() {
     let s = null;
     try { s = JSON.parse(localStorage.getItem('orca_srpg_save2') || 'null'); } catch (e) { s = null; }
-    const def = { clear: 0, heroes: {}, troops: {}, opts: { fight: true, fast: false, sound: true, autoEnd: true, bgmV: 70, sfxV: 80, voiceV: 90, blip: true, textSpd: 1 } };
+    const def = { clear: 0, heroes: {}, troops: {}, parts: 0, drill: {}, opts: { fight: true, fast: false, sound: true, autoEnd: true, bgmV: 70, sfxV: 80, voiceV: 90, blip: true, textSpd: 1 } };
     const defOpts = def.opts;
     s = Object.assign(def, s || {});
     s.opts = Object.assign({}, defOpts, s.opts || {}); // 예전 저장 기록에 없는 옵션은 기본값으로
@@ -614,6 +614,19 @@
     if (t > 0) { const lost = R.soldiers(u, u.troop.hp + t) - R.soldiers(u); pop(u.x, u.y, lost > 0 ? `병사 -${lost}명` : '병사 -' + Math.round(t), 'tdmg', 1.15); }
     if (h > 0) wait(140).then(() => popNum(u.x, u.y, h, u.side === 'p' ? 'me' : 'base', 0.8));
   }
+  // 병사 보충 표시: 늘어난 병사 수(초록) + 영웅 회복 숫자
+  function popSupply(u, hT, hH, tag = '') {
+    const n = hT > 0 ? R.soldiers(u) - R.soldiers(u, u.troop.hp - hT) : 0;
+    if (n > 0) pop(u.x, u.y, `${tag}병사 +${n}명`, 'heal', 1.15);
+    if (hH > 0 || (hT > 0 && n <= 0)) wait(n > 0 ? 140 : 0).then(() => popNum(u.x, u.y, hH + (n > 0 ? 0 : hT), 'heal', 0.8));
+  }
+  // 정비 (고전 랑그릿사의 치료): 움직이지 않고 이번 행동을 쉬어 병사 3명 보충 + 영웅 체력 10%
+  function refitAct(u) {
+    const r = R.refit(u);
+    AU.play('energy', 0.5); fxAt(u.x, u.y, 'heal');
+    popSupply(u, r.hT, r.hH, '정비 ');
+    refreshView(u);
+  }
   // 원작 피해 숫자 글꼴로 띄우기 (kind: base 적이 받은 피해 · me 아군이 받은 피해 · heal 회복 · cri 강한 일격)
   function popNum(x, y, n, kind, dy = 0.9) {
     const s = toScreen(new THREE.Vector3(x + 0.5, dy, y + 0.5));
@@ -1055,7 +1068,7 @@
     const t = R.terr(G, u.x, u.y);
     const pct = (k) => { const b = R.buffK(u, k) * R.auraK(G, u, k); return b > 1.001 ? ` <span class="up">(+${Math.round((b - 1) * 100)}%)</span>` : ''; };
     const sk = R.skillsOf(u).map((s) => D.SKILLS[s].name + (u.cd[s] > 0 ? `<span class="cd">(${u.cd[s]})</span>` : '')).join(', ') || '없음';
-    const troopLine = u.troop ? `<div class="tline"><img src="${IMG[u.troop.icon]}">${u.troop.name} ${kindTag(u.troop.kind)} 공격 <b>${Math.round(R.atk(u, 'T'))}</b> · 방어 <b>${Math.round(R.def(u, 'T'))}</b></div>` : '<div class="tline">병사 없음</div>';
+    const troopLine = u.troop ? `<div class="tline"><img src="${IMG[u.troop.icon]}">${u.troop.name} ${kindTag(u.troop.kind)}${u.troop.drill ? ` <i class="dlv">훈련 ${u.troop.drill}</i>` : ''} 공격 <b>${Math.round(R.atk(u, 'T'))}</b> · 방어 <b>${Math.round(R.def(u, 'T'))}</b></div>` : '<div class="tline">병사 없음</div>';
     el.innerHTML = `<div class="pic ${u.side}" style="background-image:url(${IMG[u.icon]})"><span class="lv">Lv${u.lv}</span></div>
       <div class="nm">${u.name}${kindTag(u.kind)}<small>${u.cls}</small></div>
       ${bars(u)}
@@ -1266,6 +1279,7 @@
     const ready = R.skillsOf(u).some((s) => R.skillReady(u, s));
     const acts = [{ label: '공격', cls: tg.length ? 'gold' : '', disabled: !tg.length, fn: () => { ui.state = 'target'; setHint('공격할 적을 고르세요'); showActs([{ label: '취소', fn: cancel }]); if (tg.length === 1) showForecast(tg[0]); } }];
     if (R.skillsOf(u).length) acts.push({ label: '특기', sub: ready ? '사용 가능' : '대기 중', disabled: !ready, fn: openSkills });
+    if (u.x === ui.from[0] && u.y === ui.from[1] && R.canRefit(u)) acts.push({ label: '정비', sub: `병사 ${Math.round(R.REFIT_T * R.SQUAD)}명 보충`, fn: () => { refitAct(u); finishAct(u); } });
     acts.push({ label: '대기', fn: () => finishAct(u) });
     acts.push({ label: '취소', fn: cancel });
     showActs(acts);
@@ -1635,17 +1649,10 @@
     LOHUD.phase(side, G.turn, side === 'p' && G.stage.turnLimit ? `제한 ${G.stage.turnLimit}턴` : '', speedK);
     AU.play(side === 'p' ? 'start' : 'warning', 0.5);
     await wait(900);
-    let healed = false;
-    for (const u of G.units) {
-      if (!u.alive || u.side !== side) continue;
-      const h = (R.terr(G, u.x, u.y).heal || 0) + R.trait(u, 'regen'); // 지형 회복 + 수동 특기(재생)
-      if (!h) continue;
-      const a = Math.min(u.hpMax - u.hp, Math.round(u.hpMax * h)), b = u.troop ? Math.min(u.troop.hpMax - u.troop.hp, Math.round(u.troop.hpMax * h)) : 0;
-      if (a + b <= 0) continue;
-      u.hp += a; if (u.troop) u.troop.hp += b;
-      popNum(u.x, u.y, a + b, 'heal'); healed = true;
-    }
-    if (healed) { AU.play('energy', 0.4); await wait(500); }
+    // 지형(마을·기지) 회복 + 수동 특기(재생) + 지휘관 곁 병사 보충
+    const heals = R.phaseHeal(G, side);
+    for (const r of heals) popSupply(r.u, r.hT, r.hH, r.cmd ? '지휘 ' : '');
+    if (heals.length) { AU.play('energy', 0.4); await wait(500); }
     if (side === 'e') { // 정해진 턴의 적 차례에 증원
       for (const i of R.wavesAt(G, G.turn)) await reinforce(i);
     }
@@ -1683,7 +1690,7 @@
       if (!u.alive || !plan) continue;
       u.acted = true;
       const moved = plan.to[0] !== u.x || plan.to[1] !== u.y;
-      if (!moved && plan.act === 'wait') { refreshView(u); continue; }
+      if (!moved && plan.act === 'wait') { if (R.canRefit(u)) refitAct(u); refreshView(u); continue; } // 아군 자동: 할 일이 없으면 제자리 정비
       panTo(u.x, u.y);
       await wait(moved ? 160 : 80);
       if (moved) {
@@ -1944,6 +1951,8 @@
       <p><b>영웅과 병사</b> · 지도 위 한 칸은 영웅 한 명과 배속된 병사 부대입니다. 공격받으면 <b>병사가 먼저</b> 피해를 받고, 병사가 전멸하면 영웅이 직접 맞습니다. 영웅이 쓰러지면 그 칸은 퇴각합니다.</p>
       <p><b>병사 배속</b> · 출격 전에 영웅마다 병사를 고릅니다. 고를 수 있는 병사는 영웅의 전직 단계에 따라 늘어납니다.</p>
       <p><b>병사 10명</b> · 한 부대의 병사는 10명입니다. 남은 병사 수만큼만 공격하므로 병사가 줄면 부대가 약해집니다. 이동력은 영웅과 병사 중 느린 쪽을 따릅니다.</p>
+      <p><b>병사 훈련</b> · 병사는 사지 않습니다 (랑그릿사 모바일처럼). 출격할 때마다 10명이 가득 찬 채로 나가고 전투가 끝나면 다시 채워집니다. 전투에서 얻은 <b>부품</b>으로 월드맵·출격 준비의 '병사 훈련'이나 마을 정비실의 포츈에게서 병종을 훈련하면 그 병사를 쓰는 모든 영웅의 병사가 강해집니다 (한 단계 +${Math.round(R.DRILL_K * 100)}%, 최대 ${R.DRILL_MAX}단계).</p>
+      <p><b>병사 보충</b> · 전투 중에는 고전 랑그릿사처럼 보충합니다. ① 아군 차례가 시작될 때 지휘관 콘스탄챠의 ${R.CMD_RANGE}칸 안에 있는 아군은 병사 1명 보충 ② 움직이지 않고 '정비'를 고르면 병사 ${Math.round(R.REFIT_T * R.SQUAD)}명 보충 + 영웅 체력 ${Math.round(R.REFIT_H * 100)}% (그 차례 행동은 끝) ③ 마을·기지 칸에서 차례를 시작하면 영웅·병사 10% 회복, 기지는 병사를 2명 더 보충 (적도 마찬가지). 병사가 모두 쓰러진 부대는 지휘 범위로는 돌아오지 않습니다.</p>
       <p><b>병종 상성</b> · 소총병 ▶ 중장병 ▶ 기동병 ▶ 소총병 (+30%), 사격병 ▶ 공중병 (+40%), 공중병 ▶ 소총병 (+20%)·전자전병 (+30%), 전자전병 ▶ 중장병 (+30%), 침투병 ▶ 사격병·전자전병 (+30%), 의무병 ▶ 변이체 (+80%). 그 밖에는 상성이 없습니다. 병사는 병사의 병종, 영웅은 영웅의 병종으로 따집니다.</p>
       <p><b>원거리</b> · 사격병은 사거리 2. 두 칸에서 쏘면 근접 부대는 반격하지 못합니다. 원거리 병종이 붙어서 싸우면 피해가 30%로 줄어듭니다.</p>
       <p><b>적의 움직임</b> · 적은 아군이 자기 공격 범위(위험 범위)에 들어와야 움직이기 시작합니다. 「위험」 단추로 범위를 확인하고 하나씩 끌어내세요. 증원은 정해진 턴에 나타나며, 그 전에 적을 모두 쓰러뜨리면 승리합니다.</p>
@@ -2103,7 +2112,7 @@
       <div class="whead"><button class="wback" id="sBack" aria-label="뒤로"></button>
         <div class="wtitle"><small>CHAPTER ${String(CH.no).padStart(2, '0')}</small><b>${CH.name}</b></div>
         ${chOpen() > 0 ? `<div class="wchap"><button id="sPrev" ${ch > 0 ? '' : 'disabled'} aria-label="이전 지역">‹</button><span>${CH.no} / ${chOpen() + 1}</span><button id="sNext" ${ch < chOpen() ? '' : 'disabled'} aria-label="다음 지역">›</button></div>` : ''}</div>
-      <div class="wtools"><button class="lo-btn dark" id="sHero">부대 현황</button><button class="lo-btn dark" id="sIf">IF 기록</button></div>
+      <div class="wtools"><button class="lo-btn dark" id="sHero">부대 현황</button><button class="lo-btn dark" id="sDrill">병사 훈련</button><button class="lo-btn dark" id="sIf">IF 기록</button></div>
       <button class="wchlbtn" id="sChlBtn"><small>CHAPTER</small><b>${String(CH.no).padStart(2, '0')}</b><span>챕터 목록</span></button>
       <div class="wchl" id="sChl"><div class="wchl-h"><small>CHAPTER LIST</small><b>챕터 선택</b><button class="wchl-x" id="sChlX" aria-label="닫기"></button></div>
         <div class="wchl-l">${CH_LIST.map((c, i) => { const open = c.inGame && i <= chOpen(); return `<button class="wch ${i === ch ? 'on' : ''} ${open ? '' : 'lock'}" data-i="${i}">
@@ -2112,6 +2121,7 @@
       <div class="winfo" id="sInfo"></div></div>`);
     $('sBack').onclick = () => { AU.play('lo_click', 0.6); title(); };
     $('sHero').onclick = () => { AU.play('lo_click', 0.6); heroRoster(); };
+    $('sDrill').onclick = () => { AU.play('lo_click', 0.6); drillMenu(); };
     $('sIf').onclick = () => { AU.play('lo_click', 0.6); ifRecord(); };
     const goCh = (to) => { AU.play('lo_click', 0.6); AU.play('lo_trans_in', 0.5); save.chapter = to; save.node = null; writeSave(); stageSelect(); };
     if ($('sPrev')) $('sPrev').onclick = () => goCh(ch - 1);
@@ -2215,7 +2225,8 @@
     if (id === WT) {
       const nw = sideNew();
       $('sInfo').innerHTML = `<button class="wclose" onclick="this.parentElement.classList.remove('on')">✕</button><div class="wi-top"><span class="wi-no wi-town">TOWN</span><div class="wi-name">${TOWN.name}<em class="town">${TOWN.sub}</em></div></div>
-        <p class="wi-desc">등대 아래에 숨겨진 옛 비밀기지. 오르카의 임시 거점이다.\n동료들과 이야기하고, 들어온 의뢰를 받을 수 있다.</p>
+        <p class="wi-desc">등대 아래에 숨겨진 옛 비밀기지. 오르카의 임시 거점이다.\n동료들과 이야기하고, 들어온 의뢰를 받을 수 있다.
+정비실의 포츈에게 부품을 맡기면 병사를 훈련해 준다.</p>
         ${nw.length ? `<div class="wi-sub">새 의뢰 <small>${nw.length}건</small></div><div class="wi-list">${nw.map((s) => `<div><b>${s.title}</b><small>${s.desc}</small></div>`).join('')}</div>` : ''}
         <button class="wgo" id="sTown"><b>마을로 들어가기</b><small>ENTER</small></button>`;
       $('sTown').onclick = () => { AU.play('lo_click', 0.7); AU.play('lo_trans_in', 0.5); enterTown(); };
@@ -2277,6 +2288,8 @@
           await new Promise((r) => modal(`<h3>의뢰를 받았습니다</h3><p><b>${q.title}</b></p><p>${q.desc}</p><p style="color:#9aa6c4">월드맵의 ${D.STAGES[q.base - 1].idx} ${D.STAGES[q.base - 1].title} 지점에서 출격할 수 있습니다.</p><div class="opts"><button class="gold" data-a="ok">확인</button></div>`, r));
           return;
         }
+        // 정비실의 포츈: 병사 훈련
+        if (id === 'fortune') { await new Promise((r) => drillMenu(r)); return; }
         // 동료와 대화: 원작 로비 대사 중 하나 (음성과 표정 그대로)
         const lines = (window.LOBBY && LOBBY[id]) || [];
         if (!lines.length) return;
@@ -2288,6 +2301,37 @@
     });
     mode = 'screen';
     stageSelect();
+  }
+  // 병사 훈련 (랑그릿사 모바일의 병사 훈련): 전투 보상 부품으로 병종마다 훈련 단계를 올린다.
+  // 병사는 사지 않는다 — 출격할 때마다 10명이 가득 찬 채로 나간다. 훈련 단계는 그 병사를 쓰는 모든 영웅에게 적용
+  const PARTS_ICON = 'assets/ui/UI_Icon_Currency_Metal.png';
+  const MY_TROOPS = Object.keys(D.TROOPS).filter((k) => !k.startsWith('e_'));
+  const drillLv = (k) => (save.drill && save.drill[k]) || 0;
+  const drillTag = (k) => (drillLv(k) ? `<i class="dlv">훈련 ${drillLv(k)}</i>` : '');
+  function drillMenu(done, focus) {
+    save.drill = save.drill || {};
+    const users = (k) => [...joined()].filter((id) => formOf(id).troops.includes(k)).map((id) => D.HEROES[id].name);
+    const rows = MY_TROOPS.map((k) => {
+      const t = D.TROOPS[k], lv = drillLv(k), max = lv >= R.DRILL_MAX, cost = R.drillCost(lv), u = users(k);
+      return `<div class="drow ${k === focus ? 'on' : ''}"><img src="${IMG[t.icon]}" alt=""><span class="dinfo"><b>${t.name}</b>${kindTag(t.kind)}
+        <small>훈련 ${lv} / ${R.DRILL_MAX} · 체력·공격·방어 +${Math.round(lv * R.DRILL_K * 100)}%${u.length ? ` · ${u.join(', ')}` : ' · 아직 쓰는 영웅 없음'}</small>
+        <em class="dpips">${Array.from({ length: R.DRILL_MAX }, (_, i) => `<i class="${i < lv ? 'on' : ''}"></i>`).join('')}</em></span>
+        <button class="dbtn ${max ? '' : 'gold'}" data-a="d:${k}" ${max || save.parts < cost ? 'disabled' : ''}>${max ? '최대' : `<b>훈련</b><small><img src="${PARTS_ICON}" alt="">${cost}</small>`}</button></div>`;
+    }).join('');
+    modal(`<h3>병사 훈련 <span class="dparts"><img src="${PARTS_ICON}" alt="">부품 <b>${save.parts || 0}</b></span></h3>
+      <p class="dnote">병사는 따로 사지 않습니다. 출격할 때마다 10명이 가득 찬 채로 나가고, 전투가 끝나면 다시 채워집니다.
+      전투에서 얻은 <b>부품</b>으로 병종을 훈련하면 그 병사를 쓰는 모든 영웅의 병사가 강해집니다 (한 단계 +${Math.round(R.DRILL_K * 100)}%).</p>
+      <div class="dlist">${rows}</div><div class="opts"><button class="gold" data-a="ok">닫기</button></div>`, (a) => {
+      if (a && a.startsWith('d:')) {
+        const k = a.slice(2), lv = drillLv(k), cost = R.drillCost(lv);
+        if (lv < R.DRILL_MAX && save.parts >= cost) { save.parts -= cost; save.drill[k] = lv + 1; writeSave(); AU.play('lo_equip', 0.7); }
+        drillMenu(done, k);
+        return;
+      }
+      if (done) done();
+    });
+    const on = document.querySelector('.drow.on');
+    if (on) on.scrollIntoView({ block: 'nearest' });
   }
   // 부대 현황: 합류한 영웅 목록
   function heroRoster() {
@@ -2467,8 +2511,9 @@
     const detail = () => {
       const id = cur, { h, s, t, hp, at, df } = stat(id);
       const next = D.TIER_LV[s.tier + 1];
+      const dk = (k) => 1 + R.DRILL_K * drillLv(k);
       const troops = t.troops.map((k) => { const tr = D.TROOPS[k]; return `<button class="ptr ${pick[id] === k ? 'on' : ''}" data-t="${k}"><img src="${IMG[tr.icon]}" alt="">
-        <span><b>${tr.name}</b>${kindTag(tr.kind)}<small>체력 ${tr.hp} · 공격 ${tr.at} · 방어 ${tr.df} · 이동 ${tr.mov}</small></span></button>`; }).join('');
+        <span><b>${tr.name}</b>${kindTag(tr.kind)}${drillTag(k)}<small>체력 ${Math.round(tr.hp * dk(k))} · 공격 ${Math.round(tr.at * dk(k))} · 방어 ${Math.round(tr.df * dk(k))} · 이동 ${tr.mov}</small></span></button>`; }).join('');
       // 고정 인원(카드의 '필수' 표시)은 안내 없이, 고를 수 있는 영웅만 바꾸기 / 빼기
       const sortie = !st.free || lock.includes(id) ? ''
         : '<div class="pd-swap"><button class="pd-sortie on" id="pSwap">다른 영웅으로 바꾸기</button><button class="pd-sortie" id="pOut">출전에서 빼기</button></div>';
@@ -2478,7 +2523,8 @@
         <div class="pd-stats"><div><label>병종</label>${kindTag(t.kind)}</div><div><label>체력</label><b>${hp}</b></div><div><label>공격</label><b>${at}</b></div>
           <div><label>방어</label><b>${df}</b></div><div><label>이동</label><b>${t.mov}</b></div><div><label>사거리</label><b>${t.rng}</b></div></div>
         <div class="wi-sub">특기</div><div class="pd-skills">${t.skills.map((k) => { const sk = D.SKILLS[k]; return `<div><b>${sk.name}</b><small>재사용 ${sk.cd}턴 · ${sk.desc}</small></div>`; }).join('')}</div>
-        <div class="wi-sub">병사 배속 <small>공격받으면 병사가 먼저 피해를 받습니다</small></div><div class="pd-troops">${troops}</div>`;
+        <div class="wi-sub">병사 배속 <small>출격마다 10명 가득 · 공격받으면 병사가 먼저 피해</small></div><div class="pd-troops">${troops}</div>
+        <button class="pd-drill" id="pDrill"><img src="${PARTS_ICON}" alt=""><b>병사 훈련</b><small>부품 ${save.parts || 0} · 병종마다 능력치 +${Math.round(R.DRILL_K * 100)}%씩</small></button>`;
     };
     const count = () => (st.free ? `<span class="pcnt">출전 ${st.heroes.length} / ${cap}</span>` : '');
     const render = () => {
@@ -2563,6 +2609,7 @@
         AU.play('lo_equip', 0.6); reslot();
       };
       bindCC();
+      if ($('pDrill')) $('pDrill').onclick = () => { AU.play('lo_click', 0.6); drillMenu(() => refresh(), pick[cur]); };
     };
     const refresh = () => {
       document.querySelectorAll('.pcard').forEach((b) => {
@@ -2604,6 +2651,7 @@
     hideScreen();
     if (G) leaveMap();
     G = R.newGame(st);
+    G.drill = save.drill || {};
     buildWorld();
     // 처음 합류하는 영웅은 일행 평균 레벨 근처에서 시작한다 (본작처럼 뒤늦게 합류해도 뒤처지지 않게)
     save.joined = save.joined || [];
@@ -2666,7 +2714,7 @@
   }
 
   // 결과: 원작 MISSION COMPLETE 화면 (최우수 인물 전신 + 음성, 영웅별 경험치 막대)
-  function result(st, win, gain, rows, turn) {
+  function result(st, win, gain, rows, turn, parts = 0) {
     return new Promise((res) => {
       const mvp = win ? rows.filter((r) => r.alive).sort((a, b) => b.dealt - a.dealt)[0] || rows[0] : null;
       const lead = rows.find((r) => r.id === 'constantia') || rows[0];
@@ -2686,6 +2734,7 @@
           <div class="rhead">${win ? '<img src="assets/ui/UI_Battle_Main_missionclear_label_2.png" alt="MISSION COMPLETE">' : '<b class="rfail">MISSION FAILED</b>'}
             <div class="rstage"><span>${st.idx}</span>${st.title}<small>${turn}턴</small></div></div>
           <div class="rsub">${win ? '참가 영웅 전원이 같은 경험치를 얻었습니다' : '얻은 경험치는 유지됩니다'}</div>
+          ${parts ? `<div class="rparts"><img src="${PARTS_ICON}" alt=""><span>부품 <b>+${parts}</b></span><small>보유 ${save.parts} · 병사 훈련에 씁니다</small></div>` : ''}
           <div class="rlist">${list}</div>
           <div class="rbtns">${win ? '<button class="wgo" id="rOk"><b>확인</b><small>NEXT</small></button>' : '<button class="lo-btn dark" id="rSel">작전 선택</button><button class="wgo" id="rRetry"><b>다시 도전</b><small>RETRY</small></button>'}</div>
         </div></div>`);
@@ -2722,6 +2771,9 @@
       void h;
       rows.push(row);
     }
+    // 부품: 병사 훈련에 쓴다 (지면 조금)
+    const parts = R.parts(st.kind === 'side' && st.side.kind === 'Ex' ? 9 : st.id - 1, win, st.kind);
+    save.parts = (save.parts || 0) + parts;
     const clear0 = save.clear;
     if (win && !st.kind) save.clear = Math.max(save.clear, st.id);
     if (win && st.kind === 'side') { save.side = save.side || {}; save.side[st.idx] = 'done'; }
@@ -2729,7 +2781,7 @@
     writeSave();
     const si = st.id - 1;
     leaveMap();
-    await result(st, win, gain, rows, g.turn);
+    await result(st, win, gain, rows, g.turn, parts);
     // 이야기: 본편과 의뢰는 끝 대화 (소탕전은 없음)
     if (st.kind === 'if') { // IF 작전: 이기면 IF 뒷이야기와 IF 엔딩, 지면 다시 도전
       if (win) { AU.bgm(st.ifd.bgmEnd || 'lo_talk3'); await story(st.ifd.outro); ifEnding(st.ifd, st.base, st.part); }
