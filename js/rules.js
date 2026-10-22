@@ -13,7 +13,7 @@
   // ── 지도 ───────────────────────────────────────────────
   R.newGame = function (stage) {
     const map = stage.map.map((row) => row.split(''));
-    return { stage, map, w: map[0].length, h: map.length, units: [], turn: 1, side: 'p', wave: 0 };
+    return { stage, map, w: map[0].length, h: map.length, units: [], turn: 1, side: 'p', wave: 0, drill: {} }; // drill: 병사 훈련 단계 (save.drill)
   };
   R.inB = (G, x, y) => x >= 0 && y >= 0 && x < G.w && y < G.h;
   R.terr = (G, x, y) => TERRAIN[G.map[y][x]] || TERRAIN['.'];
@@ -22,10 +22,10 @@
   R.cost = (G, u, x, y) => R.terr(G, x, y).cost[u.move];
 
   // ── 유닛 생성 ──────────────────────────────────────────
-  function troopOf(key) {
+  function troopOf(key, drill = 0) {
     if (!key) return null;
     const t = TROOPS[key];
-    return { key, def: t, name: t.name, rig: t.rig, icon: t.icon, kind: t.kind, hp: 0, hpMax: 0 };
+    return { key, def: t, name: t.name, rig: t.rig, icon: t.icon, kind: t.kind, hp: 0, hpMax: 0, drill };
   }
   // 영웅: st = save.heroes[id] = {lv, exp, tier}, troopKey = 배속 병사
   R.makeHero = function (G, id, st, troopKey, x, y) {
@@ -36,8 +36,10 @@
       uid: ++uid, side: 'p', key: id, def: h, name: h.name, rig: CL ? CL.rigOf(id, st) : h.rig, icon: CL ? CL.iconOf(id, st) : h.icon,
       kind: tier.kind || h.kind, move: tier.move || h.move, rng: tier.rng || h.rng, form: CL ? tier : null,
       lv: st.lv, exp: st.exp, tier: st.tier, br: st.br || 'A', cls: tier.cls, x, y, alive: true, acted: false, buffs: [], cd: {}, lead: !!h.lead,
-      troop: troopOf(troopKey && tier.troops.includes(troopKey) ? troopKey : tier.troops[0]),
+      troop: null,
     };
+    const tk = troopKey && tier.troops.includes(troopKey) ? troopKey : tier.troops[0];
+    u.troop = troopOf(tk, (G.drill && G.drill[tk]) || 0);
     fill(u);
     G.units.push(u);
     return u;
@@ -106,11 +108,11 @@
     if (k === 'mov') return u.def.mov;
     return u.def[k] * (1 + 0.07 * (u.lv - 1));
   };
-  // 병사: 기본 x 레벨 성장 + 영웅 공방의 25%
+  // 병사: (기본 x 레벨 성장 + 영웅 공방의 25%) x 병사 훈련 (랑그릿사 모바일 병사 훈련처럼 병종마다 단계가 오르면 능력치 +)
   R.troopStat = function (u, k) {
     const t = u.troop.def;
     const v = t[k] * (1 + 0.06 * (u.lv - 1));
-    return k === 'hp' ? v : v + R.heroStat(u, k) * 0.25;
+    return (k === 'hp' ? v : v + R.heroStat(u, k) * 0.25) * (1 + R.DRILL_K * (u.troop.drill || 0));
   };
   R.atk = (u, part) => (part === 'T' ? R.troopStat(u, 'at') : R.heroStat(u, 'at')) * buffK(u, 'at');
   R.def = (u, part) => (part === 'T' ? R.troopStat(u, 'df') : R.heroStat(u, 'df')) * buffK(u, 'df');
@@ -125,6 +127,44 @@
   R.SQUAD = 10;
   R.soldiers = (u, thp = u.troop ? u.troop.hp : 0) => (u.troop && thp > 0.5 ? Math.max(1, Math.ceil((thp / u.troop.hpMax) * R.SQUAD - 1e-6)) : 0);
   R.troopAlive = (u) => !!(u.troop && u.troop.hp > 0);
+
+  // ── 병사 보충·훈련 ─────────────────────────────────────
+  // 랑그릿사 모바일처럼 병사는 사지 않는다: 출격할 때마다 10명 가득, 전투가 끝나면 다시 가득.
+  // 대신 전투 보상 '부품'으로 병종마다 병사 훈련 단계를 올리고(능력치 +), 전투 중에는 고전 랑그릿사처럼
+  //  · 지휘 범위: 아군 차례 시작에 지휘관(콘스탄챠) 2칸 안의 아군은 병사 1명 보충
+  //  · 정비: 움직이지 않은 영웅이 이번 행동을 쉬면 병사 3명 보충 + 영웅 체력 10% (고전작의 치료 명령)
+  //  · 마을·기지 칸: 차례 시작에 영웅·병사 회복 (기지는 병사를 더 보충)
+  R.DRILL_K = 0.05; R.DRILL_MAX = 5;
+  R.drillCost = (lv) => 120 * (lv + 1); // lv → lv+1 에 드는 부품
+  R.parts = (stageIndex, win, kind) => Math.round((60 + 10 * stageIndex) * (win ? 1 : 0.3) * (kind === 'repeat' ? 0.6 : kind === 'side' ? 1.2 : 1));
+  R.CMD_RANGE = 2; R.CMD_SUPPLY = 0.1;
+  R.REFIT_T = 0.3; R.REFIT_H = 0.1;
+  R.canRefit = (u) => u.side === 'p' && (u.hp < u.hpMax || !!(u.troop && u.troop.hp < u.troop.hpMax));
+  // 정비: 회복량 {hH, hT} 을 돌려주고 바로 적용
+  R.refit = function (u) {
+    const hH = Math.min(u.hpMax - u.hp, Math.round(u.hpMax * R.REFIT_H));
+    const hT = u.troop ? Math.min(u.troop.hpMax - u.troop.hp, Math.round(u.troop.hpMax * R.REFIT_T)) : 0;
+    u.hp += hH; if (u.troop) u.troop.hp += hT;
+    return { hH, hT };
+  };
+  // 차례 시작 회복·보충 (지형 + 수동 특기 재생 + 지휘 범위). 적용하고 [{u, hH, hT, cmd}] 를 돌려준다
+  R.phaseHeal = function (G, side) {
+    const out = [];
+    const lead = side === 'p' ? G.units.find((o) => o.alive && o.side === 'p' && o.lead) : null;
+    for (const u of G.units) {
+      if (!u.alive || u.side !== side) continue;
+      const tr = R.terr(G, u.x, u.y), h = (tr.heal || 0) + R.trait(u, 'regen');
+      const cmd = !!(lead && lead !== u && R.dist(lead.x, lead.y, u.x, u.y) <= R.CMD_RANGE && u.troop && u.troop.hp > 0);
+      const t = h + (tr.supply || 0) + (cmd ? R.CMD_SUPPLY : 0);
+      const hH = Math.min(u.hpMax - u.hp, Math.round(u.hpMax * h));
+      // 다 쓰러진 병사는 지휘 범위로는 돌아오지 않는다 (마을·기지·특기·정비로만)
+      const hT = u.troop ? Math.min(u.troop.hpMax - u.troop.hp, Math.round(u.troop.hpMax * t)) : 0;
+      if (hH + hT <= 0) continue;
+      u.hp += hH; if (u.troop) u.troop.hp += hT;
+      out.push({ u, hH, hT, cmd });
+    }
+    return out;
+  };
   R.total = (u) => u.hp + (u.troop ? u.troop.hp : 0);
   R.totalMax = (u) => u.hpMax + (u.troop ? u.troop.hpMax : 0);
   R.skillsOf = (u) => (u.side === 'p' ? (u.form || u.def.tiers[u.tier]).skills : u.def.skills || []);

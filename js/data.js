@@ -3,6 +3,7 @@
 (function () {
   // ── 지형 ────────────────────────────────────────────────
   // cost: 이동 방식별 이동력 소모 (99 = 못 들어감), def: 방어 보정(비행은 무시), heal: 차례 시작 회복(최대 체력 비율)
+  // supply: 차례 시작 병사 보충(병사 체력 비율, heal 에 더한다). 고전 랑그릿사처럼 마을·기지(성)에 머물면 회복
   // 랑그릿사 모바일 지형표 기준 (보행 foot / 기마 horse / 비행 fly). 99 = 못 들어감. def = 방어 보정(공중병은 지형 영향 없음)
   const TERRAIN = {
     '.': { name: '평지', cost: { foot: 1, horse: 1, fly: 1 }, def: 0, bg: 'plain' },
@@ -12,8 +13,8 @@
     'm': { name: '산', cost: { foot: 2, horse: 3, fly: 1 }, def: 0.1, bg: 'mountain' },
     'w': { name: '바다', cost: { foot: 99, horse: 99, fly: 1 }, def: 0, bg: 'bridge' },
     '=': { name: '다리', cost: { foot: 1, horse: 1, fly: 1 }, def: 0, bg: 'bridge' },
-    'v': { name: '마을', cost: { foot: 1, horse: 1, fly: 1 }, def: 0.05, bg: 'town' },
-    'c': { name: '기지', cost: { foot: 1, horse: 1, fly: 1 }, def: 0.1, bg: 'fort' },
+    'v': { name: '마을', cost: { foot: 1, horse: 1, fly: 1 }, def: 0.05, heal: 0.1, bg: 'town' },
+    'c': { name: '기지', cost: { foot: 1, horse: 1, fly: 1 }, def: 0.1, heal: 0.1, supply: 0.2, bg: 'fort' },
     '#': { name: '잔해 벽', cost: { foot: 99, horse: 99, fly: 1 }, def: 0.05, bg: 'fort' },
     's': { name: '폐허', cost: { foot: 1, horse: 2, fly: 1 }, def: 0.05, bg: 'ruins' },
   };
