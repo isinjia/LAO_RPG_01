@@ -365,7 +365,7 @@
 /* ── 전투 장면 연출 (랑그릿사식) ── */
 /* 가장자리를 어둡게 눌러 가운데 전장에 눈이 가게 */
 #fight::before { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background: radial-gradient(120% 95% at 50% 42%, transparent 55%, rgba(0, 0, 0, .55) 100%), linear-gradient(180deg, rgba(0, 0, 0, .35) 0%, transparent 14%); }
+  background: radial-gradient(120% 95% at 50% 42%, transparent 55%, rgba(0, 0, 0, .55) 100%), linear-gradient(180deg, rgba(0, 0, 0, .6) 0%, rgba(0, 0, 0, .3) 18%, transparent 30%); }
 /* 끝날 때 어둡게 닫기 */
 #fight::after { content: ''; position: absolute; inset: 0; z-index: 20; pointer-events: none; background: #000; opacity: 0; transition: opacity .26s ease-in; }
 #fight.fout::after { opacity: 1; }
