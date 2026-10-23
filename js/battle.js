@@ -101,7 +101,7 @@
       shadowMat = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthTest: false, depthWrite: false, opacity: 0.8 });
     }
     const m = new THREE.Mesh(shadowGeo, shadowMat);
-    const w = (f.hero ? 1.25 : 1.05) * (f.air ? 0.8 : 1);
+    const w = (f.hero ? 1.0 : 0.75) * (f.air ? 0.8 : 1);
     m.scale.set(w, w * 0.6, 1);
     m.position.set(0, 0.02, 0);
     m.renderOrder = 5; // 배경 위, 모든 유닛 아래
@@ -109,7 +109,7 @@
     f.shadow = m;
     if (f.hero) { // 영웅 발밑: 편 색 고리 (병사 속에서도 지휘관이 한눈에)
       const r = new THREE.Mesh(shadowGeo, ringMat(f.side));
-      r.scale.set(1.9, 1.9 * 0.6, 1); r.position.set(0, 0.03, 0); r.renderOrder = 6;
+      r.scale.set(1.3, 1.3 * 0.6, 1); r.position.set(0, 0.03, 0); r.renderOrder = 6;
       f.rig.g.add(r); f.ring = r;
     }
     // 공중병: 리그만 들어 올리고 천천히 오르내린다
@@ -140,12 +140,12 @@
     const front = PORT() ? 0.75 : Math.min(2.6, VW * 0.175), back = VW / 2 - EDGE() - 0.9; // 두 대열은 화면 양쪽에서 시작: 가운데까지 길게 돌격한다
     const span = PORT() ? 0.4 : Math.min(0.95 * wide, Math.max(0.5, (back - front) / 3.2));
     const out = [];
-    const R5 = PORT() ? 3 : 5; // 세로 줄 수 (가로 화면은 5줄: 다섯 쌍이 나란히 맞붙는 넓은 전선)
+    const R5 = 3; // 세로 3줄 × 가로 4열의 빽빽한 덩어리 (랑그릿사 모바일 움짤)
     for (let i = 0; i < n; i++) {
       const row = i % R5, col = Math.floor(i / R5); // 앞 열부터 채운다
       const jx = PORT() ? 0 : (Math.random() - 0.5) * 0.18, jy = (Math.random() - 0.5) * 0.08; // 자로 잰 듯한 격자가 아니게 살짝
-      const x = PORT() ? front + col * span + (row === 1 ? span * 0.45 : 0) : front + col * 1.4 * wide + (row % 2) * 0.3; // 줄마다 반 걸음 어긋나게 (성긴 격자: 몇 명 남았는지 읽힌다)
-      const y = PORT() ? GROUND - 0.3 + row * 0.45 : GROUND - 1.3 + row * 0.68;
+      const x = PORT() ? front + col * span + (row === 1 ? span * 0.45 : 0) : front + col * 0.62 * wide + (row % 2) * 0.25; // 줄마다 반 걸음 어긋나게, 서로 겹칠 만큼 촘촘히
+      const y = PORT() ? GROUND - 0.3 + row * 0.45 : GROUND - 0.5 + row * 0.42;
       out.push([dir * (x + jx), y + jy, row]);
     }
     return out;
@@ -242,7 +242,7 @@
         const f = side === 'L' ? 1 : -1;
         const list = [];
         const native = u.side === 'p' ? 1 : -1;
-        const hh = (u.def.big ? 3.3 : 2.5) * (u.def.sizeK || 1); // 영웅은 병사(1.5)보다 확실히 크게
+        const hh = (u.def.big ? 2.3 : 1.65) * (u.def.sizeK || 1); // 지휘관은 병사(1.1)보다 조금 크게 (움짤처럼)
         const hero = new K.Rig(u.rig, hh, native);
         hero.face(f);
         // 영웅 몸 폭만큼 화면 가장자리 안쪽으로 (세로 화면처럼 좁을 때 잘리지 않게)
@@ -254,9 +254,9 @@
         hero.loop('move');
         list.push({ rig: hero, side, x: hx, y: hy, u, home: hx, hero: true, alive: true, air: isAir(u, true) ? 0.85 : 0 });
         addShadow(list[list.length - 1]);
-        soldierSlots(figN(u, st[u.uid].thp), side, u.side === 'e' ? 1.3 : 1).forEach(([x0, y, row], i) => {
+        soldierSlots(figN(u, st[u.uid].thp), side, u.side === 'e' ? 1.15 : 1).forEach(([x0, y, row], i) => {
           const x = x0 + dir * off;
-          const r = new K.Rig(u.troop.rig, 1.5 * (0.95 + Math.random() * 0.1), native); // 키도 조금씩 다르게
+          const r = new K.Rig(u.troop.rig, 1.1 * (0.95 + Math.random() * 0.1), native); // 작은 병사, 키도 조금씩 다르게
           r.face(f);
           r.g.position.set(x + dir * 7, y, 0);
           r.order = 100 + (5 - row) * 20 + i; // 아래(앞) 줄이 위에 그려진다
@@ -307,7 +307,7 @@
               if (!f.hero) { const y1 = f.y + (Math.random() - 0.5) * 0.45; tween(p, 'y', f.y, y1, t0, t0 + d / sp); f.yHome = f.y; }
               if (f.hero && ts === 'lance') trail(f, t0, d / sp); // 기병 영웅: 파란 기운 잔상 // 지휘관은 제 병사들 바로 뒤 (병사가 총을 들고 남으면 홀로 맞붙는 선까지)
               const lag = f.hero ? (ts === 'lance' ? 0 : 0.1) : Math.random() * 0.14; // 병사마다 조금씩 어긋나게 도착
-              if (f.hero && ts !== 'lance') { const y0 = p.y, lane = GROUND - 1.3; tween(p, 'y', y0, lane, t0, t0 + d / sp); f.yHome = y0; } // 지휘관은 대열 맨 앞(화면 쪽) 길로 나서 눈에 띄게
+              if (f.hero && ts !== 'lance') { const y0 = p.y, lane = GROUND - 0.8; tween(p, 'y', y0, lane, t0, t0 + d / sp); f.yHome = y0; } // 지휘관은 대열 맨 앞(화면 쪽) 길로 나서 눈에 띄게
               if ((x1 - f.x) * dir > 0.05) { tween(p, 'x', f.x, x1, t0 + lag, t0 + lag + d / sp); f.x = x1; }
               if (ts === 'swoop') tween(f, 'air', f.air, 1.2, t0, t0 + d / sp); // 공중병: 높이 떠서 덮친다
               return;
@@ -430,13 +430,14 @@
     Sx.thp = Math.max(0, Sx.thp - dT); Sx.hp = Math.max(0, Sx.hp - dH);
     const soldiers = s.to.filter((f) => !f.hero && f.alive);
     const heroF = s.to.find((f) => f.hero);
-    const pool = soldiers.slice().sort(() => Math.random() - 0.5).slice(0, 3);
+    const pool = soldiers.slice().sort(() => Math.random() - 0.5).slice(0, 4);
+    const nS = pool.length;
     if (dH > 0 || !pool.length) pool.push(heroF);
     const adv = s.counter ? res.rel < 0 : res.rel > 0;
     pool.forEach((v, k) => {
       if (!v || !v.alive) return;
       hitFx(src && src.alive ? src : s.from.find((f) => f.alive) || s.from[0], v, s.au, split, k === 0, v.hero && adv);
-      const n = v.hero ? (dH > 0 ? dH : dT) : k === 0 ? dT : 0; // 병사 피해는 그 공격의 합계를 한 숫자로
+      const n = v.hero ? (dH > 0 ? dH : dT) : dT / Math.max(1, nS); // 맞은 병사마다 제 몫의 숫자 (움짤처럼 숫자가 겹겹이 쌓인다)
       if (n > 0.05) dmgNum(v, n, v.hero && adv ? 'cri' : s.du.side === 'p' ? 'me' : 'base');
     });
     const keep = figN(s.du, Sx.thp);
