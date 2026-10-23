@@ -1565,6 +1565,7 @@
 
   // ── 행동 실행 (아군·적 공용) ─────────────────────────────
   async function attack(a, d) {
+    seedFor(a);
     faceTo(a, d.x); faceTo(d, a.x);
     const res = R.combat(G, a, d, a.x, a.y, grand);
     if (save.opts.fight) {
@@ -1680,6 +1681,7 @@
     return 0;
   }
   async function useSkill(u, sk, tx, ty) {
+    seedFor(u);
     const s = D.SKILLS[sk];
     u.cd[sk] = s.cd + 1; // 다음 차례 시작에 1 줄어 s.cd 턴 동안 못 쓴다
     faceTo(u, tx);
@@ -1857,6 +1859,13 @@
     t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   }
+  // 행동마다 씨앗을 새로: 판의 씨앗 + 차례 + 그 유닛의 자리(순번)로 정한다 → 행동 순서를 바꿔도 그 행동의 흔들림은 같다
+  function seedFor(u) {
+    if (!G) return;
+    let h = ((G.seed0 >>> 0) ^ Math.imul(G.turn + 1, 0x9e3779b1) ^ Math.imul(G.units.indexOf(u) + 1, 0x85ebca77)) >>> 0;
+    h = Math.imul(h ^ (h >>> 16), 0x7feb352d); h = Math.imul(h ^ (h >>> 15), 0x846ca68b);
+    G.rs = (h ^ (h >>> 16)) >>> 0;
+  }
   // 판 상태 한 장 (작전 중 저장·한 수 되돌리기가 같이 쓴다). 본편이 아닌 작전(소탕전·의뢰)은 작전 자체도 함께 담는다
   function snapData() {
     if (!G || G.ended) return null;
@@ -1869,7 +1878,7 @@
       hp: u.hp, thp: u.troop ? u.troop.hp : 0, hpMax: u.hpMax, thpMax: u.troop ? u.troop.hpMax : 0, alive: u.alive, escaped: !!u.escaped, cd: u.cd, buffs: u.buffs, slow: u.slow || 0, slowNext: u.slowNext || 0, dealt: u.dealt || 0,
       ai: u.ai, home: u.home, boss: !!u.boss, awake: !!u.awake, wave: u.wave, bornT: u.bornT, cmd: u.cmd ? G.units.indexOf(u.cmd) : -1, acted: u.side === 'p' && !!u.acted,
     }));
-    const d = { v: 1, si, idx: G.stage.idx, diff: R.diff, turn: G.turn, wave: G.wave, spawned: [...(G.spawned || [])], ev: [...(G.evDone || [])].map((e) => ev.indexOf(e)).filter((i) => i >= 0), units, rs: G.rs >>> 0, start: stageStart, heroes: G.stage.heroes, free: G.stage.free, lock: G.stage.lock, stage };
+    const d = { v: 1, si, idx: G.stage.idx, diff: R.diff, turn: G.turn, wave: G.wave, spawned: [...(G.spawned || [])], ev: [...(G.evDone || [])].map((e) => ev.indexOf(e)).filter((i) => i >= 0), units, rs: G.rs >>> 0, seed0: G.seed0 >>> 0, start: stageStart, heroes: G.stage.heroes, free: G.stage.free, lock: G.stage.lock, stage };
     return d;
   }
   function suspendSave(turnStart) {
@@ -1901,6 +1910,7 @@
     d.units.forEach((s, i) => { if (s.cmd >= 0) G.units[i].cmd = G.units[s.cmd]; });
     G.turn = d.turn; G.wave = d.wave; G.spawned = new Set(d.spawned); G.side = 'p';
     if (d.rs != null) G.rs = d.rs;
+    G.seed0 = d.seed0 != null ? d.seed0 : d.rs >>> 0;
     const ev = (window.BATTLE_EVENTS || {})[G.stage.idx] || [];
     G.evDone = new Set(d.ev.map((i) => ev[i]).filter(Boolean));
   }
@@ -2276,7 +2286,7 @@
       <div class="osec">전투</div>
       <p><b>병종 상성</b> · 공격하는 병종이 이기는 상대를 칠 때 피해가 늘고, 거꾸로면 그만큼 줄어듭니다. 병사는 병사의 병종, 영웅은 영웅의 병종으로 따집니다.</p>
       <table class="keys">${relRows}</table>
-      <p><b>피해 흔들림</b> · 공격 예상 창의 숫자는 기댓값이고, 실제 피해는 그 ±10% 안에서 흔들립니다.</p>
+      <p><b>피해 흔들림</b> · 공격 예상 창의 숫자는 기댓값이고, 실제 피해는 그 ±10% 안에서 흔들립니다. 아군 부대는 한 번의 교전에 병사를 70%까지만 잃습니다.</p>
       <p><b>원거리</b> · 사격병은 사거리 2. 두 칸에서 쏘면 근접 부대는 반격하지 못합니다. 원거리 병종이 붙어서 싸우면 피해가 30%로 줄어듭니다.</p>
       <p><b>적의 움직임</b> · 적은 무리마다 지휘관이 있고, 부대가 지휘관 둘레로 함께 진격합니다. 무리 중 하나라도 아군과 가까워지거나 한 차례가 지나면 무리 전체가 움직이고, 상성으로 이기는 상대를 먼저 노립니다. 우두머리를 지키는 호위는 우두머리 곁을 떠나지 않습니다. 「위험」 단추로 적이 닿는 범위를 확인하세요. 증원은 정해진 턴에 나타나고, 그 전에 지도 위 적을 모두 쓰러뜨리면 남은 증원이 곧바로 앞당겨 나옵니다 (증원까지 모두 쓰러뜨리면 승리).</p>
       <p><b>난이도</b> · 옵션에서 고릅니다 (작전 도중에 바꾸면 그 자리에서 적의 체력·능력치가 바뀝니다). 쉬움: 적 능력치 85%, 적이 조심스럽고 늦게 움직임 · 보통: 107% · 어려움: 115%, 적이 처음부터 진격하고 쓰러뜨릴 수 있는 영웅을 집요하게 노림.</p>
@@ -2866,7 +2876,8 @@
     setTimeout(() => modal(`<h3>난이도 낮추기</h3><p>${st.idx} ${st.title}에서 ${n}번 졌습니다. 난이도를 <b>${R.DIFF[l[i]].name}</b>에서 <b>${R.DIFF[l[i - 1]].name}</b>으로 낮출까요? 이번 출격부터 적용되고, 옵션에서 언제든 되돌릴 수 있습니다.</p>
       <div class="opts"><button class="gold" data-a="y">${R.DIFF[l[i - 1]].name}으로 낮추기</button><button data-a="n">이대로 도전</button></div>`, (a) => {
       if (a === 'y') { save.opts.diff = l[i - 1]; toast(`난이도 ${R.DIFF[l[i - 1]].name}`); }
-      save.loss[st.idx] = 0; writeSave();
+      if (a === 'y') save.loss[st.idx] = 0; else save.loss[st.idx] = n - 2; // 이대로 도전하면 두 번 더 졌을 때 다시 묻는다 (진 횟수는 남긴다)
+      writeSave();
     }), 700);
   }
   function prepScreen(x) {
@@ -3052,7 +3063,7 @@
     R.diff = save.opts.diff || 'normal'; // 난이도는 작전을 시작할 때 정해진다
     suspendClear(); // 새 작전을 시작하면 이어하던 작전은 버린다
     G = R.newGame(st);
-    G.rs = (Math.random() * 4294967296) >>> 0; // 이 판의 난수 씨앗
+    G.seed0 = G.rs = (Math.random() * 4294967296) >>> 0; // 이 판의 난수 씨앗
     G.drill = save.drill || {};
     buildWorld();
     // 처음 합류하는 영웅은 일행 평균 레벨 근처에서 시작한다 (본작처럼 뒤늦게 합류해도 뒤처지지 않게)

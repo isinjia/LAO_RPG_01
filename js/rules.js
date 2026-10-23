@@ -13,7 +13,8 @@
   // ── 지도 ───────────────────────────────────────────────
   R.newGame = function (stage) {
     const map = stage.map.map((row) => row.split(''));
-    R.chK = R.CH_K[(stage.ch || 1) - 1] || R.CH_K[R.CH_K.length - 1]; // 장마다 적 능력치 배율 (아래)
+    R.ch = stage.ch || 1;
+    R.chK = R.CH_K[R.ch - 1] || R.CH_K[R.CH_K.length - 1]; // 장마다 적 능력치 배율 (아래). 어려움은 1장(배우는 장)·6장(긴 장)만 조금 덜어 준다 (chAdj)
     return { stage, map, w: map[0].length, h: map.length, units: [], turn: 1, side: 'p', wave: 0, drill: {} }; // drill: 병사 훈련 단계 (save.drill)
   };
   R.inB = (G, x, y) => x >= 0 && y >= 0 && x < G.w && y < G.h;
@@ -162,14 +163,14 @@
   R.DIFF = {
     easy: { k: 0.85, name: '쉬움', ai: { fear: 0.4, bar: -1.5, wake: 2, kill: 0, lead: 1.3, focus: 0 } },
     normal: { k: 1.07, name: '보통', ai: { fear: 0.1, bar: -4, wake: 1, kill: 2, lead: 1.6, focus: 0.5 } }, // 보통도 쓰러뜨릴 수 있는 영웅은 노린다 (아군을 잃을 긴장)
-    hard: { k: 1.15, name: '어려움', ai: { fear: 0.05, bar: -6, wake: 0, kill: 4, lead: 2.4, focus: 3 } }, // focus: 이미 다친 영웅을 몰아 치는 협공 // lead: 적이 아군 지휘관을 노리는 무게
+    hard: { k: 1.15, name: '어려움', chAdj: { 1: 0.93, 6: 0.97 }, ai: { fear: 0.05, bar: -6, wake: 0, kill: 4, lead: 2.4, focus: 3 } }, // focus: 이미 다친 영웅을 몰아 치는 협공 // lead: 적이 아군 지휘관을 노리는 무게
   };
   R.aiOf = () => (R.DIFF[R.diff] || R.DIFF.normal).ai;
   // 장마다 적 능력치 배율: 뒤로 갈수록 아군은 전직·병사 훈련이 쌓여 레벨보다 빨리 강해진다 (자동 대전에서 1장이 가장 어렵고 뒤는 쉬웠다)
   R.CH_K = [0.95, 1, 1.03, 1.04, 1.05, 1.06];
   R.chK = 1;
   R.diff = 'normal';
-  const diffK = () => (R.DIFF[R.diff] || R.DIFF.normal).k * R.chK;
+  const diffK = () => { const D0 = R.DIFF[R.diff] || R.DIFF.normal; return D0.k * R.chK * ((D0.chAdj && D0.chAdj[R.ch]) || 1); };
   R.heroStat = function (u, k) {
     if (u.side === 'p') {
       const t = u.form || u.def.tiers[u.tier];
@@ -208,6 +209,7 @@
   //  · 정비: 움직이지 않은 영웅이 이번 행동을 쉬면 병사 3명 보충 + 영웅 체력 10% (고전작의 치료 명령)
   //  · 마을·기지 칸: 차례 시작에 영웅·병사 회복 (기지는 병사를 더 보충)
   R.DRILL_K = 0.08; R.DRILL_MAX = 5; // 한 단계 +8% (최대 +40%): 무엇을 훈련할지 고르는 맛이 나게
+  R.TROOP_CAP = 0.7; // 한 교전에 잃는 병사 체력의 상한 (최대의 70%)
   R.DRILL_COST = [120, 320, 640, 1100, 1700]; // lv → lv+1 에 드는 부품 (한 병종 최대 3880). 본편 부품(약 1만 2천)으로 병종 셋쯤을 끝까지, 나머지는 중간까지
   R.drillCost = (lv) => R.DRILL_COST[Math.min(lv, R.DRILL_COST.length - 1)];
   R.parts = (stageIndex, win, kind) => Math.round((52 + 8.5 * stageIndex) * (win ? 1 : 0.3) * (kind === 'repeat' ? 0.6 : kind === 'side' ? 1.2 : 1));
@@ -374,10 +376,14 @@
     const sd = { hp: d.hp, thp: d.troop ? d.troop.hp : 0, x: d.x, y: d.y };
     const counter = dist <= d.rng || (dist <= 3 && R.trait(d, 'rangeCounter') > 0); // 대응 포격: 멀리서 맞아도 반격
     const N = R.ROUNDS, rounds = [];
+    // 한 번의 교전으로 아군 부대가 통째로 무너지지 않게: 병사는 한 교전에 최대 병사 체력의 70%까지만 잃고, 그동안은 영웅에게 넘치지 않는다
+    const floorOf = (u, st) => (u.side === 'p' && u.troop && st.thp > 0 ? Math.max(0, st.thp - u.troop.hpMax * R.TROOP_CAP) : 0); // 아군 부대만 (상성이 불리해도 한 번에 무너지지 않게)
+    const floorA = floorOf(a, sa), floorD = floorOf(d, sd);
+    const cap = (s, st, floor) => { if (floor > 0 && st.thp - s.toT < floor) { s.toT = Math.max(0, st.thp - floor); s.toH = 0; } return s; };
     let rel = 0;
     for (let i = 0; i < N && sa.hp > 0.5 && sd.hp > 0.5; i++) {
-      const s1 = strike(G, a, sa, d, sd, dist, 1 / N, rnd, true);
-      const s2 = counter ? strike(G, d, sd, a, sa, dist, 0.8 / N, rnd, false) : { toT: 0, toH: 0 };
+      const s1 = cap(strike(G, a, sa, d, sd, dist, 1 / N, rnd, true), sd, floorD);
+      const s2 = counter ? cap(strike(G, d, sd, a, sa, dist, 0.8 / N, rnd, false), sa, floorA) : { toT: 0, toH: 0 };
       if (!i) rel = s1.rel;
       sd.thp -= s1.toT; sd.hp -= s1.toH; sa.thp -= s2.toT; sa.hp -= s2.toH; // 동시에
       rounds.push({ dT: s1.toT, dH: s1.toH, aT: s2.toT, aH: s2.toH });
@@ -607,9 +613,11 @@
       for (const o of R.targetsFrom(G, u, t.x, t.y)) {
         const e = R.combat(G, u, o, t.x, t.y);
         let sc = ((e.dT + e.dH * 1.6) / R.totalMax(o)) * 10 * value(o) - ((e.aT + e.aH * 1.6) / myMax) * 10 * value(u) * (foeAI ? 0.4 : 0.7) + terrK - risk(t.x, t.y);
-        if (foeAI) sc += (e.rel > 0 ? 3 : e.rel < 0 ? -1.5 : 0) + (e.dDead ? R.aiOf().kill : 0) + R.aiOf().focus * (1 - R.total(o) / R.totalMax(o)); // 협공: 많이 다친 영웅일수록 몰려든다
-        else if (W0 === 'boss' && o.boss) sc += 6; // 아군 자동: 우두머리 작전은 우두머리를 친다 (반격이 아파도)
-        else if (tgts && (W0 === 'reach' || W0 === 'escape') && tgts.some(([x, y]) => x === o.x && y === o.y)) sc += 6; // 목표 칸을 막고 선 적은 치워 낸다 // 적: 상성으로 이기는 상대를 먼저 고른다 (어려움은 쓰러뜨릴 수 있는 상대를 더 노린다)
+        // 적: 상성으로 이기는 상대를 먼저, 쓰러뜨릴 수 있는 상대(kill)와 많이 다친 영웅(focus, 협공)에 무게를 더한다 (난이도마다 R.DIFF.ai)
+        if (foeAI) sc += (e.rel > 0 ? 3 : e.rel < 0 ? -1.5 : 0) + (e.dDead ? R.aiOf().kill : 0) + R.aiOf().focus * (1 - R.total(o) / R.totalMax(o));
+        // 아군 자동: 우두머리 작전은 우두머리를(반격이 아파도), 도달·탈출 작전은 목표 칸을 막고 선 적을 친다
+        else if (W0 === 'boss' && o.boss) sc += 6;
+        else if (tgts && (W0 === 'reach' || W0 === 'escape') && tgts.some(([x, y]) => x === o.x && y === o.y)) sc += 6;
         if (e.dDead) sc += 6 * value(o);
         if (e.aDead) sc -= 12 * value(u);
         consider(sc, { to: [t.x, t.y], act: 'attack', target: o });

@@ -1474,8 +1474,8 @@
       starts: [[9, 14], [10, 14], [9, 15], [10, 15], [8, 14], [11, 14], [9, 13], [10, 13]],
       waves: [
         { turn: 1, at: [9, 5], units: [C('g_rampart', 60), C('g_amg', 60), C('g_pupphead', 60), C('g_fallen', 60), C('g_seljuq', 60), C('g_rampart', 60), C('g_amg', 60), C('g_pupphead', 60)] }, // 처음부터 진격하는 무리라 둘을 뺐다
-        { turn: 3, at: [14, 2], units: [C('g_drone', 60), C('g_stinger', 60), C('g_gigantes', 60), C('g_pupphead', 60), C('g_seljuq', 60), C('g_drone', 60), C('g_stinger', 60), C('g_drone', 60), C('g_pupphead', 60)] },
-        { turn: 5, at: [5, 2], units: [C('g_gigantes', 60), C('g_amg', 60), C('g_seljuq', 60), C('g_rampart', 60), C('g_rampart', 60), C('g_pupphead', 60), C('g_seljuq', 60), C('g_rampart', 60), C('g_rampart', 60)] },
+        { turn: 3, at: [14, 2], units: [C('g_drone', 60), C('g_stinger', 60), C('g_gigantes', 60), C('g_pupphead', 60), C('g_seljuq', 60), C('g_drone', 60), C('g_stinger', 60), C('g_drone', 60)] },
+        { turn: 5, at: [5, 2], units: [C('g_gigantes', 60), C('g_amg', 60), C('g_seljuq', 60), C('g_rampart', 60), C('g_rampart', 60), C('g_pupphead', 60), C('g_seljuq', 60), C('g_rampart', 60)] },
       ],
     },
     {
