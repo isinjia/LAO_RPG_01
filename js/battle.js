@@ -203,7 +203,7 @@
       done = resolve;
       active = true;
       T = 0; tl = []; actors = []; fxs = []; tweens.length = 0;
-      timeK = 1; stopT = 0; CAM.sh = 0; stopLeft = 0.4;
+      timeK = 1; stopT = 0; CAM.sh = 0; stopLeft = 0.4; numStack.L = numStack.R = 0;
       const sp = opt.speed || 1;
       bgMat.map = null; bgMat.color.set(0x223044); bgMat.needsUpdate = true;
       const L = a.side === 'p' ? a : d, Rr = L === a ? d : a;
@@ -305,7 +305,8 @@
               const deep = ts === 'lance' && theirs != null ? theirs + dir * (0.3 + Math.random() * (f.hero ? 0.6 : 1.5)) : null;
               const x1 = deep != null ? deep : f.hero ? meetX - dir * (1.35 + (f.u.def.big ? 0.6 : 0)) : f.x + shift + (Math.random() - 0.5) * 0.7;
               if (!f.hero) { const y1 = f.y + (Math.random() - 0.5) * 0.45; tween(p, 'y', f.y, y1, t0, t0 + d / sp); f.yHome = f.y; }
-              if (f.hero && ts === 'lance') trail(f, t0, d / sp); // 기병 영웅: 파란 기운 잔상 // 지휘관은 제 병사들 바로 뒤 (병사가 총을 들고 남으면 홀로 맞붙는 선까지)
+              if (f.hero && ts === 'lance') trail(f, t0, d / sp); // 기병 영웅: 파란 기운 잔상
+              streak(f, t0, d / sp); // 돌진: 몸 뒤로 끌리는 하얀 바람 줄기 (움짤) // 지휘관은 제 병사들 바로 뒤 (병사가 총을 들고 남으면 홀로 맞붙는 선까지)
               const lag = f.hero ? (ts === 'lance' ? 0 : 0.1) : Math.random() * 0.14; // 병사마다 조금씩 어긋나게 도착
               if (f.hero && ts !== 'lance') { const y0 = p.y, lane = GROUND - 0.8; tween(p, 'y', y0, lane, t0, t0 + d / sp); f.yHome = y0; } // 지휘관은 대열 맨 앞(화면 쪽) 길로 나서 눈에 띄게
               if ((x1 - f.x) * dir > 0.05) { tween(p, 'x', f.x, x1, t0 + lag, t0 + lag + d / sp); f.x = x1; }
@@ -448,6 +449,25 @@
     if (Sx.hp <= 0.5 && heroF && heroF.alive) die(heroF);
   }
 
+  // 돌진 잔상: 달려드는 동안 몸 뒤로 길게 끌리는 하얀 바람 줄기 (움짤의 돌진처럼), 멈추면 사라진다
+  let streakTex = null;
+  function streak(f, t0, dur) {
+    if (!streakTex) {
+      const c = document.createElement('canvas'); c.width = 256; c.height = 64;
+      const g = c.getContext('2d');
+      const gx = g.createLinearGradient(0, 0, 256, 0); gx.addColorStop(0, 'rgba(255,255,255,0)'); gx.addColorStop(0.75, 'rgba(255,255,255,0.55)'); gx.addColorStop(1, 'rgba(255,255,255,0.9)');
+      g.fillStyle = gx;
+      for (let i = 0; i < 5; i++) { const y = 10 + i * 11, h = 3 + (i % 2) * 3; g.globalAlpha = 0.5 + 0.5 * Math.random(); g.fillRect(40 * Math.random(), y, 256, h); } // 바람 결 여러 줄
+      streakTex = new THREE.CanvasTexture(c);
+    }
+    const dir = f.side === 'L' ? 1 : -1, s = f.hero ? 1.4 : 1;
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(2.2 * s, 0.9 * s), new THREE.MeshBasicMaterial({ map: streakTex, transparent: true, opacity: 0, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending }));
+    m.position.set(-dir * 1.0 * s, (f.hero ? 0.9 : 0.55), 0); m.scale.x = dir; m.renderOrder = 95;
+    f.rig.g.add(m);
+    tween(null, null, 0, 0.8, t0, t0 + dur * 0.3, (v) => { m.material.opacity = v; });
+    tween(null, null, 0.8, 0, t0 + dur, t0 + dur + 0.2, (v) => { m.material.opacity = v; });
+    later(t0 + dur + 0.25, () => { f.rig.g.remove(m); m.geometry.dispose(); m.material.dispose(); });
+  }
   // 기병 영웅 돌격의 파란 기운 잔상 (움짤의 적 기병 영웅처럼): 몸을 감싼 빛이 돌격하는 동안 번졌다가 사라진다
   function trail(f, t0, dur) {
     const tex = window.KIT && KIT.tex('fx_spark');
@@ -568,10 +588,12 @@
     return [x0 + ((x - c.left) / (c.right - c.left)) * w, ((c.top - y) / (c.top - c.bottom)) * H];
   }
   // 원작 피해 숫자 글꼴: 적이 맞으면 노랑, 아군이 맞으면 주황, 상성 우위로 친 영웅 피해는 빨강(강한 일격)
+  const numStack = { L: 0, R: 0 }; // 편마다 숫자 기둥의 몇 번째 칸
   function dmgNum(f, n, kind) {
-    const p = f.rig.g.position, [sx, sy] = toScreen(p.x + (Math.random() - 0.5) * 0.3, p.y + lift(f) + (f.hero ? 2.3 : 1.4) + Math.random() * 0.3, f.side);
-    const px = (f.hero ? 58 : 40) * Math.min(1.4, Math.max(0.75, innerHeight / 800));
-    LOHUD.float(LOHUD.num(Math.max(1, n), kind, kind === 'cri' ? px * 1.2 : px), sx, sy, kind === 'cri' ? 'big' : '', el().querySelector('.fnums'), 750);
+    const k = numStack[f.side]++ % 7; // 새 숫자는 앞 숫자보다 한 칸 위에 (7칸 쌓이면 다시 아래부터)
+    const px = (f.hero ? 50 : 36) * Math.min(1.4, Math.max(0.75, innerHeight / 800));
+    const p = f.rig.g.position, [sx, sy] = toScreen(p.x + (Math.random() - 0.5) * 0.5, p.y + lift(f) + (f.hero ? 1.8 : 1.15), f.side);
+    LOHUD.float(LOHUD.num(Math.max(1, n), kind, kind === 'cri' ? px * 1.2 : px), sx + (Math.random() - 0.5) * px, sy - k * px * 0.55, 'stack' + (kind === 'cri' ? ' big' : ''), el().querySelector('.fnums'), 1300);
   }
   // 원작 글자 그림(반격 등)·재능 발동 판을 그 편 영웅 머리 위에
   function wordOver(list, k) {

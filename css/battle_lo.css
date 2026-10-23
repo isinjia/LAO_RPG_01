@@ -391,3 +391,7 @@
 #fight .frow > span small { display: none; }
 /* 적 초상(원작 모델로 그린 윗몸): 편 색 테두리 빛으로 아군 일러스트와 결을 맞춘다 */
 #fight .fcorner.sd .fimg { filter: drop-shadow(0 0 2px #ff4062) drop-shadow(0 0 10px rgba(255, 64, 98, .55)) drop-shadow(0 4px 14px rgba(0, 0, 0, .7)) !important; }
+
+/* 전투 장면 피해 숫자: 튀어나온 뒤 그 자리에 오래 머물며 천천히 떠오르다 사라진다 (숫자가 기둥처럼 쌓인다) */
+#fight .lofloat.stack { animation: lofloatStack 1.3s cubic-bezier(.2, .8, .3, 1) forwards; }
+@keyframes lofloatStack { 0% { opacity: 0; transform: translate(-50%, -60%) scale(1.7); } 10% { opacity: 1; transform: translate(-50%, -100%) scale(.95); } 75% { opacity: 1; transform: translate(-50%, -135%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -150%) scale(1); } }
