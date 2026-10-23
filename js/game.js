@@ -2420,7 +2420,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.77';
+  const GAME_VERSION = '1.80';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2430,7 +2430,7 @@
     screen(`<div class="title2">
       <div class="tbg"></div><div class="tlight"></div><div class="tmotes">${motes}</div><div class="tvig"></div>
       <div class="tcenter"><img class="tlogo" src="assets/title/logo.webp" alt=""><div class="tsub">개발자 B의 내 마음대로 LAST ORIGIN</div></div>
-      <div class="ttouch" id="tTouch">화면을 터치해 주세요</div>
+      <button class="tquickopt" id="tQuickOpt">옵션</button><div class="ttouch" id="tTouch">화면을 터치해 주세요</div>
       <div class="tmenu hidden" id="tMenu">
         ${sus ? `<button id="tResume">작전 이어하기 <small>${sus.idx} · ${sus.turn}턴</small></button>` : ''}
         ${has ? '<button id="tCont">이어하기</button>' : ''}
@@ -2459,7 +2459,7 @@
       else start();
     };
     $('tHelp').onclick = () => { AU.play('lo_click', 0.7); help(); };
-    $('tOpt').onclick = () => { AU.play('lo_click', 0.7); options(); };
+    $('tOpt').onclick = $('tQuickOpt').onclick = () => { AU.play('lo_click', 0.7); options(); };
   }
   // ── 월드맵 (창세기전식): 원작 3D 지역 지도 위 지점을 눌러 부대가 길을 따라 이동한다 ──
   // 지점 = 본편 작전 장소 8곳 + 마을(등대 아래 비밀기지). 아직 깨지 않은 본편 지점에 가면 이야기 전투,
@@ -2473,6 +2473,7 @@
     { name: '패스파인더 기지', sub: '지하 수로 옆 드론 기지', look: 'sewer', desc: '지하 수로 옆 동굴, 에이다의 패스파인더 드론이 드나드는 지하 기지. 빛나는 결정이 길을 밝힌다.' },
     { name: '건너편 역사 거점', sub: '언더와처 시설 입구', look: 'station', desc: '지하 철도를 달려 닿은 건너편 역사 승강장. 언더와처 시설 금고문 앞에서 서버 구역으로 들어가기 전 숨을 고른다.' },
     { name: '라비아타의 은신처', sub: '홀로 버티던 곳', look: 'snow', desc: '눈 덮인 산속, 라비아타가 홀로 몸을 숨기고 버티던 은신처. 이제는 모닥불이 꺼지지 않는 오르카의 쉼터다.' },
+    { name: '새 주둔지', sub: '해군 시설 군항', look: 'port', desc: '함대를 찾아 닿은 해군 시설 부두. 헬기장과 격납고를 고쳐 쓴 오르카의 새 주둔지로, 바다 너머에서 별의 아이를 기다린다.' },
   ];
   const TOWN = { unlock: 3 }; // 포츈(병사 훈련)이 기지에 오는 때
   const townOf = (c = curCh()) => TOWNS[c] || TOWNS[TOWNS.length - 1];

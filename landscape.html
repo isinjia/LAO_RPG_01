@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>오르카 전기</title>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000}
+iframe{position:absolute;border:0;display:block;left:0;top:0;width:100%;height:100%;background:#000}
+@media(orientation:portrait){iframe{width:100dvh;height:100vw;transform-origin:0 0;transform:translateX(100vw) rotate(90deg)}}
+</style>
+</head>
+<body>
+<iframe id="game" title="오르카 전기" allow="autoplay; fullscreen" allowfullscreen></iframe>
+<script>
+document.getElementById('game').src='index.html'+location.search+location.hash;
+</script>
+</body>
+</html>

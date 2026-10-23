@@ -7,6 +7,12 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>오르카 전기</title>
+<script>
+// 세로로 든 휴대폰도 가로 크기의 독립 화면에서 실행하여 배치와 터치 좌표를 함께 회전한다.
+if (window === window.top) {
+  location.replace('landscape.html' + location.search + location.hash);
+}
+</script>
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="css/game.css">
 <link rel="stylesheet" href="css/lo.css">
