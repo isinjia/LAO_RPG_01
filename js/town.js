@@ -184,7 +184,7 @@
         D('town/t4_rock', 23, 7, 2, 0.8), D('town/t4_stal', 0, 12, 2, 1.5, { flip: 1 }), D('tiles/crystal1', 0, 9, 1, 1.4, { lit: [90, '120,240,230'] }), D('town/t4_rock', 21, 9, 2, 0.6),
         D('town/t4_ore', 18, 16, 2, 0.9), D('tiles/crystal1', 3, 16, 1, 1.3, { lit: [90, '120,240,230'] }),
         D('tiles/console', 18, 11, 2, 1.4, { lit: [90, '120,220,255'] }), D('tiles/gas', 20, 14, 2, 1.4), D('tiles/crate0', 11, 14, 1, 0.9), D('tiles/crate1', 10, 14, 1, 1.0), D('tiles/bags0', 15, 15, 2, 0.75),
-        D('town/t0_lamp', 7, 8, 1, 2.1, { lit: [120, '200,235,255'] }), D('town/t0_lamp', 10, 8, 1, 2.1, { lit: [120, '200,235,255'] }),
+        D('tiles/crystal0', 7, 8, 1, 1.4, { lit: [120, '90,230,220'] }), D('tiles/crystal1', 10, 8, 1, 1.2, { lit: [110, '120,240,230'] }),
         DEC('town/d_crack2', 4, 10, 4, 0.85), DEC('town/d_crack2', 17, 15, 3, 0.75), DEC('town/d_grate', 12, 13, 1.5),
         EXIT(12, 17), ...NPC([12, 11], [10, 11], [20, 10]), CON(14, 15),
       ],
@@ -209,7 +209,7 @@
         D('town/t5_core', 8, 12, 2, 1.6, { lit: [130, '150,220,255'] }), D('town/t5_core', 16, 12, 2, 1.6, { lit: [130, '150,220,255'] }),
         D('town/t5_pillar', 1, 13, 1, 4.0), D('town/t5_pillar', 24, 13, 1, 4.0), D('town/t5_pillar', 9, 16, 1, 3.6), D('town/t5_pillar', 16, 16, 1, 3.6),
         D('tiles/console', 6, 15, 2, 1.4, { lit: [90, '120,220,255'] }), D('tiles/tank0', 21, 15, 1, 1.9, { lit: [90, '90,255,170'] }), D('tiles/tank1', 3, 15, 1, 1.9, { lit: [90, '90,255,170'] }),
-        D('town/b_bench', 10, 9, 2, 0.9), D('town/b_bench', 14, 9, 2, 0.9), D('tiles/crate0', 22, 8, 1, 0.9), D('tiles/crate1', 23, 8, 1, 1.0), D('tiles/sign', 1, 9, 1, 1.4),
+        D('town/b_bench', 10, 9, 2, 0.9), D('town/b_bench', 14, 9, 2, 0.9), D('tiles/crate0', 22, 8, 1, 0.9), D('tiles/crate1', 23, 8, 1, 1.0), D('tiles/crate1', 1, 9, 1, 1.0),
         DEC('town/d_grate', 5, 13, 1.5), DEC('town/d_grate', 18, 13, 1.5), DEC('town/d_grate', 10, 16, 1.5), DEC('town/d_crack', 19, 15, 2, 0.45),
         EXIT(12, 17), ...NPC([12, 11], [7, 10], [18, 13]), CON(14, 15),
       ],
@@ -720,7 +720,7 @@
     for (const e of emit) if (Math.random() < dt * (e.fire ? 9 : 22)) fx.push({ k: 'spark', x: e.x + rnd(-10, 10), y: e.y, vx: rnd(-30, 30) * (e.fire ? 0.5 : 1.6), vy: rnd(-110, -40) * (e.fire ? 0.8 : 1.3), life: rnd(0.6, 1.4), t: 0, g: e.fire ? 10 : 160 });
     for (const e of emit) if (!e.fire && Math.random() < dt * 2.2) fx.push({ k: 'smoke', x: e.x + rnd(-8, 8), y: e.y - 20, vx: rnd(4, 14), vy: rnd(-26, -16), life: rnd(2.2, 3.4), t: 0, r: rnd(10, 16) });
     // 동굴 물방울: 천장에서 수로로
-    if (map.fx === 'drip' && Math.random() < dt * 2.5) fx.push({ k: 'drop', x: camX + Math.random() * vw, y: 0, vy: 0, to: rnd(4.1, 5.9) * TILE, t: 0, life: 9 });
+    if (map.fx === 'drip' && !map.indoor && Math.random() < dt * 2.5) fx.push({ k: 'drop', x: camX + Math.random() * vw, y: 0, vy: 0, to: rnd(4.1, 5.9) * TILE, t: 0, life: 9 });
     for (const p of fx) if (p.life) {
       p.t += dt;
       if (p.k === 'spark' || p.k === 'smoke') { p.x += p.vx * dt; p.y += p.vy * dt; if (p.g) p.vy += p.g * dt; }
