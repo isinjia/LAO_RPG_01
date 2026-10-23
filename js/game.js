@@ -2408,7 +2408,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.74';
+  const GAME_VERSION = '1.75';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2461,6 +2461,7 @@
     { name: '패스파인더 기지', sub: '지하 수로 옆 드론 기지', look: 'sewer', desc: '지하 수로 옆 동굴, 에이다의 패스파인더 드론이 드나드는 지하 기지. 빛나는 결정이 길을 밝힌다.' },
     { name: '건너편 역사 거점', sub: '언더와처 시설 입구', look: 'station', desc: '지하 철도를 달려 닿은 건너편 역사 승강장. 언더와처 시설 금고문 앞에서 서버 구역으로 들어가기 전 숨을 고른다.' },
     { name: '라비아타의 은신처', sub: '홀로 버티던 곳', look: 'snow', desc: '눈 덮인 산속, 라비아타가 홀로 몸을 숨기고 버티던 은신처. 이제는 모닥불이 꺼지지 않는 오르카의 쉼터다.' },
+    { name: '새 주둔지', sub: '해군 시설 군항', look: 'port', desc: '함대를 찾아 닿은 해군 시설 부두. 헬기장과 격납고를 고쳐 쓴 오르카의 새 주둔지로, 바다 너머에서 별의 아이를 기다린다.' },
   ];
   const TOWN = { unlock: 3 }; // 포츈(병사 훈련)이 기지에 오는 때
   const townOf = (c = curCh()) => TOWNS[c] || TOWNS[TOWNS.length - 1];

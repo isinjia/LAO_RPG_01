@@ -248,6 +248,31 @@
         cafe: Object.assign(ROOM('산장 쉼터', 'r_cafe3_0', 268, ['#8f877a', '#ece7de'], [D('town/r_cafe4_2', 8, 2, 3, 1.2), D('town/r_cafe5_1', 3, 4, 3, 1.1), D('town/r_cafe4_1', 8, 5, 3, 1.1), D('town/r_cafe4_3', 1, 2, 1, 1.6)]), { tint: '#ffe2bf' }),
       },
     },
+    // 7장 새 주둔지: 해군 시설 군항. 뒤로 먼 바다 수평선, 부두 끝 노란 경고 띠, 헬기장과 격납고, 물고기 그림 컨테이너 식당
+    port: {
+      rows: grid(26, 18, '.', (R) => {
+        R(0, 0, 26, 6, 'b'); R(0, 0, 1, 18, '#'); R(25, 0, 1, 18, '#'); R(0, 17, 26, 1, '#');
+        R(3, 11, 14, 5, 's'); R(1, 10, 24, 1, '_'); R(12, 10, 2, 8, '_'); R(20, 11, 1, 1, '_');
+      }),
+      floor: { base: 'tiles/concrete', zone: 'tiles/factory', zoneA: 0.16, path: 'town/g_asph', wall: 'tiles/concrete', back: '#2d6f8f', crisp: 1, lane: 'rgba(230,180,40,.8)' },
+      sky: ['#3f8fd0', '#8fd0ea'], fx: 'dust', edgeLine: 6, start: [12, 16],
+      back: [{ art: 'town/t7_sea', by: 6.05, h: 6.4, repeat: 1, mirror: 1 }],
+      objects: [
+        BLD('cmd', 'town/t4_shop', 1, 7, 9, 3, 6, { plinth: 0 }), BLD('shop', 'town/t5_shop', 15, 7, 7, 3, 18, { plinth: 0, glow: '255,120,110' }), BLD('cafe', 'town/t2_cafe', 18, 12, 5, 3, 20, { plinth: 0 }),
+        D('town/t3_radar', 23, 7, 1, 2.6), D('town/t0_mgnest', 10, 7, 3, 1.1), D('town/t3_mg', 11, 7, 1, 1.2, { block: 0 }),
+        D('tiles/crate1', 3, 12, 1, 1.0), D('tiles/crate0', 4, 12, 1, 0.9), D('tiles/crate1', 3, 13, 1, 1.0), D('tiles/barrel', 15, 12, 1, 1.1), D('tiles/barrel', 16, 12, 1, 1.0),
+        D('tiles/console', 8, 14, 2, 1.4, { lit: [90, '120,220,255'] }), D('tiles/gas', 1, 15, 2, 1.4), D('tiles/bags1', 15, 15, 2, 0.8), D('town/b_bench', 5, 15, 2, 0.9),
+        D('town/t0_lamp', 2, 9, 1, 2.1, { lit: [120, '255,222,160'] }), D('town/t0_lamp', 22, 9, 1, 2.1, { lit: [120, '255,222,160'] }), D('town/t0_lamp', 10, 13, 1, 2.1, { lit: [120, '255,222,160'] }),
+        D('tiles/wreck2', 23, 15, 2, 1.4), D('tiles/sign', 24, 12, 1, 1.4),
+        DEC('town/d_grate', 7, 10, 1.4), DEC('town/d_grate', 17, 10, 1.4), DEC('town/d_crack', 5, 13, 2, 0.45),
+        EXIT(12, 17), ...NPC([12, 12], [8, 12], [17, 14]), CON(14, 15),
+      ],
+      rooms: {
+        cmd: ROOM('주둔지 지휘소', 'r_dis3_0', 345, ['#2f4f4a', '#7fa69c'], []),
+        shop: ROOM('함대 통신실', 'r_secret', 425, ['#3c5a5c', '#88a9ab'], []),
+        cafe: ROOM('부두 식당', 'r_cafe4_0', 232, ['#8f877a', '#ece7de'], []),
+      },
+    },
   };
   const ROOMS0 = { cmd: MAPS.cmd, shop: MAPS.shop, cafe: MAPS.cafe }; // 1장 방 (원래 그대로)
   const ROOMNAME0 = { cmd: '지휘실', shop: '정비실', cafe: '휴게실' };
@@ -262,7 +287,7 @@
     r_factory: { fl: 525, h: 750, back: '#c3ccd8' }, r_lab: { fl: 350, h: 445 }, r_arch: { fl: 425, h: 552, blk: [[0, 0.16]] }, r_secret: { fl: 425, h: 556 },
     r_ware: { fl: 430, h: 552, blk: [[0, 0.2], [0.82, 1]] }, r_bio: { fl: 415, h: 498 },
     r_cafe1_0: { fl: 232, h: 340 }, r_cafe2_0: { fl: 232, h: 340 }, r_cafe3_0: { fl: 232, h: 340 },
-    r_cafe4_0: { fl: 232, h: 340 }, r_cafe5_0: { fl: 232, h: 340 },
+    r_cafe4_0: { fl: 232, h: 340 }, r_cafe5_0: { fl: 232, h: 340 }, r_dis3_0: { fl: 345, h: 512, blk: [[0.68, 1]] },
   };
   // 사람 자리 (가로 비율, 바닥 첫 줄에서 몇 줄 아래)
   const STAGE_NPC = { cmd: [['johanna', 0.6, 0], ['marie', 0.3, 1], ['labiata', 0.76, 1]], shop: [['fortune', 0.5, 0], ['pupphead', 0.26, 1], ['coco', 0.72, 1]], cafe: [['amy', 0.22, 1], ['scathy', 0.8, 1]] };
@@ -283,7 +308,7 @@
     return { name, rows, indoor: 1, stage: { bg: bgPath, fl: st.fl, h: st.h, sc, top0, floorH, off, back: st.back }, bg: bgPath, tint, spawn: [mx, H - 2], objects };
   }
   // 방 안 분위기 (장별): 어둠, 어둠 빛깔, 사령관 둘레 등불, 떠다니는 것
-  const ROOMATMO = { works: { dark: 0.12, darkC: '30,18,8', torch: 1, fx: 'dust' }, camp: { dark: 0.14, darkC: '30,22,10', torch: 1, fx: 'dust' }, sewer: { dark: 0.5, darkC: '4,12,16', torch: 1, fx: 'drip', tint: '#b4c6cc' }, station: { dark: 0.25, darkC: '6,12,22', torch: 1, fx: 'dust' }, snow: { dark: 0.28, darkC: '40,22,8', torch: 1, fx: 'dust', tint: '#ffd6a8' } };
+  const ROOMATMO = { works: { dark: 0.12, darkC: '30,18,8', torch: 1, fx: 'dust' }, camp: { dark: 0.14, darkC: '30,22,10', torch: 1, fx: 'dust' }, sewer: { dark: 0.5, darkC: '4,12,16', torch: 1, fx: 'drip', tint: '#b4c6cc' }, station: { dark: 0.25, darkC: '6,12,22', torch: 1, fx: 'dust' }, port: { dark: 0.1, darkC: '10,20,30', torch: 1, fx: 'dust' }, snow: { dark: 0.28, darkC: '40,22,8', torch: 1, fx: 'dust', tint: '#ffd6a8' } };
   const ROOMBG0 = { cmd: 'town/r_train_0', shop: 'town/r_dis2_0', cafe: 'town/r_cafe4_0' }; // 1장
   function baseFor(look, name) {
     const m = TOWNMAPS[look] || TOWNMAPS.coast, R = m.rooms;
