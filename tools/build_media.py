@@ -17,6 +17,7 @@ BGM = {  # 게임 이름 -> 원작 파일
     'lo_boss2': '06 BGM_Battle_Boss_02', 'lo_boss3': '31 BGM_Battle_Boss_03',  # 6지역 대본의 Prefab_Sound 가 트는 곡
     'lo_battle4': '22 BGM_Battle_04', 'lo_battle5': '30 BGM_Battle_05',  # 4~6지역 작전 전투곡
     'lo_town': '11 BGM_Talk_05', 'lo_sad': '75 BGM_Sad_Story_01',  # 마을, 패배 결과
+    'lo_march': '54 BGM_Stronghold_March',  # 지역 지도
 }
 SFX = {
     'lo_battle_start': 'UI/battle_start.wav', 'lo_win': 'UI/battle_win.wav', 'lo_clear': 'UI/stage_clear.wav',

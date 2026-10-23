@@ -2340,7 +2340,7 @@
   let loginVoiced = false;
   function stageSelect() {
     leaveMap();
-    AU.bgm('lo_lobby');
+    AU.bgm('lo_march'); // 지역 지도: 원작 거점 행진곡 (출격 준비는 지휘실 곡)
     if (!loginVoiced) { loginVoiced = true; wait(600).then(() => AU.voice('constantia_Login')); } // 처음 지휘실에 들어오면 원작 접속 음성
     const ch = curCh(), CH = CHAPTERS[ch];
     save.chapter = ch;
