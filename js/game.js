@@ -1566,7 +1566,7 @@
   // ── 행동 실행 (아군·적 공용) ─────────────────────────────
   async function attack(a, d) {
     faceTo(a, d.x); faceTo(d, a.x);
-    const res = R.combat(G, a, d, a.x, a.y, Math.random);
+    const res = R.combat(G, a, d, a.x, a.y, grand);
     if (save.opts.fight) {
       await Promise.all([a, d].flatMap((u) => [u.rig, u.troop && u.troop.rig]).filter((r) => r && !SD.template(r)).map((r) => SD.prepare(r))); // 처음 보는 리그도 전투 장면 전에
       LOHUD.target(null);
@@ -1707,7 +1707,7 @@
     const travel = skillFx(u, s, area, tx, ty);
     await wait(350 + travel);
     const deaths = [];
-    for (const r of R.skillEffect(G, u, sk, tx, ty, Math.random)) {
+    for (const r of R.skillEffect(G, u, sk, tx, ty, grand)) {
       if (r.toT != null) {
         R.apply(r.u, r.toT, r.toH);
         u.dealt = (u.dealt || 0) + r.toT + r.toH;
@@ -1850,6 +1850,13 @@
   function suspendLoad() {
     try { const d = JSON.parse(localStorage.getItem(SUSPEND_KEY) || 'null'); return d && d.v === 1 && (d.stage || (D.STAGES[d.si] && D.STAGES[d.si].idx === d.idx)) ? d : null; } catch (e) { return null; }
   }
+  // 판의 난수 (피해 ±10%): 판에 씨앗을 두고 저장·되돌리기 때 함께 되살린다 → 되돌려서 같은 행동을 하면 같은 결과 (다시 굴려 고르지 못하게)
+  function grand() {
+    if (!G) return Math.random();
+    let t = (G.rs = ((G.rs >>> 0) + 0x6d2b79f5) >>> 0); // mulberry32
+    t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  }
   // 판 상태 한 장 (작전 중 저장·한 수 되돌리기가 같이 쓴다). 본편이 아닌 작전(소탕전·의뢰)은 작전 자체도 함께 담는다
   function snapData() {
     if (!G || G.ended) return null;
@@ -1862,7 +1869,7 @@
       hp: u.hp, thp: u.troop ? u.troop.hp : 0, hpMax: u.hpMax, thpMax: u.troop ? u.troop.hpMax : 0, alive: u.alive, escaped: !!u.escaped, cd: u.cd, buffs: u.buffs, slow: u.slow || 0, slowNext: u.slowNext || 0, dealt: u.dealt || 0,
       ai: u.ai, home: u.home, boss: !!u.boss, awake: !!u.awake, wave: u.wave, bornT: u.bornT, cmd: u.cmd ? G.units.indexOf(u.cmd) : -1, acted: u.side === 'p' && !!u.acted,
     }));
-    const d = { v: 1, si, idx: G.stage.idx, diff: R.diff, turn: G.turn, wave: G.wave, spawned: [...(G.spawned || [])], ev: [...(G.evDone || [])].map((e) => ev.indexOf(e)).filter((i) => i >= 0), units, start: stageStart, heroes: G.stage.heroes, free: G.stage.free, lock: G.stage.lock, stage };
+    const d = { v: 1, si, idx: G.stage.idx, diff: R.diff, turn: G.turn, wave: G.wave, spawned: [...(G.spawned || [])], ev: [...(G.evDone || [])].map((e) => ev.indexOf(e)).filter((i) => i >= 0), units, rs: G.rs >>> 0, start: stageStart, heroes: G.stage.heroes, free: G.stage.free, lock: G.stage.lock, stage };
     return d;
   }
   function suspendSave(turnStart) {
@@ -1893,6 +1900,7 @@
     }
     d.units.forEach((s, i) => { if (s.cmd >= 0) G.units[i].cmd = G.units[s.cmd]; });
     G.turn = d.turn; G.wave = d.wave; G.spawned = new Set(d.spawned); G.side = 'p';
+    if (d.rs != null) G.rs = d.rs;
     const ev = (window.BATTLE_EVENTS || {})[G.stage.idx] || [];
     G.evDone = new Set(d.ev.map((i) => ev[i]).filter(Boolean));
   }
@@ -2226,7 +2234,7 @@
       r.onchange = () => { writeSave(); if (r.dataset.k === 'sfxV') AU.play('lo_click', 1); if (r.dataset.k === 'voiceV') AU.voice('constantia_SortiePick'); };
     });
   }
-  // 작전 도중 난이도 바꾸기: 적의 최대 체력을 새 배율로 다시 셈하고 남은 체력은 비율대로 (되돌리기 기록은 비운다)
+  // 작전 도중 난이도 바꾸기: 적의 최대 체력을 새 배율로 다시 셈하고 남은 체력은 비율대로 (되돌리기 기록은 남기고, 되살릴 때 applySnap 이 비율대로 맞춘다)
   function diffNow() {
     if (!G || G.ended || mode !== 'map') return;
     R.diff = save.opts.diff || 'normal';
@@ -2243,7 +2251,7 @@
   function goalInfo() {
     const st = G.stage;
     modal(`<h3>${st.idx} ${st.title}</h3><p>승리 조건: <b>${st.goal}</b></p><p>패배 조건: ${st.lose}</p>
-      <p style="color:#9aa6c4">적 무리를 모두 쓰러뜨리면 다음 무리가 나타납니다 (전체 ${st.waves.length}무리).</p><div class="opts"><button class="gold" data-a="ok">확인</button></div>`);
+      <p style="color:#9aa6c4">${st.waves.length > 1 ? `증원은 ${st.waves.slice(1).map((w) => w.turn + '턴').join(' · ')}에 나타나고, 그 전에 지도 위 적을 모두 쓰러뜨리면 곧바로 앞당겨 나옵니다 (전체 ${st.waves.length}무리).` : '증원이 없는 작전입니다.'}</p><div class="opts"><button class="gold" data-a="ok">확인</button></div>`);
   }
   // 첫 작전 안내: 규칙 전체 대신 꼭 알아야 할 다섯 가지만. 자세한 규칙은 메뉴의 도움말(H)
   function firstTips(cb) {
@@ -2271,7 +2279,7 @@
       <p><b>피해 흔들림</b> · 공격 예상 창의 숫자는 기댓값이고, 실제 피해는 그 ±10% 안에서 흔들립니다.</p>
       <p><b>원거리</b> · 사격병은 사거리 2. 두 칸에서 쏘면 근접 부대는 반격하지 못합니다. 원거리 병종이 붙어서 싸우면 피해가 30%로 줄어듭니다.</p>
       <p><b>적의 움직임</b> · 적은 무리마다 지휘관이 있고, 부대가 지휘관 둘레로 함께 진격합니다. 무리 중 하나라도 아군과 가까워지거나 한 차례가 지나면 무리 전체가 움직이고, 상성으로 이기는 상대를 먼저 노립니다. 우두머리를 지키는 호위는 우두머리 곁을 떠나지 않습니다. 「위험」 단추로 적이 닿는 범위를 확인하세요. 증원은 정해진 턴에 나타나고, 그 전에 지도 위 적을 모두 쓰러뜨리면 남은 증원이 곧바로 앞당겨 나옵니다 (증원까지 모두 쓰러뜨리면 승리).</p>
-      <p><b>난이도</b> · 옵션에서 고릅니다 (작전 도중에 바꾸면 그 자리에서 적의 체력·능력치가 바뀝니다). 쉬움: 적 능력치 85%, 적이 조심스럽고 늦게 움직임 · 보통: 105% · 어려움: 115%, 적이 처음부터 진격하고 쓰러뜨릴 수 있는 영웅을 집요하게 노림.</p>
+      <p><b>난이도</b> · 옵션에서 고릅니다 (작전 도중에 바꾸면 그 자리에서 적의 체력·능력치가 바뀝니다). 쉬움: 적 능력치 85%, 적이 조심스럽고 늦게 움직임 · 보통: 107% · 어려움: 115%, 적이 처음부터 진격하고 쓰러뜨릴 수 있는 영웅을 집요하게 노림.</p>
       <div class="osec">성장 · 진행</div>
       <p><b>경험치</b> · 전투가 끝나면 참가한 영웅 전원이 같은 양을 받고, 가장 많이 친 영웅(MVP)은 20%를 더 받습니다.</p>
       <p><b>저장</b> · 작전 도중에도 행동이 끝날 때마다 저장되어 타이틀의 「작전 이어하기」로 돌아옵니다. 이번 차례 안에서는 U(또는 메뉴)로 한 수씩 되돌리거나, 메뉴의 「이번 차례 다시」로 차례 처음으로 돌아갈 수 있습니다.</p>
@@ -2327,14 +2335,14 @@
   function title() {
     leaveMap();
     AU.bgm('lo_title');
-    const has = save.clear > 0 || Object.values(save.heroes).some((h) => h.lv > 1);
+    const has = save.clear > 0 || Object.values(save.heroes).some((h) => h.lv > 1), sus = suspendLoad();
     const motes = Array.from({ length: 14 }, (_, i) => `<i style="left:${(i * 53) % 100}%;animation-delay:${-(i * 1.7) % 9}s;animation-duration:${8 + (i % 5)}s;--s:${0.4 + (i % 4) * 0.25}"></i>`).join('');
     screen(`<div class="title2">
       <div class="tbg"></div><div class="tlight"></div><div class="tmotes">${motes}</div><div class="tvig"></div>
       <div class="tcenter"><img class="tlogo" src="assets/title/logo.webp" alt=""><div class="tsub">개발자 B의 내 마음대로 LAST ORIGIN</div></div>
       <div class="ttouch" id="tTouch">화면을 터치해 주세요</div>
       <div class="tmenu hidden" id="tMenu">
-        ${suspendLoad() ? `<button id="tResume">작전 이어하기 <small>${suspendLoad().idx} · ${suspendLoad().turn}턴</small></button>` : ''}
+        ${sus ? `<button id="tResume">작전 이어하기 <small>${sus.idx} · ${sus.turn}턴</small></button>` : ''}
         ${has ? '<button id="tCont">이어하기</button>' : ''}
         <button id="tNew">처음부터</button>
         <button id="tOpt">옵션</button>
@@ -3044,6 +3052,7 @@
     R.diff = save.opts.diff || 'normal'; // 난이도는 작전을 시작할 때 정해진다
     suspendClear(); // 새 작전을 시작하면 이어하던 작전은 버린다
     G = R.newGame(st);
+    G.rs = (Math.random() * 4294967296) >>> 0; // 이 판의 난수 씨앗
     G.drill = save.drill || {};
     buildWorld();
     // 처음 합류하는 영웅은 일행 평균 레벨 근처에서 시작한다 (본작처럼 뒤늦게 합류해도 뒤처지지 않게)
@@ -3386,7 +3395,7 @@
     // 시험용 훅
     window.GAME = {
       get G() { return G; }, get mode() { return mode; }, get ui() { return ui; }, save, R, D,
-      launch, prep, setAuto, resumeSuspend, startStage, endTurn, onTap, fitCamera, views, camera, cam, stageSelect, title, enterTown, fightBgOf, attack, sideNew, giverOf,
+      launch, prep, setAuto, resumeSuspend, grand, startStage, endTurn, onTap, fitCamera, views, camera, cam, stageSelect, title, enterTown, fightBgOf, attack, sideNew, giverOf,
       // 창이 숨겨져 rAF가 멈춘 상태에서 시험할 때: 시간을 직접 진행하고 한 장 찍어 서버에 저장
       step(sec) { for (let i = 0; i < Math.round(sec * 30); i++) step(1 / 30); },
       // 시간을 진행하면서 약속(Promise)들도 풀리게 한다 (숨은 창에서도 타이머 제한 없이)
