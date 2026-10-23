@@ -1869,6 +1869,7 @@
     const d = snapData();
     if (!d) { suspendClear(); return; }
     if (turnStart) G.turnSnap = d; // 「이번 차례 다시」는 차례가 시작될 때의 판으로
+    else if (G.turnSnap && G.turnSnap.turn === d.turn) d.turnStart = G.turnSnap; // 이어한 뒤에도 차례 처음으로 돌아갈 수 있게 함께 담는다
     try { localStorage.setItem(SUSPEND_KEY, JSON.stringify(d)); } catch (e) { /* 저장 불가 환경 */ }
   }
   // 한 수 되돌리기: 영웅을 고를 때 판을 찍어 두고, 그 영웅이 행동을 마치면 되돌리기 목록에 쌓는다 (이번 차례 안에서만, 최대 10수)
@@ -1917,7 +1918,7 @@
     G.drill = save.drill || {};
     buildWorld();
     applySnap(d);
-    G.turnSnap = d;
+    G.turnSnap = d.turnStart || d;
     stageStart = d.start || { lv: {} };
     const rigs = new Set();
     G.units.forEach((u) => { rigs.add(u.rig); if (u.troop) rigs.add(u.troop.rig); });
@@ -2215,10 +2216,10 @@
       <button data-a="fight">전투 장면: <b>${onoff(o.fight)}</b></button>
       <button data-a="fast">빠른 진행: <b>${onoff(o.fast)}</b></button>
       <button data-a="autoEnd">모두 행동하면 자동 턴 종료: <b>${onoff(o.autoEnd)}</b></button>
-      <button data-a="diff">난이도: <b>${R.DIFF[o.diff || 'normal'].name}</b> <small>(적 능력치 ${Math.round(R.DIFF[o.diff || 'normal'].k * 100)}% · 다음 작전부터)</small></button>
+      <button data-a="diff">난이도: <b>${R.DIFF[o.diff || 'normal'].name}</b> <small>(적 능력치 ${Math.round(R.DIFF[o.diff || 'normal'].k * 100)}% · ${G && !G.ended && mode === 'map' ? '지금 바로' : '다음 작전부터'})</small></button>
       <button data-a="close" class="gold">닫기</button></div>`, (a) => {
       if (['sound', 'blip', 'fight', 'fast', 'autoEnd'].includes(a)) { o[a] = !o[a]; if (a === 'fast') delete o.spd; }
-      else if (a === 'diff') { const l = Object.keys(R.DIFF); o.diff = l[(l.indexOf(o.diff || 'normal') + 1) % l.length]; }
+      else if (a === 'diff') { const l = Object.keys(R.DIFF); o.diff = l[(l.indexOf(o.diff || 'normal') + 1) % l.length]; diffNow(); }
       else if (a === 'textSpd') o.textSpd = (o.textSpd + 1) % 3;
       else { writeSave(); if (back) back(); return; }
       writeSave(); applyOpts(); options(back);
@@ -2228,6 +2229,20 @@
       r.oninput = () => { o[r.dataset.k] = +r.value; r.nextElementSibling.textContent = r.value; applyOpts(); };
       r.onchange = () => { writeSave(); if (r.dataset.k === 'sfxV') AU.play('lo_click', 1); if (r.dataset.k === 'voiceV') AU.voice('constantia_SortiePick'); };
     });
+  }
+  // 작전 도중 난이도 바꾸기: 적의 최대 체력을 새 배율로 다시 셈하고 남은 체력은 비율대로 (되돌리기 기록은 비운다)
+  function diffNow() {
+    if (!G || G.ended || mode !== 'map') return;
+    R.diff = save.opts.diff || 'normal';
+    for (const u of G.units) {
+      if (u.side !== 'e') continue;
+      const rH = u.hpMax ? u.hp / u.hpMax : 1, rT = u.troop && u.troop.hpMax ? u.troop.hp / u.troop.hpMax : 1;
+      u.hpMax = Math.round(R.heroStat(u, 'hp')); u.hp = u.hpMax * rH;
+      if (u.troop) { u.troop.hpMax = Math.round(R.troopStat(u, 'hp')); u.troop.hp = u.troop.hpMax * rT; }
+      refreshView(u);
+    }
+    G.undo = []; G.pendingSnap = null; G.turnSnap = null;
+    updateDanger(); setTop(); suspendSave();
   }
   function goalInfo() {
     const st = G.stage;
@@ -2257,9 +2272,10 @@
       <div class="osec">전투</div>
       <p><b>병종 상성</b> · 공격하는 병종이 이기는 상대를 칠 때 피해가 늘고, 거꾸로면 그만큼 줄어듭니다. 병사는 병사의 병종, 영웅은 영웅의 병종으로 따집니다.</p>
       <table class="keys">${relRows}</table>
+      <p><b>피해 흔들림</b> · 공격 예상 창의 숫자는 기댓값이고, 실제 피해는 그 ±10% 안에서 흔들립니다.</p>
       <p><b>원거리</b> · 사격병은 사거리 2. 두 칸에서 쏘면 근접 부대는 반격하지 못합니다. 원거리 병종이 붙어서 싸우면 피해가 30%로 줄어듭니다.</p>
       <p><b>적의 움직임</b> · 적은 무리마다 지휘관이 있고, 부대가 지휘관 둘레로 함께 진격합니다. 무리 중 하나라도 아군과 가까워지거나 한 차례가 지나면 무리 전체가 움직이고, 상성으로 이기는 상대를 먼저 노립니다. 우두머리를 지키는 호위는 우두머리 곁을 떠나지 않습니다. 「위험」 단추로 적이 닿는 범위를 확인하세요. 증원은 정해진 턴에 나타나며, 그 전에 적을 모두 쓰러뜨리면 승리합니다.</p>
-      <p><b>난이도</b> · 옵션에서 고릅니다 (다음 작전부터). 쉬움: 적 능력치 85%, 적이 조심스럽고 늦게 움직임 · 보통: 105% · 어려움: 115%, 적이 처음부터 진격하고 쓰러뜨릴 수 있는 영웅을 집요하게 노림.</p>
+      <p><b>난이도</b> · 옵션에서 고릅니다 (작전 도중에 바꾸면 그 자리에서 적의 체력·능력치가 바뀝니다). 쉬움: 적 능력치 85%, 적이 조심스럽고 늦게 움직임 · 보통: 105% · 어려움: 115%, 적이 처음부터 진격하고 쓰러뜨릴 수 있는 영웅을 집요하게 노림.</p>
       <div class="osec">성장 · 진행</div>
       <p><b>경험치</b> · 전투가 끝나면 참가한 영웅 전원이 같은 양을 받고, 가장 많이 친 영웅(MVP)은 20%를 더 받습니다.</p>
       <p><b>저장</b> · 작전 도중에도 행동이 끝날 때마다 저장되어 타이틀의 「작전 이어하기」로 돌아옵니다. 이번 차례 안에서는 U(또는 메뉴)로 한 수씩 되돌리거나, 메뉴의 「이번 차례 다시」로 차례 처음으로 돌아갈 수 있습니다.</p>
@@ -2673,13 +2689,14 @@
     const rows = MY_TROOPS.map((k) => {
       const t = D.TROOPS[k], lv = drillLv(k), max = lv >= R.DRILL_MAX, cost = R.drillCost(lv), u = users(k);
       return `<div class="drow ${k === focus ? 'on' : ''}"><img src="${IMG[t.icon]}" alt=""><span class="dinfo"><b>${t.name}</b>${kindTag(t.kind)}
-        <small>훈련 ${lv} / ${R.DRILL_MAX} · 체력·공격·방어 +${Math.round(lv * R.DRILL_K * 100)}%${u.length ? ` · ${u.join(', ')}` : ' · 아직 쓰는 영웅 없음'}</small>
+        <small>훈련 ${lv} / ${R.DRILL_MAX} · 체력·공격·방어 +${Math.round(lv * R.DRILL_K * 100)}%${max ? '' : ` → <b>+${Math.round((lv + 1) * R.DRILL_K * 100)}%</b>`}${u.length ? ` · ${u.join(', ')}` : ' · 아직 쓰는 영웅 없음'}</small>
         <em class="dpips">${Array.from({ length: R.DRILL_MAX }, (_, i) => `<i class="${i < lv ? 'on' : ''}"></i>`).join('')}</em></span>
         <button class="dbtn ${max ? '' : 'gold'}" data-a="d:${k}" ${max || save.parts < cost ? 'disabled' : ''}>${max ? '최대' : `<b>훈련</b><small><img src="${PARTS_ICON}" alt="">${cost}</small>`}</button></div>`;
     }).join('');
     modal(`<h3>병사 훈련 <span class="dparts"><img src="${PARTS_ICON}" alt="">부품 <b>${save.parts || 0}</b></span></h3>
       <p class="dnote">병사는 따로 사지 않습니다. 출격할 때마다 10명이 가득 찬 채로 나가고, 전투가 끝나면 다시 채워집니다.
-      전투에서 얻은 <b>부품</b>으로 병종을 훈련하면 그 병사를 쓰는 모든 영웅의 병사가 강해집니다 (한 단계 +${Math.round(R.DRILL_K * 100)}%).</p>
+      전투에서 얻은 <b>부품</b>으로 병종을 훈련하면 그 병사를 쓰는 모든 영웅의 병사가 강해집니다 (한 단계 +${Math.round(R.DRILL_K * 100)}%).
+      단계마다 비용이 크게 오르므로 본편 부품으로는 <b>병종 셋쯤만 끝까지</b> 올릴 수 있습니다. 주력 영웅들이 함께 쓰는 병종에 몰아 주는 것이 좋습니다.</p>
       <div class="dlist">${rows}</div><div class="opts"><button class="gold" data-a="ok">닫기</button></div>`, (a) => {
       if (a && a.startsWith('d:')) {
         const k = a.slice(2), lv = drillLv(k), cost = R.drillCost(lv);
@@ -2830,7 +2847,7 @@
     const lock = b.heroes.filter((id) => id === 'constantia' || speaks(id) || !(save.joined || []).includes(id));
     return Object.assign({}, b, { free: MAX_SORTIE, lock, heroes: [...lock, ...b.heroes.filter((id) => !lock.includes(id))] });
   }
-  // 출격 준비: 같은 본편 작전에서 두 번 넘게 졌으면 난이도를 한 단계 낮출지 묻는다 (바로 이번 출격부터)
+  // 출격 준비: 같은 본편 작전에서 두 번 졌으면 난이도를 한 단계 낮출지 묻는다 (바로 이번 출격부터)
   function prep(x) {
     prepScreen(x);
     const st = stageOf(x), n = (save.loss || {})[st.idx] || 0, l = Object.keys(R.DIFF), i = l.indexOf(save.opts.diff || 'normal');

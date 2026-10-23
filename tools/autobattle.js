@@ -124,7 +124,8 @@ for (let run = 0; run < RUNS; run++) {
       const used = [...new Set(party.map((id) => CL.cur(id, save[id]).troops[0]))];
       for (;;) {
         if (process.env.NODRILL) break;
-        const k = used.filter((t) => (drill[t] || 0) < R.DRILL_MAX).sort((a, b) => (drill[a] || 0) - (drill[b] || 0))[0];
+        const cnt = (t) => party.filter((id) => CL.cur(id, save[id]).troops[0] === t).length;
+        const k = used.filter((t) => (drill[t] || 0) < R.DRILL_MAX).sort((a, b) => (process.env.FOCUS ? cnt(b) - cnt(a) || (drill[b] || 0) - (drill[a] || 0) : 0) || (drill[a] || 0) - (drill[b] || 0))[0]; // FOCUS=1: 많이 쓰는 병종에 몰아 준다
         if (!k || parts < R.drillCost(drill[k] || 0)) break;
         parts -= R.drillCost(drill[k] || 0); drill[k] = (drill[k] || 0) + 1;
       }
