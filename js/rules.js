@@ -13,7 +13,7 @@
   // ── 지도 ───────────────────────────────────────────────
   R.newGame = function (stage) {
     const map = stage.map.map((row) => row.split(''));
-    R.ch = stage.ch || 1;
+    R.ch = stage.ch || 1; R.stageIdx = stage.idx;
     R.chK = R.CH_K[R.ch - 1] || R.CH_K[R.CH_K.length - 1]; // 장마다 적 능력치 배율 (아래). 어려움은 1장(배우는 장)·6장(긴 장)만 조금 덜어 준다 (chAdj)
     return { stage, map, w: map[0].length, h: map.length, units: [], turn: 1, side: 'p', wave: 0, drill: {} }; // drill: 병사 훈련 단계 (save.drill)
   };
@@ -163,14 +163,15 @@
   R.DIFF = {
     easy: { k: 0.85, name: '쉬움', ai: { fear: 0.4, bar: -1.5, wake: 2, kill: 0, lead: 1.3, focus: 0 } },
     normal: { k: 1.07, name: '보통', ai: { fear: 0.1, bar: -4, wake: 1, kill: 2, lead: 1.6, focus: 0.5 } }, // 보통도 쓰러뜨릴 수 있는 영웅은 노린다 (아군을 잃을 긴장)
-    hard: { k: 1.15, name: '어려움', chAdj: { 1: 0.93, 6: 0.97 }, ai: { fear: 0.05, bar: -6, wake: 0, kill: 4, lead: 2.4, focus: 3 } }, // focus: 이미 다친 영웅을 몰아 치는 협공 // lead: 적이 아군 지휘관을 노리는 무게
+    hard: { k: 1.15, name: '어려움', chAdj: { 1: 0.93, 6: 0.97 }, stageAdj: { '5-7': 0.85 }, ai: { fear: 0.05, bar: -6, wake: 0, kill: 4, lead: 2.4, focus: 3 } }, // focus: 이미 다친 영웅을 몰아 치는 협공 // lead: 적이 아군 지휘관을 노리는 무게
   };
   R.aiOf = () => (R.DIFF[R.diff] || R.DIFF.normal).ai;
   // 장마다 적 능력치 배율: 뒤로 갈수록 아군은 전직·병사 훈련이 쌓여 레벨보다 빨리 강해진다 (자동 대전에서 1장이 가장 어렵고 뒤는 쉬웠다)
   R.CH_K = [0.95, 1, 1.03, 1.04, 1.05, 1.06];
   R.chK = 1;
   R.diff = 'normal';
-  const diffK = () => { const D0 = R.DIFF[R.diff] || R.DIFF.normal; return D0.k * R.chK * ((D0.chAdj && D0.chAdj[R.ch]) || 1); };
+  const diffK = () => { const D0 = R.DIFF[R.diff] || R.DIFF.normal; return D0.k * R.chK * ((D0.chAdj && D0.chAdj[R.ch]) || 1) * ((D0.stageAdj && D0.stageAdj[R.stageIdx]) || 1); };
+  R.diffK = diffK; // 지금 작전의 실제 적 능력치 배율 (옵션 창이 그대로 보여 준다)
   R.heroStat = function (u, k) {
     if (u.side === 'p') {
       const t = u.form || u.def.tiers[u.tier];
