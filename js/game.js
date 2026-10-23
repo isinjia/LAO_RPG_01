@@ -1229,7 +1229,7 @@
       // 옮길 칸이 적 여럿의 공격이 닿는 곳이면 미리 알린다 (지휘관·다친 영웅은 한 기만 닿아도)
       if (OV.path && ui.sel) {
         const th = ui.threat || (ui.threat = R.threatMap(G, 'p')), c = th[t[1] * G.w + t[0]], u = ui.sel;
-        const risky = c >= 3 || (c >= 1 && (u.lead || u.hp < u.hpMax * 0.5));
+        const risky = c >= 3 || (u.lead && c >= 2) || (c >= 1 && u.hp < u.hpMax * 0.5); // 지휘관은 2기, 체력 절반 아래 영웅은 1기부터
         setHint(risky ? `⚠ 이 칸은 적 ${c}기의 공격이 닿습니다${u.lead ? ` — ${u.name}${(() => { const c = u.name.charCodeAt(u.name.length - 1) - 0xac00; return c >= 0 && c < 11172 ? (c % 28 ? '이' : '가') : '이(가)'; })()} 쓰러지면 패배` : c >= 3 ? ' — 집중 공격 위험(3기 이상)' : ' — 영웅이 다쳐 있음'}` : ui.moveHint);
         $('hint').classList.toggle('warn', risky);
       } else if (ui.moveHint && $('hint').classList.contains('warn')) setHint(ui.moveHint); // 갈 수 없는 칸으로 옮기면 경고를 거둔다
@@ -2316,7 +2316,7 @@
       <p><b>① 움직이기</b> · 영웅을 누르면 파란 칸(이동)과 빨간 칸(공격)이 보입니다. 빨간 칸의 적을 누르면 다가가 공격하기 전에 <b>예상 피해</b>를 보여 줍니다.</p>
       <p><b>② 병사가 먼저</b> · 한 칸은 영웅 1명 + 병사 10명입니다. 병사가 먼저 맞고, 영웅이 쓰러지면 퇴각합니다. 지휘관 <b>콘스탄챠</b>가 쓰러지면 패배합니다.</p>
       <p><b>③ 상성</b> · 소총병 ▶ 중장병 ▶ 기동병 ▶ 소총병, 사격병 ▶ 공중병. 이기는 상대를 골라 치세요.</p>
-      <p><b>④ 위험 범위</b> · 오른쪽 위 「위험」을 누르면 적이 다음 차례에 닿는 칸이 보입니다. 영웅을 옮길 칸이 적 여럿(지휘관·다친 영웅은 한 기)의 공격이 닿는 곳이면 위쪽 안내가 붉게 바뀌어 미리 알려 줍니다. 적은 지휘관을 따라 함께 진격해 옵니다.</p>
+      <p><b>④ 위험 범위</b> · 오른쪽 위 「위험」을 누르면 적이 다음 차례에 닿는 칸이 보입니다. 영웅을 옮길 칸이 적 3기 이상(지휘관은 2기, 체력 절반 아래 영웅은 1기)의 공격이 닿는 곳이면 위쪽 안내가 붉게 바뀌어 미리 알려 줍니다. 적은 지휘관을 따라 함께 진격해 옵니다.</p>
       <p><b>⑤ 정비</b> · 움직이지 않고 「정비」를 고르면 병사와 체력이 회복됩니다.</p>
       <div class="opts"><button class="gold" data-a="ok">작전 시작</button><button data-a="more">규칙 자세히</button></div>`, (a) => (a === 'more' ? help(cb) : cb && cb()));
   }
@@ -2407,7 +2407,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.66';
+  const GAME_VERSION = '1.67';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -3028,7 +3028,7 @@
       return `<div class="pd-head"><b>${h.full}</b><span>${t.cls}</span></div>${sortie}
         <div class="pd-lv"><span>Lv.<b>${s.lv}</b></span><div class="pd-exp"><i style="width:${Math.min(100, s.exp)}%"></i></div>${next ? `<small>Lv.${next}에 전직</small>` : '<small>최종 전직</small>'}</div>
         <button class="pd-cc ${CL.canChange(id, s) ? 'ready' : ''}" id="pCC"><b>전직</b><small>${CL.canChange(id, s) ? '전직할 수 있습니다' : next ? `Lv.${next}부터 · 전직 나무 보기` : '최종 전직 완료 · 전직 나무 보기'}</small></button>
-        ${s.lv >= R.PERK_LV ? `<button class="pd-cc ${s.perk ? '' : 'ready'}" id="pPerk"><b>각성</b><small>${s.perk ? `${[s.perk, s.lv >= R.PERK2_LV ? s.perk2 : null].filter(Boolean).map((p) => R.PERKS[p].name).join(' · ')}${s.lv >= R.PERK2_LV && !s.perk2 ? ' · 둘째 각성을 고를 수 있습니다' : ' (바꾸기)'}` : '각성을 고를 수 있습니다'}</small></button>` : ''}
+        ${s.lv >= R.PERK_LV ? `<button class="pd-cc ${s.perk ? '' : 'ready'}" id="pPerk"><b>각성</b><small>${s.perk ? `${[s.perk, s.lv >= R.PERK2_LV ? s.perk2 : null].filter(Boolean).map((p, i) => `${i ? '둘째' : '첫째'} ${R.PERKS[p].name}`).join(' · ')}${s.lv >= R.PERK2_LV && !s.perk2 ? ' · 둘째 각성을 고를 수 있습니다' : ' (바꾸기)'}` : '각성을 고를 수 있습니다'}</small></button>` : ''}
         <div class="pd-stats"><div><label>병종</label>${kindTag(t.kind)}</div><div><label>체력</label><b>${hp}</b></div><div><label>공격</label><b>${at}</b></div>
           <div><label>방어</label><b>${df}</b></div><div><label>이동</label><b>${CL.stats(id, s).mov}</b></div><div><label>사거리</label><b>${t.rng}</b></div></div>
         <div class="wi-sub">병사 배속 <small>출격마다 10명 가득 · 공격받으면 병사가 먼저 피해</small></div><div class="pd-troops">${troops}</div>
