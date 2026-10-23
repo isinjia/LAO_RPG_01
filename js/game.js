@@ -2399,7 +2399,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.46';
+  const GAME_VERSION = '1.47';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -3306,7 +3306,10 @@
             <div class="rstage"><span>${st.idx}</span>${st.title}<small>${turn}턴</small></div></div>
           <div class="rsub">${win ? '참가 영웅 전원이 경험치를 얻었습니다 (MVP +20% · 적보다 레벨이 높으면 줄어듦)' : '얻은 경험치는 유지됩니다'}</div>
           ${parts ? `<div class="rparts"><img src="${PARTS_ICON}" alt=""><span>부품 <b>+${parts}</b></span><small>보유 ${save.parts} · 병사 훈련에 씁니다</small></div>` : ''}
-          ${(G0last.bonus || []).length ? `<div class="rbonus">${G0last.bonus.map((x) => `<span class="${x.ok ? 'ok' : 'no'}">${x.ok ? '★' : '☆'} ${x.name}${x.first ? ' <b>NEW</b>' : ''}</span>`).join('')}<small>달성한 추가 목표마다 부품 +25%</small></div>` : ''}
+          ${(G0last.bonus || []).length ? `<div class="rbonus">${G0last.bonus.map((x) => `<span class="${x.ok ? 'ok' : 'no'}">${x.ok ? '★' : '☆'} ${x.name}${x.first ? ' <b>NEW</b>' : ''}</span>`).join('')}<small>달성한 추가 목표마다 부품 +25%${(() => { // 놓친 목표가 있으면 도움이 되는 전술·각성을 한 줄로 (다시 하기에서 노리게)
+            const miss = G0last.bonus.filter((x) => !x.ok).map((x) => ({ t: '턴 안에는 신속 전개·돌격 명령, 공세·기동 각성', k: '격파는 방어 진형(버티는 작전), 공세 각성', n: '퇴각 없이는 방어 진형, 수비·생존 각성' })[x.k]).filter(Boolean);
+            return miss.length ? ` · 다시 노릴 때: ${miss.join(' / ')} (「본편 다시 하기」)` : '';
+          })()}</small></div>` : ''}
           ${notice ? `<div class="rnotice">${notice}<button id="rRoster">부대 현황에서 바로 고르기</button></div>` : ''}
           <div class="rlist">${list}</div>
           ${(() => { // 작전 요약: 목록 아래 빈자리에
