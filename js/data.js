@@ -514,7 +514,7 @@
       ],
     },
     {
-      id: 7, idx: '1-7', title: '교살 밧줄', bgm: 'lo_battle2', goal: '철충 전멸', lose: '콘스탄챠 퇴각 / 18턴 초과', win: 'all', turnLimit: 18,
+      id: 7, idx: '1-7', title: '교살 밧줄', bgm: 'lo_battle2', goal: '철충 전멸', lose: '콘스탄챠 퇴각 / 20턴 초과', win: 'all', turnLimit: 20,
       heroes: ['constantia', 'griffon', 'johanna', 'lrl', 'pupphead', 'fallen'],
       map: [
         '.......rr.f.h..f..',
@@ -799,7 +799,7 @@
     },
     // ── 본작 3지역 「호문쿨루스」: 마리가 본 비밀 실험장(81번 실험장)에서 철충이 숨기는 것을 쫓는다 ──
     {
-      id: 17, ch: 3, idx: '3-1', title: '마리가 본 것', bgm: 'lo_battle1', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      id: 17, ch: 3, idx: '3-1', title: '마리가 본 것', bgm: 'lo_battle3', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
       heroes: ['constantia', 'marie', 'griffon', 'johanna', 'lrl', 'fallen'],
       map: [
         'mmmm..fff.cc.mmm',
@@ -825,7 +825,7 @@
       ],
     },
     {
-      id: 18, ch: 3, idx: '3-2', title: '에이다 통신', bgm: 'lo_battle1', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      id: 18, ch: 3, idx: '3-2', title: '에이다 통신', bgm: 'lo_battle3', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
       heroes: ['constantia', 'marie', 'griffon', 'amy', 'coco', 'lrl'],
       map: [
         'mmm##cccccc##mmm',
@@ -911,7 +911,7 @@
       ],
     },
     {
-      id: 21, ch: 3, idx: '3-5', title: '조력자', bgm: 'lo_battle1', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      id: 21, ch: 3, idx: '3-5', title: '조력자', bgm: 'lo_battle3', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
       heroes: ['constantia', 'griffon', 'marie', 'amy', 'coco', 'fallen'],
       map: [
         '.s...cs..s....c..c',
@@ -970,7 +970,7 @@
       ],
     },
     {
-      id: 23, ch: 3, idx: '3-7', title: '철충이 찾는 것', bgm: 'lo_battle1', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      id: 23, ch: 3, idx: '3-7', title: '철충이 찾는 것', bgm: 'lo_battle3', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
       heroes: ['constantia', 'marie', 'griffon', 'amy', 'coco', 'lrl'],
       map: [
         '....................',
@@ -1031,7 +1031,7 @@
     },
     // ── 본작 4지역 「깊고 깊은 미궁」: 트릭스터를 쫓아 지하수로와 숨겨진 시설, 지하 철도로 들어간다 ──
     {
-      id: 25, ch: 4, idx: '4-1', title: '숨겨진 굴', bgm: 'lo_battle1', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      id: 25, ch: 4, idx: '4-1', title: '숨겨진 굴', bgm: 'lo_battle4', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
       heroes: ['constantia', 'marie', 'griffon', 'amy', 'johanna', 'fallen'],
       map: [
         'mmmmmm.cc.mmmmmm',
@@ -1118,7 +1118,7 @@
       ],
     },
     {
-      id: 28, ch: 4, idx: '4-4', title: '차단 해소', bgm: 'lo_battle1', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      id: 28, ch: 4, idx: '4-4', title: '차단 해소', bgm: 'lo_battle4', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
       heroes: ['constantia', 'marie', 'griffon', 'amy', 'coco', 'lrl'],
       map: [
         '.hh...............',
@@ -1141,13 +1141,13 @@
       ],
       starts: [[13, 12], [14, 12], [13, 13], [14, 13], [15, 12], [15, 13], [12, 12], [13, 11]],
       waves: [
-        { turn: 1, at: [4, 9], units: [C('wasp', 43), C('scout', 43), C('cannon', 43), C('scout', 43), C('heavyscout', 43), C('wasp', 43), C('scout', 43)] },
+        { turn: 1, at: [4, 9], units: [C('sniper', 43), C('scout', 43), C('cannon', 43), C('scout', 43), C('heavyscout', 43), C('scout', 43), C('scout', 43)] }, // 첫 무리의 공중병이 벽을 넘어 격납고에 먼저 내려앉아 너무 가혹해 땅 병종으로
         { turn: 3, at: [8, 2], units: [C('scout', 43), C('cannon', 43), C('scout', 43), C('heavyscout', 43), C('scout', 43), C('cannon', 43), C('scout', 43), C('scout', 43)] },
         { turn: 5, at: [0, 2], units: [C('wasp', 43), C('sniper', 43), C('centurion', 44), C('detector', 45), C('wasp', 43), C('sniper', 43), C('wasp', 43), C('wasp', 43), C('goltarion', 44)] },
       ],
     },
     {
-      id: 29, ch: 4, idx: '4-5', title: '안전 수송', bgm: 'lo_battle1', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      id: 29, ch: 4, idx: '4-5', title: '안전 수송', bgm: 'lo_battle4', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
       heroes: ['constantia', 'marie', 'griffon', 'coco', 'johanna', 'fallen'],
       map: [
         '.mm...ff....ff....',
@@ -1208,7 +1208,7 @@
       ],
     },
     {
-      id: 31, ch: 4, idx: '4-7', title: '지하 특급', bgm: 'lo_battle1', night: true, goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      id: 31, ch: 4, idx: '4-7', title: '지하 특급', bgm: 'lo_battle4', night: true, goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
       heroes: ['constantia', 'marie', 'griffon', 'amy', 'coco', 'lrl'],
       // 지하 철도 승강장: 선로 두 줄과 승강장
       map: [
@@ -1241,7 +1241,7 @@
       ],
     },
     {
-      id: 32, ch: 4, idx: '4-8', title: '철길 위에서', bgm: 'lo_boss1', goal: '광폭화 레이더 격파', lose: '콘스탄챠 퇴각', win: 'boss',
+      id: 32, ch: 4, idx: '4-8', title: '철길 위에서', bgm: 'lo_boss2', goal: '광폭화 레이더 격파', lose: '콘스탄챠 퇴각', win: 'boss',
       heroes: ['constantia', 'marie', 'griffon', 'amy', 'coco', 'lrl'],
       // 달리는 열차 위: 좁고 긴 선로 통로를 따라 철충이 쫓아온다
       map: [
@@ -1274,7 +1274,7 @@
     },
     // ── 본작 5지역 「기억 보관소」: 열차가 닿은 비밀 시설. 침입자를 쏘는 AGS와 언더왓쳐를 뚫고 서버를 해킹한다 ──
     {
-      id: 33, ch: 5, idx: '5-1', title: '역사 건너편', bgm: 'lo_battle1', night: true, goal: '적 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      id: 33, ch: 5, idx: '5-1', title: '역사 건너편', bgm: 'lo_battle5', night: true, goal: '적 전멸', lose: '콘스탄챠 퇴각', win: 'all',
       heroes: ['constantia', 'marie', 'griffon', 'amy', 'coco', 'lrl'],
       map: [
         '###cccc##cccc###',
@@ -1358,7 +1358,7 @@
       ],
     },
     {
-      id: 36, ch: 5, idx: '5-4', title: '옆 길 데이터', bgm: 'lo_battle1', night: true, goal: '트릭스터 격파', lose: '콘스탄챠 퇴각', win: 'boss',
+      id: 36, ch: 5, idx: '5-4', title: '옆 길 데이터', bgm: 'lo_battle5', night: true, goal: '트릭스터 격파', lose: '콘스탄챠 퇴각', win: 'boss',
       heroes: ['constantia', 'marie', 'griffon', 'amy', 'lrl', 'fallen'],
       map: [
         '##################',
@@ -1386,7 +1386,7 @@
       ],
     },
     {
-      id: 37, ch: 5, idx: '5-5', title: '전문가가 필요해!', bgm: 'lo_battle1', goal: '적 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      id: 37, ch: 5, idx: '5-5', title: '전문가가 필요해!', bgm: 'lo_battle5', goal: '적 전멸', lose: '콘스탄챠 퇴각', win: 'all',
       heroes: ['constantia', 'marie', 'griffon', 'amy', 'coco', 'lrl'],
       map: [
         '.mm.f.fff....h.mm.',
@@ -1479,7 +1479,7 @@
       ],
     },
     {
-      id: 40, ch: 5, idx: '5-8', title: '깊고 깊은 감시자', bgm: 'lo_boss1', night: true, goal: '언더왓쳐 격파', lose: '콘스탄챠 퇴각', win: 'boss',
+      id: 40, ch: 5, idx: '5-8', title: '깊고 깊은 감시자', bgm: 'lo_boss2', night: true, goal: '언더왓쳐 격파', lose: '콘스탄챠 퇴각', win: 'boss',
       heroes: ['constantia', 'marie', 'griffon', 'scathy', 'coco', 'lrl'],
       // 심연의 방: 맨 위에 버틴 언더왓쳐 몸통과 팔·발전기·센서
       map: [
@@ -1509,7 +1509,7 @@
     },
     // ── 본작 6지역 「두 개의 묘」: 봉인된 연구실과 가상 현실 속 에바의 기억, 라비아타와의 재회 ──
     {
-      id: 41, ch: 6, idx: '6-1', title: '봉인된 연구실', bgm: 'lo_battle2', night: true, goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      id: 41, ch: 6, idx: '6-1', title: '봉인된 연구실', bgm: 'lo_battle4', night: true, goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
       heroes: ['constantia', 'marie', 'griffon', 'scathy', 'coco', 'amy'],
       map: [
         '################',
@@ -1536,7 +1536,7 @@
       ],
     },
     {
-      id: 42, ch: 6, idx: '6-2', title: '아미나 존스의 마지막 금고', bgm: 'lo_battle1', goal: '사념체 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      id: 42, ch: 6, idx: '6-2', title: '아미나 존스의 마지막 금고', bgm: 'lo_battle3', goal: '사념체 전멸', lose: '콘스탄챠 퇴각', win: 'all',
       heroes: ['constantia', 'griffon', 'scathy', 'lrl', 'amy', 'coco'],
       // 가상 현실 공간: 반듯한 격자 위 데이터 기둥
       map: [
@@ -1565,7 +1565,7 @@
       ],
     },
     {
-      id: 43, ch: 6, idx: '6-3', title: '얼음 무덤', bgm: 'lo_battle2', night: true, goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      id: 43, ch: 6, idx: '6-3', title: '얼음 무덤', bgm: 'lo_battle4', night: true, goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
       heroes: ['constantia', 'marie', 'griffon', 'scathy', 'coco', 'amy'],
       // 영하의 냉동 보관 시설: 냉동 캡슐 줄 사이
       map: [
@@ -1591,13 +1591,13 @@
       waves: [
         { turn: 1, at: [8, 7], units: [C('scarab', 71), C('quarter', 71), C('legionsp', 72), C('chick', 72), C('scarab', 71)] },
         { turn: 2, at: [14, 4], units: [C('shielderx', 72), C('legionsp', 72), C('phalanx', 72), C('scarab', 72), C('chick', 71), C('shielderx', 72), C('phalanx', 72)] },
-        { turn: 4, at: [3, 4], units: [C('chick', 72), C('quarter', 72), C('phalanx', 73), C('detector', 72), C('chick', 72), C('legionsp', 72), C('chick', 72), C('quarter', 72)] },
+        { turn: 4, at: [3, 4], units: [C('chick', 72), C('quarter', 72), C('phalanx', 73), C('detector', 72), C('chick', 72), C('legionsp', 72), C('quarter', 72)] },
         { turn: 6, at: [8, 1], units: [C('legion', 72), C('quarter', 73), C('tortoise', 73), C('shielderx', 72), C('chick', 73), C('legion', 72)] },
-        { turn: 8, at: [9, 1], units: [C('phalanx', 73), C('detector', 73), C('sniper', 74), C('legionsp', 73), C('tortoise', 73), C('quarter', 73), C('phalanx', 73), C('quarter', 73), C('ironprince', 73)] },
+        { turn: 8, at: [9, 1], units: [C('phalanx', 73), C('detector', 73), C('sniper', 74), C('legionsp', 73), C('tortoise', 73), C('quarter', 73), C('ironprince', 73)] }, // 좁은 통로에서 너무 늘어져 둘을 뺐다
       ],
     },
     {
-      id: 44, ch: 6, idx: '6-4', title: '에바의 기억 : 첫 번째', bgm: 'lo_battle1', goal: '사념체 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      id: 44, ch: 6, idx: '6-4', title: '에바의 기억 : 첫 번째', bgm: 'lo_battle3', goal: '사념체 전멸', lose: '콘스탄챠 퇴각', win: 'all',
       heroes: ['constantia', 'griffon', 'scathy', 'lrl', 'amy', 'coco'],
       map: [
         'c..c..h......h.cc.',
@@ -1626,7 +1626,7 @@
       ],
     },
     {
-      id: 45, ch: 6, idx: '6-5', title: '에바의 기억 : 아미나', bgm: 'lo_battle1', goal: '사념체 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      id: 45, ch: 6, idx: '6-5', title: '에바의 기억 : 아미나', bgm: 'lo_battle3', goal: '사념체 전멸', lose: '콘스탄챠 퇴각', win: 'all',
       heroes: ['constantia', 'griffon', 'scathy', 'lrl', 'amy', 'coco'],
       map: [
         '.cc....rrrr....cc.',
@@ -1656,7 +1656,7 @@
       ],
     },
     {
-      id: 46, ch: 6, idx: '6-6', title: '에바의 기억 : 인간의 창조', bgm: 'lo_battle2', goal: '사념체 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      id: 46, ch: 6, idx: '6-6', title: '에바의 기억 : 인간의 창조', bgm: 'lo_battle4', goal: '사념체 전멸', lose: '콘스탄챠 퇴각', win: 'all',
       heroes: ['constantia', 'griffon', 'scathy', 'lrl', 'amy', 'coco'],
       map: [
         'c..cc..cs.c..cc..c',
@@ -1686,7 +1686,7 @@
       ],
     },
     {
-      id: 47, ch: 6, idx: '6-7', title: '라비아타의 은신처', bgm: 'lo_battle1', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
+      id: 47, ch: 6, idx: '6-7', title: '라비아타의 은신처', bgm: 'lo_battle3', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all',
       heroes: ['constantia', 'marie', 'griffon', 'scathy', 'coco', 'amy'],
       // 별장 뒤편 숲의 은신처
       map: [
@@ -1719,7 +1719,7 @@
       ],
     },
     {
-      id: 48, ch: 6, idx: '6-8', title: '새로운 육체', bgm: 'lo_boss1', night: true, goal: '익스큐셔너 격파', lose: '콘스탄챠 퇴각', win: 'boss',
+      id: 48, ch: 6, idx: '6-8', title: '새로운 육체', bgm: 'lo_boss3', night: true, goal: '익스큐셔너 격파', lose: '콘스탄챠 퇴각', win: 'boss',
       heroes: ['constantia', 'labiata', 'marie', 'griffon', 'scathy', 'coco'],
       // 생체 재건 설비: 실험체가 쏟아지고 익스큐셔너가 두 칼날을 거느리고 내려온다
       map: [

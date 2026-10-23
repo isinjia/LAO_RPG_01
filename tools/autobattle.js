@@ -5,6 +5,8 @@ global.window = global;
 require('../js/data.js'); require('../js/stagemaps.js'); require('../js/rules.js'); require('../js/classes.js');
 for (const f of ['story', 'story_ch02', 'story_ch03', 'story_ch04', 'story_ch05', 'story_ch06']) require('../js/' + f + '.js');
 const D = DATA, R = RULES, CL = CLASSES;
+if (process.env.DIFF) R.diff = process.env.DIFF; // 난이도: easy · normal · hard
+if (process.env.DIFFK) R.DIFF[R.diff].k = +process.env.DIFFK; // 배율을 바꿔 시험
 const RUNS = +process.argv[2] || 3, FROM = +process.argv[3] || 1, TO = +process.argv[4] || D.STAGES.length;
 const MAX_SORTIE = 8;
 
@@ -60,6 +62,7 @@ function battle(st, party, save, drill = {}) {
         }
       }
       fields.threat = null;
+      if (st.win === 'escape') for (const o of G.units) if (o.alive && o.side === 'p' && R.onTarget(G, o.x, o.y)) { o.alive = false; o.escaped = true; } // 게임처럼: 탈출 칸에 서면 빠져나간다
       let c = R.check(G);
       if (c === 'wave') { R.spawnWave(G, R.pendingWave(G)); c = null; }
       if (c) return c;
@@ -68,6 +71,7 @@ function battle(st, party, save, drill = {}) {
   };
   for (G.turn = 1; G.turn <= 40; G.turn++) {
     if (st.turnLimit && G.turn > st.turnLimit) return { win: false, turn: G.turn, G };
+    if ((st.win === 'survive' || st.win === 'defend') && G.turn > st.turns) return { win: true, turn: G.turn - 1, G }; // 게임처럼: 정해진 턴을 버티면 승리
     let c = phase('p'); if (c) return { win: c === 'win', turn: G.turn, G };
     c = phase('e'); if (c) return { win: c === 'win', turn: G.turn, G };
   }
@@ -88,6 +92,7 @@ if (process.env.ONLY) {
   const left = {};
   for (let i = 0; i < RUNS; i++) {
     const r = battle(st, party, save);
+    if (!r.win && process.env.WHY) { const G = r.G, ld = G.units.find((u) => u.lead); console.log(`  진 판: ${r.turn}턴 · 지휘관 ${ld && ld.alive ? '생존' : '퇴각'} · 아군 ${G.units.filter((u) => u.side === 'p' && u.alive).length}명 · 목표 칸 적 ${G.units.filter((u) => u.side === "e" && u.alive && R.onTarget(G, u.x, u.y)).map((u) => u.key + "@" + u.x + "," + u.y).join(" ")} · 아군 자리 ${G.units.filter((u) => u.side === "p" && u.alive).map((u) => u.x + "," + u.y).join(" ")}`); }
     if (r.win) { win++; turn += r.turn; } else r.G.units.filter((u) => u.side === 'e' && u.alive).forEach((u) => { left[u.key] = (left[u.key] || 0) + 1; });
   }
   console.log(st.idx, `Lv.${lv}`, `승 ${win}/${RUNS}`, win ? `평균 ${(turn / win).toFixed(1)}턴` : '', '진 판에 남은 적', JSON.stringify(left));
