@@ -92,7 +92,7 @@
   };
   // 특기 컷인: 인물 그림이 사선 띠 안으로 미끄러져 들어오고 특기 이름이 박힌다
   H.cutin = function (u, skillName, speed = 1) {
-    const stand = window.FIGHT && FIGHT.STAND && u.side === 'p' && FIGHT.STAND[u.rig];
+    const stand = window.FIGHT && FIGHT.STAND && u.side === 'p' && FIGHT.STAND[u.key];
     const pic = stand ? `<img class="lc-stand" src="assets/story/stand/${stand}.webp" alt="">` : `<img class="lc-icon" src="${(window.IMG && IMG[u.icon]) || ''}" alt="">`;
     const b = show(`<div class="lc-band">${pic}</div><div class="lc-flash"></div>
       <div class="lc-txt"><small>${u.side === 'p' ? 'ACTIVE SKILL' : 'ENEMY SKILL'}</small><b>${skillName}</b><span>${u.name}</span></div>`,

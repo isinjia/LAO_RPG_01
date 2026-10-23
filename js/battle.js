@@ -172,9 +172,9 @@
       const off = split ? GAP : 0;
       const st = { [a.uid]: { thp: a.troop ? a.troop.hp : 0, hp: a.hp }, [d.uid]: { thp: d.troop ? d.troop.hp : 0, hp: d.hp } };
       const setSide = (cls, u) => {
-        const c = ui.querySelector('.fcorner.' + cls), sd = u.side === 'p' && STAND[u.rig];
+        const c = ui.querySelector('.fcorner.' + cls), sd = u.side === 'p' && STAND[u.key]; // 전직하면 모델 이름이 바뀌므로 영웅으로 찾는다
         const bust = sd ? null : sdBust(u, cls); // 일러스트가 없는 적은 원작 SD 모델을 크게 그린 윗몸
-        c.classList.toggle('stand', !!sd); c.classList.toggle('whole', !!sd && WHOLE.has(u.rig)); c.classList.toggle('sd', !!bust);
+        c.classList.toggle('stand', !!sd); c.classList.toggle('whole', !!sd && WHOLE.has(u.key)); c.classList.toggle('sd', !!bust);
         c.querySelector('.fbust').classList.remove('hit');
         const im = c.querySelector('.fimg'); // 앞 전투의 그림이 잠깐 비치지 않게, 새 그림이 다 오면 틀째로 보인다
         c.classList.add('loading');
