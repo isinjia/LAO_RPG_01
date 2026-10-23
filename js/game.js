@@ -1208,9 +1208,9 @@
     const st = G.stage;
     const nt = R.nextWaveTurn(G);
     // 위쪽 줄은 작전명·승리 조건·(증원)·추가 목표만 (패배 조건·자세한 증원은 승리 조건 창: 띠를 누르거나 메뉴)
-    $('goalBox').innerHTML = `${st.idx} ${st.title} · 승리: <b>${st.goal}</b>${nt ? ` · 증원 ${nt}턴` : ''}${R.diff !== 'normal' ? ` · <b>${R.DIFF[R.diff].name}</b>` : ''}${st.kind ? '' : ` · ${bonusLine(st, true)}`}`;
+    $('goalBox').innerHTML = `${st.idx} · 승리: <b>${st.goal}</b>${nt ? ` · 증원 ${nt}턴` : ''}${R.diff !== 'normal' ? ` · <b>${R.DIFF[R.diff].name}</b>` : ''}${st.kind ? '' : ` · ${bonusLine(st, true)}`}`;
     const tac = G.tactic && R.TACTICS[G.tactic], tacOn = tac && G.tacUntil && G.turn <= G.tacUntil;
-    $('goalBox').title = `패배: ${st.lose}${tacOn ? ` · 작전 전술 ${tac.name}: ${R.tacText(G.tactic, st)} (${G.tacUntil >= 99 ? '작전 내내' : `${G.tacUntil}턴까지`})` : ''}`;
+    $('goalBox').title = `${st.idx} ${st.title} · 패배: ${st.lose}${tacOn ? ` · 작전 전술 ${tac.name}: ${R.tacText(G.tactic, st)} (${G.tacUntil >= 99 ? '작전 내내' : `${G.tacUntil}턴까지`})` : ''}`;
     if (tacOn) $('goalBox').insertAdjacentHTML('afterbegin', `<span class="gtac" data-tip="${R.tacText(G.tactic, st)}${G.tacUntil < 99 ? ` · ${G.tacUntil - G.turn + 1}턴 남음` : ''}${G.tacX > 1 ? ' (작전에 맞는 전술이라 강화됨)' : ''}">${tac.name} ${G.tacUntil >= 99 ? '끝까지' : `~${G.tacUntil}턴`}</span> `);
     $('btnEnd').disabled = G.side !== 'p' || busy;
     syncQuick(); renderRoster();
@@ -2399,7 +2399,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.54';
+  const GAME_VERSION = '1.55';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -3348,11 +3348,14 @@
     const rows = [];
     // 최우수(가장 많이 친 살아남은 영웅)는 경험치 +20% (모두 같은 몫에 더해 영웅마다 크는 맛)
     const mvpU = win ? g.units.filter((x) => x.side === 'p' && (x.alive || x.escaped)).sort((a, b) => (b.dealt || 0) - (a.dealt || 0))[0] : null;
+    const topLv = Math.max(...g.units.filter((x) => x.side === 'p').map((x) => x.lv));
     for (const u of g.units.filter((x) => x.side === 'p')) {
       const s = save.heroes[u.key], h = D.HEROES[u.key];
       const row = { id: u.key, name: u.name, lv0: stageStart.lv[u.key], exp0: s.exp, alive: u.alive || !!u.escaped, dealt: u.dealt || 0, notes: [] };
       row.gain = Math.round((st.kind ? gain : R.expFor(u.lv, R.foeLv(st), gain)) * (u === mvpU && (u.dealt || 0) > 0 ? 1.2 : 1));
       if (u === mvpU && (u.dealt || 0) > 0) row.notes.push('<b>MVP</b> · 경험치 +20%');
+      // 따라잡기: 출격한 영웅 중 가장 높은 레벨보다 5 이상 낮으면 경험치 +50% (늦게 키운 영웅도 따라오게)
+      if (win && topLv - u.lv >= 5) { row.gain = Math.round(row.gain * 1.5); row.notes.push('<b>따라잡기</b> · 경험치 +50%'); }
       R.addExp(u, row.gain);
       s.lv = u.lv; s.exp = u.exp;
       row.lv1 = u.lv; row.exp1 = u.exp;

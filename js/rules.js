@@ -199,7 +199,8 @@
     const hold = holdStage(st), x = key === R.tacFor(st) ? 1.3 : 1, b = (hold && t.holdBuff) || t.buff, n = R.tacTurns(key, st);
     const NM = { at: '공격', df: '방어', mov: '이동' };
     const fx = Object.entries(b).map(([k, v]) => k === 'mov' ? `이동 +${v}` : `${NM[k]} ${v > 0 ? '+' : ''}${Math.round((v > 0 ? v * x : v / x ** 1.5) * 100)}%`).join(', ');
-    return `${n >= 99 ? '작전 내내' : `처음 ${n}턴`} ${fx}`;
+    const costN = x > 1 && n < 99 && Object.values(b).some((v) => v < 0) ? Math.max(1, n - 1) : 0;
+    return `${n >= 99 ? '작전 내내' : `처음 ${n}턴`} ${fx}${costN ? ` (대가는 ${costN}턴만)` : ''}`;
   };
   R.applyTactic = (G, key) => {
     const t = R.TACTICS[key]; G.tactic = t && t.buff ? key : 'none';
@@ -210,7 +211,13 @@
     G.tacX = key === R.tacFor(G.stage) ? 1.3 : 1;
     // 추천이면 대가는 2/3로 덜어 준다 (돌격 명령 방어 -15% → -10%)
     const b = Object.fromEntries(Object.entries(b0).map(([k, v]) => [k, k === 'mov' ? v : Math.round((v > 0 ? v * G.tacX : v / G.tacX ** 1.5) * 1000) / 1000]));
-    for (const u of G.units) if (u.side === 'p') u.buffs.push({ ...b, until: 1 + G.tacUntil, side: 'p', tac: 1 });
+    // 좋은 효과와 대가를 따로 건다: 추천이면 대가는 한 턴 일찍 끝난다 (돌격 명령 방어 감소는 첫 2턴만)
+    const good = Object.fromEntries(Object.entries(b).filter(([, v]) => v > 0)), bad = Object.fromEntries(Object.entries(b).filter(([, v]) => v < 0));
+    G.tacCostUntil = Object.keys(bad).length ? (G.tacX > 1 ? Math.max(1, G.tacUntil - 1) : G.tacUntil) : 0;
+    for (const u of G.units) if (u.side === 'p') {
+      u.buffs.push({ ...good, until: 1 + G.tacUntil, side: 'p', tac: 1 });
+      if (G.tacCostUntil) u.buffs.push({ ...bad, until: 1 + G.tacCostUntil, side: 'p', tac: 1 });
+    }
   };
   R.PERK2_LV = 40; // 두 번째 각성 (첫째와 다른 것)
   const perkK = (u, k) => (u.side !== 'p' ? 0 : [u.perk, u.perk2].reduce((n, p) => n + ((p && R.PERKS[p] && R.PERKS[p].k[k]) || 0), 0));
