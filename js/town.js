@@ -57,7 +57,17 @@
   const ROOM = (label, bg, fl, wall, deco) => ({ label, bg: 'town/' + bg, fl, wall, deco });
   const PROPS = { // 장면 방에 놓는 소품: [그림, 가로 비율, 바닥 첫 줄에서 아래로, 칸 넓이, 그림 높이]
     '지휘실': [['town/r_andr2_10', 0.3, 0, 3, 1.0], ['town/r_mk4_1', 0.12, 0, 1, 1.4], ['town/r_andr1_11', 0.66, 0, 2, 1.2]],
-    '드론 관제실': [['town/r_mm1_12', 0.12, 0, 1, 1.7], ['town/r_mk4_1', 0.24, 0, 1, 1.4], ['tiles/console', 0.7, 0, 2, 1.4], ['town/r_mm2_2', 0.86, 0, 1, 1.5]],
+    '드론 관제실': [['town/r_mm1_12', 0.12, 0, 1, 1.7], ['town/r_mk4_1', 0.24, 0, 1, 1.4], ['tiles/console', 0.7, 0, 2, 1.4], ['town/r_mm2_2', 0.86, 0, 1, 1.5], ['tiles/crystal0', 0.06, 2, 1, 1.4, [100, '90,230,220']], ['town/t4_rock', 0.9, 2, 2, 0.6]],
+    '드론 격납고': [['tiles/crystal1', 0.08, 2, 1, 1.3, [100, '120,240,230']], ['tiles/crate1', 0.86, 2, 1, 1.0], ['town/t4_ore', 0.74, 2, 2, 0.8]],
+    '보급고 휴게실': [['tiles/crystal0', 0.9, 2, 1, 1.3, [100, '90,230,220']], ['town/t4_rock', 0.06, 2, 2, 0.6]],
+    '진지 지휘소': [['tiles/bags0', 0.1, 2, 2, 0.7], ['tiles/crate1', 0.86, 2, 1, 1.0], ['tiles/crate0', 0.92, 2, 1, 0.9]],
+    '무기고': [['tiles/bags1', 0.08, 2, 2, 0.7], ['tiles/barrel', 0.9, 2, 1, 1.0]],
+    '서버 관제실': [['town/t5_server', 0.86, 2, 2, 1.4, [80, '90,255,180']]],
+    '열차 정비실': [['town/t5_core', 0.12, 2, 2, 1.3, [90, '150,220,255']], ['tiles/crate1', 0.9, 2, 1, 1.0]],
+    '주둔지 지휘소': [['tiles/barrel', 0.08, 2, 1, 1.0], ['tiles/crate1', 0.14, 2, 1, 1.0], ['town/t3_radar', 0.9, 1, 1, 1.8]],
+    '함대 통신실': [['tiles/console', 0.12, 2, 2, 1.4, [90, '120,220,255']], ['tiles/crate0', 0.9, 2, 1, 0.9]],
+    '분교 은신처': [['tiles/crate1', 0.1, 2, 1, 1.0], ['town/b_bench', 0.84, 2, 2, 0.8]],
+    '연구소 정비실': [['tiles/tank0', 0.1, 2, 1, 1.6, [80, '90,255,170']]],
   };
   // ── 지도 ──────────────────────────────────────────────
   // 칸: . 바탕  s 넓은 바닥  _ 길  ~ 물(막힘)  # 벼랑·잔해·덤불(막힘)  b 뒷배경 자리(막힘, 뒷배경 그림이 덮는다)  r 선로(막힘)
@@ -298,13 +308,13 @@
     const r0 = Math.min(H - 2, Math.ceil((off + top0) / TILE + 0.45));
     const blocked = (x) => x < 1 || x > W - 2 || (st.blk || []).some(([a, b]) => (x + 0.5) / W > a && (x + 0.5) / W < b);
     const rows = [];
-    for (let y = 0; y < H; y++) { let r = ''; for (let x = 0; x < W; x++) r += y < r0 || blocked(x) ? '#' : 'M'; rows.push(r); }
+    for (let y = 0; y < H; y++) { let r = ''; for (let x = 0; x < W; x++) r += y < r0 || x < 1 || x > W - 2 || (blocked(x) && y < H - 1) ? '#' : 'M'; rows.push(r); } // 큰 기계 앞 맨 아래 줄은 지나갈 수 있다 (방이 둘로 갈리지 않게)
     const mid = Math.floor(W / 2), mx = blocked(mid) ? [...Array(W).keys()].filter((x) => !blocked(x)).sort((a, b) => Math.abs(a - mid) - Math.abs(b - mid))[0] : mid;
     const used = [];
     const free0 = (x) => { for (let d = 0; d < W; d++) for (const s of [1, -1]) { const t = x + d * s; if (t > 0 && t < W - 1 && !blocked(t) && t !== mx) return t; } return x; };
     const free = (x) => { for (let d = 0; d < W; d++) for (const sg of [1, -1]) { const t = x + d * sg; if (t > 0 && t < W - 1 && !blocked(t) && Math.abs(t - mx) > 0 && used.every((u) => Math.abs(u - t) >= 2)) { used.push(t); return t; } } return free0(x); };
     const objects = [{ t: 'exit', x: mx, y: H - 1, w: 1, h: 1, to: 'back' }, ...STAGE_NPC[k].map(([id, fx, dy]) => ({ t: 'npc', id, x: free(Math.round(fx * W)), y: Math.min(H - 2, r0 + dy), dir: fx > 0.5 ? -1 : 1 }))];
-    for (const [art, fx, dy, w, hh] of props || []) { const x = Math.max(1, Math.round(fx * W)), y = Math.min(H - 2, r0 + dy); if (x === mx || objects.some((o) => o.t === 'npc' && o.x >= x && o.x < x + w && o.y === y)) continue; objects.push({ t: 'deco', art, x, y, w, h: 1, hh, block: 1 }); }
+    for (const [art, fx, dy, w, hh, lit] of props || []) { const x = Math.max(1, Math.round(fx * W)), y = Math.min(H - 2, r0 + dy); if (x === mx || objects.some((o) => o.t === 'npc' && o.x >= x && o.x < x + w && o.y === y)) continue; objects.push({ t: 'deco', art, x, y, w, h: 1, hh, block: 1, lit }); }
     return { name, rows, indoor: 1, stage: { bg: bgPath, fl: st.fl, h: st.h, sc, top0, floorH, off, back: st.back }, bg: bgPath, tint, spawn: [mx, H - 2], objects };
   }
   // 방 안 분위기 (장별): 어둠, 어둠 빛깔, 사령관 둘레 등불, 떠다니는 것
@@ -705,7 +715,8 @@
   function initLights() {
     lights = [];
     if (map.indoor && !map.stage) return;
-    if (map.stage) { const ex = map.objects.find((o) => o.t === 'exit'); if (ex) lights.push({ x: ex.x * TILE + TILE / 2, y: (ex.y + 0.6) * TILE, r: 110, c: '255,214,150', fl: 0.1, ph: 1 }); return; }
+    if (map.stage) { const ex = map.objects.find((o) => o.t === 'exit'); if (ex) lights.push({ x: ex.x * TILE + TILE / 2, y: (ex.y + 0.6) * TILE, r: 110, c: '255,214,150', fl: 0.1, ph: 1 });
+      for (const o of map.objects) if (o.t === 'deco' && o.lit) lights.push({ x: (o.x + o.w / 2) * TILE, y: (o.y + o.h) * TILE - (o.hh || 1) * TILE * 0.5, r: o.lit[0], c: o.lit[1], fl: 0.15, ph: o.x }); return; }
     for (const o of map.objects) {
       if (o.t === 'deco' && o.lit) {
         const hh = o.kind === 'fire' ? 0.5 : o.art && o.art.includes('lamp') ? (o.hh || 2) * 0.88 : o.kind === 'lighthouse' ? 4.6 : (o.hh || 1.6) * 0.5;
