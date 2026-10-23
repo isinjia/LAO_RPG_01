@@ -536,7 +536,7 @@
       ],
       starts: [[7, 12], [8, 12], [7, 13], [8, 13], [6, 11], [9, 11], [6, 12], [7, 11]],
       waves: [
-        { turn: 1, at: [13, 7], units: [C('chick', 7), C('launcher', 8), C('shielder', 8), C('launcher', 8), C('chick', 7), C('launcher', 8)] },
+        { turn: 1, at: [13, 7], units: [C('chick', 7), C('launcher', 7), C('shielder', 7), C('launcher', 7), C('chick', 7), C('launcher', 7)] }, // 1장의 고비를 조금 낮춤
         { turn: 3, at: [4, 2], units: [C('shielder', 8), C('launcher', 8), C('shielder', 8), C('launcher', 8), C('launcher', 8)] }, // 1장의 벽이 너무 높아 런처 하나를 뺐다
         { turn: 5, at: [15, 0], units: [C('launcher', 9), C('shielder', 9), C('launcher', 9), C('chick', 10), C('emperor', 10)] },
       ],

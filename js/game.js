@@ -1796,6 +1796,7 @@
   // ── 차례 진행 ───────────────────────────────────────────
   async function startPhase(side) {
     G.side = side;
+    G.undo = []; G.pendingSnap = null; // 되돌리기는 그 차례 안에서만 (적 차례를 보고 되감지 못하게)
     for (const u of G.units) {
       if (!u.alive) continue;
       u.buffs = u.buffs.filter((b) => !(b.side === side && b.until <= G.turn));
@@ -2244,21 +2245,29 @@
       <div class="opts"><button class="gold" data-a="ok">작전 시작</button><button data-a="more">규칙 자세히</button></div>`, (a) => (a === 'more' ? help(cb) : cb && cb()));
   }
   function help(cb) {
+    // 상성 표: 공격하는 병종 ▶ 이기는 병종 (js/data.js 의 REL 에서 그대로)
+    const relRows = Object.entries(D.REL).map(([a, m]) => `<tr><td>${kindTag(a)}</td><td>${Object.entries(m).map(([d, k]) => `▶ ${kindTag(d)} <b>+${Math.round(k * 100)}%</b>`).join(' &nbsp; ')}</td></tr>`).join('');
     modal(`<h3>도움말</h3>
+      <div class="osec">부대</div>
       <p><b>영웅과 병사</b> · 지도 위 한 칸은 영웅 한 명과 배속된 병사 부대입니다. 공격받으면 <b>병사가 먼저</b> 피해를 받고, 병사가 전멸하면 영웅이 직접 맞습니다. 영웅이 쓰러지면 그 칸은 퇴각합니다.</p>
       <p><b>병사 배속</b> · 출격 전에 영웅마다 병사를 고릅니다. 고를 수 있는 병사는 영웅의 전직 단계에 따라 늘어납니다.</p>
       <p><b>병사 10명</b> · 한 부대의 병사는 10명입니다. 남은 병사 수만큼만 공격하므로 병사가 줄면 부대가 약해집니다. 이동력은 영웅과 병사 중 느린 쪽을 따릅니다.</p>
       <p><b>병사 훈련</b> · 병사는 사지 않습니다 (랑그릿사 모바일처럼). 출격할 때마다 10명이 가득 찬 채로 나가고 전투가 끝나면 다시 채워집니다. 전투에서 얻은 <b>부품</b>으로 월드맵·출격 준비의 '병사 훈련'이나 마을 정비실의 포츈에게서 병종을 훈련하면 그 병사를 쓰는 모든 영웅의 병사가 강해집니다 (한 단계 +${Math.round(R.DRILL_K * 100)}%, 최대 ${R.DRILL_MAX}단계).</p>
       <p><b>병사 보충</b> · 전투 중에는 고전 랑그릿사처럼 보충합니다. ① 아군 차례가 시작될 때 지휘관 콘스탄챠의 ${R.CMD_RANGE}칸 안에 있는 아군은 병사 1명 보충 ② 움직이지 않고 '정비'를 고르면 병사 ${Math.round(R.REFIT_T * R.SQUAD)}명 보충 + 영웅 체력 ${Math.round(R.REFIT_H * 100)}% (그 차례 행동은 끝) ③ 마을·기지 칸에서 차례를 시작하면 영웅·병사 10% 회복, 기지는 병사를 2명 더 보충 (적도 마찬가지). 병사가 모두 쓰러진 부대는 지휘 범위로는 돌아오지 않습니다.</p>
-      <p><b>병종 상성</b> · 소총병 ▶ 중장병 ▶ 기동병 ▶ 소총병 (+30%), 사격병 ▶ 공중병 (+40%), 공중병 ▶ 소총병 (+20%)·전자전병 (+30%), 전자전병 ▶ 중장병 (+30%), 침투병 ▶ 사격병·전자전병 (+30%), 의무병 ▶ 변이체 (+80%). 그 밖에는 상성이 없습니다. 병사는 병사의 병종, 영웅은 영웅의 병종으로 따집니다.</p>
+      <div class="osec">전투</div>
+      <p><b>병종 상성</b> · 공격하는 병종이 이기는 상대를 칠 때 피해가 늘고, 거꾸로면 그만큼 줄어듭니다. 병사는 병사의 병종, 영웅은 영웅의 병종으로 따집니다.</p>
+      <table class="keys">${relRows}</table>
       <p><b>원거리</b> · 사격병은 사거리 2. 두 칸에서 쏘면 근접 부대는 반격하지 못합니다. 원거리 병종이 붙어서 싸우면 피해가 30%로 줄어듭니다.</p>
       <p><b>적의 움직임</b> · 적은 무리마다 지휘관이 있고, 부대가 지휘관 둘레로 함께 진격합니다. 무리 중 하나라도 아군과 가까워지거나 한 차례가 지나면 무리 전체가 움직이고, 상성으로 이기는 상대를 먼저 노립니다. 우두머리를 지키는 호위는 우두머리 곁을 떠나지 않습니다. 「위험」 단추로 적이 닿는 범위를 확인하세요. 증원은 정해진 턴에 나타나며, 그 전에 적을 모두 쓰러뜨리면 승리합니다.</p>
       <p><b>난이도</b> · 옵션에서 고릅니다 (다음 작전부터). 쉬움: 적 능력치 85%, 적이 조심스럽고 늦게 움직임 · 보통: 105% · 어려움: 115%, 적이 처음부터 진격하고 쓰러뜨릴 수 있는 영웅을 집요하게 노림.</p>
-      <p><b>경험치</b> · 전투가 끝나면 참가한 영웅 전원이 같은 양을 받습니다.</p>
+      <div class="osec">성장 · 진행</div>
+      <p><b>경험치</b> · 전투가 끝나면 참가한 영웅 전원이 같은 양을 받고, 가장 많이 친 영웅(MVP)은 20%를 더 받습니다.</p>
+      <p><b>저장</b> · 작전 도중에도 행동이 끝날 때마다 저장되어 타이틀의 「작전 이어하기」로 돌아옵니다. 이번 차례 안에서는 U(또는 메뉴)로 한 수씩 되돌리거나, 메뉴의 「이번 차례 다시」로 차례 처음으로 돌아갈 수 있습니다.</p>
       <p><b>특기</b> · 쓰고 나면 정해진 턴 동안 다시 쓸 수 없습니다(괄호 안 숫자).</p>
       <p><b>지배 영역</b> · 적과 맞닿는 칸에 들어서면 그 자리에서 멈춥니다. 적 사이를 빠져나갈 수 없으니 길목을 막아 지키세요 (적도 마찬가지).</p>
       <p><b>재능</b> · 영웅마다 늘 켜져 있는 고유 재능이 있습니다 (지휘 범위 강화, 선제공격 강화, 피해 감소 등). 영웅 정보에서 확인하세요.</p>
       <p><b>지형</b> · 숲 +20%, 산·언덕·기지 +10%, 폐허·마을 +5% 방어. 기동병은 숲·산에서 느려지고, 공중병은 지형의 영향을 받지 않습니다. 적 칸은 지나갈 수 없습니다.</p>
+      <div class="osec">조작</div>
       <p><b>조작</b> · 누르기: 선택·이동·공격 / 끌기: 지도 이동 / 두 손가락·휠: 확대 / 오른쪽 클릭·Esc: 취소 / 키보드: 방향키 커서 · Enter 결정 · Esc 취소 · Tab 다음 영웅 · A 공격 · W 대기 · E 턴 종료 (전체 목록은 전투 중 H)</p>
       <div class="opts"><button class="gold" data-a="ok">확인</button></div>`, cb);
   }
@@ -3179,10 +3188,13 @@
     // 경험치: 그 장소 본편 기준. 의뢰는 조금 더, 고난도는 1장 끝 기준으로
     const gain = Math.round(R.stageExp(st.kind === 'side' && st.side.kind === 'Ex' ? 9 : st.id - 1, win) * (st.kind === 'side' ? 1.25 : 1));
     const rows = [];
+    // 최우수(가장 많이 친 살아남은 영웅)는 경험치 +20% (모두 같은 몫에 더해 영웅마다 크는 맛)
+    const mvpU = win ? g.units.filter((x) => x.side === 'p' && (x.alive || x.escaped)).sort((a, b) => (b.dealt || 0) - (a.dealt || 0))[0] : null;
     for (const u of g.units.filter((x) => x.side === 'p')) {
       const s = save.heroes[u.key], h = D.HEROES[u.key];
       const row = { id: u.key, name: u.name, lv0: stageStart.lv[u.key], exp0: s.exp, alive: u.alive || !!u.escaped, dealt: u.dealt || 0, notes: [] };
-      row.gain = st.kind ? gain : R.expFor(u.lv, R.foeLv(st), gain);
+      row.gain = Math.round((st.kind ? gain : R.expFor(u.lv, R.foeLv(st), gain)) * (u === mvpU && (u.dealt || 0) > 0 ? 1.2 : 1));
+      if (u === mvpU && (u.dealt || 0) > 0) row.notes.push('<b>MVP</b> · 경험치 +20%');
       R.addExp(u, row.gain);
       s.lv = u.lv; s.exp = u.exp;
       row.lv1 = u.lv; row.exp1 = u.exp;
