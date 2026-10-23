@@ -2407,7 +2407,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.61';
+  const GAME_VERSION = '1.62';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2544,7 +2544,7 @@
       <div class="whead"><button class="wback" id="sBack" aria-label="뒤로"></button>
         <div class="wtitle"><small>CHAPTER ${String(CH.no).padStart(2, '0')}</small><b>${CH.name}</b></div>
         ${chOpen() > 0 ? `<div class="wchap"><button id="sPrev" ${ch > 0 ? '' : 'disabled'} aria-label="이전 지역">‹</button><span>${CH.no} / ${chOpen() + 1}</span><button id="sNext" ${ch < chOpen() ? '' : 'disabled'} aria-label="다음 지역">›</button></div>` : ''}</div>
-      <div class="wtools"><button class="lo-btn dark" id="sHero">부대 현황</button><button class="lo-btn dark" id="sDrill">병사 훈련</button><button class="lo-btn dark" id="sIf">IF 기록</button><button class="lo-btn dark" id="sOpt">옵션</button></div>
+      <div class="wtools"><button class="lo-btn dark" id="sHero">부대 현황</button><button class="lo-btn dark" id="sDrill">병사 훈련</button><button class="lo-btn dark" id="sIf">IF 기록</button><button class="lo-btn dark" id="sOpt">옵션</button><span class="wstar" title="본편 추가 목표 ★ · 10개마다 부품 보상">★ ${starCount()}/${starMax()}</span></div>
       <button class="wchlbtn" id="sChlBtn"><small>CHAPTER</small><b>${String(CH.no).padStart(2, '0')}</b><span>챕터 목록</span></button>
       <div class="wchl" id="sChl"><div class="wchl-h"><small>CHAPTER LIST</small><b>챕터 선택</b><button class="wchl-x" id="sChlX" aria-label="닫기"></button></div>
         <div class="wchl-l">${CH_LIST.map((c, i) => { const open = c.inGame && i <= chOpen(); return `<button class="wch ${i === ch ? 'on' : ''} ${open ? '' : 'lock'}" data-i="${i}">
@@ -3387,6 +3387,10 @@
       const rec = (save.bonus = save.bonus || {})[st.idx] = save.bonus[st.idx] || {};
       for (const x of bonus) { x.first = x.ok && !rec[x.k]; if (x.ok) rec[x.k] = 1; }
       parts = Math.round(parts * (1 + 0.25 * bonus.filter((x) => x.ok).length) * (st.replay ? 0.6 : 1)); // 본편 다시 하기는 60%
+      // ★ 모으기: 모은 추가 목표가 10개를 넘길 때마다 부품 보상 (한 번씩)
+      const stars = starCount(), paid = save.starPaid || 0;
+      for (let m = (Math.floor(paid / 10) + 1) * 10; m <= stars; m += 10) { const amt = 100 + m * 10; parts += amt; bonus.push({ k: 'm', name: `★ ${m}개 모음 · 부품 +${amt}`, ok: true, first: true }); }
+      save.starPaid = Math.max(paid, Math.floor(stars / 10) * 10);
     }
     g.bonus = bonus;
     save.parts = (save.parts || 0) + parts;
@@ -3417,12 +3421,26 @@
     else if (st.replay) stageSelect();
     busy = false;
   }
+  // 모은 추가 목표 ★ 수 (본편 작전마다 「턴 안에」·「격파」·「퇴각 없이」)
+  const starCount = () => Object.values(save.bonus || {}).reduce((n, r) => n + Object.values(r).filter(Boolean).length, 0);
+  const starMax = () => D.STAGES.reduce((n, st) => n + 1 + (R.bonusOf(st).turns || R.bonusOf(st).kills ? 1 : 0), 0);
+  // 1부 완결: 마지막 장을 마치면 그동안의 기록과 이어서 할 일을 보여 준다
+  function partEnd() {
+    const H = Object.keys(save.heroes).filter((id) => save.heroes[id].lv > 1 || (save.joined || []).includes(id)), avg = H.length ? Math.round(H.reduce((n, id) => n + save.heroes[id].lv, 0) / H.length) : 1;
+    const side = Object.keys(save.side || {}).length, st = starCount(), mx = starMax();
+    modal(`<h3>1부 완결 · 플레이해 주셔서 감사합니다</h3>
+      <p>오르카 호와 함께 ${CHAPTERS.filter((c) => c.inGame).length}개 지역, 본편 작전 ${D.STAGES.length}개를 모두 마쳤습니다.</p>
+      <div class="rsum" style="margin:10px 0"><span>합류 영웅 <b>${H.length}</b>명</span><span>평균 레벨 <b>${avg}</b></span><span>추가 목표 <b>★ ${st}</b>/${mx}</span><span>마친 의뢰 <b>${side}</b>개</span><span>남은 부품 <b>${save.parts || 0}</b></span></div>
+      <p style="color:#9aa6c4">다음 장은 준비 중입니다. 그동안 「본편 다시 하기」로 남은 ★를 모으거나(10개마다 부품 보상), 어려움 난이도에 도전하거나, 마을 의뢰를 마쳐 보세요.</p>
+      <div class="opts"><button class="gold" data-a="ok">확인</button></div>`, () => {});
+  }
   // 이긴 뒤 월드맵으로: 지역을 마쳤으면 다음 지역 지도와 안내
   function afterWin(st, si) {
     {
       const chDone = !st.kind && (si === D.STAGES.length - 1 || chOf(si + 1) !== chOf(si)), C0 = CHAPTERS[chOf(si)];
       if (chDone && si < D.STAGES.length - 1) { save.chapter = chOf(si + 1); save.node = null; writeSave(); } // 다음 지역 지도로
       stageSelect();
+      if (chDone && si === D.STAGES.length - 1 && !save.partEndSeen) { save.partEndSeen = 1; writeSave(); partEnd(); busy = false; return; }
       if (chDone) {
         const nx = CHAPTERS[chOf(si) + 1];
         modal(`<h3>${C0.no}지역 완료</h3><p>「${C0.name}」을(를) 모두 마쳤습니다.${nx ? '' : ' 플레이해 주셔서 감사합니다!'}</p>`
