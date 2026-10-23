@@ -913,6 +913,10 @@
       else onTap(kcur[0], kcur[1]);
       return;
     }
+    if (ui.state === 'deploy' && ui.deployDone) {
+      if (k === 'Enter' || k === 'Space' || k === 'NumpadEnter') { e.preventDefault(); AU.play('lo_click', 0.7); ui.deployDone(); return; }
+      if ((k === 'Escape' || k === 'KeyX') && ui.sel) { e.preventDefault(); ui.sel = null; deployDraw(); return; }
+    }
     if (k === 'Escape' || k === 'KeyX' || k === 'Backspace') { e.preventDefault(); if (ui.state === 'idle') openMenu(); else cancel(); return; }
     if (k === 'Tab') {
       e.preventDefault();
@@ -1166,6 +1170,7 @@
     if (busy || G.side !== 'p') return;
     world.cursor.visible = true; world.cursor.position.set(x + 0.5, 0.02, y + 0.5);
     const u = R.unitAt(G, x, y);
+    if (ui.state === 'deploy') { deployTap(x, y); return; }
     switch (ui.state) {
       case 'idle':
         if (u && u.side === 'p' && !u.acted) selectUnit(u);
@@ -1828,6 +1833,7 @@
     }
   }
   function rosterPick(u) {
+    if (ui.state === 'deploy' && mode === 'map') { panTo(u.x, u.y, true); deployTap(u.x, u.y); return; }
     if (busy || !G || G.side !== 'p' || mode !== 'map') return;
     AU.play('lo_click', 0.5);
     if (ui.sel && ui.sel !== u) restoreSel();
@@ -2064,7 +2070,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.63';
+  const GAME_VERSION = '0.64';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2796,14 +2802,65 @@
     AU.bgm(st.bgm);
     setTop();
     if (st.id === 1 && !st.kind && !save.tutSeen) { save.tutSeen = true; writeSave(); await new Promise((r) => help(r)); }
+    const g0 = G;
+    await deployPhase(st);
+    if (G !== g0) return; // 배치 중에 작전을 떠났다
     AU.play('lo_battle_start', 0.7);
     LOHUD.start(`${st.idx} ${st.title}`, `승리 조건 · ${st.goal}`);
     await wait(1900);
     await battleEvent('start');
     await startPhase('p');
   }
+  // ── 배치: 작전 개시 전에 시작 칸(파란 칸) 안에서 영웅 자리를 정한다 ──
+  // 영웅을 누르고 → 빈 시작 칸을 누르면 옮기고, 다른 영웅을 누르면 서로 자리를 바꾼다. 「작전 개시」(Enter·Space)로 시작
+  function deployPhase(st) {
+    return new Promise((done) => {
+      const tiles = st.starts.filter(([x, y]) => R.inB(G, x, y));
+      ui.state = 'deploy'; ui.sel = null; ui.deployTiles = tiles;
+      const bar = document.createElement('div');
+      bar.id = 'deployBar';
+      bar.innerHTML = `<div class="db-t"><b>출격 배치</b><span>파란 칸 안에서 영웅을 누르고, 옮길 칸이나 자리를 바꿀 영웅을 누르세요</span></div><button class="lo-btn" id="deployGo">작전 개시<small>Enter</small></button>`;
+      $('hud').appendChild(bar);
+      const lead = G.units.find((u) => u.side === 'p' && u.alive);
+      if (lead) panTo(lead.x, lead.y, true);
+      deployDraw();
+      ui.deployDone = () => {
+        ui.deployDone = null; ui.deployTiles = null;
+        bar.remove();
+        ui.sel = null; ui.state = 'idle';
+        clearOv(); showInfo(null); setHint('');
+        done();
+      };
+      $('deployGo').onclick = (e) => { e.stopPropagation(); AU.play('lo_click', 0.7); if (ui.deployDone) ui.deployDone(); };
+    });
+  }
+  function deployDraw() {
+    OV.ghost = ui.deployTiles; // 시작 칸: 파란 칸
+    OV.area = ui.sel ? [[ui.sel.x, ui.sel.y]] : null; // 고른 영웅: 주황 칸
+    drawOverlay();
+    setHint(ui.sel ? `${ui.sel.name} · 옮길 칸이나 자리를 바꿀 영웅을 누르세요` : '');
+  }
+  function deployTap(x, y) {
+    const u = R.unitAt(G, x, y), inArea = ui.deployTiles.some(([a, b]) => a === x && b === y);
+    if (u && u.side === 'p') {
+      if (ui.sel && ui.sel !== u) { // 두 영웅 자리 바꾸기
+        const a = ui.sel, ax = a.x, ay = a.y;
+        a.x = u.x; a.y = u.y; u.x = ax; u.y = ay;
+        for (const w of [a, u]) { const v = views.get(w.uid); if (v) v.g.position.set(w.x + 0.5, 0, w.y + 0.5); }
+        AU.play('lo_pick', 0.6); ui.sel = null;
+      } else { ui.sel = ui.sel === u ? null : u; AU.play('lo_click', 0.5); showInfo(ui.sel); }
+    } else if (u) { inspect(u); return; }
+    else if (ui.sel && inArea) { // 빈 시작 칸으로 옮기기
+      ui.sel.x = x; ui.sel.y = y;
+      const v = views.get(ui.sel.uid); if (v) v.g.position.set(x + 0.5, 0, y + 0.5);
+      AU.play('lo_pick', 0.6); ui.sel = null;
+    } else { ui.sel = null; showInfo(null, [x, y]); }
+    deployDraw();
+  }
   function leaveMap() {
     if (FIGHT.active()) FIGHT.skip();
+    const db = $('deployBar'); if (db) db.remove();
+    if (ui.deployDone) { const f = ui.deployDone; ui.deployDone = null; G = null; f(); } // 배치 중에 떠나면 기다리던 시작을 풀어 준다
     clearViews();
     if (world) { scene.remove(world.root); world.dispose(); world = null; }
     for (const f of mapFx) f.m.material.dispose();
