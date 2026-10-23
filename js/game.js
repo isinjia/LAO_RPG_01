@@ -1543,6 +1543,7 @@
   function finishAct(u) {
     undoPush();
     u.acted = true;
+    setTimeout(() => { if (G && !busy && G.side === 'p') suspendSave(); }, 0); // 이어하기: 행동이 끝날 때마다 (차례 도중에 꺼도 잃지 않게)
     refreshView(u);
     deselect();
     updateDanger();
@@ -1820,7 +1821,7 @@
     G.units.forEach(refreshView);
     updateDanger();
     if (side === 'e') await enemyPhase();
-    else { suspendSave(); setTop(); setHint(G.turn === 1 ? (!G.stage.kind && EARLY_TIPS[G.stage.idx]) || TYPE_TIPS[G.stage.win] || '' : ''); const lead = G.units.find((u) => u.lead && u.alive); if (lead) panTo(lead.x, lead.y); if (autoOn) autoPlayer(); }
+    else { suspendSave(true); setTop(); setHint(G.turn === 1 ? (!G.stage.kind && EARLY_TIPS[G.stage.idx]) || TYPE_TIPS[G.stage.win] || '' : ''); const lead = G.units.find((u) => u.lead && u.alive); if (lead) panTo(lead.x, lead.y); if (autoOn) autoPlayer(); }
   }
   // 첫 작전들의 한 줄 길잡이 (첫 차례 아래 안내 줄에)
   const EARLY_TIPS = {
@@ -1858,14 +1859,15 @@
     const units = G.units.map((u) => ({
       side: u.side, key: u.key, lv: u.lv, exp: u.exp, tier: u.tier, br: u.br, troop: u.troop ? u.troop.key : null, x: u.x, y: u.y,
       hp: u.hp, thp: u.troop ? u.troop.hp : 0, alive: u.alive, escaped: !!u.escaped, cd: u.cd, buffs: u.buffs, slow: u.slow || 0, slowNext: u.slowNext || 0, dealt: u.dealt || 0,
-      ai: u.ai, home: u.home, boss: !!u.boss, awake: !!u.awake, wave: u.wave, bornT: u.bornT, cmd: u.cmd ? G.units.indexOf(u.cmd) : -1,
+      ai: u.ai, home: u.home, boss: !!u.boss, awake: !!u.awake, wave: u.wave, bornT: u.bornT, cmd: u.cmd ? G.units.indexOf(u.cmd) : -1, acted: u.side === 'p' && !!u.acted,
     }));
     const d = { v: 1, si, idx: G.stage.idx, diff: R.diff, turn: G.turn, wave: G.wave, spawned: [...(G.spawned || [])], ev: [...(G.evDone || [])].map((e) => ev.indexOf(e)).filter((i) => i >= 0), units, start: stageStart, heroes: G.stage.heroes, free: G.stage.free, lock: G.stage.lock, stage };
     return d;
   }
-  function suspendSave() {
+  function suspendSave(turnStart) {
     const d = snapData();
     if (!d) { suspendClear(); return; }
+    if (turnStart) G.turnSnap = d; // 「이번 차례 다시」는 차례가 시작될 때의 판으로
     try { localStorage.setItem(SUSPEND_KEY, JSON.stringify(d)); } catch (e) { /* 저장 불가 환경 */ }
   }
   // 한 수 되돌리기: 영웅을 고를 때 판을 찍어 두고, 그 영웅이 행동을 마치면 되돌리기 목록에 쌓는다 (이번 차례 안에서만, 최대 10수)
@@ -1874,8 +1876,34 @@
   async function undoLast() {
     if (!G || busy || G.side !== 'p' || !G.undo || !G.undo.length) return;
     const rest = G.undo.slice(0, -1), d = G.undo[G.undo.length - 1];
-    await resumeSuspend(d, '한 수 되돌렸습니다');
-    if (G) G.undo = rest;
+    if (restoreInPlace(d, '한 수 되돌렸습니다')) G.undo = rest;
+  }
+  // 판 한 장을 지금 판(G)에 되살린다: 유닛을 새로 만들고 차례·증원·사건 진행을 맞춘다 (지도·불러오기는 그대로)
+  function applySnap(d) {
+    G.units = [];
+    for (const s of d.units) {
+      const u = s.side === 'p' ? R.makeHero(G, s.key, { lv: s.lv, exp: s.exp, tier: s.tier, br: s.br }, s.troop, s.x, s.y) : R.makeEnemy(G, s.key, s.lv, s.x, s.y, { ai: s.ai, boss: s.boss });
+      Object.assign(u, { hp: s.hp, alive: s.alive, escaped: s.escaped, cd: s.cd || {}, buffs: s.buffs || [], slow: s.slow, slowNext: s.slowNext, dealt: s.dealt, awake: s.awake, wave: s.wave, bornT: s.bornT, acted: !!s.acted });
+      if (s.home) u.home = s.home;
+      if (u.troop) u.troop.hp = s.thp;
+    }
+    d.units.forEach((s, i) => { if (s.cmd >= 0) G.units[i].cmd = G.units[s.cmd]; });
+    G.turn = d.turn; G.wave = d.wave; G.spawned = new Set(d.spawned); G.side = 'p';
+    const ev = (window.BATTLE_EVENTS || {})[G.stage.idx] || [];
+    G.evDone = new Set(d.ev.map((i) => ev[i]).filter(Boolean));
+  }
+  // 같은 작전 안에서 되돌리기: 불러오기 화면 없이 그 자리에서 유닛만 바꿔 놓는다 (위험 범위·카메라는 그대로)
+  function restoreInPlace(d, msg) {
+    if (!G || busy || !d || d.idx !== G.stage.idx) return false;
+    deselect();
+    clearViews();
+    applySnap(d);
+    for (const u of G.units) if (u.alive) addView(u);
+    G.units.forEach(refreshView);
+    updateDanger(); setTop(); setHint(''); renderRoster();
+    suspendSave();
+    toast(msg);
+    return true;
   }
   async function resumeSuspend(given, msg) {
     const d = given || suspendLoad();
@@ -1887,16 +1915,8 @@
     G = R.newGame(st);
     G.drill = save.drill || {};
     buildWorld();
-    for (const s of d.units) {
-      const u = s.side === 'p' ? R.makeHero(G, s.key, { lv: s.lv, exp: s.exp, tier: s.tier, br: s.br }, s.troop, s.x, s.y) : R.makeEnemy(G, s.key, s.lv, s.x, s.y, { ai: s.ai, boss: s.boss });
-      Object.assign(u, { hp: s.hp, alive: s.alive, escaped: s.escaped, cd: s.cd || {}, buffs: s.buffs || [], slow: s.slow, slowNext: s.slowNext, dealt: s.dealt, awake: s.awake, wave: s.wave, bornT: s.bornT, acted: false });
-      if (s.home) u.home = s.home;
-      if (u.troop) u.troop.hp = s.thp;
-    }
-    d.units.forEach((s, i) => { if (s.cmd >= 0) G.units[i].cmd = G.units[s.cmd]; });
-    G.turn = d.turn; G.wave = d.wave; G.spawned = new Set(d.spawned); G.side = 'p';
-    const ev = (window.BATTLE_EVENTS || {})[st.idx] || [];
-    G.evDone = new Set(d.ev.map((i) => ev[i]).filter(Boolean));
+    applySnap(d);
+    G.turnSnap = d;
     stageStart = d.start || { lv: {} };
     const rigs = new Set();
     G.units.forEach((u) => { rigs.add(u.rig); if (u.troop) rigs.add(u.troop.rig); });
@@ -2159,7 +2179,7 @@
       <button data-a="help">도움말 (규칙·조작)</button>
       <button data-a="keys">키보드 단축키 (H)</button>
       <button data-a="goal">승리·패배 조건</button>
-      ${suspendLoad() && suspendLoad().idx === G.stage.idx && suspendLoad().turn === G.turn ? '<button data-a="redo">이번 차례 다시 (차례가 시작될 때로)</button>' : ''}
+      ${G.turnSnap && G.turnSnap.turn === G.turn && G.side === 'p' ? '<button data-a="redo">이번 차례 다시 (차례가 시작될 때로)</button>' : ''}
       ${G.undo && G.undo.length && G.side === 'p' ? `<button data-a="undo">한 수 되돌리기 (U) <small>${G.undo.length}수</small></button>` : ''}
       <button data-a="retry">처음부터 다시</button>
       <button data-a="quit" class="red">작전 포기 (선택 화면으로)</button>
@@ -2174,7 +2194,7 @@
       else if (a === 'keys') keyHelp();
       else if (a === 'goal') goalInfo();
       else if (a === 'retry') { const st = G.stage; leaveMap(); prep(st); }
-      else if (a === 'redo') resumeSuspend(); // 차례가 시작될 때 해 둔 작전 중 저장으로 되돌린다
+      else if (a === 'redo') { const d = G.turnSnap; if (restoreInPlace(d, '이번 차례를 처음부터 다시 합니다')) { G.undo = []; G.turnSnap = d; } } // 차례가 시작될 때 찍어 둔 판으로
       else if (a === 'undo') undoLast();
       else if (a === 'quit') { suspendClear(); leaveMap(); stageSelect(); } // 포기한 작전은 이어하기에 남기지 않는다
     });

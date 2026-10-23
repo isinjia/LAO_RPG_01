@@ -210,7 +210,7 @@
   R.DRILL_K = 0.08; R.DRILL_MAX = 5; // 한 단계 +8% (최대 +40%): 무엇을 훈련할지 고르는 맛이 나게
   R.DRILL_COST = [120, 320, 640, 1100, 1700]; // lv → lv+1 에 드는 부품 (한 병종 최대 3880). 본편 부품(약 1만 2천)으로 병종 셋쯤을 끝까지, 나머지는 중간까지
   R.drillCost = (lv) => R.DRILL_COST[Math.min(lv, R.DRILL_COST.length - 1)];
-  R.parts = (stageIndex, win, kind) => Math.round((52 + 9 * stageIndex) * (win ? 1 : 0.3) * (kind === 'repeat' ? 0.6 : kind === 'side' ? 1.2 : 1));
+  R.parts = (stageIndex, win, kind) => Math.round((52 + 8.5 * stageIndex) * (win ? 1 : 0.3) * (kind === 'repeat' ? 0.6 : kind === 'side' ? 1.2 : 1));
   R.CMD_RANGE = 2; R.CMD_SUPPLY = 0.1;
   R.REFIT_T = 0.3; R.REFIT_H = 0.1;
   R.canRefit = (u) => u.side === 'p' && (u.hp < u.hpMax || !!(u.troop && u.troop.hp < u.troop.hpMax));
@@ -607,7 +607,8 @@
         const e = R.combat(G, u, o, t.x, t.y);
         let sc = ((e.dT + e.dH * 1.6) / R.totalMax(o)) * 10 * value(o) - ((e.aT + e.aH * 1.6) / myMax) * 10 * value(u) * (foeAI ? 0.4 : 0.7) + terrK - risk(t.x, t.y);
         if (foeAI) sc += (e.rel > 0 ? 3 : e.rel < 0 ? -1.5 : 0) + (e.dDead ? R.aiOf().kill : 0);
-        else if (W0 === 'boss' && o.boss) sc += 6; // 아군 자동: 우두머리 작전은 우두머리를 친다 (반격이 아파도) // 적: 상성으로 이기는 상대를 먼저 고른다 (어려움은 쓰러뜨릴 수 있는 상대를 더 노린다)
+        else if (W0 === 'boss' && o.boss) sc += 6; // 아군 자동: 우두머리 작전은 우두머리를 친다 (반격이 아파도)
+        else if (tgts && (W0 === 'reach' || W0 === 'escape') && tgts.some(([x, y]) => x === o.x && y === o.y)) sc += 6; // 목표 칸을 막고 선 적은 치워 낸다 // 적: 상성으로 이기는 상대를 먼저 고른다 (어려움은 쓰러뜨릴 수 있는 상대를 더 노린다)
         if (e.dDead) sc += 6 * value(o);
         if (e.aDead) sc -= 12 * value(u);
         consider(sc, { to: [t.x, t.y], act: 'attack', target: o });
