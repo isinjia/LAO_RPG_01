@@ -9,7 +9,12 @@ import json, os, re, sys
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 CHS = sys.argv[1:] or ['ch01']
 # 원작 철충 -> 이 게임의 철충 종류. 원작 표의 모델 이름(MonsterModelID)으로 같은 계열을 고른다 (위에서부터 먼저 맞는 것)
-MOB = [(r'Stalker', 'stalker'), (r'Predator', 'predator'), (r'Kidnapper', 'trickster'), (r'Centurion', 'centurion'),
+MOB = [  # 7지역 철충 (구체적인 것 먼저)
+       (r'NestChaser', 'nestchaser'), (r'NestGuardian', 'nestguard'), (r'Nest_B07|Model_MP_Nest', 'nest'), (r'Juggernaut', 'jugger'), (r'Speaker', 'speaker'),
+       (r'Tarantula', 'tarantula'), (r'NightChickTD', 'tdchick'), (r'NightChickAQ', 'aqchick'), (r'LightningBomber', 'lbomber'), (r'ZapperEX', 'zapperx'),
+       (r'LegionMk2', 'legionmk2'), (r'LegionElite', 'legione'), (r'LegionEX', 'legionx'), (r'HarvesterEX', 'harvesterx'), (r'FABigChickS', 'fabigchicks'),
+       (r'BigChickS', 'bigchicks'), (r'BigChickEX|BigChickL', 'bigchickx'), (r'NightChickDEAA', 'detectoraa'), (r'Destroyer', 'jugger'), (r'Testudo', 'tortoise'),
+       (r'Stalker', 'stalker'), (r'Predator', 'predator'), (r'Kidnapper', 'trickster'), (r'Centurion', 'centurion'),
        (r'FABigChick|Juggernaut|Mammoth', 'fabigchick'), (r'BigChick', 'bigchick'), (r'Legion', 'legion'), (r'Zapper', 'zapper'),
        (r'Phalangites', 'phalanx'), (r'HeavyScout|Scout_V2', 'heavyscout'), (r'Raider', 'raider'), (r'Wasp', 'wasp'), (r'Scarab', 'scarab'),
        (r'NightChickSP', 'sniper'), (r'NightChickDE', 'detector'), (r'NightChickCM', 'chemical'),
@@ -24,7 +29,7 @@ MOB = [(r'Stalker', 'stalker'), (r'Predator', 'predator'), (r'Kidnapper', 'trick
        (r'Scout', 'scout'), (r'Harvester', 'harvester'), (r'NightChickC_|NightChickCEX', 'cannon'), (r'NightChickSI', 'shielderx'),
        (r'NightChickM|NightChickSP', 'launcher'), (r'NightChickS', 'shielder'), (r'NightChick', 'chick')]
 GIVER = {'콘스탄챠': 'constantia', '그리폰': 'griffon', '요안나': 'johanna', 'LRL': 'lrl', '포츈': 'fortune', '펍 헤드': 'pupphead', '폴른': 'fallen',
-         '에이미': 'amy', '코코': 'coco', '마리': 'marie', '에이다': 'constantia', '스카디': 'scathy', '라비아타': 'labiata'}
+         '에이미': 'amy', '코코': 'coco', '마리': 'marie', '에이다': 'constantia', '스카디': 'scathy', '라비아타': 'labiata', '라비아타 프로토타입': 'labiata', '불굴의 마리': 'marie'}
 MODEL = {m['Key']: m['MonsterModelID'] for m in json.load(open(os.path.join(ROOT, 'tools', 'story_cache.json'), encoding='utf8'))['Table_Monster']}
 
 
