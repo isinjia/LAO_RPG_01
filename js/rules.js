@@ -163,7 +163,7 @@
   R.DIFF = {
     easy: { k: 0.85, name: '쉬움', ai: { fear: 0.4, bar: -1.5, wake: 2, kill: 0, lead: 1.3, focus: 0 } },
     normal: { k: 1.07, name: '보통', winAdj: { defend: 0.95 }, ai: { fear: 0.1, bar: -4, wake: 1, kill: 2, lead: 1.6, focus: 0.5 } }, // 보통도 쓰러뜨릴 수 있는 영웅은 노린다 (아군을 잃을 긴장)
-    hard: { k: 1.15, name: '어려움', chAdj: { 1: 0.93, 6: 0.97 }, winAdj: { defend: 0.88 }, ai: { fear: 0.05, bar: -6, wake: 0, kill: 4, lead: 2.4, focus: 2 } }, // focus: 이미 다친 영웅을 몰아 치는 협공 // lead: 적이 아군 지휘관을 노리는 무게
+    hard: { k: 1.15, name: '어려움', troopCap: 0.8, chAdj: { 1: 0.93, 6: 0.97 }, winAdj: { defend: 0.88 }, ai: { fear: 0.05, bar: -6, wake: 0, kill: 4, lead: 2.4, focus: 2 } }, // focus: 이미 다친 영웅을 몰아 치는 협공 // lead: 적이 아군 지휘관을 노리는 무게
   };
   R.aiOf = () => (R.DIFF[R.diff] || R.DIFF.normal).ai;
   // 장마다 적 능력치 배율: 뒤로 갈수록 아군은 전직·병사 훈련이 쌓여 레벨보다 빨리 강해진다 (자동 대전에서 1장이 가장 어렵고 뒤는 쉬웠다)
@@ -385,9 +385,10 @@
     const counter = dist <= d.rng || (dist <= 3 && R.trait(d, 'rangeCounter') > 0); // 대응 포격: 멀리서 맞아도 반격
     const N = R.ROUNDS, rounds = [];
     // 한 번의 교전으로 아군 부대가 통째로 무너지지 않게: 병사는 한 교전에 최대 병사 체력의 70%까지만 잃고, 그동안은 영웅에게 넘치지 않는다
-    const floorOf = (u, st) => (u.side === 'p' && u.troop && st.thp > 0 ? Math.max(0, st.thp - u.troop.hpMax * R.TROOP_CAP) : 0); // 아군 부대만 (상성이 불리해도 한 번에 무너지지 않게)
+    const capK = (R.DIFF[R.diff] && R.DIFF[R.diff].troopCap) || R.TROOP_CAP;
+    const floorOf = (u, st) => (u.side === 'p' && u.troop && st.thp > 0 ? Math.max(0, st.thp - u.troop.hpMax * capK) : 0); // 아군 부대만 (상성이 불리해도 한 번에 무너지지 않게)
     const floorA = floorOf(a, sa), floorD = floorOf(d, sd);
-    const cap = (s, st, floor) => { if (floor > 0 && st.thp - s.toT < floor) { s.toT = Math.max(0, st.thp - floor); s.toH = 0; } return s; };
+    const cap = (s, st, floor) => { if (floor > 0 && st.thp - s.toT < floor) { const over = s.toT - Math.max(0, st.thp - floor); s.toT -= over; s.toH = (s.toH || 0) + over * 0.4; } return s; }; // 넘친 피해의 40%는 영웅이 받는다
     let rel = 0;
     for (let i = 0; i < N && sa.hp > 0.5 && sd.hp > 0.5; i++) {
       const s1 = cap(strike(G, a, sa, d, sd, dist, 1 / N, rnd, true), sd, floorD);

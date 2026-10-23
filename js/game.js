@@ -1200,7 +1200,7 @@
     ph.className = G.side;
     const st = G.stage;
     const nt = R.nextWaveTurn(G);
-    $('goalBox').innerHTML = `${st.idx} ${st.title} · 승리: <b>${st.goal}</b>${nt ? ` · 증원 ${nt}턴` : ''} · 패배: ${st.lose}${R.diff !== 'normal' ? ` · 난이도 <b>${R.DIFF[R.diff].name}</b>` : ''}`;
+    $('goalBox').innerHTML = `${st.idx} ${st.title} · 승리: <b>${st.goal}</b>${nt ? ` · 증원 ${nt}턴` : ''} · 패배: ${st.lose}${R.diff !== 'normal' ? ` · 난이도 <b>${R.DIFF[R.diff].name}</b>` : ''}${st.kind ? '' : ` · 추가 목표 ${bonusLine(st, true)}`}`;
     $('btnEnd').disabled = G.side !== 'p' || busy;
     syncQuick(); renderRoster();
   }
@@ -1846,6 +1846,15 @@
     defend: '사수 작전 · 빛나는 칸에 적이 들어오면 집니다. 영웅을 그 칸 위에 세워 막으세요',
     boss: '우두머리 작전 · 우두머리를 쓰러뜨리면 이깁니다. 호위는 곁을 떠나지 않으니 하나씩 끌어내세요',
   };
+  // 추가 목표 한 줄 (작전 정보·위쪽 줄): ★ 이룬 것 / ☆ 아직
+  function bonusLine(st, live) {
+    if (st.kind) return '';
+    const b = R.bonusOf(st), rec = (save.bonus || {})[st.idx] || {};
+    const lost = live && G && G.units.some((u) => u.side === 'p' && !u.alive && !u.escaped);
+    const t = b.turns ? (live ? `${G.turn > b.turns ? '☆' : rec.t ? '★' : '◇'} ${b.turns}턴 안에${G.turn <= b.turns ? ` (${b.turns - G.turn + 1}턴 남음)` : ' (지남)'}` : `${rec.t ? '★' : '☆'} ${b.turns}턴 안에 승리`) : '';
+    const n = live ? `${lost ? '☆' : rec.n ? '★' : '◇'} 퇴각 없이${lost ? ' (실패)' : ''}` : `${rec.n ? '★' : '☆'} 영웅 퇴각 없이 승리`;
+    return [t, n].filter(Boolean).join(' · ');
+  }
   // ── 작전 중 저장 (이어하기): 아군 차례가 시작될 때마다 판 상태를 따로 저장해 두고, 타이틀의 「작전 이어하기」로 그 차례부터 되살린다 ──
   // 본편 작전(D.STAGES)만. 작전이 끝나면(승패) 지운다
   const SUSPEND_KEY = 'orca_srpg_suspend';
@@ -2265,7 +2274,7 @@
   }
   function goalInfo() {
     const st = G.stage;
-    modal(`<h3>${st.idx} ${st.title}</h3><p>승리 조건: <b>${st.goal}</b></p><p>패배 조건: ${st.lose}</p>
+    modal(`<h3>${st.idx} ${st.title}</h3><p>승리 조건: <b>${st.goal}</b></p><p>패배 조건: ${st.lose}</p>${st.kind ? '' : `<p>추가 목표: ${bonusLine(st, true)} <small>(하나마다 부품 +25%)</small></p>`}
       <p style="color:#9aa6c4">${st.waves.length > 1 ? `증원은 ${st.waves.slice(1).map((w) => w.turn + '턴').join(' · ')}에 나타나고, 그 전에 지도 위 적을 모두 쓰러뜨리면 곧바로 앞당겨 나옵니다 (전체 ${st.waves.length}무리).` : '증원이 없는 작전입니다.'}</p><div class="opts"><button class="gold" data-a="ok">확인</button></div>`);
   }
   // 첫 작전 안내: 규칙 전체 대신 꼭 알아야 할 다섯 가지만. 자세한 규칙은 메뉴의 도움말(H)
@@ -2291,13 +2300,13 @@
       <div class="osec">전투</div>
       <p><b>병종 상성</b> · 공격하는 병종이 이기는 상대를 칠 때 피해가 늘고, 거꾸로면 그만큼 줄어듭니다. 병사는 병사의 병종, 영웅은 영웅의 병종으로 따집니다.</p>
       <table class="keys">${relRows}</table>
-      <p><b>피해 흔들림</b> · 공격 예상 창의 숫자는 기댓값이고, 실제 피해는 그 ±10% 안에서 흔들립니다. 아군 부대는 한 번의 교전에 병사를 70%까지만 잃습니다.</p>
+      <p><b>피해 흔들림</b> · 공격 예상 창의 숫자는 기댓값이고, 실제 피해는 그 ±10% 안에서 흔들립니다. 아군 부대는 한 번의 교전에 병사를 70%(어려움 80%)까지만 잃고, 넘친 피해의 40%는 영웅이 받습니다.</p>
       <p><b>원거리</b> · 사격병은 사거리 2. 두 칸에서 쏘면 근접 부대는 반격하지 못합니다. 원거리 병종이 붙어서 싸우면 피해가 30%로 줄어듭니다.</p>
       <p><b>적의 움직임</b> · 적은 무리마다 지휘관이 있고, 부대가 지휘관 둘레로 함께 진격합니다. 무리 중 하나라도 아군과 가까워지거나 한 차례가 지나면 무리 전체가 움직이고, 상성으로 이기는 상대를 먼저 노립니다. 우두머리를 지키는 호위는 우두머리 곁을 떠나지 않습니다. 「위험」 단추로 적이 닿는 범위를 확인하세요. 증원은 정해진 턴에 나타나고, 그 전에 지도 위 적을 모두 쓰러뜨리면 남은 증원이 곧바로 앞당겨 나옵니다 (증원까지 모두 쓰러뜨리면 승리).</p>
       <p><b>난이도</b> · 옵션에서 고릅니다 (작전 도중에 바꾸면 그 자리에서 적의 체력·능력치가 바뀝니다). 쉬움: 적 능력치 85%, 적이 조심스럽고 늦게 움직임 · 보통: 107%(사수 작전은 ×0.95) · 어려움: 115%, 적이 처음부터 진격하고 쓰러뜨릴 수 있는 영웅을 집요하게 노림 (어려움은 배우는 1장 ×0.93·긴 6장 ×0.97, 적이 지킬 칸으로 몰려드는 사수 작전 ×0.88을 더 곱해 덜어 줌). 여기에 장마다 배율(95~106%)이 곱해지고, 옵션 창에는 지금 작전의 실제 배율이 나옵니다.</p>
       <div class="osec">성장 · 진행</div>
       <p><b>경험치</b> · 전투가 끝나면 참가한 영웅 전원이 같은 양을 받고, 가장 많이 친 영웅(MVP)은 20%를 더 받습니다.</p>
-      <p><b>추가 목표</b> · 본편 작전마다 「정한 턴 안에 승리」(버티기·사수 작전은 없음)와 「영웅 퇴각 없이 승리」가 있습니다. 달성할 때마다 부품 보상이 25% 늘고, 작전 정보에 ★로 남습니다.</p>
+      <p><b>추가 목표</b> · 본편 작전마다 「정한 턴 안에 승리」(버티기·사수 작전은 없음)와 「영웅 퇴각 없이 승리」가 있습니다. 달성할 때마다 부품 보상이 25% 늘고, 작전 정보에 ★로 남습니다. 전투 중에는 위쪽 줄에 남은 턴이 보이고, 놓친 목표는 깬 작전의 「본편 다시 하기」(부품 60%)로 다시 노립니다.</p>
       <p><b>저장</b> · 작전 도중에도 행동이 끝날 때마다 저장되어 타이틀의 「작전 이어하기」로 돌아옵니다. 이번 차례 안에서는 U(또는 메뉴)로 한 수씩 되돌리거나, 메뉴의 「이번 차례 다시」로 차례 처음으로 돌아갈 수 있습니다.</p>
       <p><b>특기</b> · 쓰고 나면 정해진 턴 동안 다시 쓸 수 없습니다(괄호 안 숫자).</p>
       <p><b>지배 영역</b> · 적과 맞닿는 칸에 들어서면 그 자리에서 멈춥니다. 적 사이를 빠져나갈 수 없으니 길목을 막아 지키세요 (적도 마찬가지).</p>
@@ -2635,7 +2644,7 @@
       const j = joined();
       const heroHtml = st.heroes.map((h) => { const H = D.HEROES[h]; return `<div class="whero ${j.has(h) ? '' : 'new'}"><img src="${IMG[H.icon]}" alt=""><small>${j.has(h) ? 'Lv.' + save.heroes[h].lv : '합류'}</small></div>`; }).join('');
       acts = `<div class="wi-row"><label>승리 조건</label><span>${st.goal}</span></div><div class="wi-row"><label>패배 조건</label><span>${st.lose}</span></div>${st.tip ? `<div class="wi-row"><label>작전 요지</label><span>${st.tip}</span></div>` : ''}
-        <div class="wi-row"><label>추가 목표</label><span>${(() => { const b = R.bonusOf(st), rec = (save.bonus || {})[st.idx] || {}; return [b.turns ? `${rec.t ? '★' : '☆'} ${b.turns}턴 안에 승리` : '', `${rec.n ? '★' : '☆'} 영웅 퇴각 없이 승리`].filter(Boolean).join(' · ') + ' <small>(하나마다 부품 +25%)</small>'; })()}</span></div>
+        <div class="wi-row"><label>추가 목표</label><span>${bonusLine(st)} <small>(하나마다 부품 +25%)</small></span></div>
         <div class="wi-sub">적 정보 <small>${st.waves.length > 1 ? `증원 ${st.waves.slice(1).map((w) => w.turn + '턴').join(' · ')}` : '증원 없음'}</small></div><div class="wi-foes">${foeHtml}</div>
         <div class="wi-sub">출격 인원 <small>기본 ${st.heroes.length}명 · 출격 준비에서 최대 ${Math.min(MAX_SORTIE, new Set([...j, ...st.heroes]).size)}명</small></div><div class="wi-heroes">${heroHtml}</div>
         <button class="wgo" id="sGo"><b>작전 개시</b><small>BATTLE START</small></button>`;
@@ -2643,6 +2652,8 @@
       const lv = partyLv();
       acts = `<div class="wi-sub">할 수 있는 일</div><div class="wi-acts">
         ${sides.map((s) => `<button class="wact side" data-side="${s.idx}"><b>${s.kind === 'Ex' ? '고난도' : '의뢰'} · ${s.title}</b><small>${s.desc}</small><em>적 Lv.${Math.min(...s.waves.flat().map((u) => u[1]))}~</em></button>`).join('')}
+        <div class="wi-row"><label>추가 목표</label><span>${bonusLine(st)}</span></div>
+        ${(() => { const b = R.bonusOf(st), rec = (save.bonus || {})[st.idx] || {}; return (b.turns && !rec.t) || !rec.n; })() ? '<button class="wact" id="sReplay"><b>본편 다시 하기</b><small>놓친 추가 목표에 다시 도전한다. 적 편성은 본편 그대로, 부품은 60%.</small></button>' : ''}
         <button class="wact" id="sRep"><b>소탕전</b><small>이 지역에 남은 철충을 다시 쓸어 낸다. 적이 부대 레벨에 맞춰 나온다. 출격은 시나리오대로 ${st.heroes.length}명.</small><em>적 Lv.${lv - 1}~</em></button>
         ${S ? '<button class="wact dim" id="sStory"><b>이야기 다시 보기</b><small>이 작전의 앞뒤 대화를 다시 본다.</small></button>' : ''}
         ${done.map((s) => `<div class="wdone">완료한 의뢰 · ${s.title}</div>`).join('')}</div>`;
@@ -2651,6 +2662,7 @@
       <p class="wi-desc">${S ? S.desc : ''}</p>${acts}`;
     if ($('sGo')) $('sGo').onclick = () => { AU.play('lo_click', 0.7); startStage(id); };
     if ($('sRep')) $('sRep').onclick = () => { AU.play('lo_click', 0.7); prep(repeatStage(id)); };
+    if ($('sReplay')) $('sReplay').onclick = () => { AU.play('lo_click', 0.7); prep(Object.assign({}, D.STAGES[id], { replay: true })); }; // 본편 다시: 추가 목표만 노린다
     if ($('sStory')) $('sStory').onclick = async () => { AU.play('lo_click', 0.7); hideScreen(); AU.bgm(S.bgmStart); await story(S.start); AU.bgm(S.bgmEnd); await story(S.end); stageSelect(); };
     document.querySelectorAll('.wact.side').forEach((b) => (b.onclick = () => { AU.play('lo_click', 0.7); prep(sideStage(b.dataset.side)); }));
     placeInfo();
@@ -3262,7 +3274,7 @@
       bonus.push({ k: 'n', name: '영웅 퇴각 없이 승리', ok: noLoss });
       const rec = (save.bonus = save.bonus || {})[st.idx] = save.bonus[st.idx] || {};
       for (const x of bonus) { x.first = x.ok && !rec[x.k]; if (x.ok) rec[x.k] = 1; }
-      parts = Math.round(parts * (1 + 0.25 * bonus.filter((x) => x.ok).length));
+      parts = Math.round(parts * (1 + 0.25 * bonus.filter((x) => x.ok).length) * (st.replay ? 0.6 : 1)); // 본편 다시 하기는 60%
     }
     g.bonus = bonus;
     save.parts = (save.parts || 0) + parts;
@@ -3283,13 +3295,14 @@
       busy = false;
       return;
     }
-    const S = st.kind !== 'repeat' && window.STORY && STORY[st.idx];
+    const S = st.kind !== 'repeat' && !st.replay && window.STORY && STORY[st.idx]; // 본편 다시 하기는 끝 대화 없이
     if (win && S) {
       AU.bgm(S.bgmEnd);
       const d = !st.kind ? await storyPart(st, 'end') : (await story(S.end), null);
       if (d) { save.clear = clear0; writeSave(); busy = false; return ifBranch(d, si, 'end'); } // 잘못된 판단: 이 작전은 아직 마치지 못한 것으로
     }
-    if (win) afterWin(st, si);
+    if (win) { if (st.replay) stageSelect(); else afterWin(st, si); }
+    else if (st.replay) stageSelect();
     busy = false;
   }
   // 이긴 뒤 월드맵으로: 지역을 마쳤으면 다음 지역 지도와 안내
