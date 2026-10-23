@@ -156,6 +156,10 @@
   R.tierOf = (u) => (u.side === 'p' ? u.def.tiers[u.tier] : null);
   const buffK = (u, k) => 1 + u.buffs.reduce((s, b) => s + (b[k] || 0), 0);
   R.buffK = buffK;
+  // 난이도: 적 능력치(이동 제외) 배율. 작전을 시작할 때 옵션에서 정한다 (game.js)
+  R.DIFF = { easy: { k: 0.85, name: '쉬움' }, normal: { k: 1, name: '보통' }, hard: { k: 1.15, name: '어려움' } };
+  R.diff = 'normal';
+  const diffK = () => (R.DIFF[R.diff] || R.DIFF.normal).k;
   R.heroStat = function (u, k) {
     if (u.side === 'p') {
       const t = u.form || u.def.tiers[u.tier];
@@ -165,13 +169,13 @@
       return u.def.tiers[0][k] * (1 + 0.07 * (u.lv - 1)) * (1 + 0.06 * u.tier) * m;
     }
     if (k === 'mov') return u.def.mov;
-    return u.def[k] * (1 + 0.07 * (u.lv - 1));
+    return u.def[k] * (1 + 0.07 * (u.lv - 1)) * diffK();
   };
   // 병사: (기본 x 레벨 성장 + 영웅 공방의 25%) x 병사 훈련 (랑그릿사 모바일 병사 훈련처럼 병종마다 단계가 오르면 능력치 +)
   R.troopStat = function (u, k) {
     const t = u.troop.def;
     const v = t[k] * (1 + 0.06 * (u.lv - 1));
-    return (k === 'hp' ? v : v + R.heroStat(u, k) * 0.25) * (1 + R.DRILL_K * (u.troop.drill || 0));
+    return (k === 'hp' ? v * (u.side === 'e' ? diffK() : 1) : v + R.heroStat(u, k) * 0.25) * (1 + R.DRILL_K * (u.troop.drill || 0));
   };
   R.atk = (u, part) => (part === 'T' ? R.troopStat(u, 'at') : R.heroStat(u, 'at')) * buffK(u, 'at');
   R.def = (u, part) => (part === 'T' ? R.troopStat(u, 'df') : R.heroStat(u, 'df')) * buffK(u, 'df');

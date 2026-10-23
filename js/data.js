@@ -514,7 +514,7 @@
       ],
     },
     {
-      id: 7, idx: '1-7', title: '교살 밧줄', bgm: 'lo_battle2', goal: '철충 전멸', lose: '콘스탄챠 퇴각 / 18턴 초과', win: 'all', turnLimit: 18,
+      id: 7, idx: '1-7', title: '교살 밧줄', bgm: 'lo_battle2', goal: '철충 전멸', lose: '콘스탄챠 퇴각 / 20턴 초과', win: 'all', turnLimit: 20,
       heroes: ['constantia', 'griffon', 'johanna', 'lrl', 'pupphead', 'fallen'],
       map: [
         '.......rr.f.h..f..',
