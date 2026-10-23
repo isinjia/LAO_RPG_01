@@ -826,3 +826,9 @@ i.dlv { font: normal 11px 'LO_B', sans-serif; color: #111; background: #8fd0ff; 
 /* 전술 단추: 세 줄(제목·이름·효과)이 단추 안에 들어가게 */
 .pfootbar .ptac { height: 62px; gap: 0; line-height: 1.2; padding: 4px 14px; }
 .pfootbar .ptac b { font-size: 14px; }
+/* 출격 준비 오른쪽 특기: 한 줄 요약(전체는 마우스를 올리면) → 스크롤 없이 다 보이게 */
+@media (orientation: landscape) and (min-width: 1000px) {
+  .pd-skills div { display: flex; align-items: baseline; gap: 8px; padding: 4px 10px; }
+  .pd-skills b { display: inline; flex: none; font-size: 13px; }
+  .pd-skills small { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+}

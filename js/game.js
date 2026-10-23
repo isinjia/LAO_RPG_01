@@ -2399,7 +2399,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.53';
+  const GAME_VERSION = '1.54';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -3022,7 +3022,7 @@
         <div class="pd-stats"><div><label>병종</label>${kindTag(t.kind)}</div><div><label>체력</label><b>${hp}</b></div><div><label>공격</label><b>${at}</b></div>
           <div><label>방어</label><b>${df}</b></div><div><label>이동</label><b>${CL.stats(id, s).mov}</b></div><div><label>사거리</label><b>${t.rng}</b></div></div>
         <div class="wi-sub">병사 배속 <small>출격마다 10명 가득 · 공격받으면 병사가 먼저 피해</small></div><div class="pd-troops">${troops}</div>
-        <div class="wi-sub">특기</div><div class="pd-skills">${t.skills.map((k) => { const sk = D.SKILLS[k]; return `<div><b>${sk.name}</b><small>재사용 ${sk.cd}턴 · ${sk.desc}</small></div>`; }).join('')}</div>
+        <div class="wi-sub">특기</div><div class="pd-skills">${t.skills.map((k) => { const sk = D.SKILLS[k]; return `<div title="${sk.desc}"><b>${sk.name}</b><small>재사용 ${sk.cd}턴 · ${sk.desc}</small></div>`; }).join('')}</div>
         <button class="pd-drill" id="pDrill"><img src="${PARTS_ICON}" alt=""><b>병사 훈련</b><small>부품 ${save.parts || 0} · 병종마다 능력치 +${Math.round(R.DRILL_K * 100)}%씩</small></button>`;
     };
     const count = () => (st.free ? `<span class="pcnt">출전 ${st.heroes.length} / ${cap}</span>` : '');
