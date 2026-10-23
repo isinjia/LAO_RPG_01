@@ -82,8 +82,8 @@
     (G.spawned || (G.spawned = new Set())).add(i);
     G.wave = Math.max(G.wave, i);
     const spots = w.form ? R.formSpots(G, w) : R.freeAround(G, w.at[0], w.at[1], 'foot', w.units.length);
-    const list = w.units.map(([t, lv], k) => spots[k] && R.makeEnemy(G, t, lv, spots[k][0], spots[k][1], { boss: w.boss === t, ai: w.boss === t || w.hold ? 'guard' : 'charge' })).filter(Boolean);
-    if (i > 0) list.forEach((u) => { u.awake = true; });
+    const list = w.units.map(([t, lv], k) => spots[k] && R.makeEnemy(G, t, lv, spots[k][0], spots[k][1], { boss: w.boss === t, ai: w.boss === t || w.hold || (w.holdK && w.holdK.includes(k)) ? 'guard' : 'charge' })).filter(Boolean);
+    if (i > 0 || w.awake) list.forEach((u) => { u.awake = true; }); // awake: 처음부터 진격하는 첫 무리 (아군이 지키는 수비전)
     return list;
   };
   // 무리 진형 (js/stagemaps.js 의 form): 아군 쪽을 앞으로 보고 line 횡대 · wedge 쐐기 · scatter 흩어짐 · ring 우두머리 둘레 · blob 덩어리.
@@ -101,6 +101,23 @@
       }
       return null;
     };
+    // 병종에 맞게 다듬기: 사거리 2 이상은 2칸 안의 빈 언덕·폐허로 올라서고, 기마는 숲·언덕·산을 피해 가까운 평지로
+    const fit = (t, p) => {
+      if (!p) return p;
+      const e = ENEMIES[t], c = (x, y) => G.map[y][x];
+      const good = e.rng > 1 ? (x, y) => 'hs'.includes(c(x, y)) : e.move === 'horse' ? (x, y) => !'fhm'.includes(c(x, y)) : null;
+      if (!good || good(p[0], p[1])) return p;
+      let best = null;
+      for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+        const x = p[0] + dx, y = p[1] + dy, d = Math.abs(dx) + Math.abs(dy);
+        if (d && d <= 2 && free(x, y) && good(x, y) && (!best || d < best[2])) best = [x, y, d];
+      }
+      return best ? [best[0], best[1]] : p;
+    };
+    if (w.spots) { // 한 기씩 정한 자리 (사격병은 언덕, 기동병은 평지처럼 병종마다 손으로 고른 칸). 막혔으면 가장 가까운 빈칸
+      w.units.forEach(([t], k) => { const sp = w.spots[k] || w.at, p = fit(t, near(sp[0], sp[1])); if (p) { taken.add(p[0] + ',' + p[1]); out[k] = p; } });
+      return out;
+    }
     const split = w.at2 ? Math.ceil(n / 2) : n;
     const groups = w.at2 ? [[w.at, 0, split], [w.at2, split, n]] : [[w.at, 0, n]];
     const bossK = w.boss ? w.units.findIndex(([t]) => t === w.boss) : -1;
@@ -120,7 +137,7 @@
       }
       const order = [...Array(m).keys()].map((i) => a + i);
       if (w.form === 'ring' && bossK >= a && bossK < b) { order.splice(order.indexOf(bossK), 1); order.unshift(bossK); } // 우두머리가 가운데
-      order.forEach((k, i) => { const p = near(offs[i][0], offs[i][1]); if (p) { taken.add(p[0] + ',' + p[1]); out[k] = p; } });
+      order.forEach((k, i) => { const p = fit(w.units[k][0], near(offs[i][0], offs[i][1])); if (p) { taken.add(p[0] + ',' + p[1]); out[k] = p; } });
     }
     return out;
   };
