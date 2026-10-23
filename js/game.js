@@ -2420,7 +2420,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.86';
+  const GAME_VERSION = '1.87';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -3041,7 +3041,7 @@
         : '<div class="pd-swap"><button class="pd-sortie on" id="pSwap">다른 영웅으로 바꾸기</button><button class="pd-sortie" id="pOut">출전에서 빼기</button></div>';
       return `<div class="pd-head"><b>${h.full}</b><span>${t.cls}</span></div>${sortie}
         <div class="pd-lv"><span>Lv.<b>${s.lv}</b></span><div class="pd-exp"><i style="width:${Math.min(100, s.exp)}%"></i></div>${next ? `<small>Lv.${next}에 전직</small>` : '<small>최종 전직</small>'}</div>
-        <button class="pd-cc ${CL.canChange(id, s) ? 'ready' : ''}" id="pCC"><b>전직</b><small>${CL.canChange(id, s) ? '전직할 수 있습니다' : next ? `Lv.${next}부터 · 전직 나무 보기` : '최종 전직 완료 · 전직 나무 보기'}</small></button>
+        <button class="pd-cc ${CL.canChange(id, s) ? 'ready' : ''}" id="pCC"><b>전직</b><small>${CL.canChange(id, s) ? '전직할 수 있습니다' : next ? `Lv.${next}부터 · 전직 트리보기` : '최종 전직 완료 · 전직 트리보기'}</small></button>
         ${s.lv >= R.PERK_LV ? `<button class="pd-cc ${s.perk ? '' : 'ready'}" id="pPerk"><b>각성</b><small>${s.perk ? `${[s.perk, s.lv >= R.PERK2_LV ? s.perk2 : null].filter(Boolean).map((p, i) => `${i ? '둘째' : '첫째'} ${R.PERKS[p].name}`).join(' · ')}${s.lv >= R.PERK2_LV && !s.perk2 ? ' · 둘째 각성을 고를 수 있습니다' : ' (바꾸기)'}` : '각성을 고를 수 있습니다'}</small></button>` : ''}
         <div class="pd-stats"><div><label>병종</label>${kindTag(t.kind)}</div><div><label>체력</label><b>${hp}</b></div><div><label>공격</label><b>${at}</b></div>
           <div><label>방어</label><b>${df}</b></div><div><label>이동</label><b>${CL.stats(id, s).mov}</b></div><div><label>사거리</label><b>${t.rng}</b></div></div>
