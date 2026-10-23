@@ -76,7 +76,7 @@
   function loadSave() {
     let s = null;
     try { s = JSON.parse(localStorage.getItem('orca_srpg_save2') || 'null'); } catch (e) { s = null; }
-    const def = { clear: 0, heroes: {}, troops: {}, parts: 0, drill: {}, opts: { fight: true, fast: false, sound: true, autoEnd: true, bgmV: 70, sfxV: 80, voiceV: 90, blip: true, textSpd: 1 } };
+    const def = { clear: 0, heroes: {}, troops: {}, parts: 0, drill: {}, opts: { fight: true, fast: false, sound: true, autoEnd: true, bgmV: 70, sfxV: 80, voiceV: 90, blip: true, textSpd: 1, diff: 'normal' } };
     const defOpts = def.opts;
     s = Object.assign(def, s || {});
     s.opts = Object.assign({}, defOpts, s.opts || {}); // 예전 저장 기록에 없는 옵션은 기본값으로
@@ -1195,7 +1195,7 @@
     ph.className = G.side;
     const st = G.stage;
     const nt = R.nextWaveTurn(G);
-    $('goalBox').innerHTML = `${st.idx} ${st.title} · 승리: <b>${st.goal}</b>${nt ? ` · 증원 ${nt}턴` : ''} · 패배: ${st.lose}`;
+    $('goalBox').innerHTML = `${st.idx} ${st.title} · 승리: <b>${st.goal}</b>${nt ? ` · 증원 ${nt}턴` : ''} · 패배: ${st.lose}${R.diff !== 'normal' ? ` · 난이도 <b>${R.DIFF[R.diff].name}</b>` : ''}`;
     $('btnEnd').disabled = G.side !== 'p' || busy;
     syncQuick(); renderRoster();
   }
@@ -1461,7 +1461,7 @@
     const auA = R.auraK(G, a, 'at') > 1.001, auD = R.auraK(G, d, 'df') > 1.001;
     const traitLine = [...tA.map((n) => `<span class="good">${n}</span>`), ...(auA ? ['<span class="good">지휘 공격 강화</span>'] : []), ...tD.map((n) => `<span class="bad">적 ${n}</span>`), ...(auD ? ['<span class="bad">적 지휘 방어 강화</span>'] : [])].join(' · ');
     const side = (u, t, h, cls) => `<div class="side ${cls}"><img src="${IMG[u.icon]}"><div><div class="n">${u.name}</div>
-      ${u.troop ? `<div class="h" style="font-size:14px">병사 ${Math.round(u.troop.hp)}<em>→ ${Math.max(0, Math.round(u.troop.hp - t))}</em></div>` : ''}
+      ${u.troop ? `<div class="h" style="font-size:14px">병사 ${R.soldiers(u)}명<em>→ ${R.soldiers(u, Math.max(0, u.troop.hp - t))}명</em></div>` : ''}
       <div class="h" style="font-size:16px">영웅 ${Math.round(u.hp)}<em>→ ${Math.max(0, Math.round(u.hp - h))}</em></div></div></div>`;
     el.innerHTML = `<div class="row">${side(a, p.aT, p.aH, '')}<div class="mid">예상<b>⚔</b>${p.counter ? '반격 있음' : '반격 없음'}</div>${side(d, p.dT, p.dH, 'R')}</div>
       ${traitLine ? `<div class="rel trait">${traitLine}</div>` : ''}
@@ -1819,7 +1819,7 @@
     const fields = {};
     const g0 = G; // 도중에 작전이 바뀌면(포기·재시작) 멈춘다
     const near = (u) => Math.min(99, ...G.units.filter((o) => o.alive && o.side !== side).map((o) => R.dist(o.x, o.y, u.x, u.y)));
-    const list = G.units.filter((u) => u.alive && u.side === side && !u.acted).sort((a, b) => (a.lead || a.boss ? 1 : 0) - (b.lead || b.boss ? 1 : 0) || near(a) - near(b));
+    const list = G.units.filter((u) => u.alive && u.side === side && !u.acted).sort((a, b) => (a.lead || a.boss ? 1 : 0) - (b.lead || b.boss ? 1 : 0) || (a.cmd === a ? 0 : 1) - (b.cmd === b ? 0 : 1) || near(a) - near(b)); // 적 지휘관이 먼저 나서고 부대가 따라간다
     // 매번 남은 유닛 중 이번에 가장 좋은 수(격파·큰 피해·특기)를 가진 유닛부터 움직인다 (협공으로 마무리하도록).
     // 공격할 것이 없는 유닛은 원래 순서(가까운 유닛부터)대로 뒤에 움직인다
     const left = list.slice();
@@ -2077,8 +2077,10 @@
       <button data-a="fight">전투 장면: <b>${onoff(o.fight)}</b></button>
       <button data-a="fast">빠른 진행: <b>${onoff(o.fast)}</b></button>
       <button data-a="autoEnd">모두 행동하면 자동 턴 종료: <b>${onoff(o.autoEnd)}</b></button>
+      <button data-a="diff">난이도: <b>${R.DIFF[o.diff || 'normal'].name}</b> <small>(적 능력치 ${Math.round(R.DIFF[o.diff || 'normal'].k * 100)}% · 다음 작전부터)</small></button>
       <button data-a="close" class="gold">닫기</button></div>`, (a) => {
       if (['sound', 'blip', 'fight', 'fast', 'autoEnd'].includes(a)) { o[a] = !o[a]; if (a === 'fast') delete o.spd; }
+      else if (a === 'diff') { const l = Object.keys(R.DIFF); o.diff = l[(l.indexOf(o.diff || 'normal') + 1) % l.length]; }
       else if (a === 'textSpd') o.textSpd = (o.textSpd + 1) % 3;
       else { writeSave(); if (back) back(); return; }
       writeSave(); applyOpts(); options(back);
@@ -2094,6 +2096,16 @@
     modal(`<h3>${st.idx} ${st.title}</h3><p>승리 조건: <b>${st.goal}</b></p><p>패배 조건: ${st.lose}</p>
       <p style="color:#9aa6c4">적 무리를 모두 쓰러뜨리면 다음 무리가 나타납니다 (전체 ${st.waves.length}무리).</p><div class="opts"><button class="gold" data-a="ok">확인</button></div>`);
   }
+  // 첫 작전 안내: 규칙 전체 대신 꼭 알아야 할 다섯 가지만. 자세한 규칙은 메뉴의 도움말(H)
+  function firstTips(cb) {
+    modal(`<h3>작전 안내</h3>
+      <p><b>① 움직이기</b> · 영웅을 누르면 파란 칸(이동)과 빨간 칸(공격)이 보입니다. 빨간 칸의 적을 누르면 다가가 공격하기 전에 <b>예상 피해</b>를 보여 줍니다.</p>
+      <p><b>② 병사가 먼저</b> · 한 칸은 영웅 1명 + 병사 10명입니다. 병사가 먼저 맞고, 영웅이 쓰러지면 퇴각합니다. 지휘관 <b>콘스탄챠</b>가 쓰러지면 패배합니다.</p>
+      <p><b>③ 상성</b> · 소총병 ▶ 중장병 ▶ 기동병 ▶ 소총병, 사격병 ▶ 공중병. 이기는 상대를 골라 치세요.</p>
+      <p><b>④ 위험 범위</b> · 오른쪽 위 「위험」을 누르면 적이 다음 차례에 닿는 칸이 보입니다. 적은 지휘관을 따라 함께 진격해 옵니다.</p>
+      <p><b>⑤ 정비</b> · 움직이지 않고 「정비」를 고르면 병사와 체력이 회복됩니다.</p>
+      <div class="opts"><button class="gold" data-a="ok">작전 시작</button><button data-a="more">규칙 자세히</button></div>`, (a) => (a === 'more' ? help(cb) : cb && cb()));
+  }
   function help(cb) {
     modal(`<h3>도움말</h3>
       <p><b>영웅과 병사</b> · 지도 위 한 칸은 영웅 한 명과 배속된 병사 부대입니다. 공격받으면 <b>병사가 먼저</b> 피해를 받고, 병사가 전멸하면 영웅이 직접 맞습니다. 영웅이 쓰러지면 그 칸은 퇴각합니다.</p>
@@ -2103,7 +2115,8 @@
       <p><b>병사 보충</b> · 전투 중에는 고전 랑그릿사처럼 보충합니다. ① 아군 차례가 시작될 때 지휘관 콘스탄챠의 ${R.CMD_RANGE}칸 안에 있는 아군은 병사 1명 보충 ② 움직이지 않고 '정비'를 고르면 병사 ${Math.round(R.REFIT_T * R.SQUAD)}명 보충 + 영웅 체력 ${Math.round(R.REFIT_H * 100)}% (그 차례 행동은 끝) ③ 마을·기지 칸에서 차례를 시작하면 영웅·병사 10% 회복, 기지는 병사를 2명 더 보충 (적도 마찬가지). 병사가 모두 쓰러진 부대는 지휘 범위로는 돌아오지 않습니다.</p>
       <p><b>병종 상성</b> · 소총병 ▶ 중장병 ▶ 기동병 ▶ 소총병 (+30%), 사격병 ▶ 공중병 (+40%), 공중병 ▶ 소총병 (+20%)·전자전병 (+30%), 전자전병 ▶ 중장병 (+30%), 침투병 ▶ 사격병·전자전병 (+30%), 의무병 ▶ 변이체 (+80%). 그 밖에는 상성이 없습니다. 병사는 병사의 병종, 영웅은 영웅의 병종으로 따집니다.</p>
       <p><b>원거리</b> · 사격병은 사거리 2. 두 칸에서 쏘면 근접 부대는 반격하지 못합니다. 원거리 병종이 붙어서 싸우면 피해가 30%로 줄어듭니다.</p>
-      <p><b>적의 움직임</b> · 적은 아군이 자기 공격 범위(위험 범위)에 들어와야 움직이기 시작합니다. 「위험」 단추로 범위를 확인하고 하나씩 끌어내세요. 증원은 정해진 턴에 나타나며, 그 전에 적을 모두 쓰러뜨리면 승리합니다.</p>
+      <p><b>적의 움직임</b> · 적은 무리마다 지휘관이 있고, 부대가 지휘관 둘레로 함께 진격합니다. 무리 중 하나라도 아군과 가까워지거나 한 차례가 지나면 무리 전체가 움직이고, 상성으로 이기는 상대를 먼저 노립니다. 우두머리를 지키는 호위는 우두머리 곁을 떠나지 않습니다. 「위험」 단추로 적이 닿는 범위를 확인하세요. 증원은 정해진 턴에 나타나며, 그 전에 적을 모두 쓰러뜨리면 승리합니다.</p>
+      <p><b>난이도</b> · 옵션에서 쉬움(적 능력치 85%)·보통·어려움(115%)을 고를 수 있습니다. 다음 작전부터 적용됩니다.</p>
       <p><b>경험치</b> · 전투가 끝나면 참가한 영웅 전원이 같은 양을 받습니다.</p>
       <p><b>특기</b> · 쓰고 나면 정해진 턴 동안 다시 쓸 수 없습니다(괄호 안 숫자).</p>
       <p><b>지배 영역</b> · 적과 맞닿는 칸에 들어서면 그 자리에서 멈춥니다. 적 사이를 빠져나갈 수 없으니 길목을 막아 지키세요 (적도 마찬가지).</p>
@@ -2151,7 +2164,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.93';
+  const GAME_VERSION = '0.95';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2285,7 +2298,7 @@
       <div class="whead"><button class="wback" id="sBack" aria-label="뒤로"></button>
         <div class="wtitle"><small>CHAPTER ${String(CH.no).padStart(2, '0')}</small><b>${CH.name}</b></div>
         ${chOpen() > 0 ? `<div class="wchap"><button id="sPrev" ${ch > 0 ? '' : 'disabled'} aria-label="이전 지역">‹</button><span>${CH.no} / ${chOpen() + 1}</span><button id="sNext" ${ch < chOpen() ? '' : 'disabled'} aria-label="다음 지역">›</button></div>` : ''}</div>
-      <div class="wtools"><button class="lo-btn dark" id="sHero">부대 현황</button><button class="lo-btn dark" id="sDrill">병사 훈련</button><button class="lo-btn dark" id="sIf">IF 기록</button></div>
+      <div class="wtools"><button class="lo-btn dark" id="sHero">부대 현황</button><button class="lo-btn dark" id="sDrill">병사 훈련</button><button class="lo-btn dark" id="sIf">IF 기록</button><button class="lo-btn dark" id="sOpt">옵션</button></div>
       <button class="wchlbtn" id="sChlBtn"><small>CHAPTER</small><b>${String(CH.no).padStart(2, '0')}</b><span>챕터 목록</span></button>
       <div class="wchl" id="sChl"><div class="wchl-h"><small>CHAPTER LIST</small><b>챕터 선택</b><button class="wchl-x" id="sChlX" aria-label="닫기"></button></div>
         <div class="wchl-l">${CH_LIST.map((c, i) => { const open = c.inGame && i <= chOpen(); return `<button class="wch ${i === ch ? 'on' : ''} ${open ? '' : 'lock'}" data-i="${i}">
@@ -2296,6 +2309,7 @@
     $('sHero').onclick = () => { AU.play('lo_click', 0.6); heroRoster(); };
     $('sDrill').onclick = () => { AU.play('lo_click', 0.6); drillMenu(); };
     $('sIf').onclick = () => { AU.play('lo_click', 0.6); ifRecord(); };
+    $('sOpt').onclick = () => { AU.play('lo_click', 0.6); options(); }; // 소리·전투·난이도
     const goCh = (to) => { AU.play('lo_click', 0.6); AU.play('lo_trans_in', 0.5); save.chapter = to; save.node = null; writeSave(); stageSelect(); };
     if ($('sPrev')) $('sPrev').onclick = () => goCh(ch - 1);
     if ($('sNext')) $('sNext').onclick = () => goCh(ch + 1);
@@ -2843,6 +2857,7 @@
     const st = stageOf(x);
     hideScreen();
     if (G) leaveMap();
+    R.diff = save.opts.diff || 'normal'; // 난이도는 작전을 시작할 때 정해진다
     G = R.newGame(st);
     G.drill = save.drill || {};
     buildWorld();
@@ -2885,7 +2900,7 @@
     ui.state = 'idle'; busy = false; dangerOn = false; $('btnDanger').classList.remove('on'); autoOn = false; $('btnAuto').classList.remove('on');
     AU.bgm(st.bgm);
     setTop();
-    if (st.id === 1 && !st.kind && !save.tutSeen) { save.tutSeen = true; writeSave(); await new Promise((r) => help(r)); }
+    if (st.id === 1 && !st.kind && !save.tutSeen) { save.tutSeen = true; writeSave(); await new Promise((r) => firstTips(r)); }
     const g0 = G;
     await deployPhase(st);
     if (G !== g0) return; // 배치 중에 작전을 떠났다

@@ -5,6 +5,7 @@ global.window = global;
 require('../js/data.js'); require('../js/stagemaps.js'); require('../js/rules.js'); require('../js/classes.js');
 for (const f of ['story', 'story_ch02', 'story_ch03', 'story_ch04', 'story_ch05', 'story_ch06']) require('../js/' + f + '.js');
 const D = DATA, R = RULES, CL = CLASSES;
+if (process.env.DIFF) R.diff = process.env.DIFF; // 난이도: easy · normal · hard
 const RUNS = +process.argv[2] || 3, FROM = +process.argv[3] || 1, TO = +process.argv[4] || D.STAGES.length;
 const MAX_SORTIE = 8;
 
