@@ -159,7 +159,7 @@
         EXIT(12, 17), ...NPC([13, 11], [9, 11], [20, 13]), CON(14, 16),
       ],
       rooms: {
-        cmd: ROOM('진지 지휘소', 'r_dis1_0', 355, ['#3f6b62', '#8fc0b3'], [D('town/r_mm2_2', 2, 2, 1, 1.6), D('town/r_dis1_10', 11, 2, 1, 1.8), D('tiles/bags0', 1, 6, 2, 0.7)]),
+        cmd: ROOM('진지 지휘소', 'r_dis1_0', 355, ['#3f6b62', '#8fc0b3'], [D('town/r_mm2_2', 2, 2, 1, 1.6), D('town/r_dis1_10', 11, 2, 1, 1.8), D('tiles/crate1', 1, 6, 1, 1.0)]),
         shop: Object.assign(ROOM('무기고', 'r_mm0_0', 370, ['#6b5552', '#b59d96'], [D('town/r_res2_16', 1, 2, 1, 2.0), D('town/r_res1_8', 11, 2, 1, 1.8), D('tiles/crate1', 10, 5, 1, 1.0)]), { tint: '#eef2dc' }),
         cafe: Object.assign(ROOM('야전 식당', 'r_cafe2_0', 268, ['#8f877a', '#ece7de'], [D('town/r_cafe2_1', 3, 4, 3, 1.0), D('town/r_cafe2_3b', 8, 2, 3, 1.3), D('town/r_cafe2_2', 8, 5, 3, 1.0), D('town/r_cafe2_3', 1, 2, 1, 0.6), D('town/r_cafe2_1', 3, 6, 3, 1.0), D('town/r_cafe3_2', 11, 2, 1, 1.0), D('town/r_cafe1_1', 8, 7, 3, 1.0, { block: 0 })]), { tint: '#f1e0c0' }),
       },
@@ -186,9 +186,9 @@
         EXIT(12, 17), ...NPC([12, 11], [10, 11], [20, 10]), CON(14, 15),
       ],
       rooms: {
-        cmd: Object.assign(ROOM('드론 관제실', 'r_secret', 556, ['#3c5a5c', '#88a9ab'], [D('town/r_mk4_1', 1, 6, 1, 1.4), D('town/r_mm2_2', 11, 7, 1, 1.5)]), { floorTex: 'tiles/labd' }),
-        shop: Object.assign(ROOM('드론 격납고', 'r_train_0', 365, ['#55606e', '#9aa6b6'], [D('town/r_iron1_5b', 1, 2, 1, 1.9), D('town/r_iron2_16', 11, 2, 1, 2.2)]), { tint: '#c9e3ea' }),
-        cafe: Object.assign(ROOM('보급고 휴게실', 'r_ware', 552, ['#8f877a', '#ece7de'], [D('town/r_cafe5_1', 4, 4, 3, 1.1), D('town/r_cafe2_1', 8, 4, 3, 1.0), D('town/r_cafe3_2', 11, 3, 1, 1.0)]), { floorTex: 'tiles/factory' }),
+        cmd: Object.assign(ROOM('드론 관제실', 'r_secret', 556, ['#3c5a5c', '#88a9ab'], [D('town/r_mk4_1', 1, 6, 1, 1.4), D('town/r_mm2_2', 11, 7, 1, 1.5)]), { floorTex: 'tiles/labd', tint: '#a9bcc6' }),
+        shop: Object.assign(ROOM('드론 격납고', 'r_train_0', 365, ['#55606e', '#9aa6b6'], [D('town/r_iron1_5b', 1, 2, 1, 1.9), D('town/r_iron2_16', 11, 2, 1, 2.2)]), { tint: '#9fb6be' }),
+        cafe: Object.assign(ROOM('보급고 휴게실', 'r_ware', 552, ['#8f877a', '#ece7de'], [D('town/r_cafe5_1', 4, 4, 3, 1.1), D('town/r_cafe2_1', 8, 4, 3, 1.0), D('town/r_cafe3_2', 11, 3, 1, 1.0)]), { floorTex: 'tiles/factory', tint: '#b9c6cc' }),
       },
     },
     // 5장 건너편 역사 거점: 지하 철도 승강장. 위는 기둥과 화물칸이 선 승강장, 언더와처 시설의 금고문과 서버
@@ -212,7 +212,7 @@
       ],
       lights: [5, 12.5, 20].flatMap((x) => [9, 13, 16].map((y) => [x, y, 210, '200,230,255'])), // 천장 조명: 고르게
       rooms: {
-        cmd: Object.assign(ROOM('서버 관제실', 'r_arch', 552, ['#2f4f4a', '#7fa69c'], [D('town/r_andr2_10', 1, 7, 3, 1.0), D('tiles/server', 10, 7, 2, 1.1)]), { floorTex: 'tiles/labd' }),
+        cmd: Object.assign(ROOM('서버 관제실', 'r_arch', 552, ['#2f4f4a', '#7fa69c'], [D('town/r_andr2_10', 2, 6, 3, 1.0), D('tiles/server', 9, 6, 2, 1.1)]), { floorTex: 'tiles/labd' }),
         shop: Object.assign(ROOM('열차 정비실', 'r_train_0', 365, ['#55606e', '#9aa6b6'], [D('town/r_iron1_9', 1, 2, 2, 1.7), D('town/r_var2_14', 11, 2, 1, 2.4)]), { tint: '#d2deef' }),
         cafe: ROOM('역무실 휴게실', 'r_cafe5_0', 268, ['#8f877a', '#ece7de'], [D('town/r_cafe5_3', 8, 2, 3, 1.0), D('town/r_cafe2_1', 3, 4, 3, 1.0), D('town/r_cafe4_1', 8, 5, 3, 1.1), D('town/r_cafe3_2', 1, 2, 1, 1.0)]),
       },
