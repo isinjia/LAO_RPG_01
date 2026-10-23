@@ -1232,7 +1232,7 @@
         const risky = c >= 3 || (c >= 1 && (u.lead || u.hp < u.hpMax * 0.5));
         setHint(risky ? `⚠ 이 칸은 적 ${c}기의 공격이 닿습니다${u.lead ? ` — ${u.name}${(() => { const c = u.name.charCodeAt(u.name.length - 1) - 0xac00; return c >= 0 && c < 11172 ? (c % 28 ? '이' : '가') : '이(가)'; })()} 쓰러지면 패배` : c >= 3 ? ' — 집중 공격 위험' : ' — 영웅이 다쳐 있음'}` : ui.moveHint);
         $('hint').classList.toggle('warn', risky);
-      }
+      } else if (ui.moveHint && $('hint').classList.contains('warn')) setHint(ui.moveHint); // 갈 수 없는 칸으로 옮기면 경고를 거둔다
     }
     if (ui.state === 'skill' && t) previewSkillArea(t);
     if (ui.state === 'idle' && t) { const u = R.unitAt(G, t[0], t[1]); showInfo(u, u ? null : t); }
@@ -2407,7 +2407,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.60';
+  const GAME_VERSION = '1.61';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
