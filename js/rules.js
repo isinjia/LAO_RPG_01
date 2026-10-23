@@ -186,13 +186,18 @@
   R.TACTICS = {
     none: { name: '전술 없음', desc: '아무 효과 없음' },
     rush: { name: '돌격 명령', desc: '처음 3턴 공격 +15%, 방어 -8%', buff: { at: 0.15, df: -0.08 }, turns: 3 },
-    wall: { name: '방어 진형', desc: '처음 4턴 방어 +18%', buff: { df: 0.18 }, turns: 4 },
-    swift: { name: '신속 전개', desc: '처음 2턴 이동 +1', buff: { mov: 1 }, turns: 2 },
+    wall: { name: '방어 진형', desc: '처음 4턴 방어 +18% (버티기·사수 작전은 8턴)', buff: { df: 0.18 }, turns: 4, holdTurns: 8 },
+    swift: { name: '신속 전개', desc: '처음 2턴 이동 +1, 방어 -5%', buff: { mov: 1, df: -0.05 }, turns: 2 },
   };
+  const holdStage = (st) => st && (st.win === 'survive' || st.win === 'defend');
+  R.tacTurns = (key, st) => { const t = R.TACTICS[key]; return t ? (holdStage(st) && t.holdTurns) || t.turns || 0 : 0; };
+  // 작전에 맞는 추천: 버티기·사수 → 방어 진형, 도달·탈출 → 신속 전개, 그 밖 → 돌격 명령
+  R.tacFor = (st) => (holdStage(st) ? 'wall' : st && (st.win === 'reach' || st.win === 'escape') ? 'swift' : 'rush');
   R.applyTactic = (G, key) => {
     const t = R.TACTICS[key]; G.tactic = t && t.buff ? key : 'none';
     if (!t || !t.buff) return;
-    for (const u of G.units) if (u.side === 'p') u.buffs.push({ ...t.buff, until: 1 + t.turns, side: 'p', tac: 1 });
+    G.tacUntil = R.tacTurns(key, G.stage);
+    for (const u of G.units) if (u.side === 'p') u.buffs.push({ ...t.buff, until: 1 + G.tacUntil, side: 'p', tac: 1 });
   };
   R.PERK2_LV = 40; // 두 번째 각성 (첫째와 다른 것)
   const perkK = (u, k) => (u.side !== 'p' ? 0 : [u.perk, u.perk2].reduce((n, p) => n + ((p && R.PERKS[p] && R.PERKS[p].k[k]) || 0), 0));

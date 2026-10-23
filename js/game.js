@@ -1202,9 +1202,9 @@
     const nt = R.nextWaveTurn(G);
     // 위쪽 줄은 작전명·승리 조건·(증원)·추가 목표만 (패배 조건·자세한 증원은 승리 조건 창: 띠를 누르거나 메뉴)
     $('goalBox').innerHTML = `${st.idx} ${st.title} · 승리: <b>${st.goal}</b>${nt ? ` · 증원 ${nt}턴` : ''}${R.diff !== 'normal' ? ` · <b>${R.DIFF[R.diff].name}</b>` : ''}${st.kind ? '' : ` · ${bonusLine(st, true)}`}`;
-    const tac = G.tactic && R.TACTICS[G.tactic], tacOn = tac && tac.turns && G.turn <= tac.turns;
-    $('goalBox').title = `패배: ${st.lose}${tacOn ? ` · 작전 전술 ${tac.name}: ${tac.desc} (${tac.turns}턴까지)` : ''}`;
-    if (tacOn) $('goalBox').insertAdjacentHTML('afterbegin', `<span class="gtac">${tac.name} ~${tac.turns}턴</span> `);
+    const tac = G.tactic && R.TACTICS[G.tactic], tacOn = tac && G.tacUntil && G.turn <= G.tacUntil;
+    $('goalBox').title = `패배: ${st.lose}${tacOn ? ` · 작전 전술 ${tac.name}: ${tac.desc} (${G.tacUntil}턴까지)` : ''}`;
+    if (tacOn) $('goalBox').insertAdjacentHTML('afterbegin', `<span class="gtac">${tac.name} ~${G.tacUntil}턴</span> `);
     $('btnEnd').disabled = G.side !== 'p' || busy;
     syncQuick(); renderRoster();
   }
@@ -1900,7 +1900,7 @@
       hp: u.hp, thp: u.troop ? u.troop.hp : 0, hpMax: u.hpMax, thpMax: u.troop ? u.troop.hpMax : 0, alive: u.alive, escaped: !!u.escaped, cd: u.cd, buffs: u.buffs, slow: u.slow || 0, slowNext: u.slowNext || 0, dealt: u.dealt || 0,
       nAct: u.nAct || 0, ai: u.ai, home: u.home, boss: !!u.boss, awake: !!u.awake, wave: u.wave, bornT: u.bornT, cmd: u.cmd ? G.units.indexOf(u.cmd) : -1, acted: u.side === 'p' && !!u.acted,
     }));
-    const d = { v: 1, si, idx: G.stage.idx, diff: R.diff, turn: G.turn, wave: G.wave, spawned: [...(G.spawned || [])], ev: [...(G.evDone || [])].map((e) => ev.indexOf(e)).filter((i) => i >= 0), units, rs: G.rs >>> 0, seed0: G.seed0 >>> 0, replay: !!G.stage.replay, easedTo: G.easedTo || null, start: stageStart, heroes: G.stage.heroes, free: G.stage.free, lock: G.stage.lock, stage };
+    const d = { v: 1, si, idx: G.stage.idx, diff: R.diff, turn: G.turn, wave: G.wave, spawned: [...(G.spawned || [])], ev: [...(G.evDone || [])].map((e) => ev.indexOf(e)).filter((i) => i >= 0), units, rs: G.rs >>> 0, seed0: G.seed0 >>> 0, replay: !!G.stage.replay, easedTo: G.easedTo || null, tactic: G.tactic || null, tacUntil: G.tacUntil || 0, start: stageStart, heroes: G.stage.heroes, free: G.stage.free, lock: G.stage.lock, stage };
     return d;
   }
   function suspendSave(turnStart) {
@@ -1963,6 +1963,7 @@
     applySnap(d);
     G.turnSnap = d.turnStart || (d.units.some((s) => s.acted) ? null : d); // 차례 처음의 판이 없으면 「이번 차례 다시」는 숨긴다
     G.easedTo = d.easedTo || null;
+    G.tactic = d.tactic || 'none'; G.tacUntil = d.tacUntil || 0; // 작전 전술 표시 (효과는 영웅 버프에 들어 있다)
     { const l = Object.keys(R.DIFF); if (d.diff && l.indexOf(R.diff) < l.indexOf(d.diff)) G.easedTo = R.diff; } // 타이틀에서 낮추고 이어해도 낮춘 판
     G.undo = d.undo || [];
     stageStart = d.start || { lv: {} };
@@ -2391,7 +2392,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.37';
+  const GAME_VERSION = '1.38';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2806,6 +2807,8 @@
     $('modal').querySelectorAll('.rcard').forEach((c) => (c.dataset.a = 'hero'));
     liveCards();
   }
+  // 작전 전술: 작전마다 따로 기억 (고른 적 없으면 전술 없음)
+  const tacOf = (st) => ((save.tactics || {})[st.idx]) || 'none';
   // 각성 고르기 (Lv20부터, 출격 밖에서 언제든 바꿀 수 있다)
   function perkPick(id, back) {
     const s = save.heroes[id], h = D.HEROES[id], two = s.lv >= R.PERK2_LV;
@@ -3023,14 +3026,15 @@
         ${slots()}
         <div class="pdetail">${detail()}</div>
         <div class="pfootbar"><div class="pgoal"><span>승리 <b>${st.goal}</b></span><span>패배 ${st.lose}</span><span class="dim">소총병 ▶ 중장병 ▶ 기동병 ▶ 소총병 · 사격병 ▶ 공중병</span></div>
-          <button class="lo-btn dark ptac" id="pTac"><small>작전 전술</small><b>${(R.TACTICS[save.tactic] || R.TACTICS.none).name}</b></button><button class="lo-btn dark" id="pHelp">도움말</button><button class="wgo pgo" id="pGo"><b>출격</b><small>SORTIE</small></button></div></div>`);
+          <button class="lo-btn dark ptac" id="pTac"><small>작전 전술</small><b>${(R.TACTICS[tacOf(st)] || R.TACTICS.none).name}</b></button><button class="lo-btn dark" id="pHelp">도움말</button><button class="wgo pgo" id="pGo"><b>출격</b><small>SORTIE</small></button></div></div>`);
       $('pBack').onclick = () => { AU.play('lo_click', 0.6); stageSelect(); };
       $('pHelp').onclick = () => { AU.play('lo_click', 0.6); help(); };
       // 작전 전술 고르기: 처음 몇 턴의 흐름을 정한다 (작전마다 바꿀 수 있고, 다음 출격에도 그대로 남는다)
       $('pTac').onclick = () => {
         AU.play('lo_click', 0.6);
-        modal(`<h3>작전 전술 <small style="font:13px LO_M">처음 몇 턴 동안 아군 영웅·병사 전원에게</small></h3><div class="opts">${Object.entries(R.TACTICS).map(([k, t]) => `<button data-a="${k}" class="${(save.tactic || 'none') === k ? 'gold' : ''}"><b>${t.name}</b> <small>${t.desc}</small></button>`).join('')}</div>`, (a) => {
-          if (a && R.TACTICS[a]) { save.tactic = a; writeSave(); const b = $('pTac'); if (b) b.querySelector('b').textContent = R.TACTICS[a].name; }
+        const rec = R.tacFor(st), now = tacOf(st);
+        modal(`<h3 style="white-space:nowrap">작전 전술 <small style="font:13px LO_M">처음 몇 턴 아군 전원에게 · 작전마다 기억</small></h3><div class="opts">${Object.entries(R.TACTICS).map(([k, t]) => `<button data-a="${k}" class="${now === k ? 'gold' : ''}"><b>${t.name}</b>${k === rec ? ' <i class="trec">이 작전 추천</i>' : ''} <small>${t.desc}</small></button>`).join('')}</div>`, (a) => {
+          if (a && R.TACTICS[a]) { (save.tactics = save.tactics || {})[st.idx] = a; writeSave(); const b = $('pTac'); if (b) b.querySelector('b').textContent = R.TACTICS[a].name; }
         });
       };
       $('pGo').onclick = () => {
@@ -3173,7 +3177,7 @@
       if (!p) return;
       R.makeHero(G, id, save.heroes[id], save.troops[id], p[0], p[1]);
     });
-    R.applyTactic(G, save.tactic); // 출격 준비에서 고른 작전 전술
+    R.applyTactic(G, tacOf(st)); // 출격 준비에서 고른 작전 전술 (작전마다 따로)
     R.spawnWave(G, 0);
     stageStart = { lv: Object.fromEntries(st.heroes.map((id) => [id, save.heroes[id].lv])) };
     const rigs = new Set();
