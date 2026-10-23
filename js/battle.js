@@ -128,6 +128,29 @@
   const STAND = { constantia: '3P_ConstantiaS2_N_Resolve', griffon: 'BR_PA00EL_N_Resolve', johanna: 'DS_Johanna_N_Serious', lrl: 'PECS_LRL_N_Idle', pupphead: 'PECS_PuppHead_N', fallen: 'AGS_Fallen_N',
     amy: 'BR_Amy_N_Serious', coco: 'PECS_CoCoWhiteShell_N_Smile', marie: 'BR_Marie_N_Pride', scathy: 'BR_Scathy_N_Elegance', labiata: '3P_Labiata_N_Smile' };
   const WHOLE = new Set(['pupphead', 'fallen']); // 기계 몸이라 전신을 통째로 줄여 넣는다
+  // 적 초상 (랑그릿사처럼 모서리에 큰 윗몸): 원작 적은 일러스트가 없어, 전투에 쓰는 SD 모델을 따로 크게 그려 그림으로 쓴다
+  let BR = null;
+  function sdBust(u, side) {
+    try {
+      if (!window.SD || !SD.template(u.rig)) return null;
+      if (!BR) {
+        const c = document.createElement('canvas'); c.width = c.height = 420;
+        const r = new THREE.WebGLRenderer({ canvas: c, alpha: true, antialias: true, preserveDrawingBuffer: true, premultipliedAlpha: false });
+        r.setClearColor(0x000000, 0);
+        BR = { c, r, scene: new THREE.Scene() };
+      }
+      const H = 10, native = u.side === 'p' ? 1 : -1, rig = new window.KIT.Rig(u.rig, H, native);
+      rig.face(side === 'L' ? 1 : -1); // 가운데(상대 쪽)를 본다
+      rig.loop('idle'); rig.update(0.35);
+      const span = H * (u.def.big ? 1.05 : 0.8), top = H * 1.04; // 머리부터 허리쯤까지
+      const cam = new THREE.OrthographicCamera(-span / 2, span / 2, top, top - span, -100, 100);
+      BR.scene.add(rig.g);
+      BR.r.render(BR.scene, cam);
+      const url = BR.c.toDataURL('image/png');
+      BR.scene.remove(rig.g); rig.dispose();
+      return url;
+    } catch (e) { return null; }
+  }
   FIGHT.STAND = STAND; // 특기 컷인(lohud.js)도 같은 그림을 쓴다
   function shakeBust(side) { const b = el().querySelector('.fcorner.' + side + ' .fbust'); b.classList.remove('hit'); void b.offsetWidth; b.classList.add('hit'); }
 
@@ -150,12 +173,13 @@
       const st = { [a.uid]: { thp: a.troop ? a.troop.hp : 0, hp: a.hp }, [d.uid]: { thp: d.troop ? d.troop.hp : 0, hp: d.hp } };
       const setSide = (cls, u) => {
         const c = ui.querySelector('.fcorner.' + cls), sd = u.side === 'p' && STAND[u.rig];
-        c.classList.toggle('stand', !!sd); c.classList.toggle('whole', !!sd && WHOLE.has(u.rig));
+        const bust = sd ? null : sdBust(u, cls); // 일러스트가 없는 적은 원작 SD 모델을 크게 그린 윗몸
+        c.classList.toggle('stand', !!sd); c.classList.toggle('whole', !!sd && WHOLE.has(u.rig)); c.classList.toggle('sd', !!bust);
         c.querySelector('.fbust').classList.remove('hit');
         const im = c.querySelector('.fimg'); // 앞 전투의 그림이 잠깐 비치지 않게, 새 그림이 다 오면 틀째로 보인다
         c.classList.add('loading');
         im.onload = () => c.classList.remove('loading');
-        im.src = sd ? 'assets/story/stand/' + sd + '.webp' : (window.IMG && IMG[u.icon]) || '';
+        im.src = sd ? 'assets/story/stand/' + sd + '.webp' : bust || (window.IMG && IMG[u.icon]) || '';
         if (im.complete && im.naturalWidth) c.classList.remove('loading');
         const kind = DATA.KIND[u.troop && st[u.uid].thp > 0 ? u.troop.kind : u.kind].name;
         ui.querySelector('.fname.' + cls).innerHTML = `<b>${u.name}</b><i>${u.troop ? u.troop.def.short : kind}</i><small>Lv.${u.lv}</small>`;
