@@ -1818,6 +1818,7 @@
 
   // ── 차례 진행 ───────────────────────────────────────────
   async function startPhase(side) {
+    if (!G || G.ended) return; // 작전을 그만두거나 판이 끝난 뒤에는 차례를 시작하지 않는다
     G.side = side;
     G.undo = []; G.pendingSnap = null; // 되돌리기는 그 차례 안에서만 (적 차례를 보고 되감지 못하게)
     for (const u of G.units) u.nAct = 0;
@@ -2407,7 +2408,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.68';
+  const GAME_VERSION = '1.69';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();

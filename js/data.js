@@ -1791,9 +1791,9 @@
       ],
       starts: [[0, 5], [1, 5], [0, 6], [1, 6], [2, 6], [0, 7], [1, 7], [0, 8]],
       waves: [
-        { turn: 1, at: [7, 3], units: [C('shielderx', 75), C('cannonx', 75), C('phalanx', 75), C('shielderx', 75), C('cannonx', 75)] },
-        { turn: 3, at: [18, 2], units: [C('shielderx', 76), C('bigchick', 76), C('harvesterx', 76), C('phalanx', 76), C('shielderx', 76), C('bigchick', 76)] },
-        { turn: 5, at: [17, 9], units: [C('shielderx', 77), C('bigchick', 77), C('harvesterx', 77), C('fabigchick', 77), C('shielderx', 77), C('bigchick', 77)] },
+        { turn: 1, at: [7, 3], units: [C('shielderx', 84), C('cannonx', 84), C('phalanx', 84), C('shielderx', 84), C('cannonx', 84)] },
+        { turn: 3, at: [18, 2], units: [C('shielderx', 85), C('bigchick', 85), C('harvesterx', 85), C('phalanx', 85), C('shielderx', 85), C('bigchick', 85)] },
+        { turn: 5, at: [17, 9], units: [C('shielderx', 86), C('bigchick', 86), C('harvesterx', 86), C('fabigchick', 86), C('shielderx', 86), C('bigchick', 86)] },
       ],
     },
     {
@@ -1817,9 +1817,9 @@
       ],
       starts: [[5, 13], [6, 13], [7, 13], [8, 13], [9, 13], [10, 13], [6, 12], [9, 12]],
       waves: [
-        { turn: 1, at: [10, 8], units: [C('shielderx', 77), C('legionx', 77), C('phalanx', 77), C('shielderx', 77), C('legionx', 77)] },
-        { turn: 3, at: [18, 4], units: [C('shielderx', 78), C('legionx', 78), C('harvesterx', 78), C('sniper', 78), C('shielderx', 78), C('legionx', 78)] },
-        { turn: 5, at: [6, 2], units: [C('shielderx', 79), C('sniper', 79), C('harvesterx', 79), C('legionmk2', 79), C('shielderx', 79), C('sniper', 79)] },
+        { turn: 1, at: [10, 8], units: [C('shielderx', 86), C('legionx', 86), C('phalanx', 86), C('shielderx', 86), C('legionx', 86)] },
+        { turn: 3, at: [18, 4], units: [C('shielderx', 87), C('legionx', 87), C('harvesterx', 87), C('sniper', 87), C('shielderx', 87), C('legionx', 87)] },
+        { turn: 5, at: [6, 2], units: [C('shielderx', 88), C('sniper', 88), C('harvesterx', 88), C('legionmk2', 88), C('shielderx', 88), C('sniper', 88)] },
       ],
     },
     {
@@ -1843,10 +1843,10 @@
       ],
       starts: [[0, 4], [1, 4], [0, 5], [1, 5], [2, 5], [0, 6], [1, 6], [0, 8]],
       waves: [
-        { turn: 1, at: [8, 6], units: [C('bigchick', 79), C('harvesterx', 79), C('fabigchick', 79), C('bigchick', 79)] },
-        { turn: 3, at: [14, 1], units: [C('shielderx', 79), C('fabigchick', 79), C('jugger', 79), C('shielderx', 79), C('fabigchick', 79)] },
-        { turn: 5, at: [21, 8], units: [C('bigchicks', 80), C('fabigchick', 80), C('bigchickx', 80), C('bigchick', 80), C('bigchicks', 80), C('fabigchick', 80)] },
-        { turn: 7, at: [12, 12], units: [C('bigchicks', 81), C('bigchickx', 81), C('jugger', 81), C('phalanx', 81), C('bigchicks', 81), C('bigchickx', 81)] },
+        { turn: 1, at: [8, 6], units: [C('bigchick', 88), C('harvesterx', 88), C('fabigchick', 88), C('bigchick', 88)] },
+        { turn: 3, at: [14, 1], units: [C('shielderx', 88), C('fabigchick', 88), C('jugger', 88), C('shielderx', 88), C('fabigchick', 88)] },
+        { turn: 5, at: [21, 8], units: [C('bigchicks', 89), C('fabigchick', 89), C('bigchickx', 89), C('bigchick', 89), C('bigchicks', 89), C('fabigchick', 89)] },
+        { turn: 7, at: [12, 12], units: [C('bigchicks', 90), C('bigchickx', 90), C('jugger', 90), C('phalanx', 90), C('bigchicks', 90), C('bigchickx', 90)] },
       ],
     },
     {
@@ -1872,10 +1872,10 @@
       ],
       starts: [[8, 15], [11, 15], [8, 14], [11, 14], [9, 14], [10, 14], [9, 15], [10, 15]],
       waves: [
-        { turn: 1, at: [9, 9], units: [C('bigchicks', 81), C('harvesterx', 81), C('legionsp', 81), C('bigchicks', 81)] },
-        { turn: 3, at: [3, 5], units: [C('harvesterx', 81), C('legionsp', 81), C('detectoraa', 81), C('harvesterx', 81), C('legionsp', 81)] },
-        { turn: 5, at: [16, 5], units: [C('legionmk2', 82), C('sniper', 82), C('harvesterx', 82), C('legione', 82), C('legionmk2', 82), C('sniper', 82)] },
-        { turn: 6, at: [9, 1], boss: 'speaker', units: [C('bigchicks', 83), C('legionmk2', 83), C('sniper', 83), C('speaker', 84), C('bigchicks', 83), C('legionmk2', 83), C('sniper', 83)] },
+        { turn: 1, at: [9, 9], units: [C('bigchicks', 90), C('harvesterx', 90), C('legionsp', 90), C('bigchicks', 90)] },
+        { turn: 3, at: [3, 5], units: [C('harvesterx', 90), C('legionsp', 90), C('detectoraa', 90), C('harvesterx', 90), C('legionsp', 90)] },
+        { turn: 5, at: [16, 5], units: [C('legionmk2', 91), C('sniper', 91), C('harvesterx', 91), C('legione', 91), C('legionmk2', 91), C('sniper', 91)] },
+        { turn: 6, at: [9, 1], boss: 'speaker', units: [C('bigchicks', 92), C('legionmk2', 92), C('sniper', 92), C('speaker', 93), C('bigchicks', 92), C('legionmk2', 92), C('sniper', 92)] },
       ],
     },
     {
@@ -1897,10 +1897,10 @@
       ],
       starts: [[0, 4], [1, 4], [0, 5], [1, 5], [2, 5], [0, 6], [1, 6], [0, 7]],
       waves: [
-        { turn: 1, at: [8, 4], units: [C('bigchicks', 83), C('cannonx', 83), C('bigchicks', 83), C('cannonx', 83)] },
-        { turn: 3, at: [15, 3], units: [C('chemical', 83), C('bigchicks', 83), C('jugger', 83), C('cannonx', 83), C('chemical', 83)] },
-        { turn: 5, at: [12, 9], units: [C('cannonx', 83), C('fabigchicks', 83), C('fabigchick', 83), C('chemical', 83), C('cannonx', 83)] },
-        { turn: 7, at: [21, 4], units: [C('fabigchicks', 84), C('chemical', 84), C('cannonx', 84), C('tarantula', 84), C('fabigchicks', 84), C('chemical', 84), C('cannonx', 84)] },
+        { turn: 1, at: [8, 4], units: [C('bigchicks', 92), C('cannonx', 92), C('bigchicks', 92), C('cannonx', 92)] },
+        { turn: 3, at: [15, 3], units: [C('chemical', 92), C('bigchicks', 92), C('jugger', 92), C('cannonx', 92), C('chemical', 92)] },
+        { turn: 5, at: [12, 9], units: [C('cannonx', 92), C('fabigchicks', 92), C('fabigchick', 92), C('chemical', 92), C('cannonx', 92)] },
+        { turn: 7, at: [21, 4], units: [C('fabigchicks', 93), C('chemical', 93), C('cannonx', 93), C('tarantula', 93), C('fabigchicks', 93), C('chemical', 93), C('cannonx', 93)] },
       ],
     },
     {
@@ -1926,9 +1926,9 @@
       ],
       starts: [[8, 15], [9, 15], [10, 15], [11, 15], [8, 14], [11, 14], [9, 14], [10, 14]],
       waves: [
-        { turn: 1, at: [9, 9], units: [C('zapperx', 84), C('tdchick', 84), C('aqchick', 84), C('lbomber', 84), C('zapperx', 84), C('tdchick', 84)] },
-        { turn: 3, at: [3, 6], units: [C('zapperx', 84), C('tdchick', 84), C('aqchick', 84), C('lbomber', 84), C('zapperx', 84), C('tdchick', 84)] },
-        { turn: 5, at: [9, 3], units: [C('aqchick', 84), C('tdchick', 85), C('lbomber', 85), C('zapperx', 85), C('tdchick', 85), C('aqchick', 84), C('tdchick', 85), C('lbomber', 85)] },
+        { turn: 1, at: [9, 9], units: [C('zapperx', 93), C('tdchick', 93), C('aqchick', 93), C('lbomber', 93), C('zapperx', 93), C('tdchick', 93)] },
+        { turn: 3, at: [3, 6], units: [C('zapperx', 93), C('tdchick', 93), C('aqchick', 93), C('lbomber', 93), C('zapperx', 93), C('tdchick', 93)] },
+        { turn: 5, at: [9, 3], units: [C('aqchick', 93), C('tdchick', 94), C('lbomber', 94), C('zapperx', 94), C('tdchick', 94), C('aqchick', 93), C('tdchick', 94), C('lbomber', 94)] },
       ],
     },
     {
@@ -1956,11 +1956,11 @@
       ],
       starts: [[9, 9], [12, 9], [9, 10], [12, 10], [10, 8], [11, 8], [10, 11], [11, 11]],
       waves: [
-        { turn: 1, at: [10, 2], units: [C('bigchicks', 80), C('bigchick', 80), C('scout', 80), C('scout', 80), C('scout', 80), C('bigchicks', 80), C('bigchick', 80), C('scout', 80)] },
-        { turn: 3, at: [1, 6], units: [C('scout', 80), C('jugger', 80), C('heavyscout', 80), C('bigchicks', 80), C('fabigchick', 80), C('scout', 80), C('jugger', 80), C('heavyscout', 80)] },
-        { turn: 4, at: [20, 6], units: [C('jugger', 80), C('fabigchick', 80), C('heavyscout', 80), C('scout', 80), C('heavyscout', 80), C('bigchick', 80), C('jugger', 80), C('fabigchick', 80), C('heavyscout', 80)] },
-        { turn: 6, at: [10, 17], units: [C('scout', 80), C('chemical', 80), C('heavyscout', 80), C('fabigchicks', 80), C('jugger', 80), C('bigchickx', 80), C('scout', 80), C('chemical', 80), C('heavyscout', 80)] },
-        { turn: 7, at: [10, 0], units: [C('fabigchicks', 81), C('bigchickx', 81), C('scout', 81), C('scout', 81), C('fabigchick', 81), C('chemical', 81), C('fabigchicks', 81), C('bigchickx', 81), C('scout', 81)] },
+        { turn: 1, at: [10, 2], units: [C('bigchicks', 89), C('bigchick', 89), C('scout', 89), C('scout', 89), C('scout', 89), C('bigchicks', 89), C('bigchick', 89), C('scout', 89)] },
+        { turn: 3, at: [1, 6], units: [C('scout', 89), C('jugger', 89), C('heavyscout', 89), C('bigchicks', 89), C('fabigchick', 89), C('scout', 89), C('jugger', 89), C('heavyscout', 89)] },
+        { turn: 4, at: [20, 6], units: [C('jugger', 89), C('fabigchick', 89), C('heavyscout', 89), C('scout', 89), C('heavyscout', 89), C('bigchick', 89), C('jugger', 89), C('fabigchick', 89), C('heavyscout', 89)] },
+        { turn: 6, at: [10, 17], units: [C('scout', 89), C('chemical', 89), C('heavyscout', 89), C('fabigchicks', 89), C('jugger', 89), C('bigchickx', 89), C('scout', 89), C('chemical', 89), C('heavyscout', 89)] },
+        { turn: 7, at: [10, 0], units: [C('fabigchicks', 90), C('bigchickx', 90), C('scout', 90), C('scout', 90), C('fabigchick', 90), C('chemical', 90), C('fabigchicks', 90), C('bigchickx', 90), C('scout', 90)] },
       ],
     },
     {
@@ -1988,9 +1988,9 @@
       ],
       starts: [[9, 16], [10, 16], [9, 15], [10, 15], [8, 15], [11, 15], [9, 17], [10, 17]],
       waves: [
-        { turn: 1, at: [9, 9], units: [C('nestchaser', 86), C('nestguard', 86), C('nestchaser', 86), C('nestchaser', 86)] },
-        { turn: 3, at: [17, 6], units: [C('nestguard', 87), C('nestchaser', 87), C('nestchaser', 87), C('nestchaser', 87)] },
-        { turn: 5, at: [9, 2], boss: 'nest', units: [C('nestguard', 89), C('nestchaser', 89), C('nestchaser', 89), C('nest', 90), C('nestguard', 89), C('nestchaser', 89)] },
+        { turn: 1, at: [9, 9], units: [C('nestchaser', 95), C('nestguard', 95), C('nestchaser', 95), C('nestchaser', 95)] },
+        { turn: 3, at: [17, 6], units: [C('nestguard', 96), C('nestchaser', 96), C('nestchaser', 96), C('nestchaser', 96)] },
+        { turn: 5, at: [9, 2], boss: 'nest', units: [C('nestguard', 98), C('nestchaser', 98), C('nestchaser', 98), C('nest', 99), C('nestguard', 98), C('nestchaser', 98)] },
       ],
     },
   ];
