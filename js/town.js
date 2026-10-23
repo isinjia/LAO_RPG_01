@@ -428,7 +428,28 @@
     const g = c.getContext('2d');
     if (map.stage) { drawStage(g); return c; }
     if (map.indoor) { drawRoomFloor(g); return c; }
-    const pat = (n, sc = 0.75) => { const im = img(n); if (!ok(im)) return '#6a8a4a'; const p = g.createPattern(im, 'repeat'); p.setTransform(new DOMMatrix().scale(sc)); return p; };
+    const pat = (n, sc = 0.75, ox = 0, oy = 0, rot = 0) => { const im = img(n); if (!ok(im)) return '#6a8a4a'; const p = g.createPattern(im, 'repeat'); p.setTransform(new DOMMatrix().translate(ox, oy).rotate(rot).scale(sc)); return p; };
+    // 같은 질감이 바둑판처럼 되풀이되어 보이지 않게: 크기·각도를 달리한 같은 질감을 큰 얼룩 모양으로 군데군데 겹치고, 넓은 명암 물결을 은은하게 깐다
+    const breakTiling = (n) => {
+      const m = document.createElement('canvas'); m.width = Math.ceil(W / 24); m.height = Math.ceil(H / 24);
+      const mg = m.getContext('2d'), id = mg.createImageData(m.width, m.height), Dd = id.data;
+      for (let y = 0; y < m.height; y++) for (let x = 0; x < m.width; x++) {
+        const v = vnoise(x / 7, y / 7, 31) * 0.65 + vnoise(x / 3, y / 3, 37) * 0.35, a = Math.max(0, Math.min(1, (v - 0.45) * 3));
+        const i = (y * m.width + x) * 4; Dd[i] = Dd[i + 1] = Dd[i + 2] = 255; Dd[i + 3] = a * 255;
+      }
+      mg.putImageData(id, 0, 0);
+      const l = document.createElement('canvas'); l.width = W; l.height = H;
+      const lg = l.getContext('2d'); lg.fillStyle = pat(n, 0.93, 137, 71, 90); lg.fillRect(0, 0, W, H);
+      lg.globalCompositeOperation = 'destination-in'; lg.imageSmoothingEnabled = true; lg.drawImage(m, 0, 0, W, H);
+      g.globalAlpha = 0.75; g.drawImage(l, 0, 0); g.globalAlpha = 1;
+      const sh = document.createElement('canvas'); sh.width = Math.ceil(W / 24); sh.height = Math.ceil(H / 24); // 넓은 명암 물결 (작게 그려 부드럽게 늘린다)
+      const sg = sh.getContext('2d'), sd = sg.createImageData(sh.width, sh.height), Q = sd.data;
+      for (let y = 0; y < sh.height; y++) for (let x = 0; x < sh.width; x++) {
+        const v = vnoise(x / 11, y / 11, 53) - 0.5, i = (y * sh.width + x) * 4;
+        if (v > 0) { Q[i] = 255; Q[i + 1] = 250; Q[i + 2] = 235; Q[i + 3] = v * 0.1 * 255; } else { Q[i] = 10; Q[i + 1] = 12; Q[i + 2] = 16; Q[i + 3] = -v * 0.14 * 255; }
+      }
+      sg.putImageData(sd, 0, 0); g.imageSmoothingEnabled = true; g.drawImage(sh, 0, 0, W, H);
+    };
     // 칸 모양 바닥 층: 칸 값(있다 1, 없다 0)을 부드럽게 이어 붙인 뒤 잡음을 섞어 경계를 자연스럽게 흔든다.
     // 네모 칸이나 같은 무늬의 물결이 드러나지 않는다. 6픽셀마다 한 점씩 계산한 작은 그림을 부드럽게 늘려 쓴다.
     const hash = (x, y, k) => { const v = Math.sin(x * 127.1 + y * 311.7 + k * 74.7) * 43758.5453; return v - Math.floor(v); };
@@ -466,6 +487,7 @@
     };
     const F = map.floor || {}, sea = map.water === 'sea';
     g.fillStyle = pat(F.base || 'tiles/grass'); g.fillRect(0, 0, W, H);
+    breakTiling(F.base || 'tiles/grass');
     g.globalAlpha = F.zoneA || 1;
     layerOf((t) => t === 's' || (sea && t === '~'), pat(F.zone || 'tiles/asphalt', 0.9), TILE * 0.35);
     g.globalAlpha = 1;
