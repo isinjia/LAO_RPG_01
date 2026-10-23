@@ -1559,7 +1559,7 @@
       mode = 'fight';
       $('hud').classList.add('hidden');
       $('banner').classList.add('hidden');
-      await FIGHT.play(a, d, res, { bg: fightBgOf(G.stage, G.map[d.y][d.x]), speed: speedK });
+      await FIGHT.play(a, d, res, { bg: fightBgOf(G.stage, G.map[d.y][d.x]), bgA: fightBgOf(G.stage, G.map[a.y][a.x]), speed: speedK });
       mode = 'map';
       $('hud').classList.remove('hidden');
     } else await mapClash(a, d, res);
@@ -2136,7 +2136,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.80';
+  const GAME_VERSION = '0.81';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -3076,7 +3076,7 @@
       a.fn(k);
       if (k >= 1) { anims.splice(i, 1); a.done && a.done(); }
     }
-    if (window.FXLIB) FXLIB.update(dt * speedK); // 원작 효과 플립북
+    if (window.FXLIB) FXLIB.update(dt * speedK * (mode === 'fight' ? FIGHT.timeK() : 1)); // 원작 효과 플립북 (전투 장면의 느린 동작·멈춤도 따른다)
     if (mode === 'fight') {
       FIGHT.update(dt);
       FIGHT.render(renderer);

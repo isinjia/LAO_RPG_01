@@ -361,3 +361,22 @@
 #actTip em { display: block; margin-top: 2px; font: normal 11px 'LO_B', sans-serif; color: #8fd0ff; }
 #actTip em.wait { color: #ff8da0; }
 #actTip p { margin: 6px 0 0; font: 13px/1.5 'LO_M', sans-serif; color: #c7cede; }
+
+/* ── 전투 장면 연출 (랑그릿사식) ── */
+/* 가장자리를 어둡게 눌러 가운데 전장에 눈이 가게 */
+#fight::before { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(120% 95% at 50% 42%, transparent 55%, rgba(0, 0, 0, .55) 100%), linear-gradient(180deg, rgba(0, 0, 0, .35) 0%, transparent 14%); }
+/* 끝날 때 어둡게 닫기 */
+#fight::after { content: ''; position: absolute; inset: 0; z-index: 20; pointer-events: none; background: #000; opacity: 0; transition: opacity .26s ease-in; }
+#fight.fout::after { opacity: 1; }
+/* 결판 글자: 쓰러진 쪽 위에 노란 띠와 큰 기울임 글자 */
+#fight .fresult { position: absolute; top: 30%; z-index: 6; transform: translateX(-50%) skewX(-12deg); padding: 6px 46px 8px; pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, .78) 18%, rgba(0, 0, 0, .78) 82%, transparent); animation: fresultIn .32s cubic-bezier(.2, 1.5, .4, 1) both; }
+#fight .fresult.L { left: 30%; } #fight .fresult.R { left: 70%; }
+#fight.split .fresult.L { left: 25%; } #fight.split .fresult.R { left: 75%; }
+#fight .fresult::before, #fight .fresult::after { content: ''; position: absolute; left: 12%; right: 12%; height: 3px; background: var(--lo-y); }
+#fight .fresult::before { top: 0; } #fight .fresult::after { bottom: 0; }
+#fight .fresult b { display: block; font: italic 64px 'LO_B', sans-serif; line-height: 1; letter-spacing: 4px; color: #fff;
+  text-shadow: 0 3px 0 #000, 0 0 18px rgba(255, 204, 0, .7); }
+#fight .fresult.bad b { color: #ff6a7a; text-shadow: 0 3px 0 #000, 0 0 18px rgba(255, 60, 80, .7); }
+@keyframes fresultIn { 0% { opacity: 0; transform: translateX(-50%) skewX(-12deg) scale(1.8); } 100% { opacity: 1; transform: translateX(-50%) skewX(-12deg) scale(1); } }

@@ -2,10 +2,13 @@
 // 양쪽이 동시에 싸운다: RULES.combat 의 접전(rounds)마다 두 부대가 함께 공격하고, 그 접전의 피해가 동시에 들어간다.
 // 근접은 두 부대가 함께 돌진해 맞붙고, 원거리(2칸 이상)는 화면을 둘로 나눠 탄이 가운데 경계를 넘어 오간다.
 // 쓰러진 병사는 맞은 반대쪽으로 짧게 밀려나며 뒤로 젖혀지고, 하얗게 깜빡이다 사라진다. 아군은 항상 왼쪽, 적은 오른쪽.
-// 맞을 때마다 맞은 병사 머리 위에 피해 숫자가 튀어 오르고, 정보판 위 별 모양에 그 편이 받은 피해 합계가 쌓인다.
+// 맞을 때마다 맞은 병사 머리 위에 피해 숫자가 튀어 오른다.
+// 카메라 (랑그릿사처럼): 공격하는 쪽에 바짝 붙어 시작해 전장 전체로 물러나고, 맞붙는 순간 가운데로 다가간다. 큰 타격엔 흔들림과 짧은 멈춤,
+// 결판이 나는 마지막 일격은 느리게 보여 주고 쓰러진 쪽으로 다가간 뒤 '격파'·'퇴각' 글자를 띄우고 어둡게 닫는다.
 (function () {
   const FIGHT = {};
   let scene, cam, bgMesh, bgMat;
+  const bgTex = { L: null, R: null }; // 나뉜 화면: 왼쪽·오른쪽 부대가 저마다 서 있는 칸의 배경
   let VW = 16, VH = 9;
   const GROUND = -0.5; // 부대가 서는 높이: 아래 구석 초상에 가리지 않게 길 가운데쯤 (배경은 그대로)
   let actors = [], fxs = [], tl = [], T = 0, done = null, active = false;
@@ -15,6 +18,20 @@
   let split = false;
   const GAP = 7, TRAVEL = 0.42; // 떼어 놓는 거리, 탄이 경계를 건너는 시간(초)
   let camL, camR;
+  // 카메라: z 확대(1=전장 전체), x·y 이동, 흔들림. timeK 는 느린 동작 배율, stop 은 타격 멈춤(초)
+  const CAM = { z: 1, x: 0, y: 0, sh: 0, sh0: 1, shA: 0 };
+  let CY = 0.6, timeK = 1, stopT = 0;
+  function applyCam() {
+    const hw = VW / 2 / CAM.z, hh = VH / 2 / CAM.z;
+    const room = Math.max(0, (bgMesh.scale.x - VW / CAM.z) / 2 - 0.05); // 배경 밖이 보이지 않게
+    let cx = Math.max(-room, Math.min(room, CAM.x)), cy = CY + CAM.y;
+    if (CAM.sh > 0) { const k = CAM.shA * (CAM.sh / CAM.sh0); cx += (Math.random() - 0.5) * k; cy += (Math.random() - 0.5) * k * 0.6; }
+    cam.left = cx - hw; cam.right = cx + hw; cam.top = cy + hh; cam.bottom = cy - hh;
+    cam.updateProjectionMatrix();
+  }
+  function shake(a, dur = 0.22) { if (window.GAME && GAME.save && GAME.save.opts.shake === false) return; if (a >= CAM.shA * (CAM.sh / CAM.sh0)) { CAM.shA = a; CAM.sh = CAM.sh0 = dur; } }
+  function hitStop(sec) { stopT = Math.max(stopT, sec); }
+  FIGHT.timeK = () => (stopT > 0 ? 0 : timeK); // 원작 효과 플립북도 같은 빠르기로 (game.js)
 
   FIGHT.init = function () {
     scene = new THREE.Scene();
@@ -30,18 +47,18 @@
   FIGHT.resize = function (w, h) {
     const a = w / h;
     if (a < 1) { VW = 7.2; VH = VW / a; } // 세로 화면: 병사를 크게 else { VH = Math.max(8.4, 12.5 / a); VW = VH * a; }
-    const cy = a < 1 ? -0.4 : 0.6; // 세로 화면: 부대가 화면 가운데쯤 오게
-    cam.left = -VW / 2; cam.right = VW / 2; cam.top = VH / 2 + cy; cam.bottom = -VH / 2 + cy;
-    cam.updateProjectionMatrix();
+    CY = a < 1 ? -0.4 : 0.6; // 세로 화면: 부대가 화면 가운데쯤 오게
+    CAM.z = 1; CAM.x = CAM.y = 0;
+    applyCam();
     fitBg();
   };
-  function fitBg() {
-    const img = bgMat.map && bgMat.map.image;
+  function fitBg(tex = bgMat.map) {
+    const img = tex && tex.image;
     const ia = img ? img.width / img.height : 16 / 9;
-    let h = VH * 1.02, w = h * ia;
-    if (w < VW * 1.02) { w = VW * 1.02; h = w / ia; }
+    let h = VH * 1.08, w = h * ia;
+    if (w < VW * 1.08) { w = VW * 1.08; h = w / ia; }
     bgMesh.scale.set(w, h, 1);
-    bgMesh.position.set(0, (cam.top + cam.bottom) / 2 + (h - VH) * 0.12, -5);
+    bgMesh.position.set(0, CY + (h - VH) * 0.12, -5);
   }
   FIGHT.scene = () => scene;
   FIGHT.camera = () => cam;
@@ -52,9 +69,11 @@
     const sz = renderer.getSize(new THREE.Vector2()), hw = Math.floor(sz.x / 2);
     renderer.setScissorTest(true);
     for (const [c, side] of [[camL, -1], [camR, 1]]) {
-      const cx = side * (VW / 4 + GAP); // 보통 화면의 그쪽 절반을 GAP 만큼 옮긴 자리
+      const cx = side * (VW / 4 + GAP) + (cam.left + cam.right) / 2; // 보통 화면의 그쪽 절반을 GAP 만큼 옮긴 자리 (+흔들림)
       c.left = cx - VW / 4; c.right = cx + VW / 4; c.top = cam.top; c.bottom = cam.bottom;
       c.updateProjectionMatrix();
+      const tx = side < 0 ? bgTex.L : bgTex.R; // 반쪽마다 제 자리의 지형 배경
+      if (tx && bgMat.map !== tx) { bgMat.map = tx; fitBg(tx); }
       bgMesh.position.x = cx; // 배경은 반쪽마다 따라간다
       const x = side < 0 ? 0 : hw, w = side < 0 ? hw : sz.x - hw;
       renderer.setViewport(x, 0, w, sz.y); renderer.setScissor(x, 0, w, sz.y);
@@ -88,7 +107,7 @@
     f.rig.g.add(m);
     f.shadow = m;
     // 공중병: 리그만 들어 올리고 천천히 오르내린다
-    f.by0 = f.rig.c.root.position.y;
+    f.by0 = f.rig.c.root.position.y; f.bx0 = f.rig.c.root.position.x;
     f.bob = Math.random() * Math.PI * 2;
   }
   const isAir = (u, hero) => (hero ? u.kind : u.troop && u.troop.kind) === 'fly';
@@ -106,7 +125,8 @@
     const out = [];
     for (let i = 0; i < n; i++) {
       const row = i % 3, col = Math.floor(i / 3); // 앞 열부터 채운다
-      out.push([dir * (front + col * span + (row === 1 ? span * 0.45 : 0)), GROUND - 0.3 + row * 0.45, row]);
+      const jx = PORT() ? 0 : (Math.random() - 0.5) * 0.14, jy = (Math.random() - 0.5) * 0.08; // 자로 잰 듯한 격자가 아니게 살짝 흐트러뜨린다
+      out.push([dir * (front + col * span + (row === 1 ? span * 0.45 : 0) + jx), GROUND - 0.3 + row * 0.45 + jy, row]);
     }
     return out;
   }
@@ -163,12 +183,18 @@
       done = resolve;
       active = true;
       T = 0; tl = []; actors = []; fxs = []; tweens.length = 0;
+      timeK = 1; stopT = 0; CAM.sh = 0;
       const sp = opt.speed || 1;
       bgMat.map = null; bgMat.color.set(0x223044); bgMat.needsUpdate = true;
-      K.loadTex(opt.bg.includes('/') ? opt.bg : 'assets/bg/' + opt.bg + '.webp').then((t) => { if (!t) return; bgMat.map = t; bgMat.color.set(0xffffff); bgMat.needsUpdate = true; fitBg(); });
       const L = a.side === 'p' ? a : d, Rr = L === a ? d : a;
+      // 배경: 붙어 싸우면 맞는 쪽 칸 하나, 떨어져 쏘면(화면 둘로 나눔) 두 부대가 저마다 서 있는 칸의 지형
+      const url = (b) => (b.includes('/') ? b : 'assets/bg/' + b + '.webp');
+      const bgD = opt.bg, bgAt = opt.bgA || opt.bg;
+      bgTex.L = bgTex.R = null;
+      K.loadTex(url(bgD)).then((t) => { if (!t) return; bgMat.map = t; bgMat.color.set(0xffffff); bgMat.needsUpdate = true; fitBg(); if (L === d) bgTex.L = t; else bgTex.R = t; });
+      K.loadTex(url(bgAt)).then((t) => { if (!t) return; if (L === a) bgTex.L = t; else bgTex.R = t; });
       const ui = el();
-      ui.classList.remove('hidden');
+      ui.classList.remove('hidden', 'fout');
       split = res.dist > 1; // 떨어져서 쏘는 원거리 공격
       ui.classList.toggle('split', split);
       const off = split ? GAP : 0;
@@ -227,11 +253,16 @@
       const att = a === L ? LA : RA, def = a === L ? RA : LA;
       const attSide = a === L ? 'L' : 'R', defSide = attSide === 'L' ? 'R' : 'L';
 
-      // 등장
-      const enter = 0.55 / sp;
+      // 등장: 두 부대가 화면 밖에서 달려 들어온다. 카메라는 공격하는 쪽에 바짝 붙었다가 전장 전체로 물러난다
+      const enter = 0.75 / sp;
       for (const f of actors) tween(f.rig.g.position, 'x', f.rig.g.position.x, f.x, 0, enter);
       tl.push({ t: enter, fn: () => actors.forEach((f) => f.rig.loop('idle')) });
-      let t0 = enter + 0.15 / sp;
+      if (!split) {
+        const ax = (attSide === 'L' ? -1 : 1) * VW * 0.2;
+        CAM.z = 1.22; CAM.x = ax; CAM.y = -0.25; applyCam();
+        tween(CAM, 'z', 1.22, 1, 0.05, enter + 0.25 / sp); tween(CAM, 'x', ax, 0, 0.05, enter + 0.25 / sp); tween(CAM, 'y', -0.25, 0, 0.05, enter + 0.25 / sp);
+      } else { CAM.z = 1; CAM.x = CAM.y = 0; applyCam(); }
+      let t0 = enter + 0.3 / sp;
       // 근접: 공격하는 쪽은 크게, 반격하는 쪽도 맞받아 함께 나선다. 병사는 병과마다 랑그릿사식으로 (STYLE)
       if (!split) {
         const charge = (list, side, far, foe) => {
@@ -265,6 +296,9 @@
         // 맞붙되 두 부대 앞줄 사이에 틈을 남긴다 (한 덩어리로 겹치지 않게)
         charge(att, attSide, Math.min(0.7, VW * 0.045), def);
         if (res.counter) charge(def, defSide, Math.min(0.3, VW * 0.02), att);
+        const cx = (attSide === 'L' ? 1 : -1) * 0.6;
+        tween(CAM, 'z', 1, 1.1, t0, t0 + 0.45 / sp); tween(CAM, 'x', 0, cx, t0, t0 + 0.45 / sp); tween(CAM, 'y', 0, -0.2, t0, t0 + 0.45 / sp);
+        tl.push({ t: t0 + 0.42 / sp, fn: () => { shake(0.12, 0.2); fx('dust_fall', cx, GROUND + 0.1, { k: 1.4, renderOrder: 95 }); } });
         t0 += 0.55 / sp;
       }
       // 재능 발동 판 (원작 패시브 표시): 이번 교전에 효과가 있는 재능만
@@ -276,7 +310,9 @@
       [...new Set(namesA)].slice(0, 2).forEach((n, i) => tl.push({ t: enter * 0.6 + i * 0.25, fn: () => passivePlate(attSide, n, i) }));
       [...new Set(namesD)].slice(0, 2).forEach((n, i) => tl.push({ t: enter * 0.6 + 0.15 + i * 0.25, fn: () => passivePlate(defSide, n, i) }));
       const end = brawl(att, def, attSide, defSide, a, d, res, t0, sp, st);
-      tl.push({ t: end + 0.7 / sp, fn: () => finish() });
+      const close = finale(end, sp, st, a, d, res, attSide, defSide);
+      tl.push({ t: close, fn: () => ui.classList.add('fout') }); // 어둡게 닫는다 (css)
+      tl.push({ t: close + 0.28, fn: () => finish() });
       tl.sort((p, q) => p.t - q.t);
     });
   };
@@ -284,7 +320,7 @@
   // 동시 전투: 접전(round)마다 양쪽 부대가 함께 공격하고, 그 접전의 피해를 동시에 반영한다. 반환: 끝나는 시각
   function brawl(att, def, attSide, defSide, a, d, res, t0, sp, st) {
     const rounds = res.rounds && res.rounds.length ? res.rounds : [{ dT: res.dT, dH: res.dH, aT: res.aT, aH: res.aH }];
-    const step = (split ? 0.5 : 0.42) / sp; // 접전 사이 간격
+    const step = (split ? 0.62 : 0.58) / sp; // 접전 사이 간격
     // 기댓값이 아니라 실제로 들어간 피해(정수)에 맞춰 접전별 피해를 나눈다
     const tot = (k) => rounds.reduce((s, r) => s + r[k], 0) || 1;
     const share = { dT: res.dT / tot('dT'), dH: res.dH / tot('dH'), aT: res.aT / tot('aT'), aH: res.aH / tot('aH') };
@@ -306,8 +342,12 @@
             if (!f.alive) continue;
             const dur = f.rig.dur('atk');
             const speed = Math.max(1, dur / (f.hero ? 1.6 : 1.1)) * sp * (0.9 + Math.random() * 0.25);
-            if (Math.random() < (f.hero ? 1 : 0.75)) { f.rig.once('atk', speed); muzzle(f, s.au); if (!split) strike(f, s.to, s.au, sp); }
-            if (split && isRanged(f, s.au) && Math.random() < (f.hero ? 1 : 0.5)) bolt(f, s.to, s.au);
+            const go = () => { // 병사마다 0~0.14초 어긋나게: 한 박자에 다 같이 움직이지 않는다
+              if (!f.alive) return;
+              if (Math.random() < (f.hero ? 1 : 0.8)) { f.rig.once('atk', speed); muzzle(f, s.au); if (!split) strike(f, s.to, s.au, sp); }
+              if (split && isRanged(f, s.au) && Math.random() < (f.hero ? 1 : 0.55)) bolt(f, s.to, s.au);
+            };
+            if (f.hero) go(); else later(T + Math.random() * 0.14 / sp, go);
           }
         } });
         const far = split;
@@ -333,13 +373,41 @@
           const keep = figN(s.du, S.thp);
           while (s.to.filter((f) => !f.hero && f.alive).length > keep) die(s.to.filter((f) => !f.hero && f.alive).sort((p, q) => Math.abs(p.x) - Math.abs(q.x))[0]);
           setBars(s.toSide, s.du, S.thp, S.hp);
-          if (dH > 0) shakeBust(s.toSide);
+          if (dH > 0) { shakeBust(s.toSide); shake(0.16, 0.2); hitStop(0.05); } else shake(0.06, 0.14);
+          if (dH > 0 && (s.counter ? res.rel < 0 : res.rel > 0)) { shake(0.3, 0.3); hitStop(0.09); } // 상성 우위 강한 일격
           if (S.hp <= 0.5 && heroF.alive) die(heroF);
         } });
-        end = Math.max(end, hitT + (far ? TRAVEL / sp : 0) + 0.35 / sp);
+        end = Math.max(end, hitT + (far ? TRAVEL / sp : 0) + 0.2 / sp);
       }
     });
     return end;
+  }
+
+  // 진행 중에 시각표에 끼워 넣기 (시각 순서 유지)
+  function later(t, fn) { let i = tl.length; while (i > 0 && tl[i - 1].t > t) i--; tl.splice(i, 0, { t, fn }); }
+  // 마무리 (랑그릿사): 결판이 나면 느린 동작으로 쓰러진 쪽에 다가가 '격파'·'퇴각', 아니면 전장 전체로 물러나 잠깐 숨을 고른다. 반환: 닫는 시각
+  function finale(end, sp, st, a, d, res, attSide, defSide) {
+    const sideOf = (u) => (u === a ? attSide : defSide);
+    // 접전이 다 끝난 뒤의 체력 (st 는 시각표가 돌며 깎이므로 결과에서 미리 계산)
+    const hpEnd = (u) => st[u.uid].hp - (u === a ? res.aH : res.dH), thpEnd = (u) => st[u.uid].thp - (u === a ? res.aT : res.dT);
+    const lost = [a, d].filter((u) => hpEnd(u) <= 0.5);
+    const wiped = [a, d].filter((u) => hpEnd(u) > 0.5 && u.troop && st[u.uid].thp > 0 && thpEnd(u) <= 0.5);
+    const t1 = end - 0.32 / sp;
+    if (lost.length || wiped.length) {
+      const u = lost[0] || wiped[0], side = sideOf(u), x = (side === 'L' ? -1 : 1) * (split ? 0 : VW * 0.18);
+      tl.push({ t: t1, fn: () => { timeK = 0.35; if (!split) { tween(CAM, 'z', CAM.z, 1.25, T, T + 0.35); tween(CAM, 'x', CAM.x, x, T, T + 0.35); tween(CAM, 'y', CAM.y, -0.3, T, T + 0.35); } shake(0.22, 0.35); } });
+      tl.push({ t: t1 + 0.3 / sp, fn: () => { timeK = 1; banner(side, lost.length ? (u.side === 'e' ? '격파' : '퇴각') : '병사 전멸', u.side === 'e'); } });
+      return t1 + 1.25 / sp;
+    }
+    tl.push({ t: t1, fn: () => { if (!split) { tween(CAM, 'z', CAM.z, 1, T, T + 0.5 / sp); tween(CAM, 'x', CAM.x, 0, T, T + 0.5 / sp); tween(CAM, 'y', CAM.y, 0, T, T + 0.5 / sp); } } });
+    return t1 + 1.0 / sp;
+  }
+  // 결판 글자: 원작 노란 띠 위 큰 글자
+  function banner(side, text, good) {
+    const e = document.createElement('div');
+    e.className = 'fresult ' + side + (good ? ' good' : ' bad');
+    e.innerHTML = `<b>${text}</b>`;
+    el().querySelector('.fnums').appendChild(e);
   }
 
   // 병과별 싸우는 모습 (랑그릿사): 소총병·해병·변이체는 달려들고(rush), 중장병은 대열로 밀고 나가 찌르며(wall),
@@ -366,8 +434,8 @@
 
   const isRanged = (src, au) => { const kind = src.hero ? au.kind : au.troop && au.troop.kind; return au.rng > 1 || kind === 'arch'; };
 
-  // 쓰러질 때 (랑그릿사식): 맞은 반대쪽으로 짧게 튕겨 밀려나며 뒤로 젖혀지고, 하얗게 깜빡이다 사라진다
-  const DIE_KNOCK = 0.22, DIE_END = 0.62; // 밀려나는 시간, 사라질 때까지
+  // 쓰러질 때 (랑그릿사식): 한 번 하얗게 번쩍인 뒤 맞은 반대쪽으로 튕겨 날아가며 뒤로 넘어가고, 어두워지며 옅어져 사라진다
+  const DIE_KNOCK = 0.3, DIE_END = 0.85; // 날아가는 시간, 사라질 때까지
   function die(f) {
     if (!f || !f.alive) return;
     f.alive = false;
@@ -379,7 +447,7 @@
     let k = f.hero ? 0.7 : 1;
     if (PORT()) k *= 0.7; // 세로 화면은 좁아서 덜 밀려난다
     const g = f.rig.g.position;
-    f.fly = { t: 0, x0: g.x, y0: g.y, dx: away * (0.7 + Math.random() * 0.5) * k, hop: (0.18 + Math.random() * 0.12) * k, tilt: -away * (0.22 + Math.random() * 0.12) };
+    f.fly = { t: 0, x0: g.x, y0: g.y, dx: away * (0.9 + Math.random() * 0.6) * k, hop: (0.35 + Math.random() * 0.2) * k, tilt: -away * (0.55 + Math.random() * 0.35) * (f.hero ? 0.6 : 1) };
     f.rig.c.speed = 0.25; // 자세는 맞은 순간에서 거의 멈춘다
     f.flashT = null; f.rig.c.setFlash(1);
   }
@@ -445,11 +513,12 @@
     }
     const hx = p.x + (Math.random() - 0.5) * 0.4, hy = p.y + up + h * (0.4 + Math.random() * 0.5);
     if (window.FXLIB) { // 원작 타격 효과 (무기 갈래별) + 상성 우위로 영웅을 친 강한 일격
-      fx(HIT_FX[w], hx, hy, { k: dst.hero ? 1.1 : 0.8, flipX: dst.side === 'L', rotation: (Math.random() - 0.5) * 0.5 });
+      fx(HIT_FX[w], hx, hy, { k: dst.hero ? 0.95 : 0.55, flipX: dst.side === 'L', rotation: (Math.random() - 0.5) * 0.5 });
       if (w === 'melee' && Math.random() < 0.5) fx('slash_line', hx, hy, { k: dst.hero ? 1 : 0.7, rotation: (Math.random() - 0.5) * 1.2 });
       if (crit) fx('hit_crit', hx, hy + 0.1, { k: 1.1, renderOrder: 530 });
     } else spark(hx, hy, ranged);
     dst.flashT = T; // 맞으면 하얗게 번쩍 (랑그릿사처럼)
+    if (dst.alive) { dst.kb = (dst.hero ? 0.1 : 0.16) * (crit ? 1.8 : 1); dst.kbT = T; } // 맞은 반대쪽으로 움찔
     if (snd) K.AU.play(far ? 'expS' : src.hero ? au.def.sfx : (au.troop ? au.troop.def.sfx : au.def.sfx), far ? 0.35 : 0.6);
   }
   function spark(x, y, ranged) {
@@ -495,7 +564,7 @@
     const w = weaponOf(f, au);
     if (w === 'melee' || !f.alive) return;
     const p = f.rig.g.position, dir = f.side === 'L' ? 1 : -1;
-    fx(MUZZLE_FX[w], p.x + dir * (f.hero ? 0.6 : 0.42), p.y + lift(f) + (f.hero ? 1.0 : 0.62), { flipX: dir < 0, k: f.hero ? 1.1 : 0.7, tint: w === 'energy' ? 0x9fd8ff : 0xffffff, renderOrder: 515 });
+    fx(MUZZLE_FX[w], p.x + dir * (f.hero ? 0.6 : 0.42), p.y + lift(f) + (f.hero ? 1.0 : 0.62), { flipX: dir < 0, k: f.hero ? 1.0 : 0.55, tint: w === 'energy' ? 0x9fd8ff : 0xffffff, renderOrder: 515 });
   }
   // 날아가는 탄 (예광탄): 원작 탄 효과를 반복 재생하며 x0,y0 에서 x1,y1 로 옮긴다
   function tracer(x0, y0, x1, y1, bug, life, missile) {
@@ -513,7 +582,7 @@
     fxhs = [];
     actors = []; fxs = []; tl = []; tweens.length = 0;
     el().querySelector('.fnums').innerHTML = '';
-    split = false;
+    split = false; timeK = 1; stopT = 0; CAM.z = 1; CAM.x = CAM.y = 0; CAM.sh = 0; applyCam();
     el().classList.remove('split');
     el().classList.add('hidden');
     const cb = done; done = null;
@@ -524,6 +593,9 @@
 
   FIGHT.update = function (dt) {
     if (!active) return;
+    if (CAM.sh > 0) CAM.sh = Math.max(0, CAM.sh - dt);
+    if (stopT > 0) { stopT -= dt; applyCam(); return; } // 타격 멈춤: 장면이 한순간 굳는다
+    dt *= timeK;
     T += dt;
     while (tl.length && tl[0].t <= T) { const e = tl.shift(); e.fn(); if (!active) return; }
     for (let i = tweens.length - 1; i >= 0; i--) {
@@ -534,9 +606,11 @@
       if (w.set) w.set(v); else w.obj[w.key] = v;
       if (k >= 1) tweens.splice(i, 1);
     }
+    applyCam();
     for (const f of actors) {
       f.rig.update(dt);
       if (f.air && f.alive) f.rig.c.root.position.y = f.by0 + lift(f);
+      if (f.kb) { const k = (T - f.kbT) / 0.2; f.rig.c.root.position.x = f.bx0 + (f.side === 'L' ? -1 : 1) * f.kb * (k >= 1 ? 0 : Math.sin(Math.min(1, k * 2.2) * Math.PI / 2) * (1 - k)); if (k >= 1) f.kb = 0; }
       if (f.flashT != null) { const k = (T - f.flashT) / 0.18; f.rig.c.setFlash(k >= 1 ? 0 : k < 0.3 ? 1 : (1 - k) / 0.7); if (k >= 1) f.flashT = null; }
       if (f.fly) { // 튕겨 밀려나기 → 하얗게 깜빡이며 옅어지다 사라짐
         const q = f.fly, g = f.rig.g;
@@ -545,7 +619,8 @@
         g.position.x = q.x0 + q.dx * e;
         g.position.y = q.y0 + q.hop * Math.sin(Math.PI * a);
         g.rotation.z = q.tilt * e;
-        f.rig.c.setFlash(Math.floor(q.t / 0.06) % 2 ? 0.15 : 0.9); // 깜빡임
+        f.rig.c.setFlash(Math.max(0, 1 - q.t / 0.1)); // 맞은 순간 한 번만 번쩍
+        const dk = Math.min(1, q.t / DIE_KNOCK); f.rig.c.setTint(1 - 0.55 * dk, 1 - 0.58 * dk, 1 - 0.5 * dk); // 어두워진다
         f.rig.c.setOpacity(q.t < DIE_KNOCK ? 1 : Math.max(0, 1 - (q.t - DIE_KNOCK) / (DIE_END - DIE_KNOCK)));
         if (q.t >= DIE_END) { g.visible = false; f.fly = null; }
       }
