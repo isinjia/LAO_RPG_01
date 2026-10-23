@@ -10,8 +10,10 @@
     bgmEl: null,
     bgmName: '',
     last: {},
+    away: false, // 창이 포커스를 잃었다: 모든 소리를 멈추고 새 소리도 내지 않는다
+    live: new Set(), // 지금 울리는 효과음 (포커스를 잃으면 함께 끊는다)
     play(name, vol = 1) {
-      if (!this.on || !name) return;
+      if (!this.on || this.away || !name) return;
       const now = performance.now();
       if (this.last[name] && now - this.last[name] < 60) return; // 같은 소리 겹침 방지
       this.last[name] = now;
@@ -19,20 +21,21 @@
       if (!base) { base = cache[name] = new Audio('assets/sfx/' + name + '.mp3'); base.preload = 'auto'; }
       const a = base.cloneNode();
       a.volume = Math.min(1, this.vol * vol);
+      this.live.add(a); a.onended = () => this.live.delete(a);
       a.play().catch(() => {});
     },
     bgm(name) {
-      if (this.bgmName === name && this.bgmEl) { if (this.on && this.bgmEl.paused) this.bgmEl.play().catch(() => {}); return; }
+      if (this.bgmName === name && this.bgmEl) { if (this.on && !this.away && this.bgmEl.paused) this.bgmEl.play().catch(() => {}); return; }
       if (this.bgmEl) { this.bgmEl.pause(); this.bgmEl = null; }
       this.bgmName = name;
       if (!name) return;
       const el = new Audio('assets/bgm/' + name + '.mp3');
       el.loop = true; el.volume = this.bgmVol;
       this.bgmEl = el;
-      if (this.on) el.play().catch(() => {});
+      if (this.on && !this.away) el.play().catch(() => {});
     },
     voice(name, vol = 1) {
-      if (!this.on || !name) return;
+      if (!this.on || this.away || !name) return;
       if (this.vEl) this.vEl.pause();
       this.vEl = new Audio('assets/voice/' + name + '.mp3');
       this.vEl.volume = Math.min(1, this.voiceVol * vol);
@@ -40,7 +43,7 @@
     },
     // 글자 소리 (역전재판식 삑삑): 파일 없이 짧은 사각파를 만든다. freq = 화자마다 다른 높이
     blip(freq = 600, vol = 1) {
-      if (!this.on || !this.blipOn) return;
+      if (!this.on || this.away || !this.blipOn) return;
       try {
         const ctx = this.actx || (this.actx = new (window.AudioContext || window.webkitAudioContext)());
         if (ctx.state === 'suspended') ctx.resume();
@@ -64,8 +67,27 @@
     },
     setOn(v) {
       this.on = v;
-      if (this.bgmEl) { if (v) this.bgmEl.play().catch(() => {}); else this.bgmEl.pause(); }
+      if (this.bgmEl) { if (v && !this.away) this.bgmEl.play().catch(() => {}); else this.bgmEl.pause(); }
+    },
+    // 창 포커스: 잃으면 배경음·음성·효과음을 다 멈추고, 돌아오면 배경음만 이어서 튼다
+    setAway(v) {
+      if (this.away === v) return;
+      this.away = v;
+      if (v) {
+        if (this.bgmEl) this.bgmEl.pause();
+        if (this.vEl) this.vEl.pause();
+        for (const a of this.live) a.pause();
+        this.live.clear();
+        if (this.actx && this.actx.state === 'running') this.actx.suspend();
+      } else {
+        if (this.on && this.bgmEl) this.bgmEl.play().catch(() => {});
+        if (this.actx && this.actx.state === 'suspended') this.actx.resume();
+      }
     },
   };
+  const sync = () => AU.setAway(document.hidden || !document.hasFocus());
+  addEventListener('blur', sync);
+  addEventListener('focus', sync);
+  document.addEventListener('visibilitychange', sync);
   window.AU = AU;
 })();
