@@ -787,3 +787,12 @@ i.dlv { font: normal 11px 'LO_B', sans-serif; color: #111; background: #8fd0ff; 
 .pd-cc { cursor: pointer; } .pd-cc::after { content: '›'; margin-left: auto; font: 22px 'LO_B', sans-serif; color: var(--lo-y); }
 .pd-cc:hover { border-color: var(--lo-y); background: rgba(255, 204, 0, .1); }
 .mbox .opts button.gold b, .mbox .opts button.gold .pprev { color: #111; }
+/* 각성 고르기 (PC 가로): 첫째·둘째 칸을 나란히 → 스크롤 없이 */
+@media (orientation: landscape) and (min-width: 1000px) {
+  .mbox:has(.pslots) { width: min(900px, 94vw); }
+  .pslots { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }
+  .pslots .opts button { padding-top: 8px; padding-bottom: 8px; }
+}
+/* 작은 글씨 키우기: 출격 준비 아래 승패·상성 줄, 결과 화면 영웅 줄의 전직·각성 표시 */
+@media (orientation: landscape) and (min-width: 1000px) { .pgoal { font-size: 15px; } }
+.rrow .rnote { font-size: 13px; color: var(--lo-y); } .rrow .rnote b { color: var(--lo-y); }
