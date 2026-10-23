@@ -84,6 +84,10 @@
     const spots = w.form ? R.formSpots(G, w) : R.freeAround(G, w.at[0], w.at[1], 'foot', w.units.length);
     const list = w.units.map(([t, lv], k) => spots[k] && R.makeEnemy(G, t, lv, spots[k][0], spots[k][1], { boss: w.boss === t, ai: w.boss === t || w.hold || (w.holdK && w.holdK.includes(k)) ? 'guard' : 'charge' })).filter(Boolean);
     if (i > 0 || w.awake) list.forEach((u) => { u.awake = true; }); // awake: 처음부터 진격하는 첫 무리 (아군이 지키는 수비전)
+    // 무리의 지휘관 (랑그릿사처럼 부대는 지휘관 둘레로 함께 움직인다): 우두머리, 없으면 진격하는 적 중 큰 몸·높은 레벨·튼튼한 순
+    const free = list.filter((u) => u.ai !== 'guard');
+    const cmd = list.find((u) => u.boss) || (free.length ? free : list).slice().sort((a, b) => (b.def.big ? 1 : 0) - (a.def.big ? 1 : 0) || b.lv - a.lv || b.hpMax - a.hpMax)[0];
+    list.forEach((u) => { u.wave = i; u.cmd = cmd; u.bornT = G.turn || 1; });
     return list;
   };
   // 무리 진형 (js/stagemaps.js 의 form): 아군 쪽을 앞으로 보고 line 횡대 · wedge 쐐기 · scatter 흩어짐 · ring 우두머리 둘레 · blob 덩어리.
@@ -506,17 +510,19 @@
   // 한 유닛의 할 일: { to:[x,y], act:'attack'|'skill'|'wait', target, skill, tx, ty }
   R.plan = function (G, u, fields) {
     const reach = R.reach(G, u);
-    if (u.side === 'e' && !u.awake) { // 낚기: 아군이 이 적의 공격 범위(이동+사거리)에 들어와야 깨어난다
-      const hit = [...reach.values()].some((t) => t.stop && G.units.some((o) => o.alive && o.side !== u.side && R.dist(t.x, t.y, o.x, o.y) <= u.rng));
-      if (!hit) return { to: [u.x, u.y], act: 'wait' };
-      u.awake = true;
+    const foeAI = u.side === 'e';
+    if (foeAI && !u.awake) { // 깨어나기: 무리 중 하나라도 아군과 가까워지거나(이동+사거리+2) 나온 지 한 차례가 지나면 무리 전체가 함께 진격한다
+      const mates = G.units.filter((o) => o.alive && o.side === 'e' && (o === u || (o.wave != null && o.wave === u.wave)));
+      const close = mates.some((m) => m.awake || G.units.some((o) => o.alive && o.side === 'p' && R.dist(o.x, o.y, m.x, m.y) <= R.mov(m) + m.rng + 2));
+      if (!close && (G.turn || 1) - (u.bornT || 1) < 1) return { to: [u.x, u.y], act: 'wait' };
+      mates.forEach((m) => { m.awake = true; });
     }
     const tiles = [...reach.values()].filter((t) => t.stop && (u.ai !== 'guard' || R.dist(t.x, t.y, u.home[0], u.home[1]) <= 2));
     const th = caution(u) ? (fields.threat || (fields.threat = R.threatMap(G, u.side))) : null;
     // 받을 피해 예상: 다음 차례에 이 칸에 닿는 적들이 저마다 나를 친다고 치고 잃을 몫을 점수로 뺀다
     // (상성이 불리한 적일수록 크게 잡힌다). 우리 편 자동 진행은 그대로, 적은 덜 겁내게 0.4배
     const foes = G.units.filter((o) => o.alive && o.side !== u.side && (o.side === 'p' || o.awake || o.ai !== 'guard'));
-    const myMax0 = R.totalMax(u), fear = u.side === 'p' ? 2 : 0.4, riskMemo = new Map();
+    const myMax0 = R.totalMax(u), fear = u.side === 'p' ? 2 : 0.15, riskMemo = new Map(); // 적은 맞을 걱정을 거의 하지 않는다 (적극적으로)
     const myKind = R.troopAlive(u) ? u.troop.kind : u.kind;
     // advOnly: 상성으로 나를 이기는 적만 센다 (그냥 이동할 때). 아니면 닿는 적 모두 (공격·특기를 하러 설 칸)
     // only: 'asleep' 잠든 적만 / 'awake' 깨어 있는 적만 / 없으면 모두
@@ -552,7 +558,8 @@
       const terrK = terrDef(G, u, t.x, t.y) * 3;
       for (const o of R.targetsFrom(G, u, t.x, t.y)) {
         const e = R.combat(G, u, o, t.x, t.y);
-        let sc = ((e.dT + e.dH * 1.6) / R.totalMax(o)) * 10 * value(o) - ((e.aT + e.aH * 1.6) / myMax) * 10 * value(u) * 0.7 + terrK - risk(t.x, t.y);
+        let sc = ((e.dT + e.dH * 1.6) / R.totalMax(o)) * 10 * value(o) - ((e.aT + e.aH * 1.6) / myMax) * 10 * value(u) * (foeAI ? 0.4 : 0.7) + terrK - risk(t.x, t.y);
+        if (foeAI) sc += e.rel > 0 ? 3 : e.rel < 0 ? -1.5 : 0; // 적: 상성으로 이기는 상대를 먼저 고른다
         if (e.dDead) sc += 6 * value(o);
         if (e.aDead) sc -= 12 * value(u);
         consider(sc, { to: [t.x, t.y], act: 'attack', target: o });
@@ -581,15 +588,17 @@
       }
       u.x = ox; u.y = oy;
     }
-    if (best && best.sc > -1) return best;
+    if (best && best.sc > (foeAI ? -4 : -1)) return best; // 적은 크게 밑지는 싸움이 아니면 친다
     if (u.ai === 'guard') return { to: [u.x, u.y], act: 'wait' };
     const f = fields[u.move + u.side] || (fields[u.move + u.side] = R.distField(G, u.move, u.side));
+    const lead = foeAI && u.cmd && u.cmd !== u && u.cmd.alive ? u.cmd : null; // 따라갈 지휘관 (지휘관이 쓰러지면 저마다 진격)
     let mv = null;
     for (const t of tiles) {
       let sc = f[t.y * G.w + t.x];
       if (u.hp < u.hpMax * 0.35 && u.side === 'p') sc = -sc * 0.3;
       sc -= terrDef(G, u, t.x, t.y) * 0.5;
-      sc += moveRisk(t.x, t.y);
+      sc += moveRisk(t.x, t.y) * (foeAI ? 0.4 : 1);
+      if (lead) sc += Math.max(0, R.dist(t.x, t.y, lead.x, lead.y) - (lead.ai === 'guard' ? 4 : 2)) * 2.5; // 지휘관 둘레(2칸, 버티는 우두머리면 4칸)에서 벗어나지 않게
       if (!mv || sc < mv.sc) mv = { sc, t };
     }
     return mv ? { to: [mv.t.x, mv.t.y], act: 'wait' } : { to: [u.x, u.y], act: 'wait' };
