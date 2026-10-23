@@ -270,28 +270,79 @@
   #deployBar .db-t span { font-size: 11px; }
 }
 
-/* ── 전투 장면 인물 (랑그릿사 모바일처럼): 양쪽 아래 모서리에 또렷한 윗몸 초상, 금빛 둥근 틀, 가운데 수치판은 두 초상 사이 ── */
+/* ── 전투 장면 아래 판 (랑그릿사 모바일 구성 + 라스트오리진 꾸밈) ──
+   양쪽 구석: 편 색 빛기둥 위로 솟는 큰 윗몸 초상과 육각 무늬 이름표 / 가운데: 큰 숫자가 '영웅·병사' 글자 쪽으로 모이고 막대는 바깥으로 뻗는다 */
+#fight .fband { display: none; }
+#fight .fhead { display: none; }
+/* 초상 뒤: 판 없이 편 색 빛만 은은하게 (인물이 아래 어두운 띠 위에 바로 선다) */
+#fight .fbust { clip-path: none; background: none; box-shadow: none; -webkit-mask-image: linear-gradient(0deg, transparent 0, #000 16%); mask-image: linear-gradient(0deg, transparent 0, #000 16%); }
+#fight .fbust::before { z-index: 0; inset: 0; clip-path: none; background: radial-gradient(60% 55% at 50% 78%, color-mix(in srgb, var(--c) 38%, transparent) 0%, transparent 100%); }
+#fight .fbust::after { display: none; }
+#fight .R .fbust { clip-path: none; }
+#fight .fimg { z-index: 1; }
+/* 이름표: 원작 대화창 이름 띠(육각 무늬)를 깔고 초상 발치에 */
+#fight .fcorner .fname { position: absolute; z-index: 4; bottom: calc(10px + var(--safe-b)); left: 10px; width: min(calc(100% - 20px), 320px); height: 46px; box-sizing: border-box;
+  display: flex; align-items: center; gap: 7px; padding: 0 26px 5px 16px; isolation: isolate; color: #aab2c4; }
+#fight .fcorner .fname::before { content: ''; position: absolute; inset: 0; z-index: -1; background: url(../assets/ui/UI_Dialog_Main_CharDialog_Frame_CharName_2.png) 0 0 / 100% 100% no-repeat; filter: drop-shadow(0 3px 8px rgba(0, 0, 0, .6)); }
+#fight .fcorner .fname::after { content: ''; position: absolute; left: 8px; top: 11px; bottom: 16px; width: 3px; background: var(--c); box-shadow: 0 0 8px var(--c); }
+#fight .fcorner.R .fname { left: auto; right: 10px; flex-direction: row-reverse; padding: 0 16px 5px 26px; }
+#fight .fcorner.R .fname::before { transform: scaleX(-1); }
+#fight .fcorner.R .fname::after { left: auto; right: 8px; }
+#fight .fcorner.L { --c: var(--fa); } #fight .fcorner.R { --c: var(--fe); }
+#fight .fcorner .fname b { font: 21px 'LO_B', sans-serif; color: #fff; text-shadow: 0 1px 0 #000; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+#fight .fcorner .fname i { flex: none; font: normal 11px 'LO_B', sans-serif; color: #111; background: var(--lo-y); padding: 2px 7px 1px; letter-spacing: 1px; }
+#fight .fcorner .fname small { flex: none; font: 12px 'LO_B', sans-serif; color: #c9b27a; }
+/* 가운데 판: 어두운 판 + 노란 모서리 꺾쇠, 두 줄(영웅·병사) */
+#fight .fpanel { padding: 10px 16px 10px; background: linear-gradient(180deg, rgba(22, 27, 40, .95), rgba(6, 8, 14, .97)); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08), 0 8px 26px rgba(0, 0, 0, .6); clip-path: none; }
+#fight .fpanel::before, #fight .fpanel::after { content: ''; position: absolute; top: -1px; width: 22px; height: 14px; background: none; clip-path: none; transform: none;
+  border-top: 2px solid var(--lo-y); }
+#fight .fpanel::before { left: -1px; right: auto; border-left: 2px solid var(--lo-y); }
+#fight .fpanel::after { left: auto; right: -1px; border-right: 2px solid var(--lo-y); }
+#fight .fpanel { border-bottom: 2px solid transparent; border-image: linear-gradient(90deg, transparent, var(--lo-y) 30%, var(--lo-y) 70%, transparent) 1; }
+#fight .frow.h { position: relative; }
+#fight .frow.h::before { content: ''; position: absolute; left: 50%; top: -12px; width: 86px; height: 4px; transform: translateX(-50%); background: var(--lo-y); clip-path: polygon(0 0, 100% 0, calc(100% - 4px) 100%, 4px 100%); }
+#fight .frow { grid-template-columns: 1fr auto 62px auto 1fr; gap: 10px; margin-top: 0; }
+#fight .frow.t { margin-top: 7px; padding-top: 7px; border-top: 1px solid rgba(255, 255, 255, .07); }
+#fight .frow > span { position: relative; align-self: stretch; display: flex; flex-direction: column; justify-content: center; font-size: 16px; color: var(--lo-y); }
+#fight .frow > span::before, #fight .frow > span::after { content: ''; position: absolute; top: -2px; bottom: -2px; width: 1px; background: linear-gradient(180deg, transparent, rgba(255, 204, 0, .55), transparent); }
+#fight .frow > span::before { left: 0; } #fight .frow > span::after { right: 0; }
+#fight .frow.t > span { font-size: 13px; }
+/* 큰 숫자 */
+#fight .fval { min-width: 72px; font: italic 32px 'LO_B', sans-serif; line-height: 1; letter-spacing: -1px; color: #fff; white-space: nowrap; }
+#fight .fval.L { text-align: right; text-shadow: 0 2px 0 #000, 0 0 14px color-mix(in srgb, var(--fa) 75%, transparent); }
+#fight .fval.R { text-align: left; text-shadow: 0 2px 0 #000, 0 0 14px color-mix(in srgb, var(--fe) 75%, transparent); }
+#fight .frow.t .fval { font-size: 23px; }
+#fight .fval small { font: normal 12px 'LO_B', sans-serif; color: #c9d0dc; margin-left: 2px; letter-spacing: 0; }
+/* 막대: 10칸 눈금 + 윗면 광 */
+#fight .fbar { height: 18px; background: #02040a; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .2), inset 0 2px 6px #000; }
+#fight .frow.t .fbar { height: 11px; }
+#fight .fbar::after { content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none; background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 2px), rgba(2, 4, 10, .75) calc(10% - 1.5px) 10%); }
+#fight .fbar .fill { background-image: linear-gradient(180deg, rgba(255, 255, 255, .28) 0 45%, rgba(0, 0, 0, 0) 45% 100%), linear-gradient(90deg, var(--a), var(--b)); box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .25); }
+#fight .fbar b { display: none; }
 @media (orientation: landscape) {
-  #fight { --pw: min(21vw, 300px); }
-  #fight .fcorner { width: var(--pw); height: min(36vh, 320px); bottom: 0; z-index: 3; }
-  #fight .fbust { clip-path: none; border-radius: 0 100% 0 0 / 0 62% 0 0; box-shadow: inset 0 0 0 3px var(--lo-y), 0 0 24px rgba(0, 0, 0, .6);
-    background: radial-gradient(120% 90% at 30% 100%, color-mix(in srgb, var(--c) 55%, #000) 0%, rgba(8, 11, 18, .96) 70%); }
-  #fight .R .fbust { border-radius: 100% 0 0 0 / 62% 0 0 0; background: radial-gradient(120% 90% at 70% 100%, color-mix(in srgb, var(--c) 55%, #000) 0%, rgba(8, 11, 18, .96) 70%); }
-  #fight .fbust::after { display: none; }
-  #fight .fbust::before { z-index: 0; background: repeating-linear-gradient(-55deg, transparent 0 9px, rgba(255, 255, 255, .04) 9px 11px); }
-  #fight .fimg { z-index: 1; }
-  /* 아군: 대화용 전신 그림의 머리·어깨 */
-  #fight .fcorner.stand .fimg { left: 46%; top: 3%; height: 260%; filter: drop-shadow(0 0 10px rgba(0, 0, 0, .5)); }
-  #fight .R.stand .fimg { left: 54%; }
-  #fight .fcorner.stand.whole .fimg { top: 10%; height: 110%; }
-  /* 적: SD 모델 윗몸 (그림 없으면 얼굴 아이콘) */
-  #fight .fcorner.sd .fimg { left: 50%; bottom: 0; top: auto; width: 96%; height: auto; aspect-ratio: 1; padding: 0; background: none; clip-path: none; transform: translateX(-50%); filter: drop-shadow(0 0 10px rgba(0, 0, 0, .6)); }
-  #fight .fcorner:not(.stand):not(.sd) .fimg { bottom: 18%; width: 54%; }
-  /* 수치판은 두 초상 사이 (양 끝이 초상 밑으로 살짝 들어간다) */
-  #fight .fpanel { width: min(calc(100vw - 2 * var(--pw) + 36px), 860px); bottom: calc(8px + var(--safe-b)); }
-  /* 받은 피해 합계는 초상 위 */
-  #fight .ftot { top: -34px; right: 10%; }
-  #fight .fcorner.R .ftot { left: 10%; right: auto; }
+  #fight { --pw: min(25vw, 360px); }
+  #fight .fband { display: block; position: absolute; left: 0; right: 0; bottom: 0; height: min(30vh, 220px); z-index: 1; pointer-events: none;
+    background: linear-gradient(0deg, rgba(4, 6, 11, .96) 0%, rgba(4, 6, 11, .9) 50%, rgba(4, 6, 11, 0) 100%); }
+  #fight .fcorner { width: var(--pw); height: min(42vh, 390px); bottom: 0; z-index: 3; }
+  #fight .fcorner.stand .fimg { left: 50%; top: 2%; height: 250%; filter: drop-shadow(0 4px 16px rgba(0, 0, 0, .6)); }
+  #fight .fcorner.stand.whole .fimg { top: 10%; height: 104%; }
+  #fight .fcorner.sd .fimg { left: 50%; top: auto; bottom: 9%; width: 90%; height: auto; aspect-ratio: 1; padding: 0; background: none; clip-path: none; transform: translateX(-50%); filter: drop-shadow(0 4px 16px rgba(0, 0, 0, .65)); }
+  #fight .fcorner:not(.stand):not(.sd) .fimg { bottom: 26%; width: 50%; }
+  #fight .fpanel { width: min(calc(100vw - 2 * var(--pw) + 12px), 820px); bottom: calc(14px + var(--safe-b)); }
+  #fight .ftot { top: 6%; right: -2%; }
+  #fight .fcorner.R .ftot { left: -2%; right: auto; }
+}
+@media (orientation: portrait) {
+  #fight .frow { grid-template-columns: 1fr auto 44px auto 1fr; gap: 6px; }
+  #fight .fval { min-width: 44px; font-size: 22px; }
+  #fight .frow.t .fval { font-size: 16px; }
+  #fight .frow > span { font-size: 13px; } #fight .frow.t > span { font-size: 11px; }
+  #fight .fcorner .fname { height: 32px; bottom: 4px; padding: 0 20px 4px 14px; }
+  #fight .fcorner.R .fname { padding: 0 14px 4px 20px; }
+  #fight .fcorner .fname b { font-size: 15px; }
+  #fight .fcorner .fname small, #fight .fcorner .fname i { display: none; }
+  #fight .fcorner.sd .fimg { left: 50%; top: auto; bottom: 16%; width: 92%; height: auto; aspect-ratio: 1; padding: 0; background: none; clip-path: none; transform: translateX(-50%); filter: drop-shadow(0 4px 12px rgba(0, 0, 0, .65)); }
+  #fight .fcorner.stand .fimg { top: 2%; height: 230%; }
 }
 
 /* 행동 메뉴(특기 목록) 버튼에 마우스를 올리면 옆에 뜨는 정보 상자 (위치는 game.js 의 actTip) */

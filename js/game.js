@@ -2136,7 +2136,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.75';
+  const GAME_VERSION = '0.76';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -3160,7 +3160,7 @@
     // 시험용 훅
     window.GAME = {
       get G() { return G; }, get mode() { return mode; }, get ui() { return ui; }, save, R, D,
-      launch, prep, setAuto, startStage, endTurn, onTap, fitCamera, views, camera, cam, stageSelect, title, enterTown, fightBgOf,
+      launch, prep, setAuto, startStage, endTurn, onTap, fitCamera, views, camera, cam, stageSelect, title, enterTown, fightBgOf, attack,
       // 창이 숨겨져 rAF가 멈춘 상태에서 시험할 때: 시간을 직접 진행하고 한 장 찍어 서버에 저장
       step(sec) { for (let i = 0; i < Math.round(sec * 30); i++) step(1 / 30); },
       // 시간을 진행하면서 약속(Promise)들도 풀리게 한다 (숨은 창에서도 타이머 제한 없이)

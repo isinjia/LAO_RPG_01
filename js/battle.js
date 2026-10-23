@@ -119,9 +119,11 @@
       b.querySelectorAll('i').forEach((i) => { if (instant) i.style.transition = 'none'; i.style.width = w; });
       if (instant) { void b.offsetWidth; b.querySelectorAll('i').forEach((i) => { i.style.transition = ''; }); }
       b.querySelector('b').innerHTML = txt;
+      const n = el().querySelector(`.frow.${row} .fval.${cls}`); // 막대 안쪽 끝, 가운데 글자 옆의 큰 숫자
+      n.innerHTML = txt; n.style.visibility = '';
     };
     if (u.troop) bar('t', thp, u.troop.hpMax, `${RULES.soldiers(u, thp)}<small>명</small>`);
-    else el().querySelector('.frow.t .fbar.' + cls).style.visibility = 'hidden';
+    else el().querySelectorAll(`.frow.t .fbar.${cls}, .frow.t .fval.${cls}`).forEach((e) => { e.style.visibility = 'hidden'; });
     bar('h', hp, u.hpMax, Math.max(0, Math.round(hp)));
   }
   // 모서리 인물 그림: 아군 영웅은 대화용 전신 그림의 윗몸, 그림이 없는 적은 얼굴 아이콘을 틀에 넣는다
