@@ -1915,7 +1915,7 @@
     const st = d.stage || Object.assign({}, D.STAGES[d.si], d.heroes ? { heroes: d.heroes, free: d.free, lock: d.lock } : {});
     hideScreen();
     if (G) leaveMap();
-    R.diff = d.diff || 'normal';
+    R.diff = save.opts.diff || d.diff || 'normal'; // 지금 옵션의 난이도로 (저장 뒤 바꿨으면 적 체력은 applySnap 이 비율대로 맞춘다)
     G = R.newGame(st);
     G.drill = save.drill || {};
     buildWorld();
