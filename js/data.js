@@ -1441,10 +1441,10 @@
       starts: [[7, 14], [10, 14], [7, 13], [10, 13], [8, 14], [9, 14], [7, 15], [6, 14]],
       waves: [
         { turn: 1, at: [8, 6], units: [C('scout', 58), C('wasp', 58), C('scarab', 58), C('heavyscout', 58), C('scout', 58), C('wasp', 58), C('scout', 58), C('wasp', 58)] },
-        { turn: 2, at: [1, 8], units: [C('scout', 58), C('wasp', 58), C('scarab', 58), C('heavyscout', 58), C('scout', 58), C('wasp', 58), C('scout', 58), C('wasp', 58)] },
-        { turn: 3, at: [16, 8], units: [C('heavyscout', 58), C('scarab', 58), C('wasp', 58), C('heavyscout', 58), C('heavyscout', 58), C('scarab', 58), C('heavyscout', 58), C('scarab', 58)] },
-        { turn: 5, at: [5, 0], units: [C('legion', 58), C('sniper', 58), C('detector', 58), C('phalanx', 58), C('phalanx', 58), C('sniper', 58), C('legion', 58), C('phalanx', 58)] },
-        { turn: 7, at: [12, 0], units: [C('legion', 58), C('centurion', 62), C('sniper', 58), C('phalanx', 58), C('legion', 58), C('goltarion', 59)] }, // 마지막 증원이 너무 길게 늘어져 넷을 뺐다
+        { turn: 2, at: [1, 8], units: [C('scout', 58), C('wasp', 58), C('scarab', 58), C('heavyscout', 58), C('scout', 58), C('wasp', 58), C('scout', 58)] },
+        { turn: 3, at: [16, 8], units: [C('heavyscout', 58), C('scarab', 58), C('wasp', 58), C('heavyscout', 58), C('heavyscout', 58), C('scarab', 58), C('heavyscout', 58)] },
+        { turn: 5, at: [5, 0], units: [C('legion', 56), C('sniper', 56), C('detector', 56), C('phalanx', 56), C('phalanx', 56), C('sniper', 56), C('legion', 56), C('phalanx', 56)] },
+        { turn: 7, at: [12, 0], units: [C('legion', 56), C('centurion', 60), C('sniper', 56), C('phalanx', 56), C('legion', 56), C('goltarion', 57)] }, // 마지막 증원이 너무 길게 늘어져 넷을 뺐다
       ],
     },
     {

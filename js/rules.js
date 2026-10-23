@@ -14,7 +14,7 @@
   R.newGame = function (stage) {
     const map = stage.map.map((row) => row.split(''));
     R.ch = stage.ch || 1; R.win = stage.win; // 어려움의 사수 작전은 적이 지킬 칸으로 몰려들어 배율을 덜어 준다 (winAdj)
-    R.chK = R.CH_K[R.ch - 1] || R.CH_K[R.CH_K.length - 1]; // 장마다 적 능력치 배율 (아래). 어려움은 1장(배우는 장)·6장(긴 장)만 조금 덜어 준다 (chAdj)
+    R.chK = R.CH_K[R.ch - 1] || R.CH_K[R.CH_K.length - 1]; // 장마다 적 능력치 배율 (아래). 어려움은 1장·6장(chAdj)과 사수 작전(winAdj)을 조금 덜어 준다
     return { stage, map, w: map[0].length, h: map.length, units: [], turn: 1, side: 'p', wave: 0, drill: {} }; // drill: 병사 훈련 단계 (save.drill)
   };
   R.inB = (G, x, y) => x >= 0 && y >= 0 && x < G.w && y < G.h;
@@ -162,7 +162,7 @@
   // ai: 적 판단의 대담함 — fear 다음 차례에 맞을 걱정, bar 공격을 그만두는 문턱(밑지는 정도), wake 나온 뒤 스스로 진격하기까지의 차례, kill 격파 노리기
   R.DIFF = {
     easy: { k: 0.85, name: '쉬움', ai: { fear: 0.4, bar: -1.5, wake: 2, kill: 0, lead: 1.3, focus: 0 } },
-    normal: { k: 1.07, name: '보통', ai: { fear: 0.1, bar: -4, wake: 1, kill: 2, lead: 1.6, focus: 0.5 } }, // 보통도 쓰러뜨릴 수 있는 영웅은 노린다 (아군을 잃을 긴장)
+    normal: { k: 1.07, name: '보통', winAdj: { defend: 0.95 }, ai: { fear: 0.1, bar: -4, wake: 1, kill: 2, lead: 1.6, focus: 0.5 } }, // 보통도 쓰러뜨릴 수 있는 영웅은 노린다 (아군을 잃을 긴장)
     hard: { k: 1.15, name: '어려움', chAdj: { 1: 0.93, 6: 0.97 }, winAdj: { defend: 0.88 }, ai: { fear: 0.05, bar: -6, wake: 0, kill: 4, lead: 2.4, focus: 2 } }, // focus: 이미 다친 영웅을 몰아 치는 협공 // lead: 적이 아군 지휘관을 노리는 무게
   };
   R.aiOf = () => (R.DIFF[R.diff] || R.DIFF.normal).ai;
@@ -211,10 +211,16 @@
   //  · 정비: 움직이지 않은 영웅이 이번 행동을 쉬면 병사 3명 보충 + 영웅 체력 10% (고전작의 치료 명령)
   //  · 마을·기지 칸: 차례 시작에 영웅·병사 회복 (기지는 병사를 더 보충)
   R.DRILL_K = 0.08; R.DRILL_MAX = 5; // 한 단계 +8% (최대 +40%): 무엇을 훈련할지 고르는 맛이 나게
+  // 추가 목표 (본편 작전): 정한 턴 안에 승리 · 영웅 퇴각 없이 승리. 하나마다 부품 +25%
+  R.bonusOf = (st) => {
+    const last = Math.max(1, ...st.waves.map((w) => w.turn || 1));
+    const timed = st.win !== 'survive' && st.win !== 'defend';
+    return { turns: timed ? Math.max(6, last + 6) : 0 };
+  };
   R.TROOP_CAP = 0.7; // 한 교전에 잃는 병사 체력의 상한 (최대의 70%)
-  R.DRILL_COST = [120, 320, 640, 1100, 1700]; // lv → lv+1 에 드는 부품 (한 병종 최대 3880). 본편 부품(약 1만 2천)으로 병종 셋쯤을 끝까지, 나머지는 중간까지
+  R.DRILL_COST = [120, 320, 640, 1100, 1700]; // lv → lv+1 에 드는 부품 (한 병종 최대 3880). 본편 부품(기본 약 1만 600, 추가 목표를 다 이루면 1만 6천)으로 병종 셋~넷을 끝까지, 나머지는 중간까지
   R.drillCost = (lv) => R.DRILL_COST[Math.min(lv, R.DRILL_COST.length - 1)];
-  R.parts = (stageIndex, win, kind) => Math.round((52 + 8.5 * stageIndex) * (win ? 1 : 0.3) * (kind === 'repeat' ? 0.6 : kind === 'side' ? 1.2 : 1));
+  R.parts = (stageIndex, win, kind) => Math.round((44 + 7.5 * stageIndex) * (win ? 1 : 0.3) * (kind === 'repeat' ? 0.6 : kind === 'side' ? 1.2 : 1));
   R.CMD_RANGE = 2; R.CMD_SUPPLY = 0.1;
   R.REFIT_T = 0.3; R.REFIT_H = 0.1;
   R.canRefit = (u) => u.side === 'p' && (u.hp < u.hpMax || !!(u.troop && u.troop.hp < u.troop.hpMax));
