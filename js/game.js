@@ -1200,7 +1200,9 @@
     ph.className = G.side;
     const st = G.stage;
     const nt = R.nextWaveTurn(G);
-    $('goalBox').innerHTML = `${st.idx} ${st.title} · 승리: <b>${st.goal}</b>${nt ? ` · 증원 ${nt}턴` : ''} · 패배: ${st.lose}${R.diff !== 'normal' ? ` · 난이도 <b>${R.DIFF[R.diff].name}</b>` : ''}${st.kind ? '' : ` · 추가 목표 ${bonusLine(st, true)}`}`;
+    // 위쪽 줄은 작전명·승리 조건·(증원)·추가 목표만 (패배 조건·자세한 증원은 승리 조건 창: 띠를 누르거나 메뉴)
+    $('goalBox').innerHTML = `${st.idx} ${st.title} · 승리: <b>${st.goal}</b>${nt ? ` · 증원 ${nt}턴` : ''}${R.diff !== 'normal' ? ` · <b>${R.DIFF[R.diff].name}</b>` : ''}${st.kind ? '' : ` · ${bonusLine(st, true)}`}`;
+    $('goalBox').title = `패배: ${st.lose}`;
     $('btnEnd').disabled = G.side !== 'p' || busy;
     syncQuick(); renderRoster();
   }
@@ -1955,6 +1957,7 @@
     applySnap(d);
     G.turnSnap = d.turnStart || (d.units.some((s) => s.acted) ? null : d); // 차례 처음의 판이 없으면 「이번 차례 다시」는 숨긴다
     G.easedTo = d.easedTo || null;
+    { const l = Object.keys(R.DIFF); if (d.diff && l.indexOf(R.diff) < l.indexOf(d.diff)) G.easedTo = R.diff; } // 타이틀에서 낮추고 이어해도 낮춘 판
     G.undo = d.undo || [];
     stageStart = d.start || { lv: {} };
     const rigs = new Set();
@@ -3278,8 +3281,8 @@
       const b = R.bonusOf(st), noLoss = g.units.filter((u) => u.side === 'p').every((u) => u.alive || u.escaped);
       if (b.turns) bonus.push({ k: 't', name: `${b.turns}턴 안에 승리`, ok: g.turn <= b.turns });
       if (b.kills) bonus.push({ k: 'k', name: `버티며 적 ${b.kills}기 이상 격파`, ok: g.units.filter((u) => u.side === 'e' && !u.alive).length >= b.kills });
-      if (g.easedTo) bonus.forEach((x) => { x.ok = false; x.name += ' (난이도를 낮춘 판)'; }); // 작전 도중 난이도를 낮췄으면 이 판은 추가 목표를 세지 않는다
       bonus.push({ k: 'n', name: '영웅 퇴각 없이 승리', ok: noLoss });
+      if (g.easedTo) bonus.forEach((x) => { x.ok = false; x.name += ' (난이도를 낮춘 판)'; }); // 작전 도중 난이도를 낮췄으면 이 판은 추가 목표를 하나도 세지 않는다
       const rec = (save.bonus = save.bonus || {})[st.idx] = save.bonus[st.idx] || {};
       for (const x of bonus) { x.first = x.ok && !rec[x.k]; if (x.ok) rec[x.k] = 1; }
       parts = Math.round(parts * (1 + 0.25 * bonus.filter((x) => x.ok).length) * (st.replay ? 0.6 : 1)); // 본편 다시 하기는 60%
