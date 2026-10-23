@@ -775,3 +775,5 @@ i.dlv { font: normal 11px 'LO_B', sans-serif; color: #111; background: #8fd0ff; 
   .rrow > img { width: 46px; height: 46px; }
   .rname b { font-size: 15px; } .rlv b { font-size: 16px; } .rinfo { gap: 2px; }
 }
+/* 옵션 (PC 가로 두 단): 마지막 줄(닫기)과 위 단 사이에 여백 */
+@media (orientation: landscape) and (min-width: 1000px) { .mbox.cols2 .opts:last-child { margin-top: 14px; } }

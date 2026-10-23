@@ -180,7 +180,7 @@
     at: { name: '공세 각성', desc: '영웅·병사 공격 +12%', k: { at: 0.12 } },
     df: { name: '수비 각성', desc: '영웅·병사 방어 +15%', k: { df: 0.15 } },
     hp: { name: '생존 각성', desc: '영웅·병사 체력 +18%', k: { hp: 0.18 } },
-    mv: { name: '기동 각성', desc: '영웅·병사 이동 +1', k: { mov: 1 } },
+    mv: { name: '기동 각성', desc: '영웅·병사 이동 +1, 방어 -6%', k: { mov: 1, df: -0.06 } }, // 이동은 값이 커서 방어를 조금 내준다
   };
   R.PERK2_LV = 40; // 두 번째 각성 (첫째와 다른 것)
   const perkK = (u, k) => (u.side !== 'p' ? 0 : [u.perk, u.perk2].reduce((n, p) => n + ((p && R.PERKS[p] && R.PERKS[p].k[k]) || 0), 0));

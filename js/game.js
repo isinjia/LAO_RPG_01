@@ -2388,7 +2388,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.30';
+  const GAME_VERSION = '1.31';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2806,12 +2806,12 @@
   // 각성 고르기 (Lv20부터, 출격 밖에서 언제든 바꿀 수 있다)
   function perkPick(id, back) {
     const s = save.heroes[id], h = D.HEROES[id], two = s.lv >= R.PERK2_LV;
-    const row = (slot, cur, other) => `<div class="osec">${slot === 1 ? `첫째 각성 (Lv.${R.PERK_LV})` : `둘째 각성 (Lv.${R.PERK2_LV}, 첫째와 다른 것)`}</div><div class="opts">${Object.keys(R.PERKS).map((k) => `<button data-a="p${slot}:${k}" class="${cur === k ? 'gold' : ''}" ${other === k ? 'disabled' : ''}><b>${R.PERKS[k].name}</b> <small>${R.PERKS[k].desc}</small></button>`).join('')}</div>`;
+    const row = (slot, cur, other) => `<div class="osec">${slot === 1 ? `첫째 각성 (Lv.${R.PERK_LV})` : `둘째 각성 (Lv.${R.PERK2_LV}, 첫째와 다른 것)`}</div><div class="opts">${Object.keys(R.PERKS).map((k) => `<button data-a="p${slot}:${k}" class="${cur === k ? 'gold' : ''}"><b>${R.PERKS[k].name}</b> <small>${R.PERKS[k].desc}${other === k ? ' · 다른 칸과 맞바꿈' : ''}</small></button>`).join('')}</div>`;
     modal(`<h3>${h.name} · 각성 <small style="color:#8d95a8;font:13px LO_M">출격 밖에서 언제든 바꿀 수 있음</small></h3>${row(1, s.perk, two ? s.perk2 : null)}${two ? row(2, s.perk2, s.perk) : `<p style="color:#8d95a8">Lv.${R.PERK2_LV}에 둘째 각성을 하나 더 고릅니다.</p>`}<div class="opts"><button data-a="back">돌아가기</button></div>`, (a) => {
       const m = a && /^p([12]):(\w+)$/.exec(a);
       if (m) {
         const key = m[1] === '1' ? 'perk' : 'perk2';
-        s[key] = m[2]; if (s.perk === s.perk2) s[key === 'perk' ? 'perk2' : 'perk'] = null; writeSave();
+        const old = s[key]; s[key] = m[2]; if (s.perk === s.perk2) s[key === 'perk' ? 'perk2' : 'perk'] = old || null; writeSave(); // 다른 칸의 각성을 고르면 두 칸을 맞바꾼다
         AU.play('lo_reinforce_eq', 0.6); heroVoice(id, 'Reinforce'); toast(`${h.name} · ${R.PERKS[m[2]].name}`);
         return perkPick(id, back);
       }
