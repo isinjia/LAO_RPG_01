@@ -735,3 +735,5 @@ i.dlv { font: normal 11px 'LO_B', sans-serif; color: #111; background: #8fd0ff; 
 .rbonus { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin: 4px 0 2px; font: 14px 'LO_B', sans-serif; }
 .rbonus .ok { color: var(--lo-y); } .rbonus .no { color: #6f7890; } .rbonus b { font: 11px 'LO_B', sans-serif; color: #111; background: var(--lo-y); padding: 0 4px; }
 .rbonus small { flex-basis: 100%; font: 12px sans-serif; color: #9aa6c4; }
+/* 출격 준비 오른쪽 정보: 아래로 더 있으면 흐려지는 끝과 얇은 스크롤 막대로 알린다 (병사 목록 셋째 줄이 잘려 보이지 않게) */
+.pdetail { scrollbar-width: thin; scrollbar-color: #ffcc0088 transparent; padding-bottom: 28px; -webkit-mask-image: linear-gradient(#000 calc(100% - 26px), transparent); mask-image: linear-gradient(#000 calc(100% - 26px), transparent); }

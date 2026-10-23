@@ -2244,7 +2244,7 @@
     const slider = (k, label) => `<label class="oslide"><span>${label}</span><input type="range" min="0" max="100" step="5" value="${o[k]}" data-k="${k}"><b>${o[k]}</b></label>`;
     modal(`<h3>옵션</h3>
       <div class="osec">난이도</div><div class="opts">${Object.keys(R.DIFF).map((k) => `<button data-a="dset:${k}" class="${(o.diff || 'normal') === k ? 'gold' : ''}">${R.DIFF[k].name} <small>${G && !G.ended && mode === 'map' ? `이 작전 ${Math.round(R.diffK(k) * 100)}%` : `${Math.round(R.DIFF[k].k * 100)}%`}</small></button>`).join('')}</div>
-      <div class="opts"><button data-a="diffinfo" disabled><small>(${G && !G.ended && mode === 'map' ? `이 작전의 적 능력치 ${Math.round(R.diffK() * 100)}% · 지금 바로` : `적 능력치 ${Math.round(R.DIFF[o.diff || 'normal'].k * 100)}% × 장마다 ${Math.round(R.CH_K[0] * 100)}~${Math.round(R.CH_K[R.CH_K.length - 1] * 100)}%`})</small></button>
+      <p class="dnote" style="margin:6px 2px 10px;color:#9aa6c4;font-size:13px">(${G && !G.ended && mode === 'map' ? `이 작전의 적 능력치 ${Math.round(R.diffK() * 100)}% · 지금 바로` : `적 능력치 ${Math.round(R.DIFF[o.diff || 'normal'].k * 100)}% × 장마다 ${Math.round(R.CH_K[0] * 100)}~${Math.round(R.CH_K[R.CH_K.length - 1] * 100)}%`})</p>
       <div class="osec">소리</div>
       <div class="opts"><button data-a="sound">소리 전체: <b>${onoff(o.sound)}</b></button></div>
       ${slider('bgmV', '배경음')}${slider('sfxV', '효과음')}${slider('voiceV', '음성')}
@@ -2313,7 +2313,7 @@
       <p><b>병종 상성</b> · 공격하는 병종이 이기는 상대를 칠 때 피해가 늘고, 거꾸로면 그만큼 줄어듭니다. 병사는 병사의 병종, 영웅은 영웅의 병종으로 따집니다.</p>
       <table class="keys">${relRows}</table>
       <p><b>피해 흔들림</b> · 공격 예상 창의 숫자는 기댓값이고, 실제 피해는 그 ±10% 안에서 흔들립니다. 아군 부대는 한 번의 교전에 병사를 70%(어려움 90%)까지만 잃고, 넘친 피해의 40%는 영웅이 받습니다.</p>
-      <p><b>원거리</b> · 사격병·전자전병은 사거리 2 이상 (영웅·적마다 다르고, 적 포대는 4칸까지 쏘기도 합니다). 두 칸에서 쏘면 근접 부대는 반격하지 못합니다. 원거리 병종이 붙어서 싸우면 피해가 30%로 줄어듭니다.</p>
+      <p><b>원거리</b> · 사격병·전자전병은 사거리 2 이상 (영웅·적마다 다르고, 적 포대는 4칸까지 쏘기도 합니다). 두 칸에서 쏘면 근접 부대는 반격하지 못합니다. 원거리 병종이 붙어서 싸우면 원래 피해의 30%만 들어갑니다.</p>
       <p><b>적의 움직임</b> · 적은 무리마다 지휘관이 있고, 부대가 지휘관 둘레로 함께 진격합니다. 무리 중 하나라도 아군과 가까워지거나 한 차례가 지나면 무리 전체가 움직이고, 상성으로 이기는 상대를 먼저 노립니다. 우두머리를 지키는 호위는 우두머리 곁을 떠나지 않습니다. 「위험」 단추로 적이 닿는 범위를 확인하세요. 증원은 정해진 턴에 나타나고, 그 전에 지도 위 적을 모두 쓰러뜨리면 남은 증원이 곧바로 앞당겨 나옵니다 (증원까지 모두 쓰러뜨리면 승리).</p>
       <p><b>난이도</b> · 옵션에서 고릅니다 (작전 도중에 바꾸면 그 자리에서 적의 체력·능력치가 바뀝니다). 쉬움: 적 능력치 85%, 적이 조심스럽고 늦게 움직임 · 보통: 107%(사수 작전은 ×0.95) · 어려움: 115%, 적이 처음부터 진격하고 쓰러뜨릴 수 있는 영웅을 집요하게 노림 (어려움은 배우는 1장 ×0.93·긴 6장 ×0.97, 적이 지킬 칸으로 몰려드는 사수 작전 ×0.88을 더 곱해 덜어 줌). 여기에 장마다 배율(95~106%)이 곱해지고, 옵션 창에는 지금 작전의 실제 배율이 나옵니다.</p>
       <div class="osec">성장 · 진행</div>
