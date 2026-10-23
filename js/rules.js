@@ -95,7 +95,7 @@
     const free = (x, y) => R.inB(G, x, y) && !R.unitAt(G, x, y) && R.terr(G, x, y).cost.foot < 99 && !taken.has(x + ',' + y);
     const near = (x, y) => {
       x = Math.round(x); y = Math.round(y);
-      for (let r = 0; r <= 7; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+      for (let r = 0; r <= G.w + G.h; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { // 막혔으면 점점 넓혀 가장 가까운 빈칸
         if (Math.abs(dx) + Math.abs(dy) !== r) continue;
         if (free(x + dx, y + dy)) return [x + dx, y + dy];
       }

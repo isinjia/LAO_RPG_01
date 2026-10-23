@@ -252,7 +252,7 @@ const ARCH = {
   },
   arena(C, R, P) { // 우두머리 결전장: 둥근 마당과 둘레의 기둥·엄폐물
     const cx = C.w >> 1, cy = Math.round(C.h * 0.42), r = Math.min(C.w, C.h) * 0.36, S = [cx, C.h - 2];
-    for (let y = 0; y < C.h; y++) for (let x = 0; x < C.w; x++) { const d = Math.hypot((x - cx) / 1.1, y - cy); if (d > r + 1.6 && y < C.h - 4) C.set(x, y, R() < 0.55 ? P.block[0] : P.cover[0]); }
+    for (let y = 0; y < C.h; y++) for (let x = 0; x < C.w; x++) { const d = Math.hypot((x - cx) / 1.1, y - cy); if (d > r + 1.6 && y < C.h - 4) C.set(x, y, d < r + 2.6 && R() < 0.4 ? P.cover[0] : P.block[0]); } // 둘레 한 겹만 엄폐물, 그 밖은 벽(지도 밖으로 깎인다)
     for (let a = 0; a < 8; a++) { const t = (a / 8) * Math.PI * 2; C.set(Math.round(cx + Math.cos(t) * r * 0.75 * 1.1), Math.round(cy + Math.sin(t) * r * 0.75), a % 2 ? P.block[0] : P.cover[1] || P.cover[0]); }
     C.rect(cx - 1, C.h - 5, 3, 5, '.');
     C.path(cx, C.h - 1, cx, Math.round(cy + r), P.road, 1, R, 0.1);
@@ -281,6 +281,68 @@ const ARCH = {
     const S = [C.w >> 1, C.h - 2];
     return { S, front: [C.w >> 1, Math.round(C.h * 0.45)], far: [C.w >> 1, 1], left: [3, Math.round(C.h * 0.3)], right: [C.w - 4, Math.round(C.h * 0.3)], rear: [C.w >> 1, C.h - 1], keep: [C.w >> 1, 1] };
   },
+};
+
+// ── 윤곽: 지도를 네모로 두지 않는다 (랑그릿사·파이어 엠블렘처럼 땅 모양이 곧 전장) ──
+// 'x' = 지도 밖. 아군 시작 자리·무리 자리 둘레는 남긴다
+const OUTLINE = {
+  // 가장자리를 들쭉날쭉 깎는다 (sides: 위·아래·왼쪽·오른쪽 중 깎을 쪽)
+  edges(C, R, keep, d, sides = 'tblr') {
+    const prof = (n) => { const out = []; let v = R() * d; for (let i = 0; i < n; i++) { v = Math.max(0, Math.min(d, v + (R() - 0.5) * 1.6)); out.push(Math.round(v)); } return out; };
+    const T = prof(C.w), B = prof(C.w), Lp = prof(C.h), Rp = prof(C.h);
+    for (let y = 0; y < C.h; y++) for (let x = 0; x < C.w; x++) {
+      if (keep(x, y)) continue;
+      if ((sides.includes('t') && y < T[x]) || (sides.includes('b') && y >= C.h - B[x]) || (sides.includes('l') && x < Lp[y]) || (sides.includes('r') && x >= C.w - Rp[y])) C.set(x, y, 'x');
+    }
+  },
+  // 모서리를 비스듬히(diag) 또는 네모(square)로 잘라 낸다. which: tl tr bl br
+  corners(C, R, keep, size, which, diag = true) {
+    for (const k of which) {
+      const sx = k[1] === 'l' ? 1 : -1, sy = k[0] === 't' ? 1 : -1, ox = k[1] === 'l' ? 0 : C.w - 1, oy = k[0] === 't' ? 0 : C.h - 1;
+      const sz = size + Math.round((R() - 0.5) * 2);
+      for (let i = 0; i < sz + 2; i++) for (let j = 0; j < sz + 2; j++) {
+        const x = ox + sx * i, y = oy + sy * j;
+        if ((diag ? i + j < sz + (R() < 0.3 ? 1 : 0) : i < sz && j < sz) && !keep(x, y)) C.set(x, y, 'x');
+      }
+    }
+  },
+  // 사방이 막힘(벽·산·바위)뿐인 칸은 지도 밖으로: 굴·미로·고갯길이 땅 모양 그대로 지도가 된다
+  hollow(C, keep, r = 2) {
+    const walk = (c) => c && c !== 'x' && D.TERRAIN[c].cost.foot < 99 && c !== 'm';
+    const kill = [];
+    for (let y = 0; y < C.h; y++) for (let x = 0; x < C.w; x++) {
+      const c = C.get(x, y);
+      if (walk(c) || c === 'w' || c === '=' || keep(x, y)) continue;
+      let near = false;
+      for (let dy = -r; dy <= r && !near; dy++) for (let dx = -r; dx <= r; dx++) if (Math.abs(dx) + Math.abs(dy) <= r && walk(C.get(x + dx, y + dy))) { near = true; break; }
+      if (!near) kill.push([x, y]);
+    }
+    // 가장자리에서 이어진 것만 (산 속 구멍처럼 안쪽에 홀로 뚫리지 않게)
+    const cand = new Set(kill.map(([x, y]) => x + ',' + y)), seen = new Set(), q = [];
+    for (const [x, y] of kill) if (x === 0 || y === 0 || x === C.w - 1 || y === C.h - 1) { seen.add(x + ',' + y); q.push([x, y]); }
+    while (q.length) { const [x, y] = q.shift(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const k = (x + dx) + ',' + (y + dy); if (cand.has(k) && !seen.has(k)) { seen.add(k); q.push([x + dx, y + dy]); } } }
+    kill.filter(([x, y]) => seen.has(x + ',' + y)).forEach(([x, y]) => C.set(x, y, 'x'));
+  },
+};
+// 지도 꼴마다 윤곽
+const SHAPE = {
+  field: (C, R, k) => { OUTLINE.edges(C, R, k, 2); OUTLINE.corners(C, R, k, Math.round(C.w * 0.3), [R() < 0.5 ? 'tl' : 'tr'], false); },
+  diagonal: (C, R, k) => { OUTLINE.corners(C, R, k, Math.round(Math.min(C.w, C.h) * 0.5), ['tl', 'br']); OUTLINE.edges(C, R, k, 1); },
+  river: (C, R, k) => { OUTLINE.edges(C, R, k, 3, 'lr'); OUTLINE.edges(C, R, k, 1, 'tb'); },
+  pincer: (C, R, k) => { OUTLINE.corners(C, R, k, Math.round(C.h * 0.4), ['tl', 'tr'], false); OUTLINE.corners(C, R, k, Math.round(C.h * 0.22), ['bl', 'br']); OUTLINE.edges(C, R, k, 1); },
+  siege: (C, R, k) => { OUTLINE.corners(C, R, k, Math.round(C.w * 0.28), ['bl', 'br']); OUTLINE.edges(C, R, k, 1, 'lrb'); },
+  defend: (C, R, k) => { OUTLINE.corners(C, R, k, Math.round(Math.min(C.w, C.h) * 0.3), ['tl', 'tr', 'bl', 'br']); },
+  encircle: (C, R, k) => { OUTLINE.corners(C, R, k, Math.round(Math.min(C.w, C.h) * 0.24), ['tl', 'tr', 'bl', 'br'], false); OUTLINE.edges(C, R, k, 1); },
+  maze: (C, R, k) => OUTLINE.hollow(C, k, 1),
+  servers: (C, R, k) => { OUTLINE.corners(C, R, k, 3, ['bl', 'br'], false); OUTLINE.hollow(C, k, 1); },
+  corridor: (C, R, k) => { OUTLINE.edges(C, R, k, 3, 'lr'); },
+  tunnel: (C, R, k) => OUTLINE.hollow(C, k, 1),
+  canal: (C, R, k) => { OUTLINE.edges(C, R, k, 2, 'lr'); OUTLINE.corners(C, R, k, 3, ['tl', 'br']); },
+  yard: (C, R, k) => { OUTLINE.corners(C, R, k, 4, ['tl', 'tr']); OUTLINE.edges(C, R, k, 1, 'lr'); },
+  train: (C, R, k) => OUTLINE.hollow(C, k, 0),
+  arena: (C, R, k) => OUTLINE.hollow(C, k, 1),
+  cliff: (C, R, k) => OUTLINE.hollow(C, k, 2),
+  pass: (C, R, k) => OUTLINE.hollow(C, k, 1),
 };
 
 // ── 방향 돌리기: 기본(아군 아래)을 작전 방향으로 ──
@@ -330,6 +392,9 @@ for (const st of D.STAGES) {
   const P = Object.assign({}, palOf(st.land));
   if (['lab', 'vr', 'tomb', 'factory', 'infect'].includes(st.land)) P.water = '#'; // 물이 없는 실내: 물길 자리는 벽
   const A0 = ARCH[arch](C, R, P);
+  const pins = Object.values(A0);
+  const keep = (x, y) => pins.some(([px, py]) => Math.abs(px - x) + Math.abs(py - y) <= 2);
+  if (SHAPE[arch]) SHAPE[arch](C, R, keep);
   const flip = R() < 0.5;
   let { g, A } = orient(C, A0, dir, flip);
   const S = nearFoot(g, A.S);
@@ -360,6 +425,8 @@ for (const st of D.STAGES) {
     if (!miss.length) break;
     miss.forEach((p) => connect(g, S, p));
   }
+  // 아군 쪽과 끊긴 땅 조각은 지도 밖으로 (거기 나온 적이 갇히지 않게). 물·다리는 그대로
+  { const rs0 = reach(g, S); for (let y = 0; y < g.length; y++) for (let x = 0; x < g[0].length; x++) { const c = g[y][x]; if (c !== 'x' && c !== 'w' && c !== '=' && FOOT(c) && !rs0.has(x + ',' + y)) g[y][x] = 'x'; } }
   const rs = reach(g, S);
   const miss = waves.flatMap((w) => [w.at, w.at2].filter(Boolean)).filter(([x, y]) => !rs.has(x + ',' + y));
   if (miss.length) { console.log(st.idx, '닿지 않는 무리 자리', JSON.stringify(miss)); bad++; }

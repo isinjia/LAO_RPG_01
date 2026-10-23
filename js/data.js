@@ -17,6 +17,8 @@
     'c': { name: '기지', cost: { foot: 1, horse: 1, fly: 1 }, def: 0.1, heal: 0.1, supply: 0.2, bg: 'fort' },
     '#': { name: '잔해 벽', cost: { foot: 99, horse: 99, fly: 1 }, def: 0.05, bg: 'fort' },
     's': { name: '폐허', cost: { foot: 1, horse: 2, fly: 1 }, def: 0.05, bg: 'ruins' },
+    // 지도 밖: 네모가 아닌 지도의 바깥 칸 (아무도 못 들어간다, 바깥 풍경으로만 그린다)
+    'x': { name: '지도 밖', cost: { foot: 99, horse: 99, fly: 99 }, def: 0, bg: 'plain', void: true },
   };
 
   // ── 지형 갈래 (작전 장소) ─────────────────────────────

@@ -180,8 +180,17 @@
       let row = '';
       for (let x = 0; x < w; x++) {
         const gx = x - PAD, gy = y - PAD;
-        if (R.inB(G, gx, gy)) { row += G.map[gy][gx]; continue; }
-        const cx = Math.max(0, Math.min(G.w - 1, gx)), cy = Math.max(0, Math.min(G.h - 1, gy));
+        if (R.inB(G, gx, gy) && G.map[gy][gx] !== 'x') { row += G.map[gy][gx]; continue; }
+        let cx = Math.max(0, Math.min(G.w - 1, gx)), cy = Math.max(0, Math.min(G.h - 1, gy));
+        if (G.map[cy][cx] === 'x') { // 빈 곳: 가장 가까운 지도 안 칸의 지형을 잇는다
+          let best = null;
+          for (let r = 1; r < 12 && !best; r++) for (let dy = -r; dy <= r && !best; dy++) for (let dx = -r; dx <= r; dx++) {
+            if (Math.abs(dx) + Math.abs(dy) !== r) continue;
+            const nx = cx + dx, ny = cy + dy;
+            if (R.inB(G, nx, ny) && G.map[ny][nx] !== 'x') { best = [nx, ny]; break; }
+          }
+          if (best) [cx, cy] = best;
+        }
         let c = G.map[cy][cx];
         const outX = gx !== cx, outY = gy !== cy;
         if (road(c)) {
@@ -316,24 +325,32 @@
       rg.addColorStop(0, `rgba(20,25,10,${t === 'f' ? 0.4 : 0.3})`); rg.addColorStop(1, 'rgba(20,25,10,0)');
       g.fillStyle = rg; g.beginPath(); g.ellipse(cx, cy, TS * 0.5, TS * 0.3, 0, 0, 7); g.fill();
     }
+    // 지도 안 칸 (네모가 아닌 지도도 있다: 'x' 칸은 바깥)
+    const X0 = PAD * TS, Y0 = PAD * TS;
+    const play = (x, y) => R.inB(G0, x, y) && G0.map[y][x] !== 'x';
     // 격자 (지도 안만)
-    const X0 = PAD * TS, Y0 = PAD * TS, X1 = (PAD + G0.w) * TS, Y1 = (PAD + G0.h) * TS;
     g.strokeStyle = 'rgba(0,0,0,.14)'; g.lineWidth = 1;
-    for (let x = 0; x <= G0.w; x++) { g.beginPath(); g.moveTo(X0 + x * TS + 0.5, Y0); g.lineTo(X0 + x * TS + 0.5, Y1); g.stroke(); }
-    for (let y = 0; y <= G0.h; y++) { g.beginPath(); g.moveTo(X0, Y0 + y * TS + 0.5); g.lineTo(X1, Y0 + y * TS + 0.5); g.stroke(); }
-    // 못 가는 바깥: 어둡게 덮고 경계선
-    g.save();
-    g.beginPath(); g.rect(0, 0, c.width, c.height); g.rect(X0, Y0, X1 - X0, Y1 - Y0);
-    g.fillStyle = 'rgba(8,12,20,.5)'; g.fill('evenodd');
-    g.restore();
-    for (const [x, y, w, h, gx0, gy0, gx1, gy1] of [[X0, Y0, X1 - X0, TS * 0.4, 0, Y0, 0, Y0 + TS * 0.4], [X0, Y1 - TS * 0.4, X1 - X0, TS * 0.4, 0, Y1, 0, Y1 - TS * 0.4],
-      [X0, Y0, TS * 0.4, Y1 - Y0, X0, 0, X0 + TS * 0.4, 0], [X1 - TS * 0.4, Y0, TS * 0.4, Y1 - Y0, X1, 0, X1 - TS * 0.4, 0]]) {
-      const lg = g.createLinearGradient(gx0, gy0, gx1, gy1);
-      lg.addColorStop(0, 'rgba(0,0,0,.28)'); lg.addColorStop(1, 'rgba(0,0,0,0)');
-      g.fillStyle = lg; g.fillRect(x, y, w, h);
+    for (let y = 0; y < G0.h; y++) for (let x = 0; x < G0.w; x++) if (play(x, y)) g.strokeRect(X0 + x * TS + 0.5, Y0 + y * TS + 0.5, TS, TS);
+    // 못 가는 바깥: 어둡게 덮고 (가장자리는 부드럽게 안쪽 그늘), 경계선
+    const dark = canvas(c.width, c.height), dg = dark.getContext('2d');
+    dg.fillStyle = 'rgba(8,12,20,.5)'; dg.fillRect(0, 0, c.width, c.height);
+    dg.globalCompositeOperation = 'destination-out';
+    for (let y = 0; y < G0.h; y++) for (let x = 0; x < G0.w; x++) if (play(x, y)) dg.fillRect(X0 + x * TS, Y0 + y * TS, TS, TS);
+    const soft = canvas(c.width, c.height), sfg = soft.getContext('2d');
+    sfg.filter = `blur(${TS * 0.18}px)`; sfg.drawImage(dark, 0, 0); sfg.filter = 'none';
+    sfg.globalCompositeOperation = 'source-over'; sfg.globalAlpha = 0.55; sfg.drawImage(dark, 0, 0);
+    g.drawImage(soft, 0, 0);
+    g.strokeStyle = 'rgba(255,224,140,.85)'; g.lineWidth = 4; g.setLineDash([18, 10]); g.lineCap = 'butt';
+    g.beginPath();
+    for (let y = 0; y < G0.h; y++) for (let x = 0; x < G0.w; x++) {
+      if (!play(x, y)) continue;
+      const px = X0 + x * TS, py = Y0 + y * TS, k = 2;
+      if (!play(x, y - 1)) { g.moveTo(px, py + k); g.lineTo(px + TS, py + k); }
+      if (!play(x, y + 1)) { g.moveTo(px, py + TS - k); g.lineTo(px + TS, py + TS - k); }
+      if (!play(x - 1, y)) { g.moveTo(px + k, py); g.lineTo(px + k, py + TS); }
+      if (!play(x + 1, y)) { g.moveTo(px + TS - k, py); g.lineTo(px + TS - k, py + TS); }
     }
-    g.strokeStyle = 'rgba(255,224,140,.85)'; g.lineWidth = 4; g.setLineDash([18, 10]);
-    g.strokeRect(X0 + 2, Y0 + 2, X1 - X0 - 4, Y1 - Y0 - 4);
+    g.stroke();
     g.setLineDash([]);
     // 맨 끝은 바깥 판 색으로 사라진다 (그 너머까지 보여도 끊긴 데가 없게)
     const F = TS * 2.5;
@@ -456,7 +473,7 @@
     const E = extendMap(G);
     for (let y = 0; y < E.h; y++) for (let x = 0; x < E.w; x++) {
       const gx = x - PAD, gy = y - PAD;
-      if (R.inB(G, gx, gy)) continue;
+      if (R.inB(G, gx, gy) && G.map[gy][gx] !== 'x') continue;
       const t = E.map[y][x], dim = [];
       if (t === 'f') {
         const n = 1 + (hash(x, y, 7) > 0.5 ? 1 : 0);
@@ -2070,7 +2087,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.65';
+  const GAME_VERSION = '0.66';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
