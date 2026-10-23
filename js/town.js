@@ -60,6 +60,7 @@
         { t: 'npc', id: 'griffon', x: 13, y: 8, dir: 1 },
         { t: 'npc', id: 'lrl', x: 4, y: 4, dir: 1 },
         { t: 'npc', id: 'fallen', x: 21, y: 11, dir: -1 },
+        { t: 'npc', id: 'constantia', x: 11, y: 15, dir: 1 },
       ],
     },
     cmd: {
@@ -119,6 +120,7 @@
   const D = (art, x, y, w, hh, h = 1) => ({ t: 'deco', art, x, y, w, h, hh, block: 1 });
   // 방: 원작 기지 시설 그림(배경 bg, 바닥이 시작하는 줄 fl, 옆벽 색 wall)과 가구. 사람·출구는 원래 방(지휘실·정비실·휴게실) 그대로
   const ROOM = (label, bg, fl, wall, deco) => ({ label, bg: 'town/' + bg, fl, wall, deco });
+  const CON = (x, y) => ({ t: 'npc', id: 'constantia', x, y, dir: -1 }); // 콘스탄챠는 마을 입구에서 사령관을 맞는다
   const NPC = (g, l, f) => [{ t: 'npc', id: 'griffon', x: g[0], y: g[1], dir: g[2] || 1 }, { t: 'npc', id: 'lrl', x: l[0], y: l[1], dir: l[2] || 1 }, { t: 'npc', id: 'fallen', x: f[0], y: f[1], dir: f[2] || -1 }];
   const TOWNMAPS = {
     coast: MAPS.base, // 1장 등대 아래 비밀기지
@@ -134,7 +136,7 @@
         D('tiles/bags0', 8, 12, 2, 0.8), D('tiles/bags1', 20, 15, 2, 0.9), D('tiles/barrel', 21, 9, 1, 1.1), D('tiles/wreck0', 1, 8, 2, 1.3), D('town/b_stop', 6, 11, 1, 1.7),
         D('town/b_barricade', 10, 16, 1, 1.0), D('town/b_barricade', 13, 16, 1, 1.0), D('tiles/sign', 17, 9, 1, 1.4), D('town/b_lamp', 10, 5, 1, 2.1), D('town/b_lamp', 15, 5, 1, 2.1),
         D('tiles/wreck1', 20, 12, 2, 1.3), D('tiles/crate1', 2, 15, 1, 1.0), D('tiles/mach1', 17, 15, 2, 1.2),
-        { t: 'exit', x: 11, y: 17, w: 2, h: 1 }, ...NPC([9, 8], [6, 8, -1], [20, 11])],
+        { t: 'exit', x: 11, y: 17, w: 2, h: 1 }, ...NPC([9, 8], [6, 8, -1], [20, 11]), CON(13, 15)],
       rooms: {
         cmd: ROOM('작업 지휘소', 'r_mm4_0', 350, ['#5a5a66', '#a9a7b8'], [D('town/r_mm4_11', 1, 2, 2, 1.7), D('town/r_mm0_13', 10, 2, 1, 0.9), D('town/r_mm0_13', 11, 2, 1, 1.0)]),
         shop: ROOM('철공 작업장', 'r_rein1_0', 355, ['#6b5552', '#b59d96'], [D('town/r_iron2_2', 1, 2, 2, 1.9), D('town/r_iron2_9', 10, 2, 2, 2.2), D('town/r_iron1_15', 10, 5, 2, 1.3)]),
@@ -154,7 +156,7 @@
         D('tiles/mush0', 10, 8, 1, 0.8), D('tiles/mush1', 15, 12, 1, 0.8), D('tiles/crate0', 11, 6, 1, 0.9), D('tiles/crate1', 12, 6, 1, 1.0), D('tiles/barrel', 13, 7, 1, 1.1),
         D('town/b_lamp', 11, 9, 1, 2.1), D('town/b_lamp', 14, 9, 1, 2.1), D('town/b_pine2', 3, 3, 1, 2.6), D('tiles/tree2', 22, 2, 1, 2.4), D('tiles/tree4', 2, 15, 1, 2.0),
         D('tiles/bags0', 8, 15, 2, 0.8), D('tiles/bags1', 14, 16, 2, 0.8),
-        { t: 'exit', x: 12, y: 17, w: 2, h: 1 }, ...NPC([12, 8], [9, 11], [22, 9])],
+        { t: 'exit', x: 12, y: 17, w: 2, h: 1 }, ...NPC([12, 8], [9, 11], [22, 9]), CON(14, 15)],
       rooms: {
         cmd: ROOM('진지 지휘소', 'r_dis1_0', 355, ['#3f6b62', '#8fc0b3'], [D('town/r_mm2_2', 2, 2, 1, 1.6), D('town/r_dis1_10', 11, 2, 1, 1.8), D('tiles/bags0', 1, 6, 2, 0.7)]),
         shop: ROOM('무기고', 'r_rein2_0', 360, ['#6b5552', '#b59d96'], [D('town/r_res2_16', 1, 2, 1, 2.0), D('town/r_res1_8', 11, 2, 1, 1.8), D('tiles/crate1', 10, 5, 1, 1.0)]),
@@ -172,7 +174,7 @@
         D('tiles/crystal0', 2, 7, 1, 2.0), D('tiles/crystal1', 20, 8, 2, 1.8), D('tiles/goo0', 4, 14, 2, 0.8), D('tiles/goo1', 19, 15, 1, 1.6), D('tiles/rock1', 7, 13, 2, 1.3),
         D('tiles/rock0', 9, 2, 2, 1.1), D('tiles/console', 11, 3, 2, 1.4), D('tiles/gas', 4, 11, 2, 1.5), D('tiles/crate0', 18, 11, 1, 0.9), D('tiles/barrel', 8, 11, 1, 1.1),
         D('tiles/bags0', 9, 15, 2, 0.8), D('town/b_lamp', 5, 7, 1, 2.1), D('town/b_lamp', 18, 7, 1, 2.1), D('tiles/crystal0', 21, 6, 1, 1.6), D('tiles/goo1', 1, 9, 1, 1.4),
-        { t: 'exit', x: 11, y: 17, w: 2, h: 1 }, ...NPC([12, 7], [8, 9], [15, 9])],
+        { t: 'exit', x: 11, y: 17, w: 2, h: 1 }, ...NPC([12, 7], [8, 9], [15, 9]), CON(13, 15)],
       rooms: {
         cmd: ROOM('드론 관제실', 'r_mm0_0', 370, ['#3c5a5c', '#88a9ab'], [D('town/r_mm1_16', 1, 2, 2, 2.0), D('town/r_mm2_2', 11, 2, 1, 1.6), D('town/r_mm1_12', 9, 2, 1, 1.7)]),
         shop: ROOM('드론 격납고', 'r_parts_1', 440, ['#55606e', '#9aa6b6'], [D('town/r_iron1_5b', 1, 2, 1, 1.9), D('town/r_iron2_16', 11, 2, 1, 2.2)]),
@@ -190,7 +192,7 @@
         D('tiles/server', 2, 6, 2, 1.4), D('tiles/server', 21, 6, 2, 1.4), D('tiles/tank0', 9, 7, 1, 2.0), D('tiles/tank1', 15, 7, 1, 2.0), D('tiles/mach0', 10, 14, 2, 1.7),
         D('tiles/mach1', 3, 14, 2, 1.3), D('tiles/console', 8, 9, 2, 1.4), D('tiles/gas', 16, 9, 2, 1.5), D('tiles/crate0', 22, 15, 1, 0.9), D('tiles/crate1', 23, 15, 1, 1.0),
         D('tiles/barrel', 2, 16, 1, 1.1), D('town/b_lamp', 11, 6, 1, 2.1), D('town/b_lamp', 14, 6, 1, 2.1), D('tiles/sign', 24, 5, 1, 1.4), D('tiles/wreck0', 6, 2, 2, 1.0), D('tiles/wreck2', 19, 2, 2, 1.3),
-        { t: 'exit', x: 12, y: 17, w: 2, h: 1 }, ...NPC([12, 8], [8, 5], [19, 12])],
+        { t: 'exit', x: 12, y: 17, w: 2, h: 1 }, ...NPC([12, 8], [8, 5], [19, 12]), CON(14, 16)],
       rooms: {
         cmd: ROOM('서버 관제실', 'r_dis3_0', 360, ['#2f4f4a', '#7fa69c'], [D('town/r_andr1_15', 1, 2, 1, 2.1), D('town/r_andr2_10', 9, 2, 3, 1.0), D('tiles/server', 1, 6, 2, 1.1)]),
         shop: ROOM('정비실', 'r_rein3_0', 360, ['#55606e', '#9aa6b6'], [D('town/r_res2_6', 1, 2, 2, 1.9), D('town/r_var2_14', 11, 2, 1, 2.4)]),
@@ -208,7 +210,7 @@
         { t: 'deco', art: 'town/b_fountain', x: 11, y: 6, w: 2, h: 2, hh: 2.0, block: 1 }, D('town/b_tree1', 8, 3, 1, 2.4), D('town/b_tree2', 15, 3, 1, 2.4), D('tiles/tree0', 1, 10, 1, 2.2),
         D('tiles/tree2', 22, 11, 1, 2.2), D('tiles/wall', 5, 14, 1, 1.8), D('tiles/wall', 8, 15, 1, 1.6), D('town/b_bench', 8, 10, 2, 0.9), D('town/b_bench', 14, 10, 2, 0.9),
         D('town/b_lamp', 8, 5, 1, 2.1), D('town/b_lamp', 15, 5, 1, 2.1), D('tiles/rock0', 2, 15, 2, 1.0), D('town/b_rock', 20, 1, 2, 1.5), D('town/b_rock', 3, 1, 2, 1.4),
-        { t: 'exit', x: 11, y: 17, w: 2, h: 1 }, ...NPC([12, 9], [9, 8], [20, 13])],
+        { t: 'exit', x: 11, y: 17, w: 2, h: 1 }, ...NPC([12, 9], [9, 8], [20, 13]), CON(13, 15)],
       rooms: { // 숨어 지내던 곳이라 방마다 따뜻한 등불 빛
         cmd: Object.assign(ROOM('은신처 거실', 'r_train_0', 365, ['#6a5a50', '#b8a495'], [D('town/r_cafe4_1b', 3, 3, 3, 1.0), D('town/r_var2_3', 11, 2, 1, 1.9), D('town/r_andr1_0', 1, 2, 1, 2.0)]), { tint: '#ffd9ae' }),
         shop: Object.assign(ROOM('정비실', 'r_dis2_0', 353, ['#6b5b62', '#b8a2ab'], [D('town/r_var2_12', 1, 2, 1, 1.9), D('town/r_res2_6', 10, 2, 2, 1.8)]), { tint: '#ffd9ae' }),
@@ -235,7 +237,7 @@
   let cv = null, ctx = null, hud = null, map = null, layer = null, open = false, done = null, opts = null;
   let px = 0, py = 0, pfx = 0, pfy = 0, dir = 1, path = [], moving = 0, busy = false, fade = 0, fadeTo = 0, pendingWarp = null, onArrive = null;
   let ents = [], blocks = null, S = 1, camX = 0, camY = 0, T = 0, banner = 0;
-  const player = { id: 'constantia', sd: null };
+  const player = { id: 'commander', face: 'up', anim: 0 }; // 사령관: SD 리그가 아니라 js/commander.js 로 그린다
 
   // ── SD 그리기: 화면 밖 WebGL 한 장에 칸별로 ──
   const SDF = { CW: 170, CH: 210, COLS: 6, R: null, scene: null, cam: null, c: null };
@@ -301,7 +303,7 @@
     need.filter((im) => !ok(im)).forEach((im) => im.addEventListener('load', () => { if (map && map.id === id) layer = buildLayer(); }, { once: true }));
     banner = 2.4;
     hud.querySelector('.tn-name').textContent = map.name;
-    if (window.SD) for (const e of ents.concat([player])) SD.prepare(e.id);
+    if (window.SD) for (const e of ents) SD.prepare(e.id);
     if (map.bgm) AU.bgm(map.bgm);
   }
 
@@ -461,7 +463,7 @@
       else if (o.t === 'deco' && !o.skip) list.push({ y: o.y + o.h - 0.01, f: () => drawDeco(o) });
     }
     for (const e of ents) list.push({ y: e.y + 1, f: () => { const X = e.x * TILE + TILE / 2, Y = e.y * TILE + TILE - 4; shadow(X, Y); sdDraw(e, X, Y); if (opts.marker(e.id)) drawMarker(X, Y - TILE * 2.45); } });
-    list.push({ y: pfy + 1.001, f: () => { const X = pfx * TILE + TILE / 2, Y = pfy * TILE + TILE - 4; shadow(X, Y); sdDraw(player, X, Y); } });
+    list.push({ y: pfy + 1.001, f: () => { const X = pfx * TILE + TILE / 2, Y = pfy * TILE + TILE - 4; if (window.CMDR) { ctx.save(); ctx.translate(X, Y); ctx.scale(1.5, 1.5); CMDR.draw(ctx, -24, -45, player.face, moving ? player.anim : 0); ctx.restore(); } } }); // 사령관은 동료 SD 키에 맞춰 1.5배
     list.sort((a, b) => a.y - b.y).forEach((d) => d.f());
     if (map.tint) { ctx.save(); ctx.globalCompositeOperation = 'multiply'; ctx.fillStyle = map.tint; ctx.fillRect(camX, camY, vw, vh); ctx.restore(); }
     // 실내 가장자리 어둡게
@@ -522,6 +524,7 @@
     const start = async () => {
       busy = true;
       dir = e.x < px ? -1 : e.x > px ? 1 : dir;
+      player.face = e.x < px ? 'left' : e.x > px ? 'right' : e.y < py ? 'up' : 'down';
       e.flip = px < e.x; // 사령관 쪽을 본다
       await opts.talk(e.id);
       busy = false;
@@ -549,6 +552,7 @@
     const d = { ArrowLeft: [-1, 0], KeyA: [-1, 0], ArrowRight: [1, 0], KeyD: [1, 0], ArrowUp: [0, -1], KeyW: [0, -1], ArrowDown: [0, 1], KeyS: [0, 1] }[ev.code];
     if (d && !moving) {
       if (d[0]) dir = d[0];
+      player.face = d[0] < 0 ? 'left' : d[0] > 0 ? 'right' : d[1] < 0 ? 'up' : 'down';
       const nx = px + d[0], ny = py + d[1];
       if (walkable(nx, ny)) path = [[nx, ny]];
       ev.preventDefault();
@@ -581,10 +585,10 @@
     if (!moving && path.length && !busy) {
       const [nx, ny] = path[0];
       if (!walkable(nx, ny)) path = [];
-      else { if (nx !== px) dir = nx < px ? -1 : 1; moving = 1; player.from = [px, py]; px = nx; py = ny; player.t = 0; }
+      else { if (nx !== px) dir = nx < px ? -1 : 1; player.face = nx < px ? 'left' : nx > px ? 'right' : ny < py ? 'up' : 'down'; moving = 1; player.from = [px, py]; px = nx; py = ny; player.t = 0; }
     }
     if (moving) {
-      player.t += dt * 4.6;
+      player.t += dt * 4.6; player.anim += dt * 9;
       const k = Math.min(1, player.t);
       pfx = player.from[0] + (px - player.from[0]) * k; pfy = player.from[1] + (py - player.from[1]) * k;
       if (k >= 1) {
@@ -594,7 +598,7 @@
     }
     player.walk = !!moving || path.length > 0;
     player.flip = dir < 0;
-    sdRender([player, ...ents], dt);
+    sdRender(ents, dt);
     draw();
     if (banner > 0) banner -= dt;
     hud.classList.toggle('show', banner > 0);
@@ -604,7 +608,7 @@
     open = false;
     removeEventListener('keydown', onKey);
     removeEventListener('resize', resize);
-    for (const e of ents.concat([player])) if (e.sd) { e.sd.root.parent && e.sd.root.parent.remove(e.sd.root); e.sd.dispose(); e.sd = null; e.slot = null; }
+    for (const e of ents) if (e.sd) { e.sd.root.parent && e.sd.root.parent.remove(e.sd.root); e.sd.dispose(); e.sd = null; e.slot = null; }
     cv.remove(); hud.remove(); cv = null;
     const cb = done; done = null;
     if (cb) cb();

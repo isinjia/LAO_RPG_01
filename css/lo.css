@@ -398,9 +398,8 @@
 #talkBg.see { background: transparent; }
 #talkBg.see .tbg, #talkBg.see .tshade { display: none; }
 /* 월드맵: 부대 표지, 의뢰 표시, 마을 지점, 할 일 목록 */
-.wtoken { position: absolute; z-index: 2000; /* 지점 표지(깊이 순서로 1000 안팎)보다 늘 위 */ width: calc(64 * var(--n)); height: calc(64 * var(--n)); min-width: 38px; min-height: 38px; transform: translate(-50%, -150%); transition: left .4s linear, top .4s linear; pointer-events: none; }
-.wtoken img { width: 100%; height: 100%; border-radius: 50%; border: 3px solid var(--lo-y); box-shadow: 0 0 14px rgba(255, 204, 0, .7); background: #1b2130; object-fit: cover; }
-.wtoken::after { content: ''; position: absolute; left: 50%; bottom: -10px; transform: translateX(-50%); border: 7px solid transparent; border-top-color: var(--lo-y); }
+.wtoken { position: absolute; z-index: 2000; /* 지점 표지(깊이 순서로 1000 안팎)보다 늘 위 */ width: calc(98 * var(--n)); height: calc(126 * var(--n)); min-width: 56px; min-height: 72px; transform: translate(-50%, -83%); /* 사령관 발이 지점에 */ transition: left .4s linear, top .4s linear; pointer-events: none; }
+.wtoken canvas { width: 100%; height: 100%; filter: drop-shadow(0 0 6px rgba(255, 204, 0, .55)); } /* 사령관 (js/commander.js) */
 .wnode .wq { position: absolute; left: 50%; bottom: calc(118 * var(--n)); transform: translateX(-50%); font: 900 max(18px, calc(34 * var(--n))) 'LO_B', sans-serif; color: var(--lo-y); text-shadow: 0 0 6px #000, 0 2px 0 #3a2a00; animation: wbob 1.2s ease-in-out infinite; }
 .wnode.town .tag { background: #8bf03a; }
 .wnode em.town, .wi-name em.town { color: #8bf03a; }
@@ -459,7 +458,7 @@
 .wscr .winfo.on { display: flex; }
 .wclose { position: absolute; right: calc(10px + var(--safe-r)); top: calc(8px + var(--safe-t)); z-index: 2; width: 34px; height: 34px; padding: 0; border: 0; border-radius: 0; background: none; color: #aab2c4; font-size: 20px; }
 .wclose:hover { color: #fff; }
-.wtoken.walk img { animation: wwalk .32s ease-in-out infinite; }
+
 @keyframes wwalk { 50% { transform: translateY(-5px); } }
 .wscr .wmap { cursor: pointer; }
 /* 지점 단추: 공통 '눌림' 효과가 위치(transform)를 덮어써 아이콘이 튀지 않게 */

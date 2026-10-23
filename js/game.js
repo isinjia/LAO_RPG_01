@@ -2030,7 +2030,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.60';
+  const GAME_VERSION = '0.61';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2157,7 +2157,7 @@
     const links = D.STAGES.map((_, i) => [i, i + 1]).filter(([a, b]) => b < D.STAGES.length && chOf(a) === ch && chOf(b) === ch && nodeOpen(a) && nodeOpen(b));
     screen(`<div class="wscr">
       <div class="wmap"><svg class="wlink">${links.map(([a, b]) => `<line class="${b < save.clear ? 'done' : 'next'}"/>`).join('')}</svg>${pins}
-        <div class="wtoken" id="wTok"><img src="${IMG[D.HEROES.constantia.icon]}" alt=""></div></div>
+        <div class="wtoken" id="wTok"><canvas width="112" height="144"></canvas></div></div>
       <div class="wvig"></div>
       <div class="whead"><button class="wback" id="sBack" aria-label="뒤로"></button>
         <div class="wtitle"><small>CHAPTER ${String(CH.no).padStart(2, '0')}</small><b>${CH.name}</b></div>
@@ -2208,6 +2208,24 @@
       const s = tokPos && WM3D.project(tokPos);
       tok.style.visibility = s ? '' : 'hidden';
       if (s) { tok.style.left = s.x + 'px'; tok.style.top = s.y + 'px'; }
+      drawTok(s);
+    }
+    // 부대 말 = 사령관 (js/commander.js, 라켓몬스터와 같은 모습). 걷는 쪽을 화면에서 재어 앞·뒤·옆모습을 고른다
+    const tokCv = tok.querySelector('canvas'), tokG = tokCv.getContext('2d');
+    let tokFace = 'down', tokLast = null, tokAnim = 0, tokT = performance.now();
+    function drawTok(s) {
+      const now = performance.now(), dt = Math.min(0.1, (now - tokT) / 1000); tokT = now;
+      const walking = tok.classList.contains('walk');
+      if (s && tokLast && walking) {
+        const dx = s.x - tokLast.x, dy = s.y - tokLast.y;
+        if (Math.hypot(dx, dy) > 0.3) tokFace = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : dy < 0 ? 'up' : 'down';
+      }
+      if (s) tokLast = { x: s.x, y: s.y };
+      if (!walking) tokFace = tokFace === 'up' ? 'down' : tokFace; // 서면 이쪽을 본다
+      tokAnim = walking ? tokAnim + dt * 9 : 0;
+      tokG.setTransform(1, 0, 0, 1, 0, 0); tokG.clearRect(0, 0, tokCv.width, tokCv.height);
+      tokG.setTransform(2, 0, 0, 2, 4, 30);
+      if (window.CMDR) CMDR.draw(tokG, 0, 0, tokFace, tokAnim);
     }
     WM3D.mount(map, CH.id).then((ok) => {
       if (!ok) return;
@@ -2326,7 +2344,7 @@
     mode = 'town';
     await TOWNF.enter({
       name: townOf().name, look: townOf().look,
-      present: (id) => (id === 'fortune' ? save.clear >= TOWN.unlock : id !== 'constantia' && joined().has(id)),
+      present: (id) => (id === 'fortune' ? save.clear >= TOWN.unlock : id === 'constantia' || joined().has(id)),
       marker: (id) => sideNew().some((s) => s.giver === id),
       talk: async (id) => {
         const q = sideNew().find((s) => s.giver === id);
