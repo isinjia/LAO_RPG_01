@@ -2175,11 +2175,9 @@
     if (mode !== 'map') return;
     const o = save.opts;
     const onoff = (v) => (v ? '켜짐' : '꺼짐');
+    void onoff;
     modal(`<h3>메뉴</h3><div class="opts">
-      <button data-a="fight">전투 장면: <b>${onoff(o.fight)}</b></button>
-      <button data-a="fast">빠른 진행: <b>${onoff(o.fast)}</b></button>
-      <button data-a="autoEnd">모두 행동하면 자동 턴 종료: <b>${onoff(o.autoEnd)}</b></button>
-      <button data-a="opts">옵션 (소리·대화·전투)</button>
+      <button data-a="opts">옵션 (소리·대화·전투 장면·빠른 진행·난이도)</button>
       <button data-a="help">도움말 (규칙·조작)</button>
       <button data-a="keys">키보드 단축키 (H)</button>
       <button data-a="goal">승리·패배 조건</button>
@@ -2197,11 +2195,15 @@
       else if (a === 'help') help();
       else if (a === 'keys') keyHelp();
       else if (a === 'goal') goalInfo();
-      else if (a === 'retry') { const st = G.stage; leaveMap(); prep(st); }
+      else if (a === 'retry') askSure('처음부터 다시', '이 작전을 출격 준비부터 다시 합니다. 지금까지의 진행은 사라집니다.', () => { const st = G.stage; suspendClear(); leaveMap(); prep(st); });
       else if (a === 'redo') { const d = G.turnSnap; if (restoreInPlace(d, '이번 차례를 처음부터 다시 합니다')) { G.undo = []; G.turnSnap = d; } } // 차례가 시작될 때 찍어 둔 판으로
       else if (a === 'undo') undoLast();
-      else if (a === 'quit') { suspendClear(); leaveMap(); stageSelect(); } // 포기한 작전은 이어하기에 남기지 않는다
+      else if (a === 'quit') askSure('작전 포기', '작전을 포기하고 선택 화면으로 나갑니다. 이 작전의 진행은 사라집니다.', () => { suspendClear(); leaveMap(); stageSelect(); }); // 포기한 작전은 이어하기에 남기지 않는다
     });
+  }
+  // 되돌릴 수 없는 일 앞의 확인 창 (아니면 메뉴로)
+  function askSure(title, text, yes) {
+    modal(`<h3>${title}</h3><p>${text}</p><div class="opts"><button class="red" data-a="y">${title}</button><button data-a="n">취소</button></div>`, (a) => (a === 'y' ? yes() : openMenu()));
   }
   // 옵션 창: 소리 크기는 밀대로 바로 바뀌고, 켜기/끄기·속도는 누를 때마다 바뀐다. back: 닫은 뒤 돌아갈 곳
   function options(back) {
@@ -2693,13 +2695,20 @@
       return `<div class="drow ${k === focus ? 'on' : ''}"><img src="${IMG[t.icon]}" alt=""><span class="dinfo"><b>${t.name}</b>${kindTag(t.kind)}
         <small>훈련 ${lv} / ${R.DRILL_MAX} · 체력·공격·방어 +${Math.round(lv * R.DRILL_K * 100)}%${max ? '' : ` → <b>+${Math.round((lv + 1) * R.DRILL_K * 100)}%</b>`}${u.length ? ` · ${u.join(', ')}` : ' · 아직 쓰는 영웅 없음'}</small>
         <em class="dpips">${Array.from({ length: R.DRILL_MAX }, (_, i) => `<i class="${i < lv ? 'on' : ''}"></i>`).join('')}</em></span>
-        <button class="dbtn ${max ? '' : 'gold'}" data-a="d:${k}" ${max || save.parts < cost ? 'disabled' : ''}>${max ? '최대' : `<b>훈련</b><small><img src="${PARTS_ICON}" alt="">${cost}</small>`}</button></div>`;
+        <button class="dbtn ${max ? '' : 'gold'}" data-a="d:${k}" ${max || save.parts < cost ? 'disabled' : ''}>${max ? '최대' : `<b>훈련</b><small><img src="${PARTS_ICON}" alt="">${cost}</small>`}</button>
+        ${lv ? `<button class="dbtn" data-a="u:${k}" title="한 단계 되돌리고 부품 ${Math.round(R.drillCost(lv - 1) * 0.8)} 돌려받기"><b>되돌리기</b><small><img src="${PARTS_ICON}" alt="">+${Math.round(R.drillCost(lv - 1) * 0.8)}</small></button>` : ''}</div>`;
     }).join('');
     modal(`<h3>병사 훈련 <span class="dparts"><img src="${PARTS_ICON}" alt="">부품 <b>${save.parts || 0}</b></span></h3>
       <p class="dnote">병사는 따로 사지 않습니다. 출격할 때마다 10명이 가득 찬 채로 나가고, 전투가 끝나면 다시 채워집니다.
       전투에서 얻은 <b>부품</b>으로 병종을 훈련하면 그 병사를 쓰는 모든 영웅의 병사가 강해집니다 (한 단계 +${Math.round(R.DRILL_K * 100)}%).
-      단계마다 비용이 크게 오르므로 본편 부품으로는 <b>병종 셋쯤만 끝까지</b> 올릴 수 있습니다. 주력 영웅들이 함께 쓰는 병종에 몰아 주는 것이 좋습니다.</p>
+      단계마다 비용이 크게 오르므로 본편 부품으로는 <b>병종 셋쯤만 끝까지</b> 올릴 수 있습니다. 주력 영웅들이 함께 쓰는 병종에 몰아 주는 것이 좋습니다. 잘못 올렸으면 「되돌리기」로 한 단계 내리고 부품 80%를 돌려받습니다.</p>
       <div class="dlist">${rows}</div><div class="opts"><button class="gold" data-a="ok">닫기</button></div>`, (a) => {
+      if (a && a.startsWith('u:')) { // 훈련 되돌리기: 한 단계 내리고 그 단계 비용의 80%를 돌려받는다 (잘못 고른 배분을 고칠 수 있게)
+        const k = a.slice(2), lv = drillLv(k);
+        if (lv > 0) { save.drill[k] = lv - 1; save.parts = (save.parts || 0) + Math.round(R.drillCost(lv - 1) * 0.8); writeSave(); AU.play('lo_click', 0.5); }
+        drillMenu(done, k);
+        return;
+      }
       if (a && a.startsWith('d:')) {
         const k = a.slice(2), lv = drillLv(k), cost = R.drillCost(lv);
         if (lv < R.DRILL_MAX && save.parts >= cost) { save.parts -= cost; save.drill[k] = lv + 1; writeSave(); AU.play('lo_reinforce_eq', 0.7); const who = [...joined()].filter((id) => formOf(id).troops.includes(k)); if (who.length) heroVoice(who[Math.floor(Math.random() * who.length)], 'Reinforce'); } // 원작 강화 음성 (그 병사를 쓰는 영웅)

@@ -166,7 +166,7 @@
   };
   R.aiOf = () => (R.DIFF[R.diff] || R.DIFF.normal).ai;
   // 장마다 적 능력치 배율: 뒤로 갈수록 아군은 전직·병사 훈련이 쌓여 레벨보다 빨리 강해진다 (자동 대전에서 1장이 가장 어렵고 뒤는 쉬웠다)
-  R.CH_K = [0.95, 1, 1.03, 1.05, 1.06, 1.07];
+  R.CH_K = [0.95, 1, 1.03, 1.04, 1.04, 1.07];
   R.chK = 1;
   R.diff = 'normal';
   const diffK = () => (R.DIFF[R.diff] || R.DIFF.normal).k * R.chK;
