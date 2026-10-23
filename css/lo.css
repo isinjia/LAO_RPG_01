@@ -815,3 +815,5 @@ i.dlv { font: normal 11px 'LO_B', sans-serif; color: #111; background: #8fd0ff; 
 .pfootbar .ptac i { font: normal 11px 'LO_M', sans-serif; color: #b8c2da; white-space: nowrap; }
 .gtac { position: relative; cursor: help; }
 #gtip { position: fixed; z-index: 60; pointer-events: none; white-space: nowrap; padding: 6px 10px; font: 13px 'LO_M', sans-serif; color: #fff; background: rgba(10, 14, 22, .96); border: 1px solid var(--lo-y); box-shadow: 0 4px 14px #000a; }
+.gwarn { color: #ff6b7d; animation: blink 1s ease-in-out infinite; }
+.mbox .pprev { font-size: 13px !important; }

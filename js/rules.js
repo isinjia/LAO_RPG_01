@@ -163,7 +163,7 @@
   R.DIFF = {
     easy: { k: 0.85, bonusTurns: 2, name: '쉬움', ai: { fear: 0.4, bar: -1.5, wake: 2, kill: 0, lead: 1.3, focus: 0 } },
     normal: { k: 1.11, bonusTurns: 1, chAdj: { 1: 0.93 }, name: '보통', winAdj: { defend: 0.95 }, ai: { fear: 0.1, bar: -4, wake: 1, kill: 2, lead: 1.6, focus: 0.5 } }, // 보통도 쓰러뜨릴 수 있는 영웅은 노린다 (아군을 잃을 긴장)
-    hard: { k: 1.2, name: '어려움', troopCap: 0.9, heal: 0.6, bonusTurns: -1, chAdj: { 1: 0.9 }, winAdj: { defend: 0.92 }, ai: { fear: 0.05, bar: -6, wake: 0, kill: 6, lead: 2.8, focus: 3.5 } }, // focus: 이미 다친 영웅을 몰아 치는 협공 // lead: 적이 아군 지휘관을 노리는 무게
+    hard: { k: 1.2, name: '어려움', troopCap: 0.9, heal: 0.6, bonusTurns: 0, chAdj: { 1: 0.9 }, winAdj: { defend: 0.92 }, ai: { fear: 0.05, bar: -6, wake: 0, kill: 6, lead: 2.8, focus: 3.5 } }, // focus: 이미 다친 영웅을 몰아 치는 협공 // lead: 적이 아군 지휘관을 노리는 무게
   };
   R.aiOf = () => (R.DIFF[R.diff] || R.DIFF.normal).ai;
   R.healK = () => ((R.DIFF[R.diff] || R.DIFF.normal).heal || 1); // 아군 정비·지휘관 곁 보충 배율 (어려움은 줄어든다)
@@ -197,7 +197,10 @@
     const t = R.TACTICS[key]; G.tactic = t && t.buff ? key : 'none';
     if (!t || !t.buff) return;
     G.tacUntil = R.tacTurns(key, G.stage);
-    const b = (holdStage(G.stage) && t.holdBuff) || t.buff; // 방어 진형은 버티는 작전에서 반격으로 적을 줄이게 공격도 조금
+    const b0 = (holdStage(G.stage) && t.holdBuff) || t.buff; // 방어 진형은 버티는 작전에서 반격으로 적을 줄이게 공격도 조금
+    // 작전에 맞는 전술(추천)을 고르면 좋은 효과만 1.3배 (대가는 그대로)
+    G.tacX = key === R.tacFor(G.stage) ? 1.3 : 1;
+    const b = Object.fromEntries(Object.entries(b0).map(([k, v]) => [k, v > 0 && k !== 'mov' ? Math.round(v * G.tacX * 1000) / 1000 : v]));
     for (const u of G.units) if (u.side === 'p') u.buffs.push({ ...b, until: 1 + G.tacUntil, side: 'p', tac: 1 });
   };
   R.PERK2_LV = 40; // 두 번째 각성 (첫째와 다른 것)
@@ -245,7 +248,7 @@
     const last = Math.max(1, ...st.waves.map((w) => w.turn || 1));
     const timed = st.win !== 'survive' && st.win !== 'defend';
     const foes = st.waves.reduce((n, w) => n + w.units.length, 0);
-    const dT = (R.DIFF[R.diff] && R.DIFF[R.diff].bonusTurns) || 0; // 어려움은 추가 목표 턴이 짧다
+    const dT = (R.DIFF[R.diff] && R.DIFF[R.diff].bonusTurns) || 0; // 난이도마다 추가 목표 턴 여유 (쉬움 +2, 보통 +1)
     return { turns: timed ? Math.max(6, last + 6 + dT) : 0, kills: timed ? 0 : Math.ceil(foes * 0.6) }; // 버티기·사수: 버티면서 적의 60% 이상 격파
   };
   R.TROOP_CAP = 0.7; // 한 교전에 잃는 병사 체력의 상한 (최대의 70%)
