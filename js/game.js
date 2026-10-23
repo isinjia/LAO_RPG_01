@@ -247,6 +247,10 @@
     if (L.woodTint) tint(L.woodTint, mask((t) => t === 'f', TS * 0.22));
     layer(L.dirt, (t) => t === 'm' || t === 's' || t === '#', TS * 0.2);
     layer(L.floor, (t) => t === 'c', TS * 0.12);
+    if (L.indoor) { // 실내는 바닥 그림이 어두워 다닐 수 있는 곳과 벽이 한 빛깔로 보인다: 다닐 곳은 밝히고 벽은 더 어둡게
+      tint('rgba(150,185,230,.2)', mask((t) => t !== 'x', TS * 0.18));
+      tint('rgba(0,0,0,.45)', mask((t) => t === 'x', TS * 0.18));
+    }
     // 언덕: 볼록한 빛과 그늘
     for (let y = 0; y < G.h; y++) for (let x = 0; x < G.w; x++) {
       if (G.map[y][x] !== 'h') continue;
@@ -392,8 +396,8 @@
     if (world) { scene.remove(world.root); world.dispose(); }
     const L = landOf(G.stage), DK = decoTex(L);
     const root = new THREE.Group();
-    const night = !!G.stage.night;
-    const pc = new THREE.Color(night ? 0x8a96c8 : 0xffffff); // 소품 빛깔 (밤, 갈래 빛깔)
+    const night = !!G.stage.night && !L.indoor; // 실내는 바닥 그림부터 어두워 밤빛을 덧씌우지 않는다 (지형이 안 보이게 되므로)
+    const pc = new THREE.Color(night ? 0xaab4dc : 0xffffff); // 소품 빛깔 (밤, 갈래 빛깔). 밤이어도 지형은 읽히게
     if (L.prop) pc.multiply(new THREE.Color(L.prop));
     // 바닥 바깥 (어두운 판)
     const outer = new THREE.Mesh(new THREE.PlaneGeometry(G.w + 80, G.h + 80), new THREE.MeshBasicMaterial({ color: night ? 0x0b0f1a : L.outer }));
@@ -403,7 +407,7 @@
     const gc = drawGround(G);
     const gt = new THREE.CanvasTexture(gc);
     gt.anisotropy = renderer.capabilities.getMaxAnisotropy();
-    const ground = new THREE.Mesh(new THREE.PlaneGeometry(G.w + PAD * 2, G.h + PAD * 2), new THREE.MeshBasicMaterial({ map: gt, color: night ? 0x7c88b8 : 0xffffff }));
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(G.w + PAD * 2, G.h + PAD * 2), new THREE.MeshBasicMaterial({ map: gt, color: night ? 0xa6b2dc : 0xffffff }));
     ground.rotation.x = -Math.PI / 2; ground.position.set(G.w / 2, 0, G.h / 2);
     root.add(ground);
     // 물결 (움직이는 겹 무늬)
@@ -934,7 +938,7 @@
     if (mv) { e.preventDefault(); setCursor(Math.max(0, Math.min(G.w - 1, kcur[0] + mv[0])), Math.max(0, Math.min(G.h - 1, kcur[1] + mv[1]))); return; }
     if (busy || G.side !== 'p') return;
     // 떠 있는 행동 버튼의 글자 (공격 A · 특기 S · 대기 Space · 특기 목록 1~9): 행동 버튼이 떠 있으면 Space 는 결정보다 대기
-    const btn = [...$('acts').querySelectorAll('button[data-key]')].find((b) => b.dataset.key === key);
+    const btn = [...$('acts').querySelectorAll('button[data-key]')].find((b) => b.dataset.key === (key === 'W' ? 'Space' : key)); // W 도 대기 (도움말대로)
     if (btn) { e.preventDefault(); if (!btn.disabled) btn.click(); return; }
     if (k === 'Enter' || k === 'Space' || k === 'KeyZ' || k === 'NumpadEnter') {
       e.preventDefault();
@@ -972,7 +976,7 @@
       ${row('Esc · X · Backspace', '취소 · 뒤로 (아무것도 안 골랐으면 메뉴)')}
       ${row('Tab / Shift+Tab', '다음 / 이전 영웅 · 공격할 적을 고를 때는 다음 적')}
       ${row('1 ~ 9', '영웅 바로 고르기 (왼쪽 목록 순서) · 특기 목록에서는 그 특기')}
-      ${row('A · S', '공격 · 특기 (행동 버튼에 표시)')}${row('Space', '행동 버튼이 떠 있을 때는 대기 (이 영웅의 차례 끝내기)')}
+      ${row('A · S', '공격 · 특기 (행동 버튼에 표시)')}${row('Space · W', '행동 버튼이 떠 있을 때는 대기 (이 영웅의 차례 끝내기)')}
       ${row('E', '턴 종료')}${row('Q', '자동 전투')}${row('V', '배속 ×1 → ×2 → ×3')}${row('F', '전투 장면 켜기·끄기')}
       ${row('R', '적의 공격 범위 (위험)')}${row('C', '카메라를 고른 영웅에게')}${row('+ / −', '확대 · 축소 (휠도 됩니다)')}
       ${row('M', '메뉴')}${row('H · F1', '이 창')}
@@ -1737,6 +1741,7 @@
   async function battleEvent(key) {
     if (!G || G.stage.kind) return;
     const list = ((window.BATTLE_EVENTS || {})[G.stage.idx] || []).filter((e) => e.on === key && !(G.evDone || (G.evDone = new Set())).has(e));
+    if (list.length && ui.sel && ui.state !== 'deploy') deselect(); // 대사가 뜨는 동안 고른 영웅의 범위·정보 창이 어긋나지 않게 먼저 풀어 둔다
     for (const e of list) {
       G.evDone.add(e);
       const n = e.lines.length;
@@ -1791,7 +1796,71 @@
     G.units.forEach(refreshView);
     updateDanger();
     if (side === 'e') await enemyPhase();
-    else { setTop(); setHint(''); const lead = G.units.find((u) => u.lead && u.alive); if (lead) panTo(lead.x, lead.y); if (autoOn) autoPlayer(); }
+    else { suspendSave(); setTop(); setHint(''); const lead = G.units.find((u) => u.lead && u.alive); if (lead) panTo(lead.x, lead.y); if (autoOn) autoPlayer(); }
+  }
+  // ── 작전 중 저장 (이어하기): 아군 차례가 시작될 때마다 판 상태를 따로 저장해 두고, 타이틀의 「작전 이어하기」로 그 차례부터 되살린다 ──
+  // 본편 작전(D.STAGES)만. 작전이 끝나면(승패) 지운다
+  const SUSPEND_KEY = 'orca_srpg_suspend';
+  function suspendClear() { try { localStorage.removeItem(SUSPEND_KEY); } catch (e) { /* 저장 불가 환경 */ } }
+  function suspendLoad() {
+    try { const d = JSON.parse(localStorage.getItem(SUSPEND_KEY) || 'null'); return d && d.v === 1 && D.STAGES[d.si] && D.STAGES[d.si].idx === d.idx ? d : null; } catch (e) { return null; }
+  }
+  function suspendSave() {
+    if (!G || G.ended) return;
+    const si = D.STAGES.indexOf(G.stage);
+    if (si < 0) { suspendClear(); return; }
+    const ev = (window.BATTLE_EVENTS || {})[G.stage.idx] || [];
+    const units = G.units.map((u) => ({
+      side: u.side, key: u.key, lv: u.lv, exp: u.exp, tier: u.tier, br: u.br, troop: u.troop ? u.troop.key : null, x: u.x, y: u.y,
+      hp: u.hp, thp: u.troop ? u.troop.hp : 0, alive: u.alive, escaped: !!u.escaped, cd: u.cd, buffs: u.buffs, slow: u.slow || 0, slowNext: u.slowNext || 0, dealt: u.dealt || 0,
+      ai: u.ai, home: u.home, boss: !!u.boss, awake: !!u.awake, wave: u.wave, bornT: u.bornT, cmd: u.cmd ? G.units.indexOf(u.cmd) : -1,
+    }));
+    const d = { v: 1, si, idx: G.stage.idx, diff: R.diff, turn: G.turn, wave: G.wave, spawned: [...(G.spawned || [])], ev: [...(G.evDone || [])].map((e) => ev.indexOf(e)).filter((i) => i >= 0), units, start: stageStart };
+    try { localStorage.setItem(SUSPEND_KEY, JSON.stringify(d)); } catch (e) { /* 저장 불가 환경 */ }
+  }
+  async function resumeSuspend() {
+    const d = suspendLoad();
+    if (!d) return stageSelect();
+    const st = D.STAGES[d.si];
+    hideScreen();
+    if (G) leaveMap();
+    R.diff = d.diff || 'normal';
+    G = R.newGame(st);
+    G.drill = save.drill || {};
+    buildWorld();
+    for (const s of d.units) {
+      const u = s.side === 'p' ? R.makeHero(G, s.key, { lv: s.lv, exp: s.exp, tier: s.tier, br: s.br }, s.troop, s.x, s.y) : R.makeEnemy(G, s.key, s.lv, s.x, s.y, { ai: s.ai, boss: s.boss });
+      Object.assign(u, { hp: s.hp, alive: s.alive, escaped: s.escaped, cd: s.cd || {}, buffs: s.buffs || [], slow: s.slow, slowNext: s.slowNext, dealt: s.dealt, awake: s.awake, wave: s.wave, bornT: s.bornT, acted: false });
+      if (s.home) u.home = s.home;
+      if (u.troop) u.troop.hp = s.thp;
+    }
+    d.units.forEach((s, i) => { if (s.cmd >= 0) G.units[i].cmd = G.units[s.cmd]; });
+    G.turn = d.turn; G.wave = d.wave; G.spawned = new Set(d.spawned); G.side = 'p';
+    const ev = (window.BATTLE_EVENTS || {})[st.idx] || [];
+    G.evDone = new Set(d.ev.map((i) => ev[i]).filter(Boolean));
+    stageStart = d.start || { lv: {} };
+    const rigs = new Set();
+    G.units.forEach((u) => { rigs.add(u.rig); if (u.troop) rigs.add(u.troop.rig); });
+    st.waves.forEach((w) => w.units.forEach(([t]) => { const e = D.ENEMIES[t]; rigs.add(e.rig); if (e.troop) rigs.add(D.TROOPS[e.troop].rig); }));
+    $('boot').classList.remove('hidden');
+    $('boot').querySelector('.logo').classList.add('hidden');
+    $('boot').querySelector('.bstage').innerHTML = `<span>${st.idx}</span>${st.title}<small>${d.turn}턴부터 이어서</small>`;
+    let n = 0;
+    await Promise.all([...rigs].map((id) => SD.prepare(id).then(() => { $('loadMsg').textContent = `부대 집결 중… ${++n}/${rigs.size}`; })));
+    await Promise.all([...new Set(st.map.join('').split('').map((c) => fightBgOf(st, c)))].map((b) => loadTex(b)));
+    $('boot').classList.add('hidden');
+    $('boot').querySelector('.logo').classList.remove('hidden');
+    for (const u of G.units) if (u.alive) addView(u);
+    fitCamera(true);
+    mode = 'map';
+    $('hud').classList.remove('hidden');
+    ui.state = 'idle'; busy = false; dangerOn = false; $('btnDanger').classList.remove('on'); autoOn = false; $('btnAuto').classList.remove('on');
+    AU.bgm(st.bgm);
+    G.units.forEach(refreshView);
+    updateDanger();
+    setTop(); setHint('');
+    toast(`${st.idx} ${st.title} · ${d.turn}턴부터 이어서 합니다`);
+    const lead = G.units.find((u) => u.lead && u.alive); if (lead) panTo(lead.x, lead.y);
   }
   async function endTurn() {
     if (busy || G.side !== 'p') return;
@@ -2101,7 +2170,7 @@
       <p><b>병종 상성</b> · 소총병 ▶ 중장병 ▶ 기동병 ▶ 소총병 (+30%), 사격병 ▶ 공중병 (+40%), 공중병 ▶ 소총병 (+20%)·전자전병 (+30%), 전자전병 ▶ 중장병 (+30%), 침투병 ▶ 사격병·전자전병 (+30%), 의무병 ▶ 변이체 (+80%). 그 밖에는 상성이 없습니다. 병사는 병사의 병종, 영웅은 영웅의 병종으로 따집니다.</p>
       <p><b>원거리</b> · 사격병은 사거리 2. 두 칸에서 쏘면 근접 부대는 반격하지 못합니다. 원거리 병종이 붙어서 싸우면 피해가 30%로 줄어듭니다.</p>
       <p><b>적의 움직임</b> · 적은 무리마다 지휘관이 있고, 부대가 지휘관 둘레로 함께 진격합니다. 무리 중 하나라도 아군과 가까워지거나 한 차례가 지나면 무리 전체가 움직이고, 상성으로 이기는 상대를 먼저 노립니다. 우두머리를 지키는 호위는 우두머리 곁을 떠나지 않습니다. 「위험」 단추로 적이 닿는 범위를 확인하세요. 증원은 정해진 턴에 나타나며, 그 전에 적을 모두 쓰러뜨리면 승리합니다.</p>
-      <p><b>난이도</b> · 옵션에서 쉬움(적 능력치 85%)·보통·어려움(115%)을 고를 수 있습니다. 다음 작전부터 적용됩니다.</p>
+      <p><b>난이도</b> · 옵션에서 고릅니다 (다음 작전부터). 쉬움: 적 능력치 85%, 적이 조심스럽고 늦게 움직임 · 보통: 105% · 어려움: 115%, 적이 처음부터 진격하고 쓰러뜨릴 수 있는 영웅을 집요하게 노림.</p>
       <p><b>경험치</b> · 전투가 끝나면 참가한 영웅 전원이 같은 양을 받습니다.</p>
       <p><b>특기</b> · 쓰고 나면 정해진 턴 동안 다시 쓸 수 없습니다(괄호 안 숫자).</p>
       <p><b>지배 영역</b> · 적과 맞닿는 칸에 들어서면 그 자리에서 멈춥니다. 적 사이를 빠져나갈 수 없으니 길목을 막아 지키세요 (적도 마찬가지).</p>
@@ -2149,7 +2218,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.95';
+  const GAME_VERSION = '0.96';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2161,6 +2230,7 @@
       <div class="tcenter"><img class="tlogo" src="assets/title/logo.webp" alt=""><div class="tsub">개발자 B의 내 마음대로 LAST ORIGIN</div></div>
       <div class="ttouch" id="tTouch">화면을 터치해 주세요</div>
       <div class="tmenu hidden" id="tMenu">
+        ${suspendLoad() ? `<button id="tResume">작전 이어하기 <small>${suspendLoad().idx} · ${suspendLoad().turn}턴</small></button>` : ''}
         ${has ? '<button id="tCont">이어하기</button>' : ''}
         <button id="tNew">처음부터</button>
         <button id="tOpt">옵션</button>
@@ -2179,9 +2249,10 @@
     };
     const go = () => { AU.play('lo_click', 0.7); AU.play('lo_trans_in', 0.5); stageSelect(); };
     if ($('tCont')) $('tCont').onclick = go;
+    if ($('tResume')) $('tResume').onclick = () => { AU.play('lo_click', 0.7); AU.play('lo_trans_in', 0.5); resumeSuspend(); };
     $('tNew').onclick = () => {
       AU.play('lo_click', 0.7);
-      const start = () => { save.clear = 0; save.troops = {}; save.joined = []; for (const id in D.HEROES) save.heroes[id] = { lv: 1, exp: 0, tier: 0 }; writeSave(); startStage(0); };
+      const start = () => { suspendClear(); save.clear = 0; save.troops = {}; save.joined = []; for (const id in D.HEROES) save.heroes[id] = { lv: 1, exp: 0, tier: 0 }; writeSave(); startStage(0); };
       if (has) modal('<h3>처음부터</h3><p>지금까지의 진행이 지워집니다. 시작할까요?</p><div class="opts"><button class="red" data-a="y">처음부터 시작</button><button data-a="n">취소</button></div>', (a) => { if (a === 'y') start(); });
       else start();
     };
@@ -2840,6 +2911,7 @@
     hideScreen();
     if (G) leaveMap();
     R.diff = save.opts.diff || 'normal'; // 난이도는 작전을 시작할 때 정해진다
+    suspendClear(); // 새 작전을 시작하면 이어하던 작전은 버린다
     G = R.newGame(st);
     G.drill = save.drill || {};
     buildWorld();
@@ -2991,6 +3063,7 @@
   async function endStage(win, why) {
     if (!G || G.ended) return; // 한 전투는 한 번만 끝난다 (치트·적 차례가 겹쳐도)
     G.ended = true;
+    suspendClear(); // 승패가 났으면 작전 중 저장은 지운다
     busy = true;
     const g = G, st = G.stage;
     await wait(400);
@@ -3175,7 +3248,7 @@
     // 시험용 훅
     window.GAME = {
       get G() { return G; }, get mode() { return mode; }, get ui() { return ui; }, save, R, D,
-      launch, prep, setAuto, startStage, endTurn, onTap, fitCamera, views, camera, cam, stageSelect, title, enterTown, fightBgOf, attack,
+      launch, prep, setAuto, resumeSuspend, startStage, endTurn, onTap, fitCamera, views, camera, cam, stageSelect, title, enterTown, fightBgOf, attack,
       // 창이 숨겨져 rAF가 멈춘 상태에서 시험할 때: 시간을 직접 진행하고 한 장 찍어 서버에 저장
       step(sec) { for (let i = 0; i < Math.round(sec * 30); i++) step(1 / 30); },
       // 시간을 진행하면서 약속(Promise)들도 풀리게 한다 (숨은 창에서도 타이머 제한 없이)

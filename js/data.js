@@ -1141,7 +1141,7 @@
       ],
       starts: [[13, 12], [14, 12], [13, 13], [14, 13], [15, 12], [15, 13], [12, 12], [13, 11]],
       waves: [
-        { turn: 1, at: [4, 9], units: [C('wasp', 43), C('scout', 43), C('cannon', 43), C('scout', 43), C('heavyscout', 43), C('wasp', 43), C('scout', 43)] },
+        { turn: 1, at: [4, 9], units: [C('sniper', 43), C('scout', 43), C('cannon', 43), C('scout', 43), C('heavyscout', 43), C('scout', 43), C('scout', 43)] }, // 첫 무리의 공중병이 벽을 넘어 격납고에 먼저 내려앉아 너무 가혹해 땅 병종으로
         { turn: 3, at: [8, 2], units: [C('scout', 43), C('cannon', 43), C('scout', 43), C('heavyscout', 43), C('scout', 43), C('cannon', 43), C('scout', 43), C('scout', 43)] },
         { turn: 5, at: [0, 2], units: [C('wasp', 43), C('sniper', 43), C('centurion', 44), C('detector', 45), C('wasp', 43), C('sniper', 43), C('wasp', 43), C('wasp', 43), C('goltarion', 44)] },
       ],
@@ -1591,9 +1591,9 @@
       waves: [
         { turn: 1, at: [8, 7], units: [C('scarab', 71), C('quarter', 71), C('legionsp', 72), C('chick', 72), C('scarab', 71)] },
         { turn: 2, at: [14, 4], units: [C('shielderx', 72), C('legionsp', 72), C('phalanx', 72), C('scarab', 72), C('chick', 71), C('shielderx', 72), C('phalanx', 72)] },
-        { turn: 4, at: [3, 4], units: [C('chick', 72), C('quarter', 72), C('phalanx', 73), C('detector', 72), C('chick', 72), C('legionsp', 72), C('chick', 72), C('quarter', 72)] },
+        { turn: 4, at: [3, 4], units: [C('chick', 72), C('quarter', 72), C('phalanx', 73), C('detector', 72), C('chick', 72), C('legionsp', 72), C('quarter', 72)] },
         { turn: 6, at: [8, 1], units: [C('legion', 72), C('quarter', 73), C('tortoise', 73), C('shielderx', 72), C('chick', 73), C('legion', 72)] },
-        { turn: 8, at: [9, 1], units: [C('phalanx', 73), C('detector', 73), C('sniper', 74), C('legionsp', 73), C('tortoise', 73), C('quarter', 73), C('phalanx', 73), C('quarter', 73), C('ironprince', 73)] },
+        { turn: 8, at: [9, 1], units: [C('phalanx', 73), C('detector', 73), C('sniper', 74), C('legionsp', 73), C('tortoise', 73), C('quarter', 73), C('ironprince', 73)] }, // 좁은 통로에서 너무 늘어져 둘을 뺐다
       ],
     },
     {
