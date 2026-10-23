@@ -842,3 +842,5 @@ i.dlv { font: normal 11px 'LO_B', sans-serif; color: #111; background: #8fd0ff; 
 .wtools .wstar { font-size: 17px; } .wtools .wstar small { font-size: 13px; }
 .wnode em .wst { display: inline-block; margin-top: 1px; padding: 0 4px; background: rgba(8, 11, 18, .78); border-radius: 2px; }
 .wnode em .wst { display: block; width: max-content; margin: 2px auto 0; font-size: 14px; }
+/* 월드맵: 작전 표시·지명은 아래 도구줄보다 위에 (카메라 각도에 따라 겹쳐도 가려지지 않고 누를 수 있게) */
+.wnode { z-index: 3; }
