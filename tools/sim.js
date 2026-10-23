@@ -25,7 +25,7 @@ const show = (a, d, nm) => {
   const p = R.combat(G, a, d, a.x, a.y);
   const f = (v) => v.toFixed(0).padStart(3);
   const dl = R.soldiers(d) - R.soldiers(d, d.troop ? d.troop.hp - p.dT : 0), al = R.soldiers(a) - R.soldiers(a, a.troop ? a.troop.hp - p.aT : 0);
-  console.log(nm.padEnd(28), `방어측 병사-${dl}명 영웅-${f(p.dH)} | 공격측 병사-${al}명 영웅-${f(p.aH)}`, p.counter ? '' : '(반격 없음)');
+  console.log(nm.padEnd(28), `거리 ${p.dist} · 방어측 병사-${dl}명 영웅-${f(p.dH)} | 공격측 병사-${al}명 영웅-${f(p.aH)}`, p.counter ? '' : '(반격 없음: 사거리 밖)');
 };
 const H = (id, lv, troop, x, y) => R.makeHero(G, id, { lv, exp: 0, tier: lv >= 10 ? 2 : lv >= 5 ? 1 : 0 }, troop, x, y);
 const con = H('constantia', 1, 'gunner', 0, 0), gri = H('griffon', 1, 'flyer', 0, 2), joh = H('johanna', 1, 'shield', 0, 4), lrl = H('lrl', 1, 'guard', 0, 6), pup = H('pupphead', 1, 'raider', 0, 8);
@@ -39,4 +39,5 @@ show(joh, sh, '요안나(중장병)→실더(중장병)');
 show(lrl, ch2, 'LRL(소총병)→나이트칙(소총병)');
 show(pup, la2, '펍헤드(기동병)→런처 (붙어서)');
 show(la2, pup, '런처→펍헤드 (런처가 붙어서)');
+lrl.x = 1; lrl.y = 5; // 실더 바로 옆에서
 show(lrl, sh, 'LRL(소총병)→실더 (소총병▶중장병)');

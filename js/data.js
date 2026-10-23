@@ -1204,7 +1204,7 @@
         { turn: 3, at: [16, 1], units: [C('scarab', 45), C('heavyscout', 45), C('phalanx', 45), C('wasp', 45), C('scarab', 45), C('heavyscout', 45), C('scarab', 45), C('heavyscout', 45)] },
         { turn: 5, at: [8, 0], units: [C('scout', 45), C('wasp', 45), C('cannon', 45), C('scout', 45), C('wasp', 45), C('cannon', 45), C('scout', 45), C('wasp', 45)] },
         { turn: 7, at: [1, 6], units: [C('scout', 45), C('heavyscout', 45), C('wasp', 45), C('detector', 45), C('scout', 45), C('heavyscout', 45), C('scout', 45), C('heavyscout', 45)] },
-        { turn: 9, at: [16, 6], units: [C('bigchick', 46), C('heavyscout', 45), C('cannon', 45), C('cannon', 45), C('bigchick', 46), C('heavyscout', 45), C('heavyscout', 45)] },
+        { turn: 9, at: [16, 6], units: [C('bigchick', 46), C('heavyscout', 45), C('cannon', 45), C('cannon', 45), C('bigchick', 46)] },
       ],
     },
     {
@@ -1558,7 +1558,7 @@
       ],
       starts: [[7, 13], [8, 13], [6, 13], [9, 13], [7, 12], [8, 12], [7, 14], [8, 14]],
       waves: [
-        { turn: 1, at: [8, 7], units: [C('pm_ts', 70), C('pm_tn', 71), C('pm_mt', 70), C('pm_tt', 71), C('pm_ts', 70)] },
+        { turn: 1, at: [8, 7], units: [C('pm_ts', 70), C('pm_tn', 71), C('pm_mt', 70), C('pm_tt', 71)] },
         { turn: 2, at: [14, 2], units: [C('pm_mt', 70), C('pm_tn', 71), C('pm_ts', 70), C('pm_tt', 72), C('pm_mt', 70), C('pm_tn', 71), C('pm_mt', 70), C('pm_ts', 70)] },
         { turn: 4, at: [1, 2], units: [C('pm_ts', 70), C('pm_mt', 71), C('pm_mn', 72), C('pm_ts', 70), C('pm_tt', 71), C('pm_ts', 70), C('pm_mt', 71)] },
         { turn: 6, at: [8, 0], units: [C('pm_ts', 71), C('pm_mn', 71), C('pm_ms', 71), C('pm_tt', 71), C('pm_mt', 71), C('pm_mn', 71), C('pm_ts', 71), C('pm_ms', 71)] },
@@ -1649,7 +1649,7 @@
       ],
       starts: [[7, 14], [10, 14], [7, 13], [10, 13], [8, 14], [9, 14], [7, 15], [6, 14]],
       waves: [
-        { turn: 1, at: [8, 8], units: [C('pm_tt', 75), C('pm_ts', 75), C('pm_mt', 75), C('pm_tt', 75), C('pm_tt', 75)] },
+        { turn: 1, at: [8, 8], units: [C('pm_tt', 75), C('pm_ts', 75), C('pm_mt', 75), C('pm_tt', 75)] },
         { turn: 2, at: [8, 1], units: [C('pm_tt', 75), C('pm_tn', 75), C('pm_as', 76), C('pm_tt', 75), C('pm_tn', 75), C('pm_tt', 75), C('pm_as', 76)] },
         { turn: 4, at: [1, 3], units: [C('pm_ms', 75), C('pm_an', 76), C('pm_mn', 75), C('pm_at', 75), C('pm_ts', 75), C('pm_an', 76), C('pm_ms', 75), C('pm_ts', 75)] },
         { turn: 6, at: [16, 3], units: [C('pm_tt', 76), C('pm_ts', 75), C('pm_at', 75), C('pm_ms', 76), C('pm_mt', 76), C('pm_tt', 76), C('pm_ts', 75), C('pm_tt', 76), C('pm_ts', 75)] },

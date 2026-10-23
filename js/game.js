@@ -2173,9 +2173,6 @@
   }
   function openMenu() {
     if (mode !== 'map') return;
-    const o = save.opts;
-    const onoff = (v) => (v ? '켜짐' : '꺼짐');
-    void onoff;
     modal(`<h3>메뉴</h3><div class="opts">
       <button data-a="opts">옵션 (소리·대화·전투 장면·빠른 진행·난이도)</button>
       <button data-a="help">도움말 (규칙·조작)</button>
@@ -2186,12 +2183,7 @@
       <button data-a="retry">처음부터 다시</button>
       <button data-a="quit" class="red">작전 포기 (선택 화면으로)</button>
       <button data-a="close" class="gold">닫기</button></div>`, (a) => {
-      if (['fight', 'fast', 'autoEnd', 'sound'].includes(a)) {
-        o[a] = !o[a]; writeSave();
-        if (a === 'fast') delete o.spd;
-        speedK = spdOf(o); AU.setOn(o.sound); syncQuick();
-        openMenu();
-      } else if (a === 'opts') options(openMenu);
+      if (a === 'opts') options(openMenu);
       else if (a === 'help') help();
       else if (a === 'keys') keyHelp();
       else if (a === 'goal') goalInfo();
@@ -2223,7 +2215,7 @@
       <button data-a="diff">난이도: <b>${R.DIFF[o.diff || 'normal'].name}</b> <small>(${G && !G.ended && mode === 'map' ? `이 작전의 적 능력치 ${Math.round(R.DIFF[o.diff || 'normal'].k * R.chK * 100)}% · 지금 바로` : `적 능력치 ${Math.round(R.DIFF[o.diff || 'normal'].k * 100)}% × 장마다 ${Math.round(R.CH_K[0] * 100)}~${Math.round(R.CH_K[R.CH_K.length - 1] * 100)}%`})</small></button>
       <button data-a="close" class="gold">닫기</button></div>`, (a) => {
       if (['sound', 'blip', 'fight', 'fast', 'autoEnd'].includes(a)) { o[a] = !o[a]; if (a === 'fast') delete o.spd; }
-      else if (a === 'diff') { const l = Object.keys(R.DIFF); o.diff = l[(l.indexOf(o.diff || 'normal') + 1) % l.length]; diffNow(); }
+      else if (a === 'diff') { const l = Object.keys(R.DIFF); o.diff = l[(l.indexOf(o.diff || 'normal') + 1) % l.length]; diffNow(); if (G && !G.ended && mode === 'map') toast(`난이도 ${R.DIFF[o.diff].name} · 지금 적 체력·능력치가 바뀌었습니다 (되돌리기도 새 배율로)`); }
       else if (a === 'textSpd') o.textSpd = (o.textSpd + 1) % 3;
       else { writeSave(); if (back) back(); return; }
       writeSave(); applyOpts(); options(back);
@@ -2278,7 +2270,7 @@
       <table class="keys">${relRows}</table>
       <p><b>피해 흔들림</b> · 공격 예상 창의 숫자는 기댓값이고, 실제 피해는 그 ±10% 안에서 흔들립니다.</p>
       <p><b>원거리</b> · 사격병은 사거리 2. 두 칸에서 쏘면 근접 부대는 반격하지 못합니다. 원거리 병종이 붙어서 싸우면 피해가 30%로 줄어듭니다.</p>
-      <p><b>적의 움직임</b> · 적은 무리마다 지휘관이 있고, 부대가 지휘관 둘레로 함께 진격합니다. 무리 중 하나라도 아군과 가까워지거나 한 차례가 지나면 무리 전체가 움직이고, 상성으로 이기는 상대를 먼저 노립니다. 우두머리를 지키는 호위는 우두머리 곁을 떠나지 않습니다. 「위험」 단추로 적이 닿는 범위를 확인하세요. 증원은 정해진 턴에 나타나며, 그 전에 적을 모두 쓰러뜨리면 승리합니다.</p>
+      <p><b>적의 움직임</b> · 적은 무리마다 지휘관이 있고, 부대가 지휘관 둘레로 함께 진격합니다. 무리 중 하나라도 아군과 가까워지거나 한 차례가 지나면 무리 전체가 움직이고, 상성으로 이기는 상대를 먼저 노립니다. 우두머리를 지키는 호위는 우두머리 곁을 떠나지 않습니다. 「위험」 단추로 적이 닿는 범위를 확인하세요. 증원은 정해진 턴에 나타나고, 그 전에 지도 위 적을 모두 쓰러뜨리면 남은 증원이 곧바로 앞당겨 나옵니다 (증원까지 모두 쓰러뜨리면 승리).</p>
       <p><b>난이도</b> · 옵션에서 고릅니다 (작전 도중에 바꾸면 그 자리에서 적의 체력·능력치가 바뀝니다). 쉬움: 적 능력치 85%, 적이 조심스럽고 늦게 움직임 · 보통: 105% · 어려움: 115%, 적이 처음부터 진격하고 쓰러뜨릴 수 있는 영웅을 집요하게 노림.</p>
       <div class="osec">성장 · 진행</div>
       <p><b>경험치</b> · 전투가 끝나면 참가한 영웅 전원이 같은 양을 받고, 가장 많이 친 영웅(MVP)은 20%를 더 받습니다.</p>
@@ -2619,7 +2611,7 @@
       const j = joined();
       const heroHtml = st.heroes.map((h) => { const H = D.HEROES[h]; return `<div class="whero ${j.has(h) ? '' : 'new'}"><img src="${IMG[H.icon]}" alt=""><small>${j.has(h) ? 'Lv.' + save.heroes[h].lv : '합류'}</small></div>`; }).join('');
       acts = `<div class="wi-row"><label>승리 조건</label><span>${st.goal}</span></div><div class="wi-row"><label>패배 조건</label><span>${st.lose}</span></div>${st.tip ? `<div class="wi-row"><label>작전 요지</label><span>${st.tip}</span></div>` : ''}
-        <div class="wi-sub">적 정보 <small>증원 ${st.waves.length - 1}회</small></div><div class="wi-foes">${foeHtml}</div>
+        <div class="wi-sub">적 정보 <small>${st.waves.length > 1 ? `증원 ${st.waves.slice(1).map((w) => w.turn + '턴').join(' · ')}` : '증원 없음'}</small></div><div class="wi-foes">${foeHtml}</div>
         <div class="wi-sub">출격 인원 <small>기본 ${st.heroes.length}명 · 출격 준비에서 최대 ${Math.min(MAX_SORTIE, new Set([...j, ...st.heroes]).size)}명</small></div><div class="wi-heroes">${heroHtml}</div>
         <button class="wgo" id="sGo"><b>작전 개시</b><small>BATTLE START</small></button>`;
     } else {
