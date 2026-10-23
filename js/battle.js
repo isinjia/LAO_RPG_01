@@ -300,10 +300,10 @@
             const sty = styleOf(f), p = f.rig.g.position;
             const run = (speed, dust) => tl.push({ t: t0, fn: () => { f.rig.loop('move', speed); if (Math.random() < dust) fx('dust_step', p.x, f.y + 0.05, { flipX: side === 'R', k: f.hero ? 1 : 0.7, renderOrder: 90 }); } });
             if (meleeOf(f) && shift * dir > 0.05) { // 줄을 지킨 채 달려든다 (기병은 빠르게, 중장병은 천천히)
-              const ts = sty, d = ts === 'lance' ? 0.4 : ts === 'wall' ? 0.6 : 0.5;
+              const ts = sty, d = f.hero && ts === 'lance' ? 0.3 : ts === 'lance' ? 0.4 : 0.5; // 기병 영웅은 가장 빨리 (제 병사보다 앞서 닿는다)
               run(ts === 'lance' ? 2.4 : ts === 'wall' ? 0.9 : 1.5, ts === 'lance' ? 0.9 : f.hero ? 1 : 0.4);
               const x1 = f.hero ? meetX - dir * (1.35 + (f.u.def.big ? 0.6 : 0)) : f.x + shift + (Math.random() - 0.5) * 0.1; // 지휘관은 제 병사들 바로 뒤 (병사가 총을 들고 남으면 홀로 맞붙는 선까지)
-              const lag = f.hero ? 0.1 : Math.random() * 0.14; // 병사마다 조금씩 어긋나게 도착
+              const lag = f.hero ? (ts === 'lance' ? 0 : 0.1) : Math.random() * 0.14; // 병사마다 조금씩 어긋나게 도착
               if (f.hero) { const y0 = p.y, lane = GROUND - 1.3; tween(p, 'y', y0, lane, t0, t0 + d / sp); f.yHome = y0; } // 지휘관은 대열 맨 앞(화면 쪽) 길로 나서 눈에 띄게
               if ((x1 - f.x) * dir > 0.05) { tween(p, 'x', f.x, x1, t0 + lag, t0 + lag + d / sp); f.x = x1; }
               if (ts === 'swoop') tween(f, 'air', f.air, 1.2, t0, t0 + d / sp); // 공중병: 높이 떠서 덮친다
@@ -360,74 +360,89 @@
     });
   };
 
-  // 동시 전투: 접전(round)마다 양쪽 부대가 함께 공격하고, 그 접전의 피해를 동시에 반영한다. 반환: 끝나는 시각
+  // 전투 시각표 (랑그릿사의 공격 속도): 접전을 한꺼번에 주고받지 않고, 저마다의 공격 속도대로 친 순간에 피해가 들어간다.
+  //  · 궁병·법사(발사 공격)는 시작하자마자 일제 사격 → 화살이 돌격해 오는 적에게 먼저 꽂힌다 (근접 공격을 받은 궁병은 맞은 뒤에야 반격)
+  //  · 근접 병사는 닿는 순간부터 친다: 기병이 가장 빨리, 보병·창병은 그다음. 기병 영웅은 제 병사보다 앞서 닿는다
+  //  · 전투 시간은 정해져 있다: 시간이 끝나면 (다 잡지 못했어도) 물러난다
+  // 피해 합계(res)는 RULES 가 정한 그대로, 공격 한 번 한 번에 무게(병사 무리 2, 지휘관 1)만큼 나눠 순서대로 넣는다
   function brawl(att, def, attSide, defSide, a, d, res, t0, sp, st) {
-    const r0 = res.rounds && res.rounds.length ? res.rounds : [{ dT: res.dT, dH: res.dH, aT: res.aT, aH: res.aH }];
-    // 접전은 최대 4번으로 묶는다 (랑그릿사처럼 돌격 왕복이 3~4번)
-    const NP = Math.min(r0.length, 4), rounds = Array.from({ length: NP }, () => ({ dT: 0, dH: 0, aT: 0, aH: 0 }));
-    r0.forEach((r, i) => { const q = rounds[Math.floor((i * NP) / r0.length)]; for (const k in q) q[k] += r[k] || 0; });
-    const step = (split ? 0.6 : 0.62) / sp; // 접전 사이 간격 (여러 번 치고받는 시간)
-    // 기댓값이 아니라 실제로 들어간 피해(정수)에 맞춰 접전별 피해를 나눈다
-    const tot = (k) => rounds.reduce((s, r) => s + r[k], 0) || 1;
-    const share = { dT: res.dT / tot('dT'), dH: res.dH / tot('dH'), aT: res.aT / tot('aT'), aH: res.aH / tot('aH') };
+    const base = split ? t0 : t0 - 0.55 / sp; // 돌격이 시작된 시각
+    const END = base + (split ? 2.1 : 2.4) / sp;
+    const contactOf = (f) => base + (f.hero ? (styleOf(f) === 'lance' ? 0.32 : 0.62) : styleOf(f) === 'lance' ? 0.46 : 0.62) / sp;
     const sides = [
       { from: att, to: def, toSide: defSide, au: a, du: d, kT: 'dT', kH: 'dH' },
       { from: def, to: att, toSide: attSide, au: d, du: a, kT: 'aT', kH: 'aH', counter: true },
     ];
+    // 맞붙은 상대 쪽에서 가장 먼저 닿는 시각 (근접 공격을 받은 궁병은 그 뒤에야 쏜다)
+    const firstContact = (list) => { const m = list.filter((f) => meleeHit(f)); return m.length ? Math.min(...m.map(contactOf)) : null; };
+    const meleeHit = (f) => !split && (f.hero ? f.u.rng <= 1 && !RANGED_KIND.includes(f.u.kind) : isMelee(f));
     let end = t0;
-    rounds.forEach((r, ri) => {
-      const tr = t0 + ri * step;
-      for (const s of sides) {
-        if (s.counter && !res.counter) continue;
-        if (r[s.kT] + r[s.kH] <= 0 && s.counter) continue;
-        // 살아 있는 쪽이 저마다 조금씩 어긋나게 공격 동작 (실시간 난전처럼)
-        const hitT = tr + 0.18 / sp;
-        if (s.counter && ri === 0) tl.push({ t: tr - 0.12 / sp, fn: () => wordOver(s.from, 'counter') }); // 원작 「반격」 글자
-        tl.push({ t: tr, fn: () => {
-          for (const f of s.from) {
-            if (!f.alive) continue;
-            const dur = f.rig.dur('atk');
-            const speed = Math.max(1, dur / (f.hero ? 1.6 : 1.1)) * sp * (0.9 + Math.random() * 0.25);
-            const go = () => { // 병사마다 0~0.14초 어긋나게: 한 박자에 다 같이 움직이지 않는다
+    for (const s of sides) {
+      if (s.counter && !res.counter) continue;
+      const T0 = res[s.kT], H0 = res[s.kH];
+      if (T0 + H0 <= 0 && s.counter) continue;
+      // 이 편의 공격들: [시각, 누가(무리/지휘관), 근접?]
+      const ev = [];
+      const troops = s.from.filter((f) => !f.hero), hero = s.from.find((f) => f.hero);
+      const foeFirst = firstContact(s.to);
+      if (troops.length) {
+        const m = meleeHit(troops[0]);
+        let t = m ? Math.min(...troops.map(contactOf)) : base + 0.05 / sp;
+        if (!m && s.counter && foeFirst != null) t = foeFirst + 0.25 / sp; // 근접 공격을 받은 궁병은 다 맞은 뒤에야 반격
+        for (; t < END; t += (m ? 0.55 : 0.7) / sp) ev.push({ t, who: 'troop', melee: m, w: 2 });
+      }
+      if (hero) {
+        const m = meleeHit(hero);
+        let t = m ? contactOf(hero) : base + 0.15 / sp;
+        if (!m && s.counter && foeFirst != null) t = Math.max(t, foeFirst + 0.25 / sp);
+        for (; t < END; t += (m ? 0.6 : 0.8) / sp) ev.push({ t, who: 'hero', melee: m, w: 1 });
+      }
+      ev.sort((p, q) => p.t - q.t);
+      const W = ev.reduce((m, e) => m + e.w, 0) || 1;
+      ev.forEach((e, i) => {
+        const fly = split ? TRAVEL / sp : e.melee ? 0.08 / sp : 0.28 / sp; // 발사 공격은 날아가는 시간
+        if (s.counter && i === 0) tl.push({ t: e.t - 0.12 / sp, fn: () => wordOver(s.from, 'counter') }); // 원작 「반격」 글자
+        tl.push({ t: e.t, fn: () => {
+          const who = e.who === 'hero' ? [hero] : troops;
+          for (const f of who) {
+            if (!f || !f.alive) continue;
+            const speed = Math.max(1, f.rig.dur('atk') / (f.hero ? 1.6 : 1.1)) * sp * (0.9 + Math.random() * 0.25);
+            const go = () => {
               if (!f.alive) return;
-              const volley = !f.hero && !isMelee(f); // 원거리 병사는 일제 사격: 모두 함께 쏜다
-              if (volley || Math.random() < (f.hero ? 1 : 0.8)) { f.rig.once('atk', speed); muzzle(f, s.au); if (!split) strike(f, s.to, s.au, sp); }
-              if (split && isRanged(f, s.au) && Math.random() < (f.hero ? 1 : 0.55)) bolt(f, s.to, s.au);
+              f.rig.once('atk', speed); muzzle(f, s.au);
+              if (!split) strike(f, s.to, s.au, sp);
+              else if (isRanged(f, s.au) && Math.random() < (f.hero ? 1 : 0.55)) bolt(f, s.to, s.au);
             };
-            if (f.hero) go(); else later(T + Math.random() * (isMelee(f) ? 0.14 : 0.04) / sp, go); // 근접은 어긋나게, 일제 사격은 거의 한꺼번에
+            if (f.hero || !e.melee) go(); else later(T + Math.random() * 0.12 / sp, go); // 근접은 조금씩 어긋나게, 일제 사격은 한꺼번에
           }
         } });
-        const far = split;
-        tl.push({ t: hitT + (far ? TRAVEL / sp : 0), fn: () => {
-          const S = st[s.du.uid];
-          const dT = r[s.kT] * share[s.kT], dH = r[s.kH] * share[s.kH];
-          S.thp = Math.max(0, S.thp - dT); S.hp = Math.max(0, S.hp - dH);
-          const soldiers = s.to.filter((f) => !f.hero && f.alive);
-          const heroF = s.to.find((f) => f.hero);
-          // 맞는 쪽: 병사 몇 명과 (병사가 없거나 영웅 피해가 있으면) 영웅이 번쩍
-          const pool = soldiers.slice().sort(() => Math.random() - 0.5).slice(0, 3);
-          const nS = pool.length;
-          if (dH > 0 || !pool.length) pool.push(heroF);
-          pool.forEach((v, k) => {
-            if (!v || !v.alive) return;
-            const advH = s.counter ? res.rel < 0 : res.rel > 0;
-            hitFx(s.from.find((f) => f.alive) || s.from[0], v, s.au, far, k === 0, v.hero && advH);
-            // 피해 숫자: 병사 피해는 맞은 병사들이 나눠 받고, 영웅은 영웅 피해(병사가 없으면 전부)
-            const n = v.hero ? (dH > 0 ? dH : dT) : k === 0 ? dT : 0; // 병사 피해는 그 접전 합계를 한 숫자로
-            const adv = s.counter ? res.rel < 0 : res.rel > 0;
-            if (n > 0.05) dmgNum(v, n, v.hero && adv ? 'cri' : s.du.side === 'p' ? 'me' : 'base');
-          });
-          const keep = figN(s.du, S.thp);
-          while (s.to.filter((f) => !f.hero && f.alive).length > keep) die(s.to.filter((f) => !f.hero && f.alive).sort((p, q) => Math.abs(p.x) - Math.abs(q.x))[0]);
-          setBars(s.toSide, s.du, S.thp, S.hp);
-          if (dH > 0) { shakeBust(s.toSide); shake(0.22, 0.24); hitStop(0.07); } else shake(0.1, 0.16);
-          if (dH > 0 && (s.counter ? res.rel < 0 : res.rel > 0)) { shake(0.38, 0.32); hitStop(0.12); } // 상성 우위 강한 일격
-          if (S.hp <= 0.5 && heroF.alive) die(heroF);
-        } });
-        end = Math.max(end, hitT + (far ? TRAVEL / sp : 0) + 0.2 / sp);
-      }
-    });
+        tl.push({ t: e.t + fly, fn: () => hit(s, T0 * e.w / W, H0 * e.w / W, e.who === 'hero' ? hero : troops.find((f) => f.alive) || hero, res, st) });
+        end = Math.max(end, e.t + fly + 0.2 / sp);
+      });
+    }
     return end;
+  }
+  // 맞는 순간: 피해를 넣고, 맞은 몸이 번쩍·움찔, 숫자, 쓰러짐, 막대
+  function hit(s, dT, dH, src, res, st) {
+    const Sx = st[s.du.uid];
+    Sx.thp = Math.max(0, Sx.thp - dT); Sx.hp = Math.max(0, Sx.hp - dH);
+    const soldiers = s.to.filter((f) => !f.hero && f.alive);
+    const heroF = s.to.find((f) => f.hero);
+    const pool = soldiers.slice().sort(() => Math.random() - 0.5).slice(0, 3);
+    if (dH > 0 || !pool.length) pool.push(heroF);
+    const adv = s.counter ? res.rel < 0 : res.rel > 0;
+    pool.forEach((v, k) => {
+      if (!v || !v.alive) return;
+      hitFx(src && src.alive ? src : s.from.find((f) => f.alive) || s.from[0], v, s.au, split, k === 0, v.hero && adv);
+      const n = v.hero ? (dH > 0 ? dH : dT) : k === 0 ? dT : 0; // 병사 피해는 그 공격의 합계를 한 숫자로
+      if (n > 0.05) dmgNum(v, n, v.hero && adv ? 'cri' : s.du.side === 'p' ? 'me' : 'base');
+    });
+    const keep = figN(s.du, Sx.thp);
+    while (s.to.filter((f) => !f.hero && f.alive).length > keep) die(s.to.filter((f) => !f.hero && f.alive).sort((p, q) => Math.abs(p.x) - Math.abs(q.x))[0]);
+    setBars(s.toSide, s.du, Sx.thp, Sx.hp);
+    if (dH > 0) { shakeBust(s.toSide); shake(0.22, 0.24); hitStop(0.07); } else shake(0.1, 0.16);
+    if (dH > 0 && adv) { shake(0.38, 0.32); hitStop(0.12); } // 상성 우위 강한 일격
+    if (Sx.hp <= 0.5 && heroF && heroF.alive) die(heroF);
   }
 
   // 진행 중에 시각표에 끼워 넣기 (시각 순서 유지)
