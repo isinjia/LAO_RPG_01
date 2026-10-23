@@ -55,6 +55,9 @@
   };
   // 방: 원작 기지 시설 그림(배경 bg, 바닥이 시작하는 줄 fl, 옆벽 색 wall)과 가구. 사람·출구는 원래 방(지휘실·정비실·휴게실) 그대로
   const ROOM = (label, bg, fl, wall, deco) => ({ label, bg: 'town/' + bg, fl, wall, deco });
+  const PROPS = { // 장면 방에 놓는 소품: [그림, 가로 비율, 바닥 첫 줄에서 아래로, 칸 넓이, 그림 높이]
+    '드론 관제실': [['town/r_mm1_12', 0.12, 0, 1, 1.7], ['town/r_mk4_1', 0.24, 0, 1, 1.4], ['tiles/console', 0.7, 0, 2, 1.4], ['town/r_mm2_2', 0.86, 0, 1, 1.5]],
+  };
   // ── 지도 ──────────────────────────────────────────────
   // 칸: . 바탕  s 넓은 바닥  _ 길  ~ 물(막힘)  # 벼랑·잔해·덤불(막힘)  b 뒷배경 자리(막힘, 뒷배경 그림이 덮는다)  r 선로(막힘)
   function grid(W, H, fill, paint) {
@@ -96,7 +99,7 @@
   }
   const TOWNMAPS = {
     coast: {
-      rows: coastRows(), start: [12, 16], water: 'sea', dark: 0.1,
+      rows: coastRows(), start: [12, 16], water: 'sea',
       floor: { base: 'town/g_grass', zone: 'tiles/sand', path: 'tiles/sand', wall: 'tiles/forest', edge: 'rgba(70,50,20,.3)' },
       objects: [
         BLD('cmd', 'town/b_center', 4, 5, 5, 4, 6), BLD('shop', 'town/b_shop', 16, 5, 6, 4, 18), BLD('cafe', 'town/b_cafe', 9, 12, 6, 2, 11, { plinth: 0 }),
@@ -118,8 +121,8 @@
         R(0, 0, 26, 4, 'b'); R(0, 0, 1, 18, '#'); R(25, 0, 1, 18, '#'); R(0, 17, 26, 1, '#');
         R(1, 7, 24, 1, '_'); R(12, 7, 2, 11, '_'); R(3, 9, 20, 6, 's'); R(12, 7, 2, 11, '_'); R(21, 8, 1, 2, '_');
       }),
-      floor: { base: 'tiles/concrete', zone: 'tiles/factory', zoneA: 0.45, path: 'town/g_asph', wall: 'tiles/concrete', back: '#3b3a3c', lane: 'rgba(230,180,40,.8)', edge: 'rgba(0,0,0,0)' },
-      sky: ['#5d5a68', '#c79a72'], dark: 0.12, darkC: '20,14,10', fx: 'sparks', start: [12, 16],
+      floor: { base: 'tiles/concrete', zone: 'tiles/factory', zoneA: 0.22, path: 'town/g_asph', wall: 'tiles/concrete', back: '#3b3a3c', lane: 'rgba(230,180,40,.8)', edge: 'rgba(0,0,0,0)' },
+      sky: ['#5d5a68', '#c79a72'], fx: 'sparks', start: [12, 16],
       back: [{ art: 'town/t2_fence', by: 4.05, h: 2.0, repeat: 1 }],
       objects: [
         BLD('cmd', 'town/t2_cmd', 1, 4, 7, 3, 6), BLD('shop', 'town/t2_shop', 9, 4, 8, 3, 14), BLD('cafe', 'town/t2_cafe', 19, 4, 5, 3, 21),
@@ -145,7 +148,7 @@
         R(7, 10, 13, 6, 's'); R(2, 9, 22, 1, '_'); R(12, 5, 2, 13, '_'); R(5, 15, 7, 1, '_');
       }),
       floor: { base: 'tiles/forest', zone: 'town/g_grass', path: 'tiles/dirt', wall: 'tiles/forest', back: '#2e3a2c' },
-      sky: ['#6d88b3', '#f1c79a'], dark: 0.2, tint: '#ffe7c4', fx: 'leaves', start: [12, 16],
+      sky: ['#6d88b3', '#f1c79a'], tint: '#ffe7c4', fx: 'leaves', start: [12, 16],
       back: [{ art: 'town/t3_plant', by: 4.3, h: 5.6, x: 13 }, { art: 'town/t3_fence', by: 5.05, h: 2.1, repeat: 1 }, { art: 'town/t3_gate', by: 5.05, h: 2.1, x: 13, w: 12.5 }, { art: 'town/t3_bush', by: 5.25, h: 0.7, repeat: 1, alpha: 0.9 }],
       objects: [
         BLD('cmd', 'town/t3_cmd', 2, 6, 8, 3, 7, { plinth: 0 }), BLD('shop', 'town/b_ruin2', 17, 6, 6, 3, 21, { plinth: 0 }), BLD('cafe', 'town/t3_cafe', 4, 12, 5, 3, 7, { plinth: 0 }),
@@ -173,7 +176,7 @@
       floor: { base: 'tiles/cave', zone: 'tiles/concrete', path: 'tiles/labd', wall: 'tiles/cave', back: '#10161a', zoneA: 0.55 },
       sky: ['#05080b', '#0f1a20'], dark: 0.56, torch: 1, water: 'canal', fx: 'drip', start: [12, 16],
       lights: [[6, 13, 150, '255,150,90'], [3, 3.4, 150, '255,90,60'], [9, 3.6, 120, '120,220,230'], [16, 3.6, 120, '120,220,230'], [22, 3.4, 150, '255,90,60']],
-      back: [{ art: 'town/t4_cave', by: 4.15, h: 4.6, repeat: 1 }, { art: 'town/t4_ceil', by: 1.1, h: 1.1, repeat: 1 }],
+      back: [{ art: 'town/t4_cave', by: 4.15, h: 4.6, repeat: 1, mirror: 1 }, { art: 'town/t4_ceil', by: 1.1, h: 1.1, repeat: 1, mirror: 1 }],
       objects: [
         BLD('cmd', 'town/t4_cmd', 3, 6, 3, 3, 4, { plinth: 0, glow: '255,110,50' }), BLD('shop', 'town/t4_shop', 14, 6, 8, 3, 17, { plinth: 0, glow: '120,255,240' }), BLD('cafe', 'town/t2_booth', 3, 12, 6, 3, 6, { plinth: 0, glow: '255,200,140' }),
         D('tiles/crystal0', 1, 10, 1, 2.0, { lit: [130, '90,230,220'] }), D('tiles/crystal1', 22, 12, 2, 1.8, { lit: [140, '120,240,230'] }), D('tiles/crystal0', 10, 16, 1, 1.5, { lit: [100, '90,230,220'] }),
@@ -198,7 +201,7 @@
         R(3, 9, 20, 6, 's'); R(1, 8, 24, 1, '_'); R(12, 8, 2, 10, '_');
       }),
       floor: { base: 'tiles/labd', zone: 'tiles/factory', zoneA: 0.3, path: 'tiles/labw', wall: 'tiles/labd', back: '#0b1218', pathA: 0.3, lane: 'rgba(90,220,255,.35)' },
-      sky: ['#04070b', '#0d1c26'], dark: 0.3, fx: 'dust', start: [12, 16],
+      sky: ['#04070b', '#0d1c26'], dark: 0.2, fx: 'dust', start: [12, 16],
       back: [{ art: 'town/t5_platform', by: 5.15, h: 5.2, repeat: 1 }],
       objects: [
         BLD('cmd', 'town/t5_cmd', 10, 5, 6, 3, 12, { plinth: 0, glow: '140,230,255' }), BLD('shop', 'town/t5_shop', 18, 5, 6, 3, 20, { plinth: 0, glow: '255,90,90' }), BLD('cafe', 'town/t5_cafe', 2, 5, 6, 3, 4, { plinth: 0 }),
@@ -224,7 +227,7 @@
         R(7, 10, 11, 6, 's'); R(1, 9, 24, 1, '_'); R(12, 9, 2, 9, '_'); R(14, 15, 5, 1, '_'); R(21, 8, 1, 1, '_');
       }),
       floor: { base: 'town/g_snow', zone: 'town/g_snowpath', path: 'town/g_snowpath', wall: 'town/g_snowpath', back: '#cfd9e3', pathA: 0.45, edge: 'rgba(120,140,170,.22)', wallDark: 0.06 },
-      sky: ['#8ea6c2', '#eef3f8'], dark: 0.12, darkC: '30,45,80', fx: 'snow', start: [12, 16],
+      sky: ['#8ea6c2', '#eef3f8'], fx: 'snow', start: [12, 16],
       back: [{ art: 'town/t6_mount', by: 3.6, h: 5.4, x: 7 }, { art: 'town/t6_mount', by: 3.4, h: 4.2, x: 20, flip: 1, alpha: 0.85 },
         { art: 'town/t6_trees', by: 5.0, h: 3.4, x: 2.5 }, { art: 'town/t6_tree0', by: 4.9, h: 3.2, x: 23.5 }, { art: 'town/t6_tree2', by: 4.8, h: 2.6, x: 17.5 },
         { art: 'town/t6_fence', by: 5.1, h: 1.15, repeat: 1 }],
@@ -254,17 +257,17 @@
     r_train_0: { fl: 335, h: 512 }, r_dis2_0: { fl: 335, h: 512, blk: [[0.66, 1]] }, r_mm4_0: { fl: 395, h: 512, blk: [[0.06, 0.27], [0.43, 0.63], [0.88, 1]] },
     r_rein1_0: { fl: 360, h: 512 }, r_dis1_0: { fl: 360, h: 512 }, r_rein2_0: { fl: 345, h: 512, blk: [[0.66, 1]] },
     r_parts_1: { fl: 370, h: 512, blk: [[0, 0.17], [0.22, 0.74]] }, r_rein3_0: { fl: 345, h: 512, blk: [[0.66, 1]] },
-    r_cap: { fl: 425, h: 546, blk: [[0.18, 0.44]] }, r_mm0_0: { fl: 370, h: 512 },
-    r_factory: { fl: 525, h: 750, back: '#c3ccd8' }, r_lab: { fl: 410, h: 505 }, r_arch: { fl: 425, h: 552, blk: [[0, 0.16]] }, r_secret: { fl: 425, h: 556 },
+    r_cap: { fl: 425, h: 546, blk: [[0.56, 0.82]] }, r_mm0_0: { fl: 370, h: 512 },
+    r_factory: { fl: 525, h: 750, back: '#c3ccd8' }, r_lab: { fl: 350, h: 445 }, r_arch: { fl: 425, h: 552, blk: [[0, 0.16]] }, r_secret: { fl: 425, h: 556 },
     r_ware: { fl: 430, h: 552, blk: [[0, 0.2], [0.82, 1]] }, r_bio: { fl: 415, h: 498 },
     r_cafe1_0: { fl: 232, h: 340 }, r_cafe2_0: { fl: 232, h: 340 }, r_cafe3_0: { fl: 232, h: 340 },
     r_cafe4_0: { fl: 232, h: 340 }, r_cafe5_0: { fl: 232, h: 340 },
   };
   // 사람 자리 (가로 비율, 바닥 첫 줄에서 몇 줄 아래)
   const STAGE_NPC = { cmd: [['johanna', 0.6, 0], ['marie', 0.3, 1], ['labiata', 0.76, 1]], shop: [['fortune', 0.5, 0], ['pupphead', 0.26, 1], ['coco', 0.72, 1]], cafe: [['amy', 0.22, 1], ['scathy', 0.8, 1]] };
-  function stageRoom(k, name, bgPath, tint) {
+  function stageRoom(k, name, bgPath, tint, props) {
     const key = bgPath.replace('town/', ''), st = STAGE[key] || { fl: 340, h: 512 };
-    const W = st.w || 20, sc = (W * TILE) / 1024, top0 = st.fl * sc, floorH = Math.max((st.h - st.fl) * sc, TILE * 3.3);
+    const W = st.w || 20, sc = (W * TILE) / 1024, top0 = st.fl * sc, floorH = Math.max((st.h - st.fl) * sc, TILE * 3.3, TILE * 8.8 - top0); // 위아래 검은 띠 없이 화면을 채운다
     const H = Math.ceil((top0 + floorH) / TILE), off = H * TILE - (top0 + floorH);
     const r0 = Math.min(H - 2, Math.ceil((off + top0) / TILE + 0.45));
     const blocked = (x) => x < 1 || x > W - 2 || (st.blk || []).some(([a, b]) => (x + 0.5) / W > a && (x + 0.5) / W < b);
@@ -273,12 +276,13 @@
     const mid = Math.floor(W / 2), mx = blocked(mid) ? [...Array(W).keys()].filter((x) => !blocked(x)).sort((a, b) => Math.abs(a - mid) - Math.abs(b - mid))[0] : mid;
     const free = (x) => { for (let d = 0; d < W; d++) for (const s of [1, -1]) { const t = x + d * s; if (t > 0 && t < W - 1 && !blocked(t) && t !== mx) return t; } return x; };
     const objects = [{ t: 'exit', x: mx, y: H - 1, w: 1, h: 1, to: 'back' }, ...STAGE_NPC[k].map(([id, fx, dy]) => ({ t: 'npc', id, x: free(Math.round(fx * W)), y: Math.min(H - 2, r0 + dy), dir: fx > 0.5 ? -1 : 1 }))];
+    for (const [art, fx, dy, w, hh] of props || []) { const x = Math.max(1, Math.round(fx * W)), y = Math.min(H - 2, r0 + dy); if (x === mx || objects.some((o) => o.t === 'npc' && o.x >= x && o.x < x + w && o.y === y)) continue; objects.push({ t: 'deco', art, x, y, w, h: 1, hh, block: 1 }); }
     return { name, rows, indoor: 1, stage: { bg: bgPath, fl: st.fl, h: st.h, sc, top0, floorH, off, back: st.back }, bg: bgPath, tint, spawn: [mx, H - 2], objects };
   }
   const ROOMBG0 = { cmd: 'town/r_train_0', shop: 'town/r_dis2_0', cafe: 'town/r_cafe4_0' }; // 1장
   function baseFor(look, name) {
     const m = TOWNMAPS[look] || TOWNMAPS.coast, R = m.rooms;
-    for (const k of ['cmd', 'shop', 'cafe']) MAPS[k] = R ? stageRoom(k, R[k].label, R[k].bg, R[k].tint) : stageRoom(k, ROOMNAME0[k], ROOMBG0[k]);
+    for (const k of ['cmd', 'shop', 'cafe']) MAPS[k] = R ? stageRoom(k, R[k].label, R[k].bg, R[k].tint, PROPS[R[k].label]) : stageRoom(k, ROOMNAME0[k], ROOMBG0[k]);
     const objects = m.objects.map((o) => (o.t === 'building' ? Object.assign({}, o, { label: R ? R[o.to[0]].label : ROOMNAME0[o.to[0]] }) : o));
     return Object.assign({}, m, { name: name || '마을', bgm: 'lo_town', objects });
   }
@@ -608,7 +612,7 @@
       const dh = L.h * TILE, dw = L.w ? L.w * TILE : (im.naturalWidth * dh) / im.naturalHeight, y = L.by * TILE - dh;
       ctx.globalAlpha = L.alpha || 1;
       const one = (x) => { if (L.flip) { ctx.save(); ctx.translate(x + dw / 2, 0); ctx.scale(-1, 1); ctx.drawImage(im, -dw / 2, y, dw, dh); ctx.restore(); } else ctx.drawImage(im, x, y, dw, dh); };
-      if (L.repeat) { for (let x = ((mw / 2 - dw / 2) % dw) - dw; x < mw; x += dw - 1) one(x); }
+      if (L.repeat) { let i = 0; for (let x = ((mw / 2 - dw / 2) % dw) - dw; x < mw; x += dw - 1, i++) { if (L.mirror && i % 2) { ctx.save(); ctx.translate(x + dw / 2, 0); ctx.scale(-1, 1); ctx.drawImage(im, -dw / 2, y, dw, dh); ctx.restore(); } else one(x); } }
       else one(L.x * TILE - dw / 2);
       ctx.globalAlpha = 1;
     }

@@ -179,7 +179,9 @@ ROOMBG = {
     'r_factory': ('BG_07_Factory_inside/Factory_Wall_floor_all_N.png', 1500),
     'r_lab': ('BG_12_Laboratory_in/BG_Laboratory_in_m.png', 1010),
 }
-FLIP = {'r_cap'}  # 원작 그림의 문 앞 깔개 글자가 좌우로 뒤집혀 있어 그림을 뒤집는다
+FLIP = set()
+TOP = {'r_lab': 120}  # 위쪽의 흐린 회색 띠는 잘라 낸다
+MAT = {'r_cap': (840, 790, 1100, 845)}  # 문 앞 깔개 글자가 거꾸로(180도) 그려져 있어 깔개만 바로 돌린다 (원본 좌표)
 
 
 def main():
@@ -206,7 +208,9 @@ def main():
     for name, src, x, y, w, h, n in SNOWHOUSE:
         add_snow(shrink(cut(src, x, y, w, h), n)).save(os.path.join(OUT, name + '.webp'), quality=90, method=6)
     for name, (src, h) in ROOMBG.items():
-        im = Image.open(B + src).convert('RGBA').crop((0, 0, 2048, h))
+        im = Image.open(B + src).convert('RGBA').crop((0, TOP.get(name, 0), 2048, h))
+        if name in MAT:
+            box = MAT[name]; im.paste(im.crop(box).rotate(180), box[:2])
         im = shrink(im, 1024)
         if name in FLIP:
             im = im.transpose(Image.FLIP_LEFT_RIGHT)
