@@ -781,3 +781,9 @@ i.dlv { font: normal 11px 'LO_B', sans-serif; color: #111; background: #8fd0ff; 
 /* 옵션 창의 실제 배율 줄, 전투 예상 창의 반격 여부: 조금 크고 밝게 */
 .mbox .dnote { font-size: 14px !important; color: #b8c2da !important; }
 #forecast .mid { font-size: 14px; color: #dfe4ee; }
+/* 각성 고르기: 고른 뒤 능력치 미리 보기 */
+.mbox .opts button .pprev { display: block; margin-top: 2px; font-size: 12px; color: #9aa6c4; } .mbox .opts button .pprev b { color: var(--lo-y); }
+/* 출격 준비의 전직·각성 줄: 누를 수 있는 단추로 보이게 */
+.pd-cc { cursor: pointer; } .pd-cc::after { content: '›'; margin-left: auto; font: 22px 'LO_B', sans-serif; color: var(--lo-y); }
+.pd-cc:hover { border-color: var(--lo-y); background: rgba(255, 204, 0, .1); }
+.mbox .opts button.gold b, .mbox .opts button.gold .pprev { color: #111; }
