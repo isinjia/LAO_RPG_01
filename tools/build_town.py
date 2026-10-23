@@ -1,0 +1,163 @@
+"""장마다 다른 마을 필드 그림을 원작 배경 묶음에서 오려 낸다 -> assets/town/t*.webp
+
+마을은 장의 무대에 맞춰 꾸민다 (js/town.js TOWNMAPS):
+  1장 등대 아래 비밀기지 (바닷가)       2장 헤파이스 철공소 거점 (공단 창고)
+  3장 고갯길 진지 (81번 실험장 앞 숲)   4장 패스파인더 기지 (지하 수로·동굴)
+  5장 건너편 역사 거점 (지하 역사)      6장 라비아타의 은신처 (눈 덮인 산)
+
+조각: (원본, x, y, w, h, 최대 긴 변) — 영역 안에서 투명하지 않은 부분만 다시 잘라 낸다.
+투명 바탕 둘레가 검거나 분홍으로 번지지 않게 줄일 때는 알파를 곱한 채로(RGBa) 줄인다.
+
+python tools/build_town.py
+"""
+import os
+import numpy as np
+from PIL import Image, ImageFilter
+
+from build_tiles import seamless, SIZE  # noqa: F401  (바닥 질감 이음매 없애기)
+
+ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
+B = r'E:/LAO_Google_QA/Assets/AssetBundleResourceSub/BG/'
+OUT = os.path.join(ROOT, 'assets', 'town')
+
+FOOD = 'BG_Ch02S01/ch02s03FoodStrorage.png'
+PLANT = 'BG_06_PowerPlant/ch02s02_PowerPlant.png'
+SEED = 'BG_05_GenSeedFacility_Way/Ch02S01_GenSeedFacility.png'
+SUB = 'BG_Ch09/BG_Vancouver_SubUrban.png'
+LAB = 'BG_12_Laboratory/Laboratory_main.png'
+SNOWR = 'BG_Ch13/BG_Ch13_snow_far_road.png'
+XMAS = 'BG_Christmas/BG_Christmas_snow_road.png'
+
+PIECES = {
+    # 2장: 공단 창고 거리 (식량 창고 배경 띠를 건물 단위로 나눈다)
+    't2_cmd': (FOOD, 80, 80, 610, 466, 720),        # 컨테이너를 쌓은 작업 지휘소
+    't2_shop': (FOOD, 686, 80, 730, 466, 760),      # 지게차가 선 초록 창고 (철공 작업장)
+    't2_cafe': (FOOD, 1398, 120, 420, 426, 560),    # 물고기 그림 주황 창고 (배식소)
+    't2_fence': (FOOD, 22, 676, 892, 172, 900),     # 공단 담장 (위 가장자리에 이어 붙인다)
+    't2_booth': (FOOD, 907, 578, 300, 190, 360),    # 경비 초소
+    't2_gate': (PLANT, 17, 946, 1488, 458, 900),    # CLOSE 표지 출입 차단기 (마을 입구)
+    't2_ladle': ('BG_07_02_Factory_infection/Factory2_furnace_N.png', 625, 560, 808, 1488, 520),  # 쇳물 바가지
+    # 3장: 81번 실험장 앞 버려진 고갯마을 진지
+    't3_plant': (SEED, 0, 68, 2036, 825, 1600),     # 81번 실험장 (뒤 배경)
+    't3_gate': (SEED, 0, 917, 2048, 356, 1600),     # 실험장 담장과 정문
+    't3_fence': (SEED, 7, 1400, 363, 181, 363),
+    't3_bush': (SEED, 393, 1387, 932, 197, 700),
+    't3_cmd': (SUB, 1092, 1531, 896, 351, 760),     # 넓은 집 (진지 지휘소)
+    't3_shop': (SUB, 10, 1495, 535, 380, 560),      # 차고 딸린 집 (무기고)
+    't3_cafe': (SUB, 548, 1489, 522, 389, 560),     # 작은 집 (야전 식당)
+    't3_radar': (LAB, 1108, 364, 250, 416, 300),    # 부서진 레이더 구
+    't3_sign': (LAB, 303, 62, 129, 289, 200),       # B-TECH 안내판
+    't3_mg': ('BG_OBJ/defense_line.png', 732, 33, 242, 234, 240),  # 거치 기관총
+    # 4장: 지하 수로 옆 드론 기지
+    't4_wall': ('BG_sewerage/BG_sewerage_1.png', 0, 571, 2048, 440, 1600),  # 원형 수문이 있는 수로 벽
+    't4_cmd': ('BG_OBJ/Underground_facility.png', 1316, 470, 652, 960, 560),  # 붉은 불빛 문 (드론 관제실)
+    't4_shop': (PLANT, 1010, 28, 1036, 830, 760),   # 드론 정류대와 헬기장 (드론 격납고)
+    't4_cafe': (PLANT, 3, 28, 1010, 830, 760),      # 화물차와 상자가 선 창고 (보급고)
+    't4_ore': ('IW/IW_Ore_01_02_Final.png', 0, 0, 576, 272, 400),
+    't4_stal': ('IW/IW_Middle_Stalagmite_01A_Final.png', 0, 0, 1112, 537, 640),
+    't4_stal2': ('IW/IW_Ground_Stalagmite_01_Final.png', 0, 0, 4000, 4000, 420),
+    't4_rock': ('IW/IW_Rock_01_Final.png', 0, 0, 4000, 4000, 360),
+    't4_pillar': ('IW/IW_Middle_Pillar 02_Final.png', 0, 0, 4260, 3847, 900),
+    # 5장: 건너편 지하 역사와 언더와처 시설 입구
+    't5_platform': ('BG_subway_station/BG_subway_station_Far.png', 0, 1207, 2048, 830, 1600),  # 승강장과 기둥, 화물칸
+    't5_cmd': ('BG_Ch08/BG_Ch08_lab.png', 1193, 0, 855, 405, 720),     # 삼각 문장 금고문 (서버 관제실)
+    't5_shop': ('BG_subway_station/BG_subway_on_train.png', 0, 939, 2048, 1109, 720),  # 열차 격납 문 (정비실)
+    't5_cafe': ('BG_Ch08/BG_Ch08_lab.png', 0, 0, 853, 402, 640),       # 셔터 달린 역무실 (휴게실)
+    't5_server': ('BG_secret_lab/BG_secret_lab.png', 102, 1219, 880, 508, 420),
+    't5_core': ('BG_Ch08/BG_Ch08_lab.png', 29, 462, 592, 384, 360),    # 빛나는 원통 장치
+    't5_pillar': ('BG_subway_station/BG_subway_station_Close.png', 120, 640, 180, 720, 300),
+    # 6장: 눈 덮인 산속 은신처
+    't6_mount': ('BG_Snowmountain/BG_EV14_3.png', 66, 30, 1974, 746, 1600),
+    't6_cmd': ('BG_Christmas/BG_Christmas_shoppingmall_ice.png', 565, 46, 769, 547, 640),  # 눈 쌓인 석조 건물 (은신처 본관)
+    't6_shop': ('BG_Snowmountain/BG_EV14_3.png', 104, 1224, 556, 752, 420),  # 눈 속 연구소 입구 (정비실)
+    't6_tree0': (SNOWR, 16, 41, 675, 986, 420),
+    't6_trees': (SNOWR, 701, 137, 818, 853, 520),
+    't6_tree2': (SNOWR, 1515, 210, 528, 779, 360),
+    't6_grass0': (SNOWR, 28, 1380, 811, 241, 360),
+    't6_grass1': (SNOWR, 1546, 1322, 429, 255, 260),
+    't6_rock': (SNOWR, 103, 1051, 157, 70, 160),
+    't6_pine': (XMAS, 1126, 0, 461, 766, 400),
+    't6_lamp': (XMAS, 77, 150, 152, 331, 200),
+    't6_fence': (XMAS, 317, 1028, 1366, 187, 900),
+    't6_post': (XMAS, 977, 247, 93, 169, 120),
+    't6_bush': (XMAS, 468, 76, 352, 420, 300),
+    't6_mound': ('BG_Ch13/BG_Ch13Stage00_atlas01.png', 188, 239, 1053, 453, 520),  # 눈 덮인 바위 더미
+    # 바닥 무늬 (밟고 지나가는 납작한 그림)
+    'd_crack': ('BG_Coastal_city_ruins/BG_Coastal_city_ruins_1.png', 12, 913, 692, 304, 360),
+    'd_crack2': ('IW/IW_Ground_Crack_B_Final.png', 154, 137, 1785, 429, 480),
+    'd_grate': (SUB, 1316, 789, 363, 73, 200),
+    'd_puddle': (XMAS, 319, 549, 451, 100, 260),
+    # 여러 장에서 함께 쓰는 소품
+    't0_mgnest': ('BG_OBJ/defense_line.png', 35, 558, 968, 442, 480),
+}
+# 6장 휴게실: 교외 집에 눈을 얹어 쓴다
+SNOWHOUSE = ('t6_cafe', SUB, 548, 1489, 522, 389, 560)
+# 바닥 질감 (지도 칸에 반복해서 깐다)
+GROUND = {
+    'g_snow': (XMAS, 0, 1500, 640, 520),
+    'g_snowpath': (SNOWR, 200, 1720, 600, 300),
+    'g_asph': (SUB, 300, 20, 420, 420),
+    'g_grass': ('BG_Tropical_island/BG_Tropical_island _1.png', 200, 1440, 600, 600),
+}
+
+
+def cut(src, x, y, w, h):
+    im = Image.open(B + src).convert('RGBA').crop((x, y, x + w, y + h))
+    a = np.asarray(im)[:, :, 3]
+    ys, xs = np.nonzero(a > 12)
+    return im.crop((xs.min(), ys.min(), xs.max() + 1, ys.max() + 1))
+
+
+def shrink(im, n):
+    s = min(1.0, n / max(im.size))
+    if s >= 1:
+        return im
+    return im.convert('RGBa').resize((max(1, round(im.width * s)), max(1, round(im.height * s))), Image.LANCZOS).convert('RGBA')
+
+
+def add_snow(im):
+    """위로 드러난 면(지붕·처마·창틀)마다 눈을 얹고, 전체를 차가운 빛으로 누른다"""
+    a = np.asarray(im).astype(np.float32)
+    al = a[:, :, 3] > 40
+    h, w = al.shape
+    top = np.zeros_like(al)
+    k = max(4, h // 34)  # 눈 두께
+    above = np.zeros_like(al)
+    above[k:] = al[:-k]
+    top = al & ~above  # 위 k 픽셀 안이 비어 있는 곳 = 위로 드러난 면
+    m = Image.fromarray((top * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(3)).filter(ImageFilter.GaussianBlur(1.2))
+    m = np.asarray(m).astype(np.float32) / 255 * al
+    rng = np.random.default_rng(3)
+    noise = np.asarray(Image.fromarray((rng.random((h // 6 + 1, w // 6 + 1)) * 255).astype(np.uint8)).resize((w, h), Image.BICUBIC)).astype(np.float32) / 255
+    m = np.clip(m * (0.75 + noise * 0.5), 0, 1)[:, :, None]
+    cold = a[:, :, :3] * np.array([0.84, 0.9, 1.02])
+    snow = np.array([244, 248, 255], np.float32) - (1 - noise[:, :, None]) * np.array([30, 22, 10])
+    rgb = cold * (1 - m) + snow * m
+    return Image.fromarray(np.dstack([np.clip(rgb, 0, 255), a[:, :, 3:]]).astype(np.uint8))
+
+
+ONLY = set(os.sys.argv[1:])  # 이름을 주면 그 조각만 다시 만든다
+
+
+def main():
+    os.makedirs(OUT, exist_ok=True)
+    for name, (src, x, y, w, h, n) in PIECES.items():
+        if ONLY and name not in ONLY:
+            continue
+        im = shrink(cut(src, x, y, w, h), n)
+        if name == 'd_crack':  # 흙빛 금은 회색 바닥에서 핏자국처럼 보여 빛깔을 뺀다
+            a = np.asarray(im).astype(np.float32)
+            l = a[:, :, :3].mean(axis=2, keepdims=True) * 0.8
+            a[:, :, :3] = a[:, :, :3] * 0.12 + l * 0.88
+            im = Image.fromarray(np.clip(a, 0, 255).astype(np.uint8))
+        im.save(os.path.join(OUT, name + '.webp'), quality=90, method=6)
+    name, src, x, y, w, h, n = SNOWHOUSE
+    add_snow(shrink(cut(src, x, y, w, h), n)).save(os.path.join(OUT, name + '.webp'), quality=90, method=6)
+    for name, (src, x, y, w, h) in GROUND.items():
+        im = Image.open(B + src).convert('RGB').crop((x, y, x + w, y + h)).resize((512, 512), Image.LANCZOS)
+        seamless(im).save(os.path.join(OUT, name + '.webp'), quality=88)
+    print('조각', len(PIECES) + 1, '바닥', len(GROUND))
+
+
+if __name__ == '__main__':
+    main()
