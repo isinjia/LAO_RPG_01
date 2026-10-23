@@ -86,6 +86,8 @@ PIECES = {
     'd_crack2': ('IW/IW_Ground_Crack_B_Final.png', 154, 137, 1785, 429, 480),
     'd_grate': (SUB, 1316, 789, 363, 73, 200),
     # 여러 장에서 함께 쓰는 소품
+    't4_cave': ('IW/IW_BG_Final.png', 0, 0, 4500, 1952, 1600),  # 동굴 바위 벽
+    't4_ceil': ('IW/IW_Ceiling_Near_View 01_Final.png', 0, 0, 9562, 766, 1600),  # 종유석 천장
     't0_lamp': (SUB, 11, 775, 177, 484, 240),  # 공원 가로등
     't0_mgnest': ('BG_OBJ/defense_line.png', 35, 558, 968, 442, 480),
 }
@@ -174,7 +176,12 @@ ROOMBG = {
     'r_secret': ('UI_Facility/Room_Secret.png', 1112),
     'r_ware': ('UI_Facility/Room_Warehouse.png', 1104),
     'r_bio': ('BG_Ch10_Biological Laboratory/Biological Laboratory (2).png', 996),
+    'r_factory': ('BG_07_Factory_inside/Factory_Wall_floor_all_N.png', 1500),
+    'r_lab': ('BG_12_Laboratory_in/BG_Laboratory_in_m.png', 1010),
 }
+FLIP = set()
+TOP = {'r_lab': 120}  # 위쪽의 흐린 회색 띠는 잘라 낸다
+MAT = {'r_cap': (840, 790, 1100, 845)}  # 문 앞 깔개 글자가 거꾸로(180도) 그려져 있어 깔개만 바로 돌린다 (원본 좌표)
 
 
 def main():
@@ -201,8 +208,13 @@ def main():
     for name, src, x, y, w, h, n in SNOWHOUSE:
         add_snow(shrink(cut(src, x, y, w, h), n)).save(os.path.join(OUT, name + '.webp'), quality=90, method=6)
     for name, (src, h) in ROOMBG.items():
-        im = Image.open(B + src).convert('RGBA').crop((0, 0, 2048, h))
-        shrink(im, 1024).save(os.path.join(OUT, name + '.webp'), quality=88, method=6)
+        im = Image.open(B + src).convert('RGBA').crop((0, TOP.get(name, 0), 2048, h))
+        if name in MAT:
+            box = MAT[name]; im.paste(im.crop(box).rotate(180), box[:2])
+        im = shrink(im, 1024)
+        if name in FLIP:
+            im = im.transpose(Image.FLIP_LEFT_RIGHT)
+        im.save(os.path.join(OUT, name + '.webp'), quality=88, method=6)
     puddle().save(os.path.join(OUT, 'd_puddle.webp'), quality=90)
     for name, (src, x, y, w, h) in GROUND.items():
         im = Image.open(B + src).convert('RGB').crop((x, y, x + w, y + h)).resize((512, 512), Image.LANCZOS)
