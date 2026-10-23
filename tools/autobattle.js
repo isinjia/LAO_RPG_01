@@ -18,6 +18,7 @@ function battle(st, party, save, drill = {}) {
     for (let k = 0; !p && k < st.starts.length; k++) p = R.freeAround(G, st.starts[k][0], st.starts[k][1], CL.cur(id, save[id]).move, 1)[0];
     R.makeHero(G, id, save[id], null, p[0], p[1]);
   });
+  R.applyTactic(G, process.env.TACTIC); // 작전 전술 (TACTIC=rush|wall|swift 로 견줘 보기)
   R.spawnWave(G, 0);
   const phase = (side) => {
     G.side = side;

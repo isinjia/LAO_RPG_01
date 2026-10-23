@@ -798,3 +798,7 @@ i.dlv { font: normal 11px 'LO_B', sans-serif; color: #111; background: #8fd0ff; 
 .rrow .rnote { font-size: 13px; color: var(--lo-y); } .rrow .rnote b { color: var(--lo-y); }
 /* 작은 회색 안내 대비 높이기: 각성 창 제목 옆 안내, 결과 알림 줄 */
 .mbox h3 small { color: #b8c2da !important; } .rnotice { font-size: 14px; color: #fff; }
+/* 작전 전술: 출격 준비 단추, 전투 위쪽 줄의 표시 */
+.pfootbar .ptac { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; min-width: 128px; padding: 0 14px; }
+.pfootbar .ptac small { font: 11px 'LO_M', sans-serif; color: #9aa6c4; } .pfootbar .ptac b { font: 15px 'LO_B', sans-serif; color: var(--lo-y); }
+.gtac { display: inline-block; padding: 0 6px; margin-right: 2px; background: var(--lo-y); color: #111; font-weight: bold; }

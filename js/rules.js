@@ -182,6 +182,18 @@
     hp: { name: '생존 각성', desc: '영웅·병사 체력 +18%', k: { hp: 0.18 } },
     mv: { name: '기동 각성', desc: '영웅·병사 이동 +1, 방어 -6%', k: { mov: 1, df: -0.06 } }, // 이동은 값이 커서 방어를 조금 내준다
   };
+  // 작전 전술: 출격 준비에서 작전마다 하나 고른다. 처음 몇 턴만 아군 전원(영웅·병사)에 걸린다
+  R.TACTICS = {
+    none: { name: '전술 없음', desc: '아무 효과 없음' },
+    rush: { name: '돌격 명령', desc: '처음 3턴 공격 +15%, 방어 -8%', buff: { at: 0.15, df: -0.08 }, turns: 3 },
+    wall: { name: '방어 진형', desc: '처음 4턴 방어 +18%', buff: { df: 0.18 }, turns: 4 },
+    swift: { name: '신속 전개', desc: '처음 2턴 이동 +1', buff: { mov: 1 }, turns: 2 },
+  };
+  R.applyTactic = (G, key) => {
+    const t = R.TACTICS[key]; G.tactic = t && t.buff ? key : 'none';
+    if (!t || !t.buff) return;
+    for (const u of G.units) if (u.side === 'p') u.buffs.push({ ...t.buff, until: 1 + t.turns, side: 'p', tac: 1 });
+  };
   R.PERK2_LV = 40; // 두 번째 각성 (첫째와 다른 것)
   const perkK = (u, k) => (u.side !== 'p' ? 0 : [u.perk, u.perk2].reduce((n, p) => n + ((p && R.PERKS[p] && R.PERKS[p].k[k]) || 0), 0));
   R.heroStat = function (u, k, noPerk) {
