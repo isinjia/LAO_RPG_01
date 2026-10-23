@@ -201,7 +201,7 @@
         R(3, 9, 20, 6, 's'); R(1, 8, 24, 1, '_'); R(12, 8, 2, 10, '_');
       }),
       floor: { base: 'tiles/labd', zone: 'tiles/factory', zoneA: 0.3, path: 'tiles/labw', wall: 'tiles/labd', back: '#0b1218', pathA: 0.3, lane: 'rgba(90,220,255,.35)' },
-      sky: ['#04070b', '#0d1c26'], dark: 0.2, fx: 'dust', start: [12, 16],
+      sky: ['#04070b', '#0d1c26'], fx: 'dust', edgeLine: 5, start: [12, 16],
       back: [{ art: 'town/t5_platform', by: 5.15, h: 5.2, repeat: 1 }],
       objects: [
         BLD('cmd', 'town/t5_cmd', 10, 5, 6, 3, 12, { plinth: 0, glow: '140,230,255' }), BLD('shop', 'town/t5_shop', 18, 5, 6, 3, 20, { plinth: 0, glow: '255,90,90' }), BLD('cafe', 'town/t5_cafe', 2, 5, 6, 3, 4, { plinth: 0 }),
@@ -466,6 +466,12 @@
       g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(0, y0, W, 10);
     }
     if (map.rows.some((r) => r.includes('b'))) layerOf((t) => t === 'b', F.back || '#222', 2);
+    if (map.edgeLine != null) { // 승강장 끝: 노란 점자 블록 띠
+      const y0 = map.edgeLine * TILE + 4;
+      g.fillStyle = '#c9a42a'; g.fillRect(0, y0, W, 14);
+      g.fillStyle = 'rgba(255,230,140,.55)'; for (let x = 4; x < W; x += 9) for (let k = 0; k < 2; k++) { g.beginPath(); g.arc(x, y0 + 4 + k * 6, 1.6, 0, 7); g.fill(); }
+      g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(0, y0 + 14, W, 3);
+    }
     // 가장자리 어둡게
     const vg = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.max(W, H) * 0.75);
     vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.28)');
