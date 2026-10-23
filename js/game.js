@@ -1799,6 +1799,7 @@
   async function startPhase(side) {
     G.side = side;
     G.undo = []; G.pendingSnap = null; // 되돌리기는 그 차례 안에서만 (적 차례를 보고 되감지 못하게)
+    for (const u of G.units) u.nAct = 0;
     for (const u of G.units) {
       if (!u.alive) continue;
       u.buffs = u.buffs.filter((b) => !(b.side === side && b.until <= G.turn));
@@ -1862,7 +1863,8 @@
   // 행동마다 씨앗을 새로: 판의 씨앗 + 차례 + 그 유닛의 자리(순번)로 정한다 → 행동 순서를 바꿔도 그 행동의 흔들림은 같다
   function seedFor(u) {
     if (!G) return;
-    let h = ((G.seed0 >>> 0) ^ Math.imul(G.turn + 1, 0x9e3779b1) ^ Math.imul(G.units.indexOf(u) + 1, 0x85ebca77)) >>> 0;
+    u.nAct = (u.nAct || 0) + 1; // 한 차례에 두 번 행동하면 다른 씨앗
+    let h = ((G.seed0 >>> 0) ^ Math.imul(G.turn + 1, 0x9e3779b1) ^ Math.imul(G.units.indexOf(u) + 1, 0x85ebca77) ^ Math.imul(u.nAct, 0xc2b2ae35)) >>> 0;
     h = Math.imul(h ^ (h >>> 16), 0x7feb352d); h = Math.imul(h ^ (h >>> 15), 0x846ca68b);
     G.rs = (h ^ (h >>> 16)) >>> 0;
   }
@@ -2230,10 +2232,11 @@
       <button data-a="fight">전투 장면: <b>${onoff(o.fight)}</b></button>
       <button data-a="fast">빠른 진행: <b>${onoff(o.fast)}</b></button>
       <button data-a="autoEnd">모두 행동하면 자동 턴 종료: <b>${onoff(o.autoEnd)}</b></button>
-      <button data-a="diff">난이도: <b>${R.DIFF[o.diff || 'normal'].name}</b> <small>(${G && !G.ended && mode === 'map' ? `이 작전의 적 능력치 ${Math.round(R.diffK() * 100)}% · 지금 바로` : `적 능력치 ${Math.round(R.DIFF[o.diff || 'normal'].k * 100)}% × 장마다 ${Math.round(R.CH_K[0] * 100)}~${Math.round(R.CH_K[R.CH_K.length - 1] * 100)}%`})</small></button>
+      <div class="osec">난이도</div><div class="opts">${Object.keys(R.DIFF).map((k) => `<button data-a="dset:${k}" class="${(o.diff || 'normal') === k ? 'gold' : ''}">${R.DIFF[k].name} <small>${Math.round(R.DIFF[k].k * 100)}%</small></button>`).join('')}</div>
+      <div class="opts"><button data-a="diffinfo" disabled>현재 <b>${R.DIFF[o.diff || 'normal'].name}</b> <small>(${G && !G.ended && mode === 'map' ? `이 작전의 적 능력치 ${Math.round(R.diffK() * 100)}% · 지금 바로` : `적 능력치 ${Math.round(R.DIFF[o.diff || 'normal'].k * 100)}% × 장마다 ${Math.round(R.CH_K[0] * 100)}~${Math.round(R.CH_K[R.CH_K.length - 1] * 100)}%`})</small></button>
       <button data-a="close" class="gold">닫기</button></div>`, (a) => {
       if (['sound', 'blip', 'fight', 'fast', 'autoEnd'].includes(a)) { o[a] = !o[a]; if (a === 'fast') delete o.spd; }
-      else if (a === 'diff') { const l = Object.keys(R.DIFF); o.diff = l[(l.indexOf(o.diff || 'normal') + 1) % l.length]; diffNow(); if (G && !G.ended && mode === 'map') toast(`난이도 ${R.DIFF[o.diff].name} · 지금 적 체력·능력치가 바뀌었습니다 (되돌리기도 새 배율로)`); }
+      else if (a && a.startsWith('dset:')) { const k = a.slice(5); if (k !== (o.diff || 'normal')) { o.diff = k; diffNow(); if (G && !G.ended && mode === 'map') toast(`난이도 ${R.DIFF[k].name} · 지금 적 체력·능력치가 바뀌었습니다 (되돌리기도 새 배율로)`); } }
       else if (a === 'textSpd') o.textSpd = (o.textSpd + 1) % 3;
       else { writeSave(); if (back) back(); return; }
       writeSave(); applyOpts(); options(back);
@@ -2289,7 +2292,7 @@
       <p><b>피해 흔들림</b> · 공격 예상 창의 숫자는 기댓값이고, 실제 피해는 그 ±10% 안에서 흔들립니다. 아군 부대는 한 번의 교전에 병사를 70%까지만 잃습니다.</p>
       <p><b>원거리</b> · 사격병은 사거리 2. 두 칸에서 쏘면 근접 부대는 반격하지 못합니다. 원거리 병종이 붙어서 싸우면 피해가 30%로 줄어듭니다.</p>
       <p><b>적의 움직임</b> · 적은 무리마다 지휘관이 있고, 부대가 지휘관 둘레로 함께 진격합니다. 무리 중 하나라도 아군과 가까워지거나 한 차례가 지나면 무리 전체가 움직이고, 상성으로 이기는 상대를 먼저 노립니다. 우두머리를 지키는 호위는 우두머리 곁을 떠나지 않습니다. 「위험」 단추로 적이 닿는 범위를 확인하세요. 증원은 정해진 턴에 나타나고, 그 전에 지도 위 적을 모두 쓰러뜨리면 남은 증원이 곧바로 앞당겨 나옵니다 (증원까지 모두 쓰러뜨리면 승리).</p>
-      <p><b>난이도</b> · 옵션에서 고릅니다 (작전 도중에 바꾸면 그 자리에서 적의 체력·능력치가 바뀝니다). 쉬움: 적 능력치 85%, 적이 조심스럽고 늦게 움직임 · 보통: 107% · 어려움: 115%, 적이 처음부터 진격하고 쓰러뜨릴 수 있는 영웅을 집요하게 노림 (어려움은 1장 93%·6장 97%·5-7 작전 85%를 더 곱해 덜어 줌). 여기에 장마다 배율(95~106%)이 곱해지고, 옵션 창에는 지금 작전의 실제 배율이 나옵니다.</p>
+      <p><b>난이도</b> · 옵션에서 고릅니다 (작전 도중에 바꾸면 그 자리에서 적의 체력·능력치가 바뀝니다). 쉬움: 적 능력치 85%, 적이 조심스럽고 늦게 움직임 · 보통: 107% · 어려움: 115%, 적이 처음부터 진격하고 쓰러뜨릴 수 있는 영웅을 집요하게 노림 (어려움은 1장 93%·6장 97%·4-6 작전 88%·5-7 작전 85%를 더 곱해 덜어 줌). 여기에 장마다 배율(95~106%)이 곱해지고, 옵션 창에는 지금 작전의 실제 배율이 나옵니다.</p>
       <div class="osec">성장 · 진행</div>
       <p><b>경험치</b> · 전투가 끝나면 참가한 영웅 전원이 같은 양을 받고, 가장 많이 친 영웅(MVP)은 20%를 더 받습니다.</p>
       <p><b>저장</b> · 작전 도중에도 행동이 끝날 때마다 저장되어 타이틀의 「작전 이어하기」로 돌아옵니다. 이번 차례 안에서는 U(또는 메뉴)로 한 수씩 되돌리거나, 메뉴의 「이번 차례 다시」로 차례 처음으로 돌아갈 수 있습니다.</p>

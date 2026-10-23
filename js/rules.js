@@ -13,7 +13,7 @@
   // ── 지도 ───────────────────────────────────────────────
   R.newGame = function (stage) {
     const map = stage.map.map((row) => row.split(''));
-    R.ch = stage.ch || 1; R.stageIdx = stage.idx;
+    R.ch = stage.ch || 1; R.stageIdx = stage.kind ? null : stage.idx; // 작전 보정(stageAdj)은 본편 작전에만 (같은 번호의 소탕전·의뢰에는 걸지 않는다)
     R.chK = R.CH_K[R.ch - 1] || R.CH_K[R.CH_K.length - 1]; // 장마다 적 능력치 배율 (아래). 어려움은 1장(배우는 장)·6장(긴 장)만 조금 덜어 준다 (chAdj)
     return { stage, map, w: map[0].length, h: map.length, units: [], turn: 1, side: 'p', wave: 0, drill: {} }; // drill: 병사 훈련 단계 (save.drill)
   };
@@ -163,7 +163,7 @@
   R.DIFF = {
     easy: { k: 0.85, name: '쉬움', ai: { fear: 0.4, bar: -1.5, wake: 2, kill: 0, lead: 1.3, focus: 0 } },
     normal: { k: 1.07, name: '보통', ai: { fear: 0.1, bar: -4, wake: 1, kill: 2, lead: 1.6, focus: 0.5 } }, // 보통도 쓰러뜨릴 수 있는 영웅은 노린다 (아군을 잃을 긴장)
-    hard: { k: 1.15, name: '어려움', chAdj: { 1: 0.93, 6: 0.97 }, stageAdj: { '5-7': 0.85 }, ai: { fear: 0.05, bar: -6, wake: 0, kill: 4, lead: 2.4, focus: 3 } }, // focus: 이미 다친 영웅을 몰아 치는 협공 // lead: 적이 아군 지휘관을 노리는 무게
+    hard: { k: 1.15, name: '어려움', chAdj: { 1: 0.93, 6: 0.97 }, stageAdj: { '4-6': 0.88, '5-7': 0.85 }, ai: { fear: 0.05, bar: -6, wake: 0, kill: 4, lead: 2.4, focus: 2 } }, // focus: 이미 다친 영웅을 몰아 치는 협공 // lead: 적이 아군 지휘관을 노리는 무게
   };
   R.aiOf = () => (R.DIFF[R.diff] || R.DIFF.normal).ai;
   // 장마다 적 능력치 배율: 뒤로 갈수록 아군은 전직·병사 훈련이 쌓여 레벨보다 빨리 강해진다 (자동 대전에서 1장이 가장 어렵고 뒤는 쉬웠다)
@@ -615,7 +615,8 @@
         const e = R.combat(G, u, o, t.x, t.y);
         let sc = ((e.dT + e.dH * 1.6) / R.totalMax(o)) * 10 * value(o) - ((e.aT + e.aH * 1.6) / myMax) * 10 * value(u) * (foeAI ? 0.4 : 0.7) + terrK - risk(t.x, t.y);
         // 적: 상성으로 이기는 상대를 먼저, 쓰러뜨릴 수 있는 상대(kill)와 많이 다친 영웅(focus, 협공)에 무게를 더한다 (난이도마다 R.DIFF.ai)
-        if (foeAI) sc += (e.rel > 0 ? 3 : e.rel < 0 ? -1.5 : 0) + (e.dDead ? R.aiOf().kill : 0) + R.aiOf().focus * (1 - R.total(o) / R.totalMax(o));
+        if (foeAI) sc += (e.rel > 0 ? 3 : e.rel < 0 ? -1.5 : 0) + (e.dDead ? R.aiOf().kill : 0) + R.aiOf().focus * (1 - R.total(o) / R.totalMax(o))
+          + (u.rng > 1 && R.dist(t.x, t.y, o.x, o.y) === 1 ? -3 : 0); // 원거리 적은 붙지 않고 사거리에서 쏜다
         // 아군 자동: 우두머리 작전은 우두머리를(반격이 아파도), 도달·탈출 작전은 목표 칸을 막고 선 적을 친다
         else if (W0 === 'boss' && o.boss) sc += 6;
         else if (tgts && (W0 === 'reach' || W0 === 'escape') && tgts.some(([x, y]) => x === o.x && y === o.y)) sc += 6;
@@ -659,6 +660,13 @@
     if (u.ai === 'guard') return { to: [u.x, u.y], act: 'wait' };
     const f = fields[u.move + u.side] || (fields[u.move + u.side] = R.distField(G, u.move, u.side));
     const lead = foeAI && u.cmd && u.cmd !== u && u.cmd.alive ? u.cmd : null; // 따라갈 지휘관 (지휘관이 쓰러지면 저마다 진격)
+    // 크게 다친 적(30% 아래)은 칠 만한 상대가 없으면 지휘관 곁(없으면 뒤)으로 물러나 숨을 고른다
+    const hurt = foeAI && !u.boss && R.total(u) < R.totalMax(u) * 0.3;
+    if (hurt) {
+      let mv = null;
+      for (const t of tiles) { const sc = (lead ? R.dist(t.x, t.y, lead.x, lead.y) * 1.5 : 0) - f[t.y * G.w + t.x] * 0.8 + moveRisk(t.x, t.y) * 0.6 - terrDef(G, u, t.x, t.y) * 2; if (!mv || sc < mv.sc) mv = { sc, t }; }
+      if (mv) return { to: [mv.t.x, mv.t.y], act: 'wait' };
+    }
     let mv = null;
     for (const t of tiles) {
       let sc = f[t.y * G.w + t.x];
