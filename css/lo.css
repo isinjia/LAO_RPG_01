@@ -737,3 +737,10 @@ i.dlv { font: normal 11px 'LO_B', sans-serif; color: #111; background: #8fd0ff; 
 .rbonus small { flex-basis: 100%; font: 12px sans-serif; color: #9aa6c4; }
 /* 출격 준비 오른쪽 정보: 아래로 더 있으면 흐려지는 끝과 얇은 스크롤 막대로 알린다 (병사 목록 셋째 줄이 잘려 보이지 않게) */
 .pdetail { scrollbar-width: thin; scrollbar-color: #ffcc0088 transparent; padding-bottom: 28px; -webkit-mask-image: linear-gradient(#000 calc(100% - 26px), transparent); mask-image: linear-gradient(#000 calc(100% - 26px), transparent); }
+/* 옵션 창 (PC 가로): 두 단으로 나눠 1280×720 에서 스크롤 없이 */
+@media (orientation: landscape) and (min-width: 1000px) {
+  .mbox.cols2 { width: min(880px, 92vw); max-height: none; columns: 2; column-gap: 26px; }
+  .mbox.cols2 h3 { column-span: all; }
+  .mbox.cols2 .opts, .mbox.cols2 .oslide, .mbox.cols2 .dnote { break-inside: avoid; }
+  .mbox.cols2 .opts:last-child { column-span: all; }
+}

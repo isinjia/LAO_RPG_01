@@ -2262,6 +2262,7 @@
       else { writeSave(); if (back) back(); return; }
       writeSave(); applyOpts(); options(back);
     });
+    { const mb = document.querySelector('#modal .mbox'); if (mb) mb.classList.add('cols2'); } // PC: 두 단으로 (스크롤 없이)
     // 밀대: 움직이는 동안 바로 적용, 효과음은 크기를 들려준다
     document.querySelectorAll('#modal input[type=range]').forEach((r) => {
       r.oninput = () => { o[r.dataset.k] = +r.value; r.nextElementSibling.textContent = r.value; applyOpts(); };
