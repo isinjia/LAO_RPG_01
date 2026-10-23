@@ -401,7 +401,7 @@
   #info .st, #info .ex { font-size: 13.5px; line-height: 1.45; }
   #info .tal { font-size: 13px; line-height: 1.4; white-space: normal; }
   #info .nm { font-size: 18px; }
-  #info { width: 380px; }
+  #info { width: 380px; left: calc(72px + var(--safe-l)); } /* 왼쪽 영웅 초상 줄(52px)과 겹치지 않게 */
 }
 /* 가로 화면(PC): 위쪽 작전 목표 띠 글씨를 조금 크게 */
 @media (orientation: landscape) and (min-width: 1000px) {

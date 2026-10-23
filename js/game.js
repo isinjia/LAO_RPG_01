@@ -966,6 +966,7 @@
     }
     if (k === 'KeyC') { const u = ui.sel; if (u) { panTo(u.x, u.y, true); setCursor(u.x, u.y, false); } else panTo(kcur[0], kcur[1], true); return; }
     if (k === 'KeyE') { endTurnAsk(); return; }
+    if (k === 'KeyU') { if (ui.state === 'idle' && G.undo && G.undo.length) undoLast(); else if (ui.state === 'idle') toast('되돌릴 수가 없습니다'); return; }
     if (k === 'KeyM') { if (ui.state === 'idle') openMenu(); return; }
   }
   function keyHelp() {
@@ -979,7 +980,7 @@
       ${row('A · S', '공격 · 특기 (행동 버튼에 표시)')}${row('Space · W', '행동 버튼이 떠 있을 때는 대기 (이 영웅의 차례 끝내기)')}
       ${row('E', '턴 종료')}${row('Q', '자동 전투')}${row('V', '배속 ×1 → ×2 → ×3')}${row('F', '전투 장면 켜기·끄기')}
       ${row('R', '적의 공격 범위 (위험)')}${row('C', '카메라를 고른 영웅에게')}${row('+ / −', '확대 · 축소 (휠도 됩니다)')}
-      ${row('M', '메뉴')}${row('H · F1', '이 창')}
+      ${row('U', '한 수 되돌리기 (이번 차례 안)')}${row('M', '메뉴')}${row('H · F1', '이 창')}
       ${row('전투 장면', 'Enter · Space · Esc 건너뛰기')}${row('대화', 'Enter · Space 다음 · Esc 넘기기')}
       </table><div class="opts"><button class="gold" data-a="ok">닫기</button></div>`, () => {});
   }
@@ -1289,6 +1290,7 @@
     setHint(u.side === 'e' ? `${u.name}: 이동·공격 가능 범위` : '');
   }
   function selectUnit(u) {
+    if (!ui.sel || ui.sel !== u || ui.state === 'idle') undoMark();
     AU.play('lo_click', 0.6);
     if (u.side === 'p' && u.voiced !== G.turn) { u.voiced = G.turn; AU.voice(u.key + '_ActionApprove', 0.85); } // 차례마다 처음 고를 때만 원작 행동 승인 음성
     $('forecast').classList.add('hidden');
@@ -1509,6 +1511,7 @@
   }
   function backToTarget() { $('forecast').classList.add('hidden'); LOHUD.target(null); ui.target = null; openActions(); }
   async function confirmAttack() {
+    undoPush(); // 공격하다 쓰러져도 되돌릴 수 있게 치기 전에 쌓는다
     const a = ui.sel, d = ui.target;
     if (!a || !d) return;
     $('forecast').classList.add('hidden'); LOHUD.target(null);
@@ -1538,6 +1541,7 @@
     }
   }
   function finishAct(u) {
+    undoPush();
     u.acted = true;
     refreshView(u);
     deselect();
@@ -1816,7 +1820,7 @@
     G.units.forEach(refreshView);
     updateDanger();
     if (side === 'e') await enemyPhase();
-    else { suspendSave(); setTop(); setHint(G.turn === 1 && !G.stage.kind ? EARLY_TIPS[G.stage.idx] || '' : ''); const lead = G.units.find((u) => u.lead && u.alive); if (lead) panTo(lead.x, lead.y); if (autoOn) autoPlayer(); }
+    else { suspendSave(); setTop(); setHint(G.turn === 1 ? (!G.stage.kind && EARLY_TIPS[G.stage.idx]) || TYPE_TIPS[G.stage.win] || '' : ''); const lead = G.units.find((u) => u.lead && u.alive); if (lead) panTo(lead.x, lead.y); if (autoOn) autoPlayer(); }
   }
   // 첫 작전들의 한 줄 길잡이 (첫 차례 아래 안내 줄에)
   const EARLY_TIPS = {
@@ -1829,30 +1833,54 @@
     '1-7': '길잡이 · 제한 턴 안에 적을 모두 쓰러뜨려야 합니다. 특기(S)는 재사용 대기가 있으니 아끼지 말고 쓰세요',
     '1-8': '길잡이 · 우두머리를 쓰러뜨리면 이깁니다. 호위는 우두머리 곁을 떠나지 않으니 하나씩 끌어내세요',
   };
+  // 2장부터는 작전 종류마다 한 줄 (첫 차례)
+  const TYPE_TIPS = {
+    reach: '도달 작전 · 영웅 하나가 빛나는 칸에 닿으면 이깁니다. 빠른 기동병·공중병을 보내세요',
+    escape: '탈출 작전 · 살아 있는 영웅이 모두 빛나는 칸으로 빠져나가면 이깁니다',
+    survive: '버티기 작전 · 정한 턴까지 살아남으면 이깁니다. 숲·언덕에 자리 잡고 정비로 버티세요',
+    defend: '사수 작전 · 빛나는 칸에 적이 들어오면 집니다. 영웅을 그 칸 위에 세워 막으세요',
+    boss: '우두머리 작전 · 우두머리를 쓰러뜨리면 이깁니다. 호위는 곁을 떠나지 않으니 하나씩 끌어내세요',
+  };
   // ── 작전 중 저장 (이어하기): 아군 차례가 시작될 때마다 판 상태를 따로 저장해 두고, 타이틀의 「작전 이어하기」로 그 차례부터 되살린다 ──
   // 본편 작전(D.STAGES)만. 작전이 끝나면(승패) 지운다
   const SUSPEND_KEY = 'orca_srpg_suspend';
   function suspendClear() { try { localStorage.removeItem(SUSPEND_KEY); } catch (e) { /* 저장 불가 환경 */ } }
   function suspendLoad() {
-    try { const d = JSON.parse(localStorage.getItem(SUSPEND_KEY) || 'null'); return d && d.v === 1 && D.STAGES[d.si] && D.STAGES[d.si].idx === d.idx ? d : null; } catch (e) { return null; }
+    try { const d = JSON.parse(localStorage.getItem(SUSPEND_KEY) || 'null'); return d && d.v === 1 && (d.stage || (D.STAGES[d.si] && D.STAGES[d.si].idx === d.idx)) ? d : null; } catch (e) { return null; }
   }
-  function suspendSave() {
-    if (!G || G.ended) return;
+  // 판 상태 한 장 (작전 중 저장·한 수 되돌리기가 같이 쓴다). 본편이 아닌 작전(소탕전·의뢰)은 작전 자체도 함께 담는다
+  function snapData() {
+    if (!G || G.ended) return null;
     const si = G.stage.kind ? -1 : D.STAGES.findIndex((b) => b.idx === G.stage.idx); // 출격 준비는 본편 작전을 복사해(출전 인원) 넘긴다
-    if (si < 0) { suspendClear(); return; }
+    let stage = null;
+    if (si < 0) { try { stage = JSON.parse(JSON.stringify(G.stage)); } catch (e) { return null; } }
     const ev = (window.BATTLE_EVENTS || {})[G.stage.idx] || [];
     const units = G.units.map((u) => ({
       side: u.side, key: u.key, lv: u.lv, exp: u.exp, tier: u.tier, br: u.br, troop: u.troop ? u.troop.key : null, x: u.x, y: u.y,
       hp: u.hp, thp: u.troop ? u.troop.hp : 0, alive: u.alive, escaped: !!u.escaped, cd: u.cd, buffs: u.buffs, slow: u.slow || 0, slowNext: u.slowNext || 0, dealt: u.dealt || 0,
       ai: u.ai, home: u.home, boss: !!u.boss, awake: !!u.awake, wave: u.wave, bornT: u.bornT, cmd: u.cmd ? G.units.indexOf(u.cmd) : -1,
     }));
-    const d = { v: 1, si, idx: G.stage.idx, diff: R.diff, turn: G.turn, wave: G.wave, spawned: [...(G.spawned || [])], ev: [...(G.evDone || [])].map((e) => ev.indexOf(e)).filter((i) => i >= 0), units, start: stageStart, heroes: G.stage.heroes, free: G.stage.free, lock: G.stage.lock };
+    const d = { v: 1, si, idx: G.stage.idx, diff: R.diff, turn: G.turn, wave: G.wave, spawned: [...(G.spawned || [])], ev: [...(G.evDone || [])].map((e) => ev.indexOf(e)).filter((i) => i >= 0), units, start: stageStart, heroes: G.stage.heroes, free: G.stage.free, lock: G.stage.lock, stage };
+    return d;
+  }
+  function suspendSave() {
+    const d = snapData();
+    if (!d) { suspendClear(); return; }
     try { localStorage.setItem(SUSPEND_KEY, JSON.stringify(d)); } catch (e) { /* 저장 불가 환경 */ }
   }
-  async function resumeSuspend() {
-    const d = suspendLoad();
+  // 한 수 되돌리기: 영웅을 고를 때 판을 찍어 두고, 그 영웅이 행동을 마치면 되돌리기 목록에 쌓는다 (이번 차례 안에서만, 최대 10수)
+  function undoMark() { if (G && G.side === 'p' && !busy) G.pendingSnap = snapData(); }
+  function undoPush() { if (!G || !G.pendingSnap) return; (G.undo = G.undo || []).push(G.pendingSnap); if (G.undo.length > 10) G.undo.shift(); G.pendingSnap = null; }
+  async function undoLast() {
+    if (!G || busy || G.side !== 'p' || !G.undo || !G.undo.length) return;
+    const rest = G.undo.slice(0, -1), d = G.undo[G.undo.length - 1];
+    await resumeSuspend(d, '한 수 되돌렸습니다');
+    if (G) G.undo = rest;
+  }
+  async function resumeSuspend(given, msg) {
+    const d = given || suspendLoad();
     if (!d) return stageSelect();
-    const st = Object.assign({}, D.STAGES[d.si], d.heroes ? { heroes: d.heroes, free: d.free, lock: d.lock } : {});
+    const st = d.stage || Object.assign({}, D.STAGES[d.si], d.heroes ? { heroes: d.heroes, free: d.free, lock: d.lock } : {});
     hideScreen();
     if (G) leaveMap();
     R.diff = d.diff || 'normal';
@@ -1890,7 +1918,7 @@
     G.units.forEach(refreshView);
     updateDanger();
     setTop(); setHint('');
-    toast(`${st.idx} ${st.title} · ${d.turn}턴부터 이어서 합니다`);
+    toast(msg || `${st.idx} ${st.title} · ${d.turn}턴부터 이어서 합니다`);
     const lead = G.units.find((u) => u.lead && u.alive); if (lead) panTo(lead.x, lead.y);
   }
   async function endTurn() {
@@ -2132,6 +2160,7 @@
       <button data-a="keys">키보드 단축키 (H)</button>
       <button data-a="goal">승리·패배 조건</button>
       ${suspendLoad() && suspendLoad().idx === G.stage.idx && suspendLoad().turn === G.turn ? '<button data-a="redo">이번 차례 다시 (차례가 시작될 때로)</button>' : ''}
+      ${G.undo && G.undo.length && G.side === 'p' ? `<button data-a="undo">한 수 되돌리기 (U) <small>${G.undo.length}수</small></button>` : ''}
       <button data-a="retry">처음부터 다시</button>
       <button data-a="quit" class="red">작전 포기 (선택 화면으로)</button>
       <button data-a="close" class="gold">닫기</button></div>`, (a) => {
@@ -2146,6 +2175,7 @@
       else if (a === 'goal') goalInfo();
       else if (a === 'retry') { const st = G.stage; leaveMap(); prep(st); }
       else if (a === 'redo') resumeSuspend(); // 차례가 시작될 때 해 둔 작전 중 저장으로 되돌린다
+      else if (a === 'undo') undoLast();
       else if (a === 'quit') { suspendClear(); leaveMap(); stageSelect(); } // 포기한 작전은 이어하기에 남기지 않는다
     });
   }
@@ -3187,7 +3217,7 @@
 
   // ── 상단 버튼 ───────────────────────────────────────────
   $('btnEnd').onclick = () => { AU.play('lo_click', 0.5); endTurnAsk(); };
-  $('btnMenu').onclick = () => { AU.play('lo_click', 0.5); if (busy && G && G.side === 'e') return; openMenu(); };
+  $('btnMenu').onclick = (e) => { e.stopPropagation(); AU.play('lo_click', 0.5); if (busy && G && G.side === 'e') return; if (!busy && ui.sel) { for (let i = 0; i < 4 && ['menu', 'target', 'forecast', 'skill', 'skillpick'].includes(ui.state); i++) cancel(); deselect(); } openMenu(); }; // 고르던 영웅은 제자리로 돌리고 메뉴
   $('btnDanger').onclick = () => { AU.play('lo_click', 0.5); toggleDanger(); };
   $('btnAuto').onclick = () => { AU.play('lo_click', 0.5); setAuto(!autoOn); };
   $('btnSpd').onclick = () => { AU.play('lo_click', 0.5); cycleSpd(); };

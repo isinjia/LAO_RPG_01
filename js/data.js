@@ -425,7 +425,7 @@
       ],
       starts: [[9, 13], [8, 14], [10, 14], [9, 14], [10, 13], [8, 13], [9, 12], [8, 15]],
       waves: [
-        { turn: 1, at: [8, 7], units: [C('chick', 3), C('chick', 3), C('launcher', 3), C('launcher', 3)] },
+        { turn: 1, at: [8, 7], units: [C('chick', 3), C('launcher', 3), C('launcher', 3)] },
         { turn: 3, at: [7, 0], units: [C('launcher', 3), C('shielder', 2), C('chick', 3), C('chick', 3)] }, // 셋이 싸우는 초반에 급경사라 런처 하나를 뺐다
       ],
     },
@@ -1589,11 +1589,11 @@
       ],
       starts: [[8, 13], [9, 13], [8, 14], [9, 14], [7, 13], [10, 13], [8, 12], [9, 12]],
       waves: [
-        { turn: 1, at: [8, 7], units: [C('scarab', 68), C('quarter', 68), C('legionsp', 69), C('chick', 69), C('scarab', 68)] },
-        { turn: 3, at: [14, 4], units: [C('shielderx', 69), C('legionsp', 69), C('phalanx', 69), C('scarab', 69), C('chick', 68), C('phalanx', 69)] }, // 첫 무리와 거의 같이 들이닥쳐 한 턴 늦추고 하나 뺐다
-        { turn: 4, at: [3, 4], units: [C('chick', 69), C('quarter', 69), C('phalanx', 70), C('detector', 69), C('chick', 69), C('legionsp', 69), C('quarter', 69)] },
-        { turn: 6, at: [8, 1], units: [C('legion', 69), C('tortoise', 70), C('chick', 70)] }, // 통로 소모전이 30턴 가까이 늘어져 셋을 뺐다
-        { turn: 8, at: [9, 1], units: [C('phalanx', 70), C('detector', 70), C('sniper', 71), C('legionsp', 70), C('tortoise', 70), C('quarter', 70), C('ironprince', 70)] }, // 좁은 통로에서 너무 늘어져 둘을 뺐다
+        { turn: 1, at: [8, 7], units: [C('scarab', 65), C('quarter', 65), C('legionsp', 66), C('chick', 66), C('scarab', 65)] },
+        { turn: 3, at: [14, 4], units: [C('shielderx', 66), C('legionsp', 66), C('phalanx', 66), C('scarab', 66), C('chick', 65), C('phalanx', 66)] }, // 첫 무리와 거의 같이 들이닥쳐 한 턴 늦추고 하나 뺐다
+        { turn: 4, at: [3, 4], units: [C('chick', 66), C('quarter', 66), C('phalanx', 67), C('detector', 66), C('chick', 66), C('legionsp', 66), C('quarter', 66)] },
+        { turn: 6, at: [8, 1], units: [C('legion', 66), C('tortoise', 67), C('chick', 67)] }, // 통로 소모전이 30턴 가까이 늘어져 셋을 뺐다
+        { turn: 8, at: [9, 1], units: [C('phalanx', 67), C('sniper', 68), C('legionsp', 67), C('tortoise', 67), C('ironprince', 67)] }, // 좁은 통로에서 너무 늘어져 둘을 뺐다
       ],
     },
     {
