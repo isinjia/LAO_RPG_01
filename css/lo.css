@@ -765,3 +765,13 @@ i.dlv { font: normal 11px 'LO_B', sans-serif; color: #111; background: #8fd0ff; 
   .ptr { padding: 4px 10px 4px 4px; } .ptr img { width: 40px; height: 40px; }
   .pgoal { font-size: 14px; }
 }
+/* 결과 화면 (PC 가로): 영웅 줄을 두 단으로 낮게 → 8명까지 스크롤 없이, 전직·각성 알림은 목록 위 한 줄 */
+.rnotice { display: flex; flex-wrap: wrap; gap: 4px 16px; padding: 6px 10px; font-size: 13px; color: #dfe4ee; background: rgba(255, 204, 0, .1); border-left: 3px solid var(--lo-y); }
+.rnotice b { color: var(--lo-y); } .rnotice small { color: #9aa6c4; font-size: 12px; }
+.rrow .rnote b { margin-right: 6px; }
+@media (orientation: landscape) and (min-width: 1000px) {
+  .rlist { display: grid; grid-template-columns: 1fr 1fr; align-content: start; gap: 6px; }
+  .rrow { gap: 8px; padding: 6px 10px 6px 6px; }
+  .rrow > img { width: 46px; height: 46px; }
+  .rname b { font-size: 15px; } .rlv b { font-size: 16px; } .rinfo { gap: 2px; }
+}

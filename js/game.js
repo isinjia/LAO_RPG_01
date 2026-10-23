@@ -1818,6 +1818,7 @@
     LOHUD.phase(side, G.turn, side === 'p' && G.stage.turnLimit ? `제한 ${G.stage.turnLimit}턴` : '', speedK);
     AU.play('lo_round', side === 'p' ? 0.5 : 0.35, side === 'p' ? 1 : 0.85); // 원작 라운드 소리 (경보음은 증원에만)
     await wait(900);
+    if (!G || G.ended) return; // 기다리는 사이 판이 끝났으면 (치트 자동 클리어 등) 여기서 멈춘다
     // 지형(마을·기지) 회복 + 수동 특기(재생) + 지휘관 곁 병사 보충
     const heals = R.phaseHeal(G, side);
     for (const r of heals) popSupply(r.u, r.hT, r.hH, r.cmd ? '지휘 ' : '');
@@ -2317,7 +2318,7 @@
       <p><b>피해 흔들림</b> · 공격 예상 창의 숫자는 기댓값이고, 실제 피해는 그 ±10% 안에서 흔들립니다. 아군 부대는 한 번의 교전에 병사를 70%(어려움 90%)까지만 잃고, 넘친 피해의 40%는 영웅이 받습니다.</p>
       <p><b>원거리</b> · 사격병·전자전병은 사거리 2 이상 (영웅·적마다 다르고, 적 포대는 4칸까지 쏘기도 합니다). 두 칸에서 쏘면 근접 부대는 반격하지 못합니다. 원거리 병종이 붙어서 싸우면 원래 피해의 30%만 들어갑니다.</p>
       <p><b>적의 움직임</b> · 적은 무리마다 지휘관이 있고, 부대가 지휘관 둘레로 함께 진격합니다. 무리 중 하나라도 아군과 가까워지거나 한 차례가 지나면 무리 전체가 움직이고, 상성으로 이기는 상대를 먼저 노립니다. 우두머리를 지키는 호위는 우두머리 곁을 떠나지 않습니다. 「위험」 단추로 적이 닿는 범위를 확인하세요. 증원은 정해진 턴에 나타나고, 그 전에 지도 위 적을 모두 쓰러뜨리면 남은 증원이 곧바로 앞당겨 나옵니다 (증원까지 모두 쓰러뜨리면 승리).</p>
-      <p><b>난이도</b> · 옵션에서 고릅니다 (작전 도중에 바꾸면 그 자리에서 적의 체력·능력치가 바뀝니다). 쉬움: 적 능력치 85%, 적이 조심스럽고 늦게 움직임 · 보통: 107%(사수 작전은 ×0.95) · 어려움: 120%, 적이 처음부터 진격하고 쓰러뜨릴 수 있는 영웅을 집요하게 노림 (어려움은 배우는 1장 ×0.93·긴 6장 ×0.97, 적이 지킬 칸으로 몰려드는 사수 작전 ×0.88을 더 곱해 덜어 줌). 여기에 장마다 배율(${Math.round(R.CH_K[0] * 100)}~${Math.round(R.CH_K[R.CH_K.length - 1] * 100)}%)이 곱해지고, 옵션 창에는 지금 작전의 실제 배율이 나옵니다.</p>
+      <p><b>난이도</b> · 옵션에서 고릅니다 (작전 도중에 바꾸면 그 자리에서 적의 체력·능력치가 바뀝니다). 쉬움: 적 능력치 85%, 적이 조심스럽고 늦게 움직임 · 보통: 107%(사수 작전은 ×0.95) · 어려움: 120%, 적이 처음부터 진격하고 쓰러뜨릴 수 있는 영웅을 집요하게 노림 (어려움은 배우는 1장 ×0.9·긴 6장 ×0.97, 적이 지킬 칸으로 몰려드는 사수 작전 ×0.88을 더 곱해 덜어 줌). 여기에 장마다 배율(${Math.round(R.CH_K[0] * 100)}~${Math.round(R.CH_K[R.CH_K.length - 1] * 100)}%)이 곱해지고, 옵션 창에는 지금 작전의 실제 배율이 나옵니다.</p>
       <div class="osec">성장 · 진행</div>
       <p><b>경험치</b> · 전투가 끝나면 참가한 영웅 전원이 같은 양을 받고, 가장 많이 친 영웅(MVP)은 20%를 더 받습니다.</p>
       <p><b>각성</b> · 영웅이 Lv.${R.PERK_LV}에 이르면 「출격 준비」나 「부대 현황」에서 각성 하나를 고릅니다: ${Object.values(R.PERKS).map((p) => `${p.name}(${p.desc})`).join(' · ')}. Lv.${R.PERK2_LV}에는 첫째와 다른 둘째 각성을 하나 더 고릅니다 (꾸준히 출격하면 보통 2장 중반에 첫째, 3장 끝 무렵에 둘째가 열립니다). 출격 준비·부대 현황에서 언제든 바꿀 수 있습니다.</p>
@@ -2387,7 +2388,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.29';
+  const GAME_VERSION = '1.30';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -3264,8 +3265,12 @@
         return `<div class="rrow ${r === mvp ? 'mvp' : ''}" style="animation-delay:${0.35 + i * 0.08}s">
           <img src="${IMG[iconOf(r.id)]}" alt=""><div class="rinfo"><div class="rname"><b>${r.name}</b>${r === mvp ? '<i>MVP</i>' : ''}${r.alive ? '' : '<small>퇴각</small>'}</div>
           <div class="rlv">Lv.<b>${r.lv1}</b>${up ? `<span class="rup">LEVEL UP</span>` : ''}<em>+${r.gain} EXP</em></div>
-          <div class="rbar"><i data-w="${r.exp1}" style="width:${up ? 0 : r.exp0}%"></i></div>${r.notes.map((n) => `<div class="rnote">${n}</div>`).join('')}</div></div>`;
+          <div class="rbar"><i data-w="${r.exp1}" style="width:${up ? 0 : r.exp0}%"></i></div>${r.notes.some((n) => !n.startsWith('<b>MVP')) ? `<div class="rnote">${r.notes.filter((n) => !n.startsWith('<b>MVP')).map((n) => n.split(' · ')[0]).join(' ')}</div>` : ''}</div></div>`;
       }).join('');
+      // 전직·각성 알림은 목록 위에 한 줄로 모은다 (영웅 줄에는 짧은 표시만)
+      const tell = (k) => rows.filter((r) => r.notes.some((n) => n.startsWith(`<b>${k}`))).map((r) => r.name);
+      const notice = [['전직 가능', '출격 준비의 전직 단추'], ['각성 가능', '출격 준비나 「부대 현황」'], ['둘째 각성 가능', '출격 준비나 「부대 현황」']]
+        .map(([k, w]) => { const n = tell(k); return n.length ? `<span><b>${k}</b> ${n.join(', ')} <small>(${w})</small></span>` : ''; }).join('');
       screen(`<div class="rscr ${win ? 'win' : 'lose'}"><div class="pbg"></div>
         <div class="rmvp"><canvas data-stand="${standOf(face.id)}"></canvas></div>
         <div class="rpanel">
@@ -3274,6 +3279,7 @@
           <div class="rsub">${win ? '참가 영웅 전원이 경험치를 얻었습니다 (MVP +20% · 적보다 레벨이 높으면 줄어듦)' : '얻은 경험치는 유지됩니다'}</div>
           ${parts ? `<div class="rparts"><img src="${PARTS_ICON}" alt=""><span>부품 <b>+${parts}</b></span><small>보유 ${save.parts} · 병사 훈련에 씁니다</small></div>` : ''}
           ${(G0last.bonus || []).length ? `<div class="rbonus">${G0last.bonus.map((x) => `<span class="${x.ok ? 'ok' : 'no'}">${x.ok ? '★' : '☆'} ${x.name}${x.first ? ' <b>NEW</b>' : ''}</span>`).join('')}<small>달성한 추가 목표마다 부품 +25%</small></div>` : ''}
+          ${notice ? `<div class="rnotice">${notice}</div>` : ''}
           <div class="rlist">${list}</div>
           <div class="rbtns">${win ? '<button class="wgo" id="rOk"><b>확인</b><small>NEXT</small></button>' : '<button class="lo-btn dark" id="rSel">작전 선택</button><button class="wgo" id="rRetry"><b>다시 도전</b><small>RETRY</small></button>'}</div>
         </div></div>`);
