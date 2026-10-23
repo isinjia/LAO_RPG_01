@@ -700,7 +700,14 @@
     let ppw = fit < 46 ? Math.max(fit, Math.min(fill, 60)) : fit;
     cam.zoom = ppw * VIEW_H / innerHeight;
     cam.minZoom = Math.min(cam.fitZoom, cam.zoom) * 0.9;
-    cam.maxZoom = (110 * VIEW_H) / innerHeight;
+    // 확대는 처음 비율보다 훨씬 가까이까지 (큰 화면에서는 처음 비율이 예전 한계 110을 넘었다)
+    cam.maxZoom = (Math.max(110, ppw) * 2.2 * VIEW_H) / innerHeight;
+    // 직접 맞춘 확대 비율(칸 하나의 화면 크기)이 저장돼 있으면 그 비율로 시작 (가로·세로 화면 따로)
+    const saved = save.opts[zoomKey()];
+    if (saved > 0) {
+      cam.zoom = Math.max(cam.minZoom, Math.min(cam.maxZoom, saved * VIEW_H / innerHeight));
+      ppw = cam.zoom * innerHeight / VIEW_H;
+    }
     // 사용 가능 영역 가운데에 지도 중심이 오도록
     const wpp = VIEW_H / (innerHeight * cam.zoom);
     const offY = (ins.top - ins.bottom) / 2 * wpp / Math.sin(TILT);
@@ -712,6 +719,14 @@
     }
     clampCam();
     placeCamera();
+  }
+  const zoomKey = () => (innerHeight > innerWidth ? 'zoomPort' : 'zoomLand');
+  // 확대·축소: 한계 안으로 맞추고, 칸 크기(화면 점 수)로 저장해 다음 전투·다음 실행에도 쓴다
+  function setZoom(z, keep) {
+    cam.zoom = Math.max(cam.minZoom, Math.min(cam.maxZoom, z));
+    placeCamera();
+    save.opts[zoomKey()] = cam.zoom * innerHeight / VIEW_H;
+    if (!keep) writeSave();
   }
   function clampCam() {
     cam.x = Math.max(-0.5, Math.min(G.w + 0.5, cam.x));
@@ -761,8 +776,7 @@
     if (pinch && ptrs.size >= 2) {
       const [a, b] = [...ptrs.values()];
       const d = Math.hypot(a.x - b.x, a.y - b.y);
-      cam.zoom = Math.max(cam.minZoom, Math.min(cam.maxZoom, pinch.z * d / pinch.d));
-      placeCamera();
+      setZoom(pinch.z * d / pinch.d, true); // 손을 뗄 때 저장
       return;
     }
     if (drag && (Math.abs(p.x - p.x0) + Math.abs(p.y - p.y0) > 9)) drag.moved = true;
@@ -776,7 +790,7 @@
   const endPtr = (e) => {
     if (!ptrs.has(e.pointerId)) return;
     ptrs.delete(e.pointerId);
-    if (ptrs.size < 2) pinch = null;
+    if (ptrs.size < 2 && pinch) { pinch = null; writeSave(); }
     if (ptrs.size === 0) {
       if (drag && !drag.moved && mode === 'map') {
         if (drag.btn === 2) cancel();
@@ -790,8 +804,7 @@
   cv.addEventListener('wheel', (e) => {
     if (mode !== 'map') return;
     e.preventDefault();
-    cam.zoom = Math.max(cam.minZoom, Math.min(cam.maxZoom, cam.zoom * (e.deltaY < 0 ? 1.12 : 1 / 1.12)));
-    placeCamera();
+    setZoom(cam.zoom * (e.deltaY < 0 ? 1.12 : 1 / 1.12));
   }, { passive: false });
   // 치트: 타이틀에서 "치트활성화온"을 치면 켜진다. 한글·영문 입력 상태와 상관없이 눌린 자판 위치(e.code)로 알아본다
   // (두벌식: 치=cl 트=xm 활=ghkf 성=tjd 화=ghk 온=dhs). 켜진 뒤 전투 중 Y = 적을 모두 지우고 바로 승리
@@ -903,8 +916,7 @@
     return true;
   }
   function zoomBy(k) {
-    cam.zoom = Math.max(cam.minZoom, Math.min(cam.maxZoom, cam.zoom * k));
-    placeCamera();
+    setZoom(cam.zoom * k);
   }
   function mapKey(e) {
     const k = e.code, key = keyOf(k);
@@ -2098,7 +2110,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.69';
+  const GAME_VERSION = '0.70';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
