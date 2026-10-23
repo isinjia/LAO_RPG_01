@@ -1119,6 +1119,7 @@
   }
   function showActs(list) {
     const el = $('acts');
+    actTip(null);
     if (!list) { el.classList.add('hidden'); el.innerHTML = ''; return; }
     el.innerHTML = '';
     const ACT_KEY = { 공격: 'A', 특기: 'S', 대기: 'Space' };
@@ -1129,11 +1130,27 @@
       b.innerHTML = a.label + (key ? `<kbd>${key}</kbd>` : a.label === '취소' ? '<kbd>Esc</kbd>' : '') + (a.sub ? `<small>${a.sub}</small>` : '');
       if (a.cls) b.className = a.cls;
       b.disabled = !!a.disabled;
-      b.onclick = (e) => { e.stopPropagation(); AU.play('lo_click', 0.5); a.fn(); };
+      b.onclick = (e) => { e.stopPropagation(); actTip(null); AU.play('lo_click', 0.5); a.fn(); };
+      if (a.tip) { b.onmouseenter = () => actTip(b, a.tip, a.hover); b.onmouseleave = () => actTip(null); } // PC: 마우스를 올리면 정보 상자
       el.appendChild(b);
     }
     el.classList.remove('hidden');
     placeActs();
+  }
+  // 행동 메뉴 버튼에 마우스를 올렸을 때 옆에 띄우는 정보 상자 (b 가 없으면 닫기). hover(on) 으로 지도 미리보기도 켜고 끈다
+  let tipOff = null;
+  function actTip(b, html, hover) {
+    let t = $('actTip');
+    if (tipOff) { const f = tipOff; tipOff = null; f(); }
+    if (!b) { if (t) t.classList.add('hidden'); return; }
+    if (!t) { t = document.createElement('div'); t.id = 'actTip'; document.body.appendChild(t); }
+    t.innerHTML = html;
+    t.classList.remove('hidden');
+    const r = $('acts').getBoundingClientRect(), br = b.getBoundingClientRect(), w = t.offsetWidth, h = t.offsetHeight;
+    const x = r.right + 8 + w <= innerWidth - 8 ? r.right + 8 : Math.max(8, r.left - 8 - w);
+    t.style.left = x + 'px';
+    t.style.top = Math.max(8, Math.min(innerHeight - h - 8, br.top)) + 'px';
+    if (hover) { hover(true); tipOff = () => hover(false); }
   }
   // PC(가로 화면): 행동 메뉴를 고른 영웅 바로 옆에 세로로 (파이어 엠블렘식). 오른쪽·왼쪽·아래·위 가운데
   // 영웅과 가까운 유닛들, 정보창을 가장 덜 가리는 첫 자리. 세로 화면은 아래 버튼 그대로
@@ -1353,8 +1370,17 @@
     ui.state = 'skillpick';
     const list = R.skillsOf(u).map((sk, i) => {
       const s = D.SKILLS[sk], cd = u.cd[sk] || 0;
-      return { key: String(i + 1), label: s.name, sub: cd > 0 ? `${cd}턴 뒤 사용 가능` : `${s.desc} · 대기 ${s.cd}턴`, disabled: cd > 0, fn: () => pickSkill(sk) };
+      const tip = `<b>${s.name}</b><em class="${cd > 0 ? 'wait' : ''}">${cd > 0 ? `${cd}턴 뒤 사용 가능` : '사용 가능'} · 재사용 ${s.cd}턴</em><p>${s.desc}</p>`;
+      // 올려 둔 동안 지도에 그 특기의 사거리(보라색 칸)를 미리 보여 준다
+      const hover = (on) => {
+        if (ui.state !== 'skillpick' || ui.sel !== u) return;
+        if (on) { keep = keep || { t: OV.targets, a: OV.atk }; OV.targets = null; OV.atk = null; OV.skill = R.skillTargets(G, u, sk); OV.area = D.SKILLS[sk].tgt === 'self' ? R.skillArea(G, u, sk, u.x, u.y) : null; }
+        else { OV.skill = null; OV.area = null; if (keep) { OV.targets = keep.t; OV.atk = keep.a; keep = null; } }
+        drawOverlay();
+      };
+      return { key: String(i + 1), label: s.name, sub: cd > 0 ? `${cd}턴 뒤 사용 가능` : `${s.desc} · 대기 ${s.cd}턴`, tip, hover, disabled: cd > 0, fn: () => { keep = null; pickSkill(sk); } };
     });
+    let keep = null;
     list.push({ label: '취소', fn: openActions });
     showActs(list);
     setHint('쓸 특기를 고르세요');
@@ -2110,7 +2136,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.73';
+  const GAME_VERSION = '0.74';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();

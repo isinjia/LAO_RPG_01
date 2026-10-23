@@ -293,3 +293,11 @@
   #fight .ftot { top: -34px; right: 10%; }
   #fight .fcorner.R .ftot { left: 10%; right: auto; }
 }
+
+/* 행동 메뉴(특기 목록) 버튼에 마우스를 올리면 옆에 뜨는 정보 상자 (위치는 game.js 의 actTip) */
+#actTip { position: fixed; z-index: 7; width: 240px; padding: 10px 12px 11px; background: rgba(14, 18, 27, .96); border-left: 3px solid var(--lo-y, #ffcc00); box-shadow: 0 6px 24px #000a; color: #e8ecf4; pointer-events: none; animation: actsIn .12s ease-out; }
+#actTip.hidden { display: none; }
+#actTip b { display: block; font: 15px 'LO_B', sans-serif; color: #fff; }
+#actTip em { display: block; margin-top: 2px; font: normal 11px 'LO_B', sans-serif; color: #8fd0ff; }
+#actTip em.wait { color: #ff8da0; }
+#actTip p { margin: 6px 0 0; font: 13px/1.5 'LO_M', sans-serif; color: #c7cede; }
