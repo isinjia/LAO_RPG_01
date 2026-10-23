@@ -440,6 +440,9 @@ for (const st of D.STAGES) {
   out[st.idx] = { map: g.map((r) => r.join('')), starts, waves };
 }
 
+// 작전 목표 (시나리오에 맞춘 승리 조건): tools/maps/objectives.js
+const OBJ = require('./maps/objectives.js');
+for (const k in OBJ) if (out[k]) out[k].obj = OBJ[k];
 const fs = require('fs');
 const body = `// tools/build_stagemaps.js 로 만듦 (손으로 고치지 말 것). 작전마다 지도 꼴·크기·방향과 적 무리가 나오는 자리·진형
 // at: 무리 자리, at2: 둘로 나뉘어 나오는 무리의 둘째 자리, form: line 횡대 · wedge 쐐기 · blob 덩어리 · scatter 흩어짐 · ring 우두머리 둘레
@@ -449,6 +452,7 @@ const body = `// tools/build_stagemaps.js 로 만듦 (손으로 고치지 말 �
     const m = M[st.idx];
     if (!m) continue;
     st.map = m.map; st.starts = m.starts; if (m.tip) st.tip = m.tip;
+    if (m.obj) { const o = m.obj; st.win = o.win; st.target = o.target || null; st.turns = o.turns || 0; st.goal = o.goal; if (o.lose) st.lose = o.lose; if (o.tip) st.tip = o.tip; }
     st.waves.forEach((w, i) => Object.assign(w, m.waves[i]));
   }
 })();

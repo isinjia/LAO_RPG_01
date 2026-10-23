@@ -999,6 +999,7 @@
         }
       }
     };
+    if (G && G.stage.target) fillTiles(G.stage.target, G.stage.win === 'defend' ? '60,220,150' : '255,204,0', 0.5, false); // 작전 목표 칸: 도달·탈출은 금빛, 사수는 초록
     if (OV.danger) fillTiles(OV.danger, '255,60,80', ui.state === 'idle' ? 0.24 : 0.1, ui.state === 'idle', false); // 고르는 동안은 옅게
     fillTiles(OV.ghost, '40,150,255', 0.55); // 옮긴 뒤 다시 옮길 수 있는 칸: 옮기기 전 파란 칸과 똑같이
     fillTiles(OV.atk, '255,59,92', 0.45, true);
@@ -1158,7 +1159,8 @@
     banner.t = setTimeout(() => el.classList.add('hidden'), 1500 / speedK);
   }
   function setTop() {
-    $('turnNo').textContent = G.turn + (G.stage.turnLimit ? '/' + G.stage.turnLimit : '');
+    const lim = G.stage.turnLimit || (G.stage.win === 'survive' || G.stage.win === 'defend' ? G.stage.turns : 0); // 버티기 작전은 버틸 턴
+    $('turnNo').textContent = G.turn + (lim ? '/' + lim : '');
     const ph = $('phase');
     ph.textContent = G.side === 'p' ? '아군 차례' : '적 차례';
     ph.className = G.side;
@@ -1493,7 +1495,9 @@
     refreshView(u);
     deselect();
     updateDanger();
-    checkAutoEnd();
+    // 도달·탈출 작전은 '대기'로 목표 칸에 멈춰도 승패를 본다
+    if (G && (G.stage.win === 'reach' || G.stage.win === 'escape')) afterAction().then((ok) => { if (ok) checkAutoEnd(); });
+    else checkAutoEnd();
   }
   function checkAutoEnd() {
     if (!save.opts.autoEnd || !G || G.side !== 'p') return;
@@ -1667,10 +1671,16 @@
   // 행동 뒤 승패 확인. 계속 진행하면 true
   async function afterAction() {
     if (!G) return false;
+    // 탈출 작전: 탈출 칸에 선 아군은 지도를 떠난다 (쓰러진 게 아니라 빠져나감)
+    if (G.stage.win === 'escape') for (const u of G.units) if (u.alive && u.side === 'p' && R.onTarget(G, u.x, u.y)) {
+      u.alive = false; u.escaped = true;
+      fxAt(u.x, u.y, 'spawn'); removeView(u); pop(u.x, u.y, '탈출', 'heal'); AU.play('lo_join', 0.5);
+      renderRoster();
+    }
     const r = R.check(G);
     if (!r || r === 'wave') await situationEvents();
     if (r === 'wave') { await reinforce(R.pendingWave(G)); return true; } // 적을 다 잡으면 다음 증원이 앞당겨 나온다
-    if (r) { await endStage(r === 'win'); return false; }
+    if (r) { await endStage(r === 'win', r === 'lose' && G.loseWhy ? G.loseWhy : ''); return false; }
     return true;
   }
   async function reinforce(i) {
@@ -1728,6 +1738,7 @@
     }
     clearOv(); setTop();
     if (side === 'p' && G.stage.turnLimit && G.turn > G.stage.turnLimit) { await endStage(false, '제한 턴을 넘겼습니다'); return; }
+    if (side === 'p' && (G.stage.win === 'survive' || G.stage.win === 'defend') && G.turn > G.stage.turns) { await endStage(true, `${G.stage.turns}턴을 버텼습니다`); return; }
     LOHUD.phase(side, G.turn, side === 'p' && G.stage.turnLimit ? `제한 ${G.stage.turnLimit}턴` : '', speedK);
     AU.play(side === 'p' ? 'start' : 'warning', 0.5);
     await wait(900);
@@ -2174,12 +2185,12 @@
   function repeatStage(si) {
     const b = D.STAGES[si], lv = partyLv();
     const waves = b.waves.map((w) => Object.assign({}, w, { units: w.units.map(([k, l]) => [k, Math.max(l, lv - 1 + (D.ENEMIES[k].big ? 2 : 0))]) }));
-    return Object.assign({}, b, { kind: 'repeat', base: si, title: b.title + ' · 소탕전', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all', turnLimit: 0, waves, free: MAX_SORTIE, heroes: null });
+    return Object.assign({}, b, { kind: 'repeat', base: si, title: b.title + ' · 소탕전', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all', target: null, turns: 0, turnLimit: 0, waves, free: MAX_SORTIE, heroes: null });
   }
   function sideStage(idx) {
     const s = sideList().find((x) => x.idx === idx), b = D.STAGES[s.base - 1];
     const waves = s.waves.map((units, i) => ({ turn: 1 + i * 3, at: b.waves[i % b.waves.length].at, units })); // 원작은 무리를 하나씩 상대: 증원 간격을 넉넉히
-    return Object.assign({}, b, { kind: 'side', side: s, base: s.base - 1, idx: s.idx, title: s.title, goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all', turnLimit: 0, waves,
+    return Object.assign({}, b, { kind: 'side', side: s, base: s.base - 1, idx: s.idx, title: s.title, goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all', target: null, turns: 0, turnLimit: 0, waves,
       free: 4, heroes: null, bgm: s.kind === 'Ex' ? 'lo_battle2' : b.bgm });
   }
 
@@ -2939,7 +2950,7 @@
     const rows = [];
     for (const u of g.units.filter((x) => x.side === 'p')) {
       const s = save.heroes[u.key], h = D.HEROES[u.key];
-      const row = { id: u.key, name: u.name, lv0: stageStart.lv[u.key], exp0: s.exp, alive: u.alive, dealt: u.dealt || 0, notes: [] };
+      const row = { id: u.key, name: u.name, lv0: stageStart.lv[u.key], exp0: s.exp, alive: u.alive || !!u.escaped, dealt: u.dealt || 0, notes: [] };
       row.gain = st.kind ? gain : R.expFor(u.lv, R.foeLv(st), gain);
       R.addExp(u, row.gain);
       s.lv = u.lv; s.exp = u.exp;
@@ -2955,7 +2966,7 @@
     const clear0 = save.clear;
     if (win && !st.kind) save.clear = Math.max(save.clear, st.id);
     if (win && st.kind === 'side') { save.side = save.side || {}; save.side[st.idx] = 'done'; }
-    window.GAME_LAST = { idx: st.idx, win, turn: g.turn, wave: g.wave + 1, alive: g.units.filter((u) => u.side === 'p').map((u) => u.name + (u.alive ? ':' + Math.round(u.hp) : 'x')).join(' ') };
+    window.GAME_LAST = { idx: st.idx, win, turn: g.turn, wave: g.wave + 1, alive: g.units.filter((u) => u.side === 'p').map((u) => u.name + (u.alive ? ':' + Math.round(u.hp) : u.escaped ? ':탈출' : 'x')).join(' ') };
     writeSave();
     const si = st.id - 1;
     leaveMap();

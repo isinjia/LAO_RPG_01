@@ -449,11 +449,17 @@
   };
 
   // ── 승패 ───────────────────────────────────────────────
+  // 작전 목표 칸 (도달·탈출·사수): stage.target
+  R.onTarget = (G, x, y) => !!(G.stage.target && G.stage.target.some(([a, b]) => a === x && b === y));
+  // 승패: win = all(전멸) · boss(우두머리) · reach(목표 칸 도달) · escape(모두 탈출) · survive(턴 버티기) · defend(버티되 지킬 칸 사수)
   R.check = function (G) {
-    const lead = G.units.find((u) => u.lead);
-    if (lead && !lead.alive) return 'lose';
-    if (!G.units.some((u) => u.alive && u.side === 'p')) return 'lose';
-    if (G.stage.win === 'boss') { const b = G.units.find((u) => u.boss); if (b && !b.alive) return 'win'; }
+    const lead = G.units.find((u) => u.lead), w = G.stage.win;
+    if (lead && !lead.alive && !lead.escaped) return 'lose';
+    if (!G.units.some((u) => (u.alive || u.escaped) && u.side === 'p')) return 'lose';
+    if (w === 'defend' && G.units.some((u) => u.alive && u.side === 'e' && R.onTarget(G, u.x, u.y))) { G.loseWhy = '지킬 곳에 철충이 들어왔습니다'; return 'lose'; }
+    if (w === 'boss') { const b = G.units.find((u) => u.boss); if (b && !b.alive) return 'win'; }
+    if (w === 'reach' && G.units.some((u) => u.alive && u.side === 'p' && R.onTarget(G, u.x, u.y))) return 'win';
+    if (w === 'escape') { const ps = G.units.filter((u) => u.side === 'p'); if (ps.some((u) => u.escaped) && ps.every((u) => u.escaped || !u.alive)) return 'win'; }
     // 지도 위 적을 다 잡았는데 아직 나오지 않은 증원이 있으면 그 무리를 바로 부른다 (늘린 증원을 건너뛰고 이기지 않게)
     if (!G.units.some((u) => u.alive && u.side === 'e')) return R.pendingWave(G) >= 0 ? 'wave' : 'win';
     return null;
