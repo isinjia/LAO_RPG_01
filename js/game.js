@@ -2110,7 +2110,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.71';
+  const GAME_VERSION = '0.72';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2197,7 +2197,7 @@
   function repeatStage(si) {
     const b = D.STAGES[si], lv = partyLv();
     const waves = b.waves.map((w) => Object.assign({}, w, { units: w.units.map(([k, l]) => [k, Math.max(l, lv - 1 + (D.ENEMIES[k].big ? 2 : 0))]) }));
-    return Object.assign({}, b, { kind: 'repeat', base: si, title: b.title + ' · 소탕전', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all', target: null, turns: 0, turnLimit: 0, waves, free: MAX_SORTIE, heroes: null });
+    return Object.assign({}, b, { kind: 'repeat', base: si, title: b.title + ' · 소탕전', goal: '철충 전멸', lose: '콘스탄챠 퇴각', win: 'all', target: null, turns: 0, turnLimit: 0, waves, free: b.heroes.length, heroes: null }); // 소탕전도 그 작전 시나리오의 출격 인원 수 그대로
   }
   function sideStage(idx) {
     const s = sideList().find((x) => x.idx === idx), b = D.STAGES[s.base - 1];
@@ -2400,7 +2400,7 @@
       const lv = partyLv();
       acts = `<div class="wi-sub">할 수 있는 일</div><div class="wi-acts">
         ${sides.map((s) => `<button class="wact side" data-side="${s.idx}"><b>${s.kind === 'Ex' ? '고난도' : '의뢰'} · ${s.title}</b><small>${s.desc}</small><em>적 Lv.${Math.min(...s.waves.flat().map((u) => u[1]))}~</em></button>`).join('')}
-        <button class="wact" id="sRep"><b>소탕전</b><small>이 지역에 남은 철충을 다시 쓸어 낸다. 적이 부대 레벨에 맞춰 나온다.</small><em>적 Lv.${lv - 1}~</em></button>
+        <button class="wact" id="sRep"><b>소탕전</b><small>이 지역에 남은 철충을 다시 쓸어 낸다. 적이 부대 레벨에 맞춰 나온다. 출격은 시나리오대로 ${st.heroes.length}명.</small><em>적 Lv.${lv - 1}~</em></button>
         ${S ? '<button class="wact dim" id="sStory"><b>이야기 다시 보기</b><small>이 작전의 앞뒤 대화를 다시 본다.</small></button>' : ''}
         ${done.map((s) => `<div class="wdone">완료한 의뢰 · ${s.title}</div>`).join('')}</div>`;
     }
