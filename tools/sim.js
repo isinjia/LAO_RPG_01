@@ -1,5 +1,5 @@
 // 자료 검사 + 전투 수치 확인: node tools/sim.js
-require('../js/data.js'); require('../js/rules.js');
+require('../js/data.js'); require('../js/stagemaps.js'); require('../js/rules.js');
 const { STAGES, HEROES, ENEMIES } = DATA, R = RULES;
 let bad = 0;
 for (const st of STAGES) {

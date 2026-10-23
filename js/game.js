@@ -1646,6 +1646,7 @@
   async function afterAction() {
     if (!G) return false;
     const r = R.check(G);
+    if (!r || r === 'wave') await situationEvents();
     if (r === 'wave') { await reinforce(R.pendingWave(G)); return true; } // 적을 다 잡으면 다음 증원이 앞당겨 나온다
     if (r) { await endStage(r === 'win'); return false; }
     return true;
@@ -1658,6 +1659,38 @@
     if (list[0]) panTo(list[0].x, list[0].y, true);
     setTop();
     await wait(1000);
+    await battleEvent('wave:' + i);
+  }
+
+  // ── 전투 중 사건 (js/battle_events.js): 작전 개시·턴·증원·처치 수·우두머리 체력·마지막 한 기·영웅 위기에 짧은 대화 ──
+  // 본편 작전에서만 (소탕전·의뢰는 그 장소 지도를 빌릴 뿐이라 대사가 없다). 사건마다 한 번
+  async function battleEvent(key) {
+    if (!G || G.stage.kind) return;
+    const list = ((window.BATTLE_EVENTS || {})[G.stage.idx] || []).filter((e) => e.on === key && !(G.evDone || (G.evDone = new Set())).has(e));
+    for (const e of list) {
+      G.evDone.add(e);
+      const n = e.lines.length;
+      await story(e.lines.map(([who, t], i) => {
+        const H = D.HEROES[who], stand = H && (HERO_STAND[who] || '');
+        return { id: i + 1, who: H ? H.name : who, face: '', t, bg: '', cg: '', next: i + 1 < n ? i + 2 : null, ch: [], cast: stand ? [['C', stand, 1]] : [], spk: stand ? 'C' : 'L', see: 1 };
+      }));
+    }
+  }
+  // 행동 뒤 상황으로 일어나는 사건: 처치 수, 우두머리 체력 절반, 마지막 한 기, 영웅 위기
+  async function situationEvents() {
+    if (!G || G.stage.kind) return;
+    const foes = G.units.filter((u) => u.side === 'e');
+    const dead = foes.filter((u) => !u.alive).length, alive = foes.filter((u) => u.alive);
+    for (const e of (window.BATTLE_EVENTS || {})[G.stage.idx] || []) {
+      if (G.evDone && G.evDone.has(e)) continue;
+      const [k, v] = e.on.split(':');
+      let hit = false;
+      if (k === 'kill') hit = dead >= +v;
+      else if (k === 'boss') hit = foes.some((u) => u.boss && u.alive && u.hp <= u.hpMax * 0.5);
+      else if (k === 'last') hit = alive.length === 1 && R.pendingWave(G) < 0;
+      else if (k === 'hurt') hit = G.units.some((u) => u.side === 'p' && u.key === v && u.alive && u.hp <= u.hpMax * 0.4);
+      if (hit) await battleEvent(e.on);
+    }
   }
 
   // ── 차례 진행 ───────────────────────────────────────────
@@ -1680,6 +1713,7 @@
     const heals = R.phaseHeal(G, side);
     for (const r of heals) popSupply(r.u, r.hT, r.hH, r.cmd ? '지휘 ' : '');
     if (heals.length) { AU.play('energy', 0.4); await wait(500); }
+    if (side === 'p') await battleEvent('turn:' + G.turn);
     if (side === 'e') { // 정해진 턴의 적 차례에 증원
       for (const i of R.wavesAt(G, G.turn)) await reinforce(i);
     }
@@ -2030,7 +2064,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.62';
+  const GAME_VERSION = '0.63';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2765,6 +2799,7 @@
     AU.play('lo_battle_start', 0.7);
     LOHUD.start(`${st.idx} ${st.title}`, `승리 조건 · ${st.goal}`);
     await wait(1900);
+    await battleEvent('start');
     await startPhase('p');
   }
   function leaveMap() {

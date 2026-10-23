@@ -81,10 +81,48 @@
     if (!w || (G.spawned && G.spawned.has(i))) return [];
     (G.spawned || (G.spawned = new Set())).add(i);
     G.wave = Math.max(G.wave, i);
-    const spots = R.freeAround(G, w.at[0], w.at[1], 'foot', w.units.length);
+    const spots = w.form ? R.formSpots(G, w) : R.freeAround(G, w.at[0], w.at[1], 'foot', w.units.length);
     const list = w.units.map(([t, lv], k) => spots[k] && R.makeEnemy(G, t, lv, spots[k][0], spots[k][1], { boss: w.boss === t, ai: w.boss === t ? 'guard' : 'charge' })).filter(Boolean);
     if (i > 0) list.forEach((u) => { u.awake = true; });
     return list;
+  };
+  // 무리 진형 (js/stagemaps.js 의 form): 아군 쪽을 앞으로 보고 line 횡대 · wedge 쐐기 · scatter 흩어짐 · ring 우두머리 둘레 · blob 덩어리.
+  // at2 가 있으면 무리를 둘로 나눠 양쪽에서 (협공·기습). 자리가 막혔으면 가장 가까운 빈칸
+  R.formSpots = function (G, w) {
+    const n = w.units.length, taken = new Set(), out = [];
+    const ps = G.units.filter((u) => u.side === 'p' && u.alive);
+    const tx = ps.length ? ps.reduce((s, u) => s + u.x, 0) / ps.length : G.w / 2, ty = ps.length ? ps.reduce((s, u) => s + u.y, 0) / ps.length : G.h - 1;
+    const free = (x, y) => R.inB(G, x, y) && !R.unitAt(G, x, y) && R.terr(G, x, y).cost.foot < 99 && !taken.has(x + ',' + y);
+    const near = (x, y) => {
+      x = Math.round(x); y = Math.round(y);
+      for (let r = 0; r <= 7; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+        if (Math.abs(dx) + Math.abs(dy) !== r) continue;
+        if (free(x + dx, y + dy)) return [x + dx, y + dy];
+      }
+      return null;
+    };
+    const split = w.at2 ? Math.ceil(n / 2) : n;
+    const groups = w.at2 ? [[w.at, 0, split], [w.at2, split, n]] : [[w.at, 0, n]];
+    const bossK = w.boss ? w.units.findIndex(([t]) => t === w.boss) : -1;
+    for (const [at, a, b] of groups) {
+      let fx = tx - at[0], fy = ty - at[1];
+      const L = Math.hypot(fx, fy) || 1; fx /= L; fy /= L; // 아군 쪽
+      const lx = -fy, ly = fx; // 옆
+      const m = b - a, offs = [];
+      for (let i = 0; i < m; i++) {
+        let f = 0, l = 0;
+        if (w.form === 'line') { const row = Math.floor(i / 5), j = i % 5; l = (j % 2 ? 1 : -1) * Math.ceil(j / 2) * 1.6; f = -row * 1.5; }
+        else if (w.form === 'wedge') { const row = Math.ceil(Math.sqrt(i + 0.25) - 0.5), k = i - row * row; l = (k - row) * 1.2; f = -row * 1.3; }
+        else if (w.form === 'scatter') { const t = i * 2.4, r = 1.6 + Math.sqrt(i) * 1.3; f = Math.cos(t) * r; l = Math.sin(t) * r; }
+        else if (w.form === 'ring') { if (i === 0) { f = 0; l = 0; } else { const t = ((i - 1) / Math.max(1, m - 1)) * Math.PI * 2; f = Math.cos(t) * 1.8; l = Math.sin(t) * 1.8; } }
+        else { const t = i * 2.4, r = Math.sqrt(i) * 0.9; f = Math.cos(t) * r; l = Math.sin(t) * r; }
+        offs.push([at[0] + fx * f + lx * l, at[1] + fy * f + ly * l]);
+      }
+      const order = [...Array(m).keys()].map((i) => a + i);
+      if (w.form === 'ring' && bossK >= a && bossK < b) { order.splice(order.indexOf(bossK), 1); order.unshift(bossK); } // 우두머리가 가운데
+      order.forEach((k, i) => { const p = near(offs[i][0], offs[i][1]); if (p) { taken.add(p[0] + ',' + p[1]); out[k] = p; } });
+    }
+    return out;
   };
   // 이 턴에 나올 증원 무리 번호들
   const spawned = (G, i) => !!(G.spawned && G.spawned.has(i));
