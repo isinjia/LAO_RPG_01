@@ -186,7 +186,7 @@
   R.TACTICS = {
     none: { name: '전술 없음', desc: '아무 효과 없음' },
     rush: { name: '돌격 명령', desc: '처음 3턴 공격 +22%, 방어 -10%', buff: { at: 0.22, df: -0.1 }, turns: 3 },
-    wall: { name: '방어 진형', desc: '처음 4턴 방어 +25% (버티기·사수 작전은 8턴)', buff: { df: 0.25 }, turns: 4, holdTurns: 8 },
+    wall: { name: '방어 진형', desc: '처음 4턴 방어 +25% (버티기·사수 작전은 작전 내내)', buff: { df: 0.25 }, turns: 4, holdTurns: 99 },
     swift: { name: '신속 전개', desc: '처음 3턴 이동 +1, 방어 -5%', buff: { mov: 1, df: -0.05 }, turns: 3 },
   };
   const holdStage = (st) => st && (st.win === 'survive' || st.win === 'defend');

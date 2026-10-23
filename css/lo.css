@@ -809,4 +809,5 @@ i.dlv { font: normal 11px 'LO_B', sans-serif; color: #111; background: #8fd0ff; 
 /* 결과 화면 작전 요약 (목록 아래) */
 .rsum { display: flex; flex-wrap: wrap; gap: 6px 22px; padding: 10px 14px; font-size: 14px; color: #aab2c4; background: rgba(255,255,255,.04); border-top: 2px solid var(--lo-line); }
 .rsum b { font: 18px 'LO_B', sans-serif; color: #fff; margin-left: 4px; }
-@media (orientation: landscape) and (min-width: 1000px) { .rlist { flex: 0 1 auto; } .rsum { margin-top: auto; } }
+@media (orientation: landscape) and (min-width: 1000px) { .rlist { flex: 0 1 auto; } .rbtns { margin-top: auto; } }
+#modal:has(.trec), #modal:has(.pslots) { background: rgba(0, 0, 0, .8); }
