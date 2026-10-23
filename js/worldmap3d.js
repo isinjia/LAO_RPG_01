@@ -172,7 +172,7 @@
     const a = w / h, ref = a < 1 ? 1 : 16 / 9;
     camera.aspect = a;
     camera.fov = a >= ref ? 45 : (2 * Math.atan(TAN * (ref / a)) * 180) / Math.PI;
-    if (a < 1) camera.setViewOffset(w, h, 0, h * 0.12, w, h); else camera.clearViewOffset();
+    camera.setViewOffset(w, h, 0, h * (a < 1 ? 0.12 : 0.06), w, h); // 가로 화면도 아래 도구줄 몫만큼 그림을 조금 올린다
     camera.updateProjectionMatrix();
     distK = Math.sqrt(Math.min(1, (Math.tan((camera.fov * Math.PI) / 360) * a) / (TAN * 16 / 9)));
   }

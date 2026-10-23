@@ -811,3 +811,34 @@ i.dlv { font: normal 11px 'LO_B', sans-serif; color: #111; background: #8fd0ff; 
 .rsum b { font: 18px 'LO_B', sans-serif; color: #fff; margin-left: 4px; }
 @media (orientation: landscape) and (min-width: 1000px) { .rlist { flex: 0 1 auto; } .rbtns { margin-top: auto; } }
 #modal:has(.trec), #modal:has(.pslots) { background: rgba(0, 0, 0, .8); }
+/* 출격 준비 전술 단추의 효과 한 줄, 전투 위쪽 줄 전술 칸의 게임 안 말풍선 */
+.pfootbar .ptac i { font: normal 11px 'LO_M', sans-serif; color: #b8c2da; white-space: nowrap; }
+.gtac { position: relative; cursor: help; }
+#gtip { position: fixed; z-index: 60; pointer-events: none; white-space: nowrap; padding: 6px 10px; font: 13px 'LO_M', sans-serif; color: #fff; background: rgba(10, 14, 22, .96); border: 1px solid var(--lo-y); box-shadow: 0 4px 14px #000a; }
+.gwarn { color: #ff6b7d; animation: blink 1s ease-in-out infinite; }
+.mbox .pprev { font-size: 13px !important; }
+/* 출격 준비 카드: 직업명이 끊기지 않게 두 줄까지 */
+.pfoot small { white-space: normal; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.25; }
+/* 작은 글씨 한 단계 키우기: 전술 상자, 출격 준비 아래 전술 효과·상성 줄 */
+#gtip { font-size: 14px; }
+.pfootbar .ptac i { font-size: 12px; }
+@media (orientation: landscape) and (min-width: 1000px) { .pgoal .dim { font-size: 14px; } }
+/* 전술 단추: 세 줄(제목·이름·효과)이 단추 안에 들어가게 */
+.pfootbar .ptac { height: 62px; gap: 0; line-height: 1.2; padding: 4px 14px; }
+.pfootbar .ptac b { font-size: 14px; }
+/* 출격 준비 오른쪽 특기: 한 줄 요약(전체는 마우스를 올리면) → 스크롤 없이 다 보이게 */
+@media (orientation: landscape) and (min-width: 1000px) {
+  .pd-skills div { display: flex; align-items: baseline; gap: 8px; padding: 4px 10px; }
+  .pd-skills b { display: inline; flex: none; font-size: 13px; }
+  .pd-skills small { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+}
+.wtools .wstar { display: inline-flex; align-items: center; padding: 0 12px; font: 15px 'LO_B', sans-serif; color: var(--lo-y); background: rgba(16, 18, 24, .82); border: 1px solid rgba(255, 204, 0, .4); }
+.wtools .wstar small { margin-left: 8px; font: 12px 'LO_M', sans-serif; color: #b8c2da; }
+.wnode em .wst { color: #9aa6c4; letter-spacing: -1px; } .wnode em .wst.full { color: var(--lo-y); }
+.wnode em .wst { color: #c9d2e6; text-shadow: 0 0 3px #000, 0 0 2px #000; } .wnode em .wst .hs { color: #ff5a6e; font-weight: normal; }
+.wtools .wstar .hs { margin-left: 6px; color: #ff5a6e; font-weight: normal; }
+/* 월드맵 ★: 크게, 어려움 ✦는 붉고 빛나게. 아래 ★ 칸 글씨도 크게 */
+.wnode em .wst { font-size: 13px; letter-spacing: 0; } .wnode em .wst .hs { text-shadow: 0 0 4px #ff2a44, 0 0 2px #000; }
+.wtools .wstar { font-size: 17px; } .wtools .wstar small { font-size: 13px; }
+.wnode em .wst { display: inline-block; margin-top: 1px; padding: 0 4px; background: rgba(8, 11, 18, .78); border-radius: 2px; }
+.wnode em .wst { display: block; width: max-content; margin: 2px auto 0; font-size: 14px; }

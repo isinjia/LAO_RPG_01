@@ -3,7 +3,7 @@
 // 진 작전은 (게임처럼) 절반 경험치를 받고 다시 한다. 받은 부품은 출전 영웅이 쓰는 병사 훈련에 바로 쓴다 (NODRILL=1 이면 훈련 없이). 작전마다 승률·평균 턴·살아남은 영웅 수를 찍는다.
 global.window = global;
 require('../js/data.js'); require('../js/stagemaps.js'); require('../js/rules.js'); require('../js/classes.js');
-for (const f of ['story', 'story_ch02', 'story_ch03', 'story_ch04', 'story_ch05', 'story_ch06']) require('../js/' + f + '.js');
+for (const f of ['story', 'story_ch02', 'story_ch03', 'story_ch04', 'story_ch05', 'story_ch06', 'story_ch07']) require('../js/' + f + '.js');
 const D = DATA, R = RULES, CL = CLASSES;
 if (process.env.DIFF) R.diff = process.env.DIFF; // 난이도: easy · normal · hard
 if (process.env.DIFFK) R.DIFF[R.diff].k = +process.env.DIFFK; // 배율을 바꿔 시험

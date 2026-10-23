@@ -12,8 +12,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, ".."))
 import build_sd as B  # noqa: E402
 
-PROJ = os.path.join(HERE, "proj")
-PUPPET = r"E:/LAO/Google_QA_6.0/Assets/Libs/Puppet2D"
+PROJ = os.environ.get("UNITY_PROJ") or os.path.join(HERE, "proj")  # 작업 트리에서는 원래 저장소의 proj(가져오기 캐시가 있는 곳)를 쓸 수 있게
+PUPPET = next((p for p in [r"E:/LAO/Google_QA_6.0/Assets/Libs/Puppet2D", r"E:/LAO/1_Onestre_QA/Assets/Libs/Puppet2D"] if os.path.isdir(p)), r"E:/LAO/Google_QA_6.0/Assets/Libs/Puppet2D")
 SRC_ROOT = B.ROOT
 DEFAULT = ["brownie", "leprechaun", "valkyrie", "raven", "sylphid", "labiata", "hela",
            "e_Centurion_N", "e_NightChick_N"]

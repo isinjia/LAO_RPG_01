@@ -12,7 +12,7 @@ _rest = [a for a in sys.argv[1:] if not a.startswith('ch')]
 PROJ = _rest[0] if _rest else os.path.join(ROOT, 'tools', 'unity_ref', 'proj')
 SRC = os.path.join(PROJ, 'worldmap3d')
 MATDIR = os.path.join(PROJ, 'Assets', 'Ref', 'AssetBundleResourceSub', 'BG', 'World map', 'Materials')
-MAPS = {'ch%02d' % n: '3D_worldmap_A%d_1' % n for n in range(1, 7)}
+MAPS = {'ch%02d' % n: '3D_worldmap_A%d_1' % n for n in range(1, 8)}
 # 작전 n(0부터) -> 애니메이터 상태 이름, 마을·처음 화면은 전체 둘러보기
 STAGE_STATE = ['S_%02d' % (8 + i) for i in range(8)]
 OVERVIEW = 'S_Default'

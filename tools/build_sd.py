@@ -92,6 +92,8 @@ Fallen_N Rampart_N PuppHead_N Gigantes_N AMG11_N Stinger_N Seljuq_N
 UnderWatcher_B05 UnderWatcherArm_B05 UnderWatcherGenerator_B05 UnderWatcherSensor_B05
 NightChickQM_N LegionSP_N Tortoise_N CenturionCF_N ExpGoblinT_N ExpGoblinA_N ExpGenerator2_N ExecutionerLB_B06 ExecutionerRB_B06
 ProgramMobTS_N ProgramMobTN_N ProgramMobMT_N ProgramMobTT_N ProgramMobMN_N ProgramMobMS_N ProgramMobAS_N ProgramMobAN_N ProgramMobAT_N""".split()})
+# 7지역 철충 (원작 7장 본편)
+ENEMIES.update({k: "Model_MP_" + k for k in """Juggernaut_N NestChaser_N NestGuardian_N Nest_B07 NightChickAQ_N NightChickTD_N Speaker_N Tarantula_N""".split()})
 MONSTER_DIR = ROOT + "/AssetBundleResource/monster"
 
 CLIPS = {
@@ -767,7 +769,7 @@ def blend_spec(mat):
     p = (mat or {}).get("p") or {}
     return 1 if p.get("_Src") == 1 and p.get("_Dst") == 1 else 0
 
-UNITY_MESH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "unity_ref", "proj", "mesh")
+UNITY_MESH = os.path.join(os.environ.get("UNITY_PROJ") or os.path.join(os.path.dirname(os.path.abspath(__file__)), "unity_ref", "proj"), "mesh")
 
 
 def apply_unity_meshes(nodes, uid, atlas):
