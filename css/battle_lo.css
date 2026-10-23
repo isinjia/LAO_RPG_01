@@ -328,13 +328,15 @@
   #fight { --pnw: min(calc(100vw - 2 * var(--pw) + 12px), 820px); }
   #fight .fcorner.L { left: calc(50% - var(--pnw) / 2 - var(--pw) + 6px); }
   #fight .fcorner.R { right: calc(50% - var(--pnw) / 2 - var(--pw) + 6px); }
-  #fight .fbust { -webkit-mask-image: linear-gradient(0deg, transparent 0, #000 16%), linear-gradient(90deg, transparent 0, #000 22%); mask-image: linear-gradient(0deg, transparent 0, #000 16%), linear-gradient(90deg, transparent 0, #000 22%);
-    -webkit-mask-composite: source-in; mask-composite: intersect; }
-  #fight .R .fbust { -webkit-mask-image: linear-gradient(0deg, transparent 0, #000 16%), linear-gradient(270deg, transparent 0, #000 22%); mask-image: linear-gradient(0deg, transparent 0, #000 16%), linear-gradient(270deg, transparent 0, #000 22%); }
+  /* 그림 틀을 양옆으로 넓혀 일러스트가 옆에서 잘리지 않게 (아래만 띠 속으로 사라진다). 가운데 판이 초상 위에 겹친다 */
+  #fight .fbust { inset: 0 -45%; }
+  #fight .fcorner { z-index: 2; }
+  #fight .fpanel { z-index: 3; }
   #fight .fcorner.stand .fimg { left: 50%; top: 2%; height: 250%; filter: drop-shadow(0 4px 16px rgba(0, 0, 0, .6)); }
   #fight .fcorner.stand.whole .fimg { top: 10%; height: 104%; }
-  #fight .fcorner.sd .fimg { left: 50%; top: auto; bottom: 9%; width: 90%; height: auto; aspect-ratio: 1; padding: 0; background: none; clip-path: none; transform: translateX(-50%); filter: drop-shadow(0 4px 16px rgba(0, 0, 0, .65)); }
-  #fight .fcorner:not(.stand):not(.sd) .fimg { bottom: 26%; width: 50%; }
+  #fight .fcorner.sd .fimg { left: 50%; top: auto; bottom: 9%; width: 47%; height: auto; aspect-ratio: 1; padding: 0; background: none; clip-path: none; transform: translateX(-50%); filter: drop-shadow(0 4px 16px rgba(0, 0, 0, .65)); }
+  #fight .fcorner:not(.stand):not(.sd) .fimg { bottom: 26%; width: 26%; }
+  #fight .fbust::before { background: radial-gradient(32% 55% at 50% 78%, color-mix(in srgb, var(--c) 38%, transparent) 0%, transparent 100%); }
   #fight .fpanel { width: var(--pnw); bottom: calc(14px + var(--safe-b)); }
   #fight .ftot { top: 6%; right: -2%; }
   #fight .fcorner.R .ftot { left: -2%; right: auto; }
