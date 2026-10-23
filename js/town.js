@@ -62,7 +62,7 @@
     '보급고 휴게실': [['tiles/crystal0', 0.9, 2, 1, 1.3, [100, '90,230,220']], ['town/t4_rock', 0.06, 2, 2, 0.6]],
     '진지 지휘소': [['tiles/bags0', 0.1, 2, 2, 0.7], ['tiles/crate1', 0.86, 2, 1, 1.0], ['tiles/crate0', 0.92, 2, 1, 0.9]],
     '무기고': [['tiles/bags1', 0.08, 2, 2, 0.7], ['tiles/barrel', 0.9, 2, 1, 1.0]],
-    '서버 관제실': [['town/t5_server', 0.86, 2, 2, 1.4, [80, '90,255,180']]],
+    '서버 관제실': [['town/t5_server', 0.74, 2, 2, 1.4, [80, '90,255,180']]],
     '열차 정비실': [['town/t5_core', 0.12, 2, 2, 1.3, [90, '150,220,255']], ['tiles/crate1', 0.9, 2, 1, 1.0]],
     '주둔지 지휘소': [['tiles/barrel', 0.08, 2, 1, 1.0], ['tiles/crate1', 0.14, 2, 1, 1.0], ['town/t3_radar', 0.9, 1, 1, 1.8]],
     '함대 통신실': [['tiles/console', 0.12, 2, 2, 1.4, [90, '120,220,255']], ['tiles/crate0', 0.9, 2, 1, 0.9]],
@@ -144,7 +144,7 @@
         D('town/t0_lamp', 4, 8, 1, 2.1, { lit: [120, '255,214,150'] }), D('town/t0_lamp', 20, 8, 1, 2.1, { lit: [120, '255,214,150'] }), D('town/t0_lamp', 10, 13, 1, 2.1, { lit: [120, '255,214,150'] }),
         D('town/b_bench', 6, 9, 2, 0.9), D('tiles/sign', 24, 9, 1, 1.4),
         DEC('town/d_crack', 5, 12, 3, 0.7), DEC('town/d_crack', 17, 14, 2, 0.6), DEC('town/d_grate', 8, 7, 1.4), DEC('town/d_grate', 17, 7, 1.4),
-        EXIT(12, 17), ...NPC([11, 10], [7, 12, -1], [19, 13]), CON(14, 15),
+        EXIT(12, 17), ...NPC([11, 10], [7, 12, -1], [19, 13]), CON(14, 13),
       ],
       rooms: {
         cmd: Object.assign(ROOM('작업 지휘소', 'r_mm4_0', 365, ['#5a5a66', '#a9a7b8'], [D('town/r_mm4_11', 1, 2, 2, 1.7), D('town/r_mk0_3', 9, 2, 1, 1.5), D('town/r_andr2_42', 11, 2, 1, 1.6), D('town/r_iron1_7', 4, 6, 2, 0.8)]), { tint: '#ffe4c8' }),
@@ -249,7 +249,7 @@
         D('town/t6_grass0', 3, 10, 2, 0.8, { block: 0 }), D('town/t6_grass1', 19, 16, 1, 1.0, { block: 0 }), D('town/t6_grass0', 22, 13, 2, 0.8, { block: 0 }), D('town/t6_bush', 8, 16, 1, 1.6),
         D('town/t6_tree0', 0, 11, 2, 3.2), D('town/t6_pine', 24, 10, 1, 3.0), D('town/t6_tree2', 0, 16, 2, 2.6), D('town/t6_trees', 22, 16, 3, 3.2), D('town/t6_pine', 5, 16, 1, 2.6),
         D('tiles/crate1', 9, 6, 1, 1.0), D('tiles/crate0', 10, 6, 1, 0.9), D('tiles/barrel', 16, 6, 1, 1.0), D('town/b_bench', 8, 13, 2, 0.9),
-        D('town/t6_rock', 15, 11, 1, 0.5), D('town/t6_grass1', 10, 14, 1, 0.9, { block: 0 }), D('tiles/crate1', 13, 13, 1, 0.9), D('town/t6_bush', 18, 9, 1, 1.4, { block: 0 }), D('town/t6_pine', 6, 12, 1, 2.6), D('tiles/bags0', 15, 13, 2, 0.7),
+        D('town/t6_rock', 15, 11, 1, 0.5), D('town/t6_grass1', 10, 14, 1, 0.9, { block: 0 }), D('tiles/crate1', 13, 13, 1, 0.9), D('town/t6_bush', 18, 9, 1, 1.4, { block: 0 }), D('town/t6_pine', 6, 12, 1, 2.6), D('tiles/bags0', 5, 12, 2, 0.7),
         EXIT(12, 17), ...NPC([13, 11], [9, 11], [20, 11]), CON(14, 14),
       ],
       rooms: { // 숨어 지내던 곳이라 방마다 따뜻한 등불 빛
@@ -262,18 +262,18 @@
     port: {
       rows: grid(26, 18, '.', (R) => {
         R(0, 0, 26, 6, 'b'); R(0, 0, 1, 18, '#'); R(25, 0, 1, 18, '#'); R(0, 17, 26, 1, '#');
-        R(3, 11, 14, 5, 's'); R(1, 10, 24, 1, '_'); R(12, 10, 2, 8, '_'); R(20, 11, 1, 1, '_');
+        R(3, 11, 14, 5, 's'); R(1, 10, 24, 1, '_'); R(12, 10, 2, 8, '_'); R(21, 11, 1, 1, '_');
       }),
       floor: { base: 'tiles/concrete', zone: 'tiles/factory', zoneA: 0.16, path: 'town/g_asph', wall: 'tiles/concrete', back: '#2d6f8f', crisp: 1, lane: 'rgba(230,180,40,.8)' },
       sky: ['#3f8fd0', '#8fd0ea'], fx: 'dust', edgeLine: 6, start: [12, 16],
       back: [{ art: 'town/t7_sea', by: 6.05, h: 6.4, repeat: 1, mirror: 1 }],
       objects: [
-        BLD('cmd', 'town/t4_shop', 1, 7, 9, 3, 6, { plinth: 0 }), BLD('shop', 'town/t5_shop', 15, 7, 7, 3, 18, { plinth: 0, glow: '255,120,110' }), BLD('cafe', 'town/t2_cafe', 18, 12, 5, 3, 20, { plinth: 0 }),
+        BLD('cmd', 'town/t4_shop', 1, 7, 9, 3, 6, { plinth: 0 }), BLD('shop', 'town/t5_shop', 15, 7, 7, 3, 18, { plinth: 0, glow: '255,120,110' }), BLD('cafe', 'town/t2_cafe', 19, 13, 5, 3, 21, { plinth: 0 }),
         D('town/t3_radar', 23, 7, 1, 2.6), D('town/t0_mgnest', 10, 7, 3, 1.1), D('town/t3_mg', 11, 7, 1, 1.2, { block: 0 }),
         D('tiles/crate1', 3, 12, 1, 1.0), D('tiles/crate0', 4, 12, 1, 0.9), D('tiles/crate1', 3, 13, 1, 1.0), D('tiles/barrel', 15, 12, 1, 1.1), D('tiles/barrel', 16, 12, 1, 1.0),
         D('tiles/console', 8, 14, 2, 1.4, { lit: [90, '120,220,255'] }), D('tiles/gas', 1, 15, 2, 1.4), D('tiles/bags1', 15, 15, 2, 0.8), D('town/b_bench', 5, 15, 2, 0.9),
-        D('town/t0_lamp', 2, 9, 1, 2.1, { lit: [120, '255,222,160'] }), D('town/t0_lamp', 22, 9, 1, 2.1, { lit: [120, '255,222,160'] }), D('town/t0_lamp', 10, 13, 1, 2.1, { lit: [120, '255,222,160'] }),
-        D('tiles/wreck2', 23, 15, 2, 1.4), D('tiles/sign', 24, 12, 1, 1.4),
+        D('town/t0_lamp', 11, 9, 1, 2.1, { lit: [120, '255,222,160'] }), D('town/t0_lamp', 22, 9, 1, 2.1, { lit: [120, '255,222,160'] }), D('town/t0_lamp', 10, 13, 1, 2.1, { lit: [120, '255,222,160'] }),
+        D('tiles/wreck2', 1, 13, 2, 1.4), D('tiles/sign', 24, 11, 1, 1.4),
         DEC('town/d_grate', 7, 10, 1.4), DEC('town/d_grate', 17, 10, 1.4), DEC('town/d_crack', 5, 13, 2, 0.45),
         EXIT(12, 17), ...NPC([12, 12], [8, 12], [17, 14]), CON(14, 15),
       ],
