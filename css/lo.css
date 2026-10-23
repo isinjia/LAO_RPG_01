@@ -796,3 +796,5 @@ i.dlv { font: normal 11px 'LO_B', sans-serif; color: #111; background: #8fd0ff; 
 /* 작은 글씨 키우기: 출격 준비 아래 승패·상성 줄, 결과 화면 영웅 줄의 전직·각성 표시 */
 @media (orientation: landscape) and (min-width: 1000px) { .pgoal { font-size: 15px; } }
 .rrow .rnote { font-size: 13px; color: var(--lo-y); } .rrow .rnote b { color: var(--lo-y); }
+/* 작은 회색 안내 대비 높이기: 각성 창 제목 옆 안내, 결과 알림 줄 */
+.mbox h3 small { color: #b8c2da !important; } .rnotice { font-size: 14px; color: #fff; }
