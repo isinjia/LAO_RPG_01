@@ -120,7 +120,7 @@ def add_snow(im):
     al = a[:, :, 3] > 40
     h, w = al.shape
     top = np.zeros_like(al)
-    k = max(6, h // 22)  # 눈 두께
+    k = max(8, h // 14)  # 눈 두께
     above = np.zeros_like(al)
     above[k:] = al[:-k]
     top = al & ~above  # 위 k 픽셀 안이 비어 있는 곳 = 위로 드러난 면
@@ -131,6 +131,11 @@ def add_snow(im):
     m = np.clip(m * (0.75 + noise * 0.5), 0, 1)[:, :, None]
     cold = a[:, :, :3] * np.array([0.84, 0.9, 1.02])
     snow = np.array([244, 248, 255], np.float32) - (1 - noise[:, :, None]) * np.array([30, 22, 10])
+    # 밑동의 풀(초록 빛)은 눈에 덮인다
+    g = (a[:, :, 1] > a[:, :, 0] * 1.08) & (a[:, :, 1] > a[:, :, 2] * 1.05) & al
+    g[: int(h * 0.7)] = False
+    gm = np.asarray(Image.fromarray((g * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(1.5))).astype(np.float32)[:, :, None] / 255
+    m = np.maximum(m, gm)
     rgb = cold * (1 - m) + snow * m
     return Image.fromarray(np.dstack([np.clip(rgb, 0, 255), a[:, :, 3:]]).astype(np.uint8))
 
@@ -162,6 +167,16 @@ def puddle():
     return Image.fromarray(np.dstack([np.clip(rgb, 0, 255), a * 255]).astype(np.uint8))
 
 
+# 장마다 다른 방 뒷벽: 원작 기지 시설 방 그림 전체를 뒷벽으로 쓴다 (바닥은 게임이 따로 깐다)
+ROOMBG = {
+    'r_cap': ('UI_Facility/CaptainRoom.png', 1091),
+    'r_arch': ('UI_Facility/Room_Archives.png', 1104),
+    'r_secret': ('UI_Facility/Room_Secret.png', 1112),
+    'r_ware': ('UI_Facility/Room_Warehouse.png', 1104),
+    'r_bio': ('BG_Ch10_Biological Laboratory/Biological Laboratory (2).png', 996),
+}
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     for name, (src, x, y, w, h, n) in PIECES.items():
@@ -185,6 +200,9 @@ def main():
         im.save(os.path.join(OUT, name + '.webp'), quality=90, method=6)
     for name, src, x, y, w, h, n in SNOWHOUSE:
         add_snow(shrink(cut(src, x, y, w, h), n)).save(os.path.join(OUT, name + '.webp'), quality=90, method=6)
+    for name, (src, h) in ROOMBG.items():
+        im = Image.open(B + src).convert('RGBA').crop((0, 0, 2048, h))
+        shrink(im, 1024).save(os.path.join(OUT, name + '.webp'), quality=88, method=6)
     puddle().save(os.path.join(OUT, 'd_puddle.webp'), quality=90)
     for name, (src, x, y, w, h) in GROUND.items():
         im = Image.open(B + src).convert('RGB').crop((x, y, x + w, y + h)).resize((512, 512), Image.LANCZOS)

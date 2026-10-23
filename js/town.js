@@ -118,7 +118,7 @@
         R(0, 0, 26, 4, 'b'); R(0, 0, 1, 18, '#'); R(25, 0, 1, 18, '#'); R(0, 17, 26, 1, '#');
         R(1, 7, 24, 1, '_'); R(12, 7, 2, 11, '_'); R(3, 9, 20, 6, 's'); R(12, 7, 2, 11, '_'); R(21, 8, 1, 2, '_');
       }),
-      floor: { base: 'tiles/concrete', zone: 'tiles/factory', path: 'town/g_asph', wall: 'tiles/concrete', back: '#3b3a3c', lane: 'rgba(230,180,40,.8)', edge: 'rgba(0,0,0,0)' },
+      floor: { base: 'tiles/concrete', zone: 'tiles/factory', zoneA: 0.45, path: 'town/g_asph', wall: 'tiles/concrete', back: '#3b3a3c', lane: 'rgba(230,180,40,.8)', edge: 'rgba(0,0,0,0)' },
       sky: ['#5d5a68', '#c79a72'], dark: 0.12, darkC: '20,14,10', fx: 'sparks', start: [12, 16],
       back: [{ art: 'town/t2_fence', by: 4.05, h: 2.0, repeat: 1 }],
       objects: [
@@ -177,8 +177,8 @@
       objects: [
         BLD('cmd', 'town/t4_cmd', 3, 6, 3, 3, 4, { plinth: 0, glow: '255,110,50' }), BLD('shop', 'town/t4_shop', 14, 6, 8, 3, 17, { plinth: 0, glow: '120,255,240' }), BLD('cafe', 'town/t2_booth', 3, 12, 6, 3, 6, { plinth: 0, glow: '255,200,140' }),
         D('tiles/crystal0', 1, 10, 1, 2.0, { lit: [130, '90,230,220'] }), D('tiles/crystal1', 22, 12, 2, 1.8, { lit: [140, '120,240,230'] }), D('tiles/crystal0', 10, 16, 1, 1.5, { lit: [100, '90,230,220'] }),
-        D('town/t4_ore', 8, 10, 2, 1.0), D('town/t4_stal2', 1, 15, 2, 1.9), D('town/t4_stal2', 22, 16, 2, 2.0), D('town/t4_rock', 16, 16, 2, 0.7),
-        D('town/t4_stal2', 23, 7, 2, 2.4), D('town/t4_stal', 0, 12, 2, 1.5, { flip: 1 }), D('town/t4_stal2', 0, 9, 1, 1.8, { flip: 1 }), D('town/t4_rock', 21, 9, 2, 0.6),
+        D('town/t4_ore', 8, 10, 2, 1.0), D('town/t4_ore', 1, 15, 2, 0.9), D('town/t4_rock', 22, 16, 2, 0.7), D('town/t4_rock', 16, 16, 2, 0.7),
+        D('town/t4_rock', 23, 7, 2, 0.8), D('town/t4_stal', 0, 12, 2, 1.5, { flip: 1 }), D('tiles/crystal1', 0, 9, 1, 1.4, { lit: [90, '120,240,230'] }), D('town/t4_rock', 21, 9, 2, 0.6),
         D('town/t4_ore', 18, 16, 2, 0.9), D('tiles/crystal1', 3, 16, 1, 1.3, { lit: [90, '120,240,230'] }),
         D('tiles/console', 18, 11, 2, 1.4, { lit: [90, '120,220,255'] }), D('tiles/gas', 20, 14, 2, 1.4), D('tiles/crate0', 11, 14, 1, 0.9), D('tiles/crate1', 10, 14, 1, 1.0), D('tiles/bags0', 15, 15, 2, 0.75),
         D('town/t0_lamp', 7, 8, 1, 2.1, { lit: [120, '200,235,255'] }), D('town/t0_lamp', 10, 8, 1, 2.1, { lit: [120, '200,235,255'] }),
@@ -186,9 +186,9 @@
         EXIT(12, 17), ...NPC([12, 11], [10, 11], [20, 10]), CON(14, 15),
       ],
       rooms: {
-        cmd: ROOM('드론 관제실', 'r_mm0_0', 370, ['#3c5a5c', '#88a9ab'], [D('town/r_iron1_9', 1, 2, 2, 1.7), D('town/r_mm2_2', 11, 2, 1, 1.6), D('town/r_mm1_12', 9, 2, 1, 1.7)]),
+        cmd: Object.assign(ROOM('드론 관제실', 'r_secret', 556, ['#3c5a5c', '#88a9ab'], [D('town/r_mk4_1', 1, 6, 1, 1.4), D('town/r_mm2_2', 11, 7, 1, 1.5)]), { floorTex: 'tiles/labd' }),
         shop: Object.assign(ROOM('드론 격납고', 'r_train_0', 365, ['#55606e', '#9aa6b6'], [D('town/r_iron1_5b', 1, 2, 1, 1.9), D('town/r_iron2_16', 11, 2, 1, 2.2)]), { tint: '#c9e3ea' }),
-        cafe: ROOM('보급고 휴게실', 'r_cafe3_0', 268, ['#8f877a', '#ece7de'], [D('town/r_cafe5_1', 3, 4, 3, 1.1), D('town/r_cafe2_1', 8, 5, 3, 1.0), D('town/r_cafe3_2', 10, 2, 1, 1.0), D('town/r_res2_16', 11, 2, 1, 1.6), D('tiles/crate1', 1, 2, 1, 1.0)]),
+        cafe: Object.assign(ROOM('보급고 휴게실', 'r_ware', 552, ['#8f877a', '#ece7de'], [D('town/r_cafe5_1', 4, 4, 3, 1.1), D('town/r_cafe2_1', 8, 4, 3, 1.0), D('town/r_cafe3_2', 11, 3, 1, 1.0)]), { floorTex: 'tiles/factory' }),
       },
     },
     // 5장 건너편 역사 거점: 지하 철도 승강장. 위는 기둥과 화물칸이 선 승강장, 언더와처 시설의 금고문과 서버
@@ -212,7 +212,7 @@
       ],
       lights: [5, 12.5, 20].flatMap((x) => [9, 13, 16].map((y) => [x, y, 210, '200,230,255'])), // 천장 조명: 고르게
       rooms: {
-        cmd: Object.assign(ROOM('서버 관제실', 'r_dis1_0', 355, ['#2f4f4a', '#7fa69c'], [D('town/r_andr1_15', 1, 2, 1, 2.1), D('town/r_andr2_10', 9, 2, 3, 1.0), D('tiles/server', 1, 6, 2, 1.1)]), { tint: '#d4e2ff' }),
+        cmd: Object.assign(ROOM('서버 관제실', 'r_arch', 552, ['#2f4f4a', '#7fa69c'], [D('town/r_andr2_10', 1, 7, 3, 1.0), D('tiles/server', 10, 7, 2, 1.1)]), { floorTex: 'tiles/labd' }),
         shop: Object.assign(ROOM('열차 정비실', 'r_train_0', 365, ['#55606e', '#9aa6b6'], [D('town/r_iron1_9', 1, 2, 2, 1.7), D('town/r_var2_14', 11, 2, 1, 2.4)]), { tint: '#d2deef' }),
         cafe: ROOM('역무실 휴게실', 'r_cafe5_0', 268, ['#8f877a', '#ece7de'], [D('town/r_cafe5_3', 8, 2, 3, 1.0), D('town/r_cafe2_1', 3, 4, 3, 1.0), D('town/r_cafe4_1', 8, 5, 3, 1.1), D('town/r_cafe3_2', 1, 2, 1, 1.0)]),
       },
@@ -239,8 +239,8 @@
         EXIT(12, 17), ...NPC([13, 11], [9, 11], [20, 11]), CON(14, 14),
       ],
       rooms: { // 숨어 지내던 곳이라 방마다 따뜻한 등불 빛
-        cmd: Object.assign(ROOM('분교 은신처', 'r_train_0', 365, ['#6a5a50', '#b8a495'], [D('town/r_cafe4_1b', 3, 3, 3, 1.0), D('town/r_var2_3', 11, 2, 1, 1.9), D('town/r_andr1_0', 1, 2, 1, 2.0)]), { tint: '#ffd9ae' }),
-        shop: Object.assign(ROOM('연구소 정비실', 'r_mm0_0', 370, ['#6b5b62', '#b8a2ab'], [D('town/r_var2_12', 1, 2, 1, 1.9), D('town/r_iron1_9', 10, 2, 2, 1.7)]), { tint: '#ffd9ae' }),
+        cmd: Object.assign(ROOM('분교 은신처', 'r_cap', 546, ['#6a5a50', '#b8a495'], [D('town/r_cafe4_1b', 1, 6, 3, 1.0)]), { floorTex: 'tiles/labw' }),
+        shop: Object.assign(ROOM('연구소 정비실', 'r_bio', 498, ['#6b5b62', '#b8a2ab'], [D('town/r_iron1_9', 10, 4, 2, 1.5)]), { floorTex: 'tiles/labw' }),
         cafe: Object.assign(ROOM('산장 쉼터', 'r_cafe4_0', 268, ['#8f877a', '#ece7de'], [D('town/r_cafe4_2', 8, 2, 3, 1.2), D('town/r_cafe5_1', 3, 4, 3, 1.1), D('town/r_cafe4_1', 8, 5, 3, 1.1), D('town/r_cafe4_3', 1, 2, 1, 1.6)]), { tint: '#ffe2bf' }),
       },
     },
@@ -251,7 +251,7 @@
     const m = TOWNMAPS[look] || TOWNMAPS.coast, R = m.rooms;
     for (const k in ROOMS0) {
       const o = ROOMS0[k], r = R && R[k];
-      MAPS[k] = r ? Object.assign({}, o, { name: r.label, bg: r.bg, fl: r.fl, wall: r.wall, tint: r.tint,
+      MAPS[k] = r ? Object.assign({}, o, { name: r.label, bg: r.bg, fl: r.fl, wall: r.wall, tint: r.tint, floorTex: r.floorTex,
         objects: [...o.objects.filter((x) => x.t === 'exit' || x.t === 'npc'), ...r.deco] }) : o;
     }
     const objects = m.objects.map((o) => (o.t === 'building' ? Object.assign({}, o, { label: R ? R[o.to[0]].label : ROOMNAME0[o.to[0]] }) : o));
@@ -444,8 +444,11 @@
   function drawRoomFloor(g) {
     const im = img(map.bg), mw = map.w * TILE, mh = map.h * TILE, y1 = 2 * TILE + 6, y2 = mh - TILE + 4, fx0 = TILE - 14, fx1 = mw - TILE + 14;
     g.fillStyle = '#05070c'; g.fillRect(0, y1, mw, mh - y1); // 뒷벽 자리(위 두 줄)는 비워 둔다
-    // 바닥은 원작 방 그림 바닥 가운데의 깨끗한 부분만 늘려 깐다 (옆벽의 서버장·경사로가 늘어지거나 잘려 보이지 않게)
-    if (ok(im)) g.drawImage(im, im.width * 0.46, map.fl + 6, im.width * 0.36, im.height - map.fl - 6, fx0, y1, fx1 - fx0, y2 - y1);
+    // 바닥은 원작 방 그림 바닥 가운데의 깨끗한 부분만 늘려 깐다 (옆벽의 서버장·경사로가 늘어지거나 잘려 보이지 않게).
+    // 방 그림 전체를 뒷벽으로 쓰는 방(floorTex)은 바닥 질감을 따로 깐다
+    const ft = map.floorTex && img(map.floorTex);
+    if (ft && ok(ft)) { const p = g.createPattern(ft, 'repeat'); p.setTransform(new DOMMatrix().scale(0.5)); g.fillStyle = p; g.fillRect(fx0, y1, fx1 - fx0, y2 - y1); }
+    else if (ok(im)) g.drawImage(im, im.width * 0.46, map.fl + 6, im.width * 0.36, im.height - map.fl - 6, fx0, y1, fx1 - fx0, y2 - y1);
     const sg = g.createLinearGradient(0, y1, 0, y1 + 60); sg.addColorStop(0, 'rgba(0,0,0,0.25)'); sg.addColorStop(1, 'rgba(0,0,0,0)');
     g.fillStyle = sg; g.fillRect(fx0, y1, fx1 - fx0, 60);
     g.fillStyle = 'rgba(20,22,28,.55)'; g.fillRect(fx0, y1, fx1 - fx0, 5); // 걸레받이: 벽과 바닥이 만나는 선
@@ -524,7 +527,7 @@
       let dw = w * 1.1, dh = (im.naturalHeight * dw) / im.naturalWidth;
       const maxH = (b.h + 2.6) * TILE; if (dh > maxH) { dw *= maxH / dh; dh = maxH; }
       const x = b.x * TILE + w / 2 - dw / 2;
-      ctx.fillStyle = 'rgba(0,0,0,0.26)'; ctx.beginPath(); ctx.ellipse(x + dw / 2, base - 4, dw * 0.56, 14, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = 'rgba(0,0,0,0.26)'; ctx.beginPath(); ctx.ellipse(x + dw / 2, base - 4, dw * 0.5, 12, 0, 0, 7); ctx.fill();
       if (b.plinth !== 0) { // 바닥 받침 (1장 기지 건물)
         ctx.fillStyle = '#a89f8c'; ctx.fillRect(x - 8, base - 8, dw + 16, 14);
         ctx.fillStyle = '#cfc6b4'; ctx.fillRect(x - 8, base - 12, dw + 16, 10);
@@ -702,7 +705,8 @@
     const vw = W / S, vh = H / S, mw = map.w * TILE, mh = map.h * TILE;
     const ppx = pfx * TILE + TILE / 2, ppy = pfy * TILE + TILE / 2;
     camX = mw < vw ? (mw - vw) / 2 : Math.max(0, Math.min(mw - vw, ppx - vw / 2));
-    const top = map.indoor ? -TILE * 3.2 : 0;
+    let top = 0;
+    if (map.indoor) { const bi = img(map.bg); top = ok(bi) ? Math.min(-TILE * 3.2, 2 * TILE + 6 - (map.fl * (map.w * TILE - TILE * 2 + 28)) / bi.width + 30) : -TILE * 3.2; } // 뒷벽 그림 높이만큼 위를 더 보여 준다 (천장 끝 조금은 잘려도 된다)
     camY = mh - top < vh ? top - (vh - (mh - top)) / 2 : Math.max(top, Math.min(mh - vh, ppy - vh / 2));
     ctx.setTransform(S, 0, 0, S, -camX * S, -camY * S);
     ctx.drawImage(layer, 0, 0);
