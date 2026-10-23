@@ -1211,7 +1211,7 @@
     $('goalBox').innerHTML = `${st.idx} · 승리: <b>${st.goal}</b>${nt ? ` · 증원 ${nt}턴` : ''}${R.diff !== 'normal' ? ` · <b>${R.DIFF[R.diff].name}</b>` : ''}${st.kind ? '' : ` · ${bonusLine(st, true)}`}`;
     const tac = G.tactic && R.TACTICS[G.tactic], tacOn = tac && G.tacUntil && G.turn <= G.tacUntil;
     $('goalBox').title = `${st.idx} ${st.title} · 패배: ${st.lose}${tacOn ? ` · 작전 전술 ${tac.name}: ${R.tacText(G.tactic, st)} (${G.tacUntil >= 99 ? '작전 내내' : `${G.tacUntil}턴까지`})` : ''}`;
-    if (tacOn) $('goalBox').insertAdjacentHTML('afterbegin', `<span class="gtac" data-tip="${R.tacText(G.tactic, st).replace(/ \(대가는 \d+턴만\)/, '')}${G.tacUntil < 99 ? ` · ${G.tacUntil - G.turn + 1}턴 남음${G.tacCostUntil && G.tacCostUntil < G.tacUntil ? (G.turn <= G.tacCostUntil ? `(약화는 ${G.tacCostUntil - G.turn + 1}턴 더)` : '(약화 끝남)') : ''}` : ''}${G.tacX > 1 ? ' · ★추천 강화' : ''}">${tac.name} ${G.tacUntil >= 99 ? '끝까지' : `~${G.tacUntil}턴`}</span> `);
+    if (tacOn) $('goalBox').insertAdjacentHTML('afterbegin', `<span class="gtac" data-tip="${R.tacText(G.tactic, st).replace(/ \(약화는 처음 \d+턴만\)/, '')}${G.tacUntil < 99 ? ` · ${G.tacUntil - G.turn + 1}턴 남음${G.tacCostUntil && G.tacCostUntil < G.tacUntil ? (G.turn <= G.tacCostUntil ? `(약화는 ${G.tacCostUntil - G.turn + 1}턴 더)` : '(약화 끝남)') : ''}` : ''}${G.tacX > 1 ? ' · ★추천 강화' : ''}">${tac.name} ${G.tacUntil >= 99 ? '끝까지' : `~${G.tacUntil}턴`}</span> `);
     $('btnEnd').disabled = G.side !== 'p' || busy;
     syncQuick(); renderRoster();
   }
@@ -2307,7 +2307,7 @@
   }
   function goalInfo() {
     const st = G.stage;
-    modal(`<h3>${st.idx} ${st.title}</h3><p>승리 조건: <b>${st.goal}</b></p><p>패배 조건: ${st.lose}</p>${st.kind ? '' : `<p>추가 목표: ${bonusLine(st, true)} <small>(하나마다 부품 +25%)</small></p>`}
+    modal(`<h3>${st.idx} ${st.title}</h3><p>승리 조건: <b>${st.goal}</b></p><p>패배 조건: ${st.lose}</p>${st.kind ? '' : `<p>추가 목표: ${bonusLine(st, true)} <small>(하나마다 부품 +${R.diff === 'hard' ? 35 : 25}%)</small></p>`}
       <p style="color:#9aa6c4">${st.waves.length > 1 ? `증원은 ${st.waves.slice(1).map((w) => w.turn + '턴').join(' · ')}에 나타나고, 그 전에 지도 위 적을 모두 쓰러뜨리면 곧바로 앞당겨 나옵니다 (전체 ${st.waves.length}무리).` : '증원이 없는 작전입니다.'}</p><div class="opts"><button class="gold" data-a="ok">확인</button></div>`);
   }
   // 첫 작전 안내: 규칙 전체 대신 꼭 알아야 할 다섯 가지만. 자세한 규칙은 메뉴의 도움말(H)
@@ -2407,7 +2407,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.65';
+  const GAME_VERSION = '1.66';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2698,7 +2698,7 @@
       const j = joined();
       const heroHtml = st.heroes.map((h) => { const H = D.HEROES[h]; return `<div class="whero ${j.has(h) ? '' : 'new'}"><img src="${IMG[H.icon]}" alt=""><small>${j.has(h) ? 'Lv.' + save.heroes[h].lv : '합류'}</small></div>`; }).join('');
       acts = `<div class="wi-row"><label>승리 조건</label><span>${st.goal}</span></div><div class="wi-row"><label>패배 조건</label><span>${st.lose}</span></div>${st.tip ? `<div class="wi-row"><label>작전 요지</label><span>${st.tip}</span></div>` : ''}
-        <div class="wi-row"><label>추가 목표</label><span>${bonusLine(st)} <small>(하나마다 부품 +25%)</small></span></div>
+        <div class="wi-row"><label>추가 목표</label><span>${bonusLine(st)} <small>(하나마다 부품 +${R.diff === 'hard' ? 35 : 25}%)</small></span></div>
         <div class="wi-sub">적 정보 <small>${st.waves.length > 1 ? `증원 ${st.waves.slice(1).map((w) => w.turn + '턴').join(' · ')}` : '증원 없음'}</small></div><div class="wi-foes">${foeHtml}</div>
         <div class="wi-sub">출격 인원 <small>기본 ${st.heroes.length}명 · 출격 준비에서 최대 ${Math.min(MAX_SORTIE, new Set([...j, ...st.heroes]).size)}명</small></div><div class="wi-heroes">${heroHtml}</div>
         <button class="wgo" id="sGo"><b>작전 개시</b><small>BATTLE START</small></button>`;
@@ -3316,7 +3316,7 @@
             <div class="rstage"><span>${st.idx}</span>${st.title}<small>${turn}턴</small></div></div>
           <div class="rsub">${win ? '참가 영웅 전원이 경험치를 얻었습니다 (MVP +20% · 적보다 레벨이 높으면 줄어듦)' : '얻은 경험치는 유지됩니다'}</div>
           ${parts ? `<div class="rparts"><img src="${PARTS_ICON}" alt=""><span>부품 <b>+${parts}</b></span><small>보유 ${save.parts} · 병사 훈련에 씁니다</small></div>` : ''}
-          ${(G0last.bonus || []).length ? `<div class="rbonus">${G0last.bonus.map((x) => `<span class="${x.ok ? 'ok' : 'no'}">${x.ok ? '★' : '☆'} ${x.name}${x.first ? ' <b>NEW</b>' : ''}</span>`).join('')}<small>달성한 추가 목표마다 부품 +25%${(() => { // 놓친 목표가 있으면 도움이 되는 전술·각성을 한 줄로 (다시 하기에서 노리게)
+          ${(G0last.bonus || []).length ? `<div class="rbonus">${G0last.bonus.map((x) => `<span class="${x.ok ? 'ok' : 'no'}">${x.ok ? '★' : '☆'} ${x.name}${x.first ? ' <b>NEW</b>' : ''}</span>`).join('')}<small>달성한 추가 목표마다 부품 +${R.diff === 'hard' ? 35 : 25}%${(() => { // 놓친 목표가 있으면 도움이 되는 전술·각성을 한 줄로 (다시 하기에서 노리게)
             const miss = G0last.bonus.filter((x) => !x.ok).map((x) => ({ t: '턴 안에는 신속 전개·돌격 명령, 공세·기동 각성', k: '격파는 방어 진형(버티는 작전), 공세 각성', n: '퇴각 없이는 방어 진형, 수비·생존 각성' })[x.k]).filter(Boolean);
             return miss.length ? ` · 다시 노릴 때: ${miss.join(' / ')} (「본편 다시 하기」)` : '';
           })()}</small></div>` : ''}
@@ -3378,7 +3378,7 @@
     }
     // 부품: 병사 훈련에 쓴다 (지면 조금)
     let parts = R.parts(st.kind === 'side' && st.side.kind === 'Ex' ? 9 : st.id - 1, win, st.kind);
-    // 추가 목표 (본편): 정한 턴 안에 · 영웅 퇴각 없이 → 하나마다 부품 +25%, 처음 달성하면 기록
+    // 추가 목표 (본편): 정한 턴 안에 · 영웅 퇴각 없이 → 하나마다 부품 +25%(어려움 +35%), 처음 달성하면 기록
     const bonus = [];
     if (win && !st.kind) {
       const b = R.bonusOf(st), noLoss = g.units.filter((u) => u.side === 'p').every((u) => u.alive || u.escaped);
