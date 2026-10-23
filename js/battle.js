@@ -294,15 +294,17 @@
         const meleeOf = (f) => (f.hero ? f.u.rng <= 1 && !RANGED_KIND.includes(f.u.kind) : isMelee(f)); // 지휘관: 공격 거리 1칸(근접)인 근접 병종이면 맞붙으러 나간다, 2칸 이상이면 제자리에서 쏜다
         const charge = (list, side, foe) => {
           const dir = side === 'L' ? 1 : -1, me = frontX(list, dir), theirs = frontX(foe, -dir) ?? (foe.find((f) => f.hero) || {}).x;
+          const theirsBack = (() => { const c = foe.filter((f) => !f.hero); return c.length ? c.reduce((m, f) => (f.x * dir > m * dir ? f.x : m), c[0].x) : theirs; })(); // 적 대열의 맨 뒤
           const shift = meetX != null && me != null ? meetX - dir * (meleeD ? 0.62 : 0.5) - me : 0; // 내 앞줄이 맞붙는 선까지 (마주 선 적과 몸이 닿는 거리)
           list.forEach((f) => {
             const sty = styleOf(f), p = f.rig.g.position;
             const run = (speed, dust) => tl.push({ t: t0, fn: () => { f.rig.loop('move', speed); if (Math.random() < dust) fx('dust_step', p.x, f.y + 0.05, { flipX: side === 'R', k: f.hero ? 1 : 0.7, renderOrder: 90 }); } });
             if (meleeOf(f) && shift * dir > 0.05) { // 줄을 지킨 채 달려든다 (기병은 빠르게, 중장병은 천천히)
-              const ts = sty, d = f.hero && ts === 'lance' ? 0.3 : ts === 'lance' ? 0.4 : 0.5; // 기병 영웅은 가장 빨리 (제 병사보다 앞서 닿는다)
+              // 돌파 돌격 (원작 데어 랑그릿사 움짤): 기병과 근접 지휘관은 적 대열을 꿰뚫고 반대편까지 지나가며 길 위의 적을 친 뒤, 끝나면 원래 자리로 돌아온다
+              const ts = sty, through = (ts === 'lance' || f.hero) && theirsBack != null, d = through ? (f.hero ? 0.55 : 0.7) : 0.5;
               run(ts === 'lance' ? 2.4 : ts === 'wall' ? 0.9 : 1.5, ts === 'lance' ? 0.9 : f.hero ? 1 : 0.4);
               // 기병은 멈추지 않고 적 대열 안으로 깊숙이 파고든다 / 그 밖의 근접은 흩어지며 맞붙는 선까지 (움짤: 보병은 대열이 흩어지고 기병은 파고든다)
-              const deep = ts === 'lance' && theirs != null ? theirs + dir * (0.3 + Math.random() * (f.hero ? 0.6 : 1.5)) : null;
+              const lim = VW / 2 - 0.8, deep = through ? Math.max(-lim, Math.min(lim, theirsBack + dir * (f.hero ? 1.0 : 0.6 + Math.random() * 0.8))) : null;
               const x1 = deep != null ? deep : f.hero ? meetX - dir * (1.35 + (f.u.def.big ? 0.6 : 0)) : f.x + shift + (Math.random() - 0.5) * 0.7;
               if (!f.hero) { const y1 = f.y + (Math.random() - 0.5) * 0.45; tween(p, 'y', f.y, y1, t0, t0 + d / sp); f.yHome = f.y; }
               if (f.hero && ts === 'lance') trail(f, t0, d / sp); // 기병 영웅: 파란 기운 잔상
@@ -310,6 +312,11 @@
               const lag = f.hero ? (ts === 'lance' ? 0 : 0.1) : Math.random() * 0.14; // 병사마다 조금씩 어긋나게 도착
               if (f.hero && ts !== 'lance') { const y0 = p.y, lane = GROUND - 0.8; tween(p, 'y', y0, lane, t0, t0 + d / sp); f.yHome = y0; } // 지휘관은 대열 맨 앞(화면 쪽) 길로 나서 눈에 띄게
               if ((x1 - f.x) * dir > 0.05) { tween(p, 'x', f.x, x1, t0 + lag, t0 + lag + d / sp); f.x = x1; }
+              if (through) { // 반대편 끝에 닿으면 곧바로 말머리를 돌려 원래 자리로 (원작처럼 머물지 않는다)
+                const tb = t0 + lag + (d + 0.3) / sp, back = 0.85 / sp, home = f.home, y0 = f.yHome;
+                later(tb, () => { if (!f.alive) return; f.rig.loop('move', 1.6); tween(p, 'x', p.x, home, T, T + back); if (y0 != null) tween(p, 'y', p.y, y0, T, T + back); f.x = home; });
+                later(tb + back + 0.02, () => { if (f.alive) f.rig.loop('idle'); });
+              }
               if (ts === 'swoop') tween(f, 'air', f.air, 1.2, t0, t0 + d / sp); // 공중병: 높이 떠서 덮친다
               return;
             }
