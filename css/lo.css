@@ -817,3 +817,5 @@ i.dlv { font: normal 11px 'LO_B', sans-serif; color: #111; background: #8fd0ff; 
 #gtip { position: fixed; z-index: 60; pointer-events: none; white-space: nowrap; padding: 6px 10px; font: 13px 'LO_M', sans-serif; color: #fff; background: rgba(10, 14, 22, .96); border: 1px solid var(--lo-y); box-shadow: 0 4px 14px #000a; }
 .gwarn { color: #ff6b7d; animation: blink 1s ease-in-out infinite; }
 .mbox .pprev { font-size: 13px !important; }
+/* 출격 준비 카드: 직업명이 끊기지 않게 두 줄까지 */
+.pfoot small { white-space: normal; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.25; }

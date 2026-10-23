@@ -198,7 +198,7 @@
     const t = R.TACTICS[key]; if (!t || !t.buff) return t ? t.desc : '';
     const hold = holdStage(st), x = key === R.tacFor(st) ? 1.3 : 1, b = (hold && t.holdBuff) || t.buff, n = R.tacTurns(key, st);
     const NM = { at: '공격', df: '방어', mov: '이동' };
-    const fx = Object.entries(b).map(([k, v]) => k === 'mov' ? `이동 +${v}` : `${NM[k]} ${v > 0 ? '+' : ''}${Math.round((v > 0 ? v * x : v) * 100)}%`).join(', ');
+    const fx = Object.entries(b).map(([k, v]) => k === 'mov' ? `이동 +${v}` : `${NM[k]} ${v > 0 ? '+' : ''}${Math.round((v > 0 ? v * x : v / x ** 1.5) * 100)}%`).join(', ');
     return `${n >= 99 ? '작전 내내' : `처음 ${n}턴`} ${fx}`;
   };
   R.applyTactic = (G, key) => {
@@ -208,7 +208,8 @@
     const b0 = (holdStage(G.stage) && t.holdBuff) || t.buff; // 방어 진형은 버티는 작전에서 반격으로 적을 줄이게 공격도 조금
     // 작전에 맞는 전술(추천)을 고르면 좋은 효과만 1.3배 (대가는 그대로)
     G.tacX = key === R.tacFor(G.stage) ? 1.3 : 1;
-    const b = Object.fromEntries(Object.entries(b0).map(([k, v]) => [k, v > 0 && k !== 'mov' ? Math.round(v * G.tacX * 1000) / 1000 : v]));
+    // 추천이면 대가는 2/3로 덜어 준다 (돌격 명령 방어 -15% → -10%)
+    const b = Object.fromEntries(Object.entries(b0).map(([k, v]) => [k, k === 'mov' ? v : Math.round((v > 0 ? v * G.tacX : v / G.tacX ** 1.5) * 1000) / 1000]));
     for (const u of G.units) if (u.side === 'p') u.buffs.push({ ...b, until: 1 + G.tacUntil, side: 'p', tac: 1 });
   };
   R.PERK2_LV = 40; // 두 번째 각성 (첫째와 다른 것)

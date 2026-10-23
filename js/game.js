@@ -2399,7 +2399,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.49';
+  const GAME_VERSION = '1.50';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -3040,7 +3040,7 @@
       $('pTac').onclick = () => {
         AU.play('lo_click', 0.6);
         const rec = R.tacFor(st), now = tacOf(st);
-        modal(`<h3 style="white-space:nowrap">작전 전술 <small style="font:13px LO_M">처음 몇 턴 출격한 아군 전원에게 · 작전마다 기억</small></h3><div class="opts">${Object.entries(R.TACTICS).map(([k, t]) => `<button data-a="${k}" class="${now === k ? 'gold' : ''}"><b>${t.name}</b>${k === rec ? ' <i class="trec">이 작전 추천 · 좋은 효과 ×1.3 반영</i>' : ''} <small>${R.tacText(k, st)}</small><small class="pprev">${t.hint}${k === 'rush' ? ' · 방어가 낮아져 영웅을 잃기 쉬움' : ''}</small></button>`).join('')}</div>`, (a) => {
+        modal(`<h3 style="white-space:nowrap">작전 전술 <small style="font:13px LO_M">처음 몇 턴 출격한 아군 전원에게 · 작전마다 기억</small></h3><div class="opts">${Object.entries(R.TACTICS).map(([k, t]) => `<button data-a="${k}" class="${now === k ? 'gold' : ''}"><b>${t.name}</b>${k === rec ? ' <i class="trec">이 작전 추천 · 효과 ×1.3, 대가 덜함</i>' : ''} <small>${R.tacText(k, st)}</small><small class="pprev">${t.hint}${k === 'rush' ? ' · 방어가 낮아져 영웅을 잃기 쉬움' : ''}</small></button>`).join('')}</div>`, (a) => {
           if (a && R.TACTICS[a]) { (save.tactics = save.tactics || {})[st.idx] = a; writeSave(); const b = $('pTac'); if (b) { b.querySelector('b').textContent = R.TACTICS[a].name; b.querySelector('i').textContent = R.tacText(a, st); } }
         });
       };
