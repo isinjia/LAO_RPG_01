@@ -144,8 +144,8 @@
     for (let i = 0; i < n; i++) {
       const row = i % R5, col = Math.floor(i / R5); // 앞 열부터 채운다
       const jx = PORT() ? 0 : (Math.random() - 0.5) * 0.18, jy = (Math.random() - 0.5) * 0.08; // 자로 잰 듯한 격자가 아니게 살짝
-      const x = PORT() ? front + col * span + (row === 1 ? span * 0.45 : 0) : front + col * 1.25 * wide + (row % 2) * 0.3; // 줄마다 반 걸음 어긋나게 (성긴 격자: 몇 명 남았는지 읽힌다)
-      const y = PORT() ? GROUND - 0.3 + row * 0.45 : GROUND - 1.15 + row * 0.6;
+      const x = PORT() ? front + col * span + (row === 1 ? span * 0.45 : 0) : front + col * 1.4 * wide + (row % 2) * 0.3; // 줄마다 반 걸음 어긋나게 (성긴 격자: 몇 명 남았는지 읽힌다)
+      const y = PORT() ? GROUND - 0.3 + row * 0.45 : GROUND - 1.3 + row * 0.68;
       out.push([dir * (x + jx), y + jy, row]);
     }
     return out;
@@ -295,15 +295,15 @@
         const meleeOf = (f) => (f.hero ? f.u.rng <= 1 && !RANGED_KIND.includes(f.u.kind) : isMelee(f)); // 지휘관: 공격 거리 1칸(근접)인 근접 병종이면 맞붙으러 나간다, 2칸 이상이면 제자리에서 쏜다
         const charge = (list, side, foe) => {
           const dir = side === 'L' ? 1 : -1, me = frontX(list, dir), theirs = frontX(foe, -dir) ?? (foe.find((f) => f.hero) || {}).x;
-          const shift = meetX != null && me != null ? meetX - dir * 0.5 - me : 0; // 내 앞줄이 맞붙는 선까지 (마주 선 적과 몸이 닿는 거리)
+          const shift = meetX != null && me != null ? meetX - dir * (meleeD ? 0.62 : 0.5) - me : 0; // 내 앞줄이 맞붙는 선까지 (마주 선 적과 몸이 닿는 거리)
           list.forEach((f) => {
             const sty = styleOf(f), p = f.rig.g.position;
             const run = (speed, dust) => tl.push({ t: t0, fn: () => { f.rig.loop('move', speed); if (Math.random() < dust) fx('dust_step', p.x, f.y + 0.05, { flipX: side === 'R', k: f.hero ? 1 : 0.7, renderOrder: 90 }); } });
             if (meleeOf(f) && shift * dir > 0.05) { // 줄을 지킨 채 달려든다 (기병은 빠르게, 중장병은 천천히)
               const ts = sty, d = ts === 'lance' ? 0.4 : ts === 'wall' ? 0.6 : 0.5;
               run(ts === 'lance' ? 2.4 : ts === 'wall' ? 0.9 : 1.5, ts === 'lance' ? 0.9 : f.hero ? 1 : 0.4);
-              const x1 = f.hero ? meetX - dir * (0.95 + (f.u.def.big ? 0.6 : 0)) : f.x + shift + (Math.random() - 0.5) * 0.1; // 지휘관은 제 병사들 바로 뒤 (병사가 총을 들고 남으면 홀로 맞붙는 선까지)
-              const lag = f.hero ? 0 : Math.random() * 0.14; // 병사마다 조금씩 어긋나게 도착
+              const x1 = f.hero ? meetX - dir * (1.35 + (f.u.def.big ? 0.6 : 0)) : f.x + shift + (Math.random() - 0.5) * 0.1; // 지휘관은 제 병사들 바로 뒤 (병사가 총을 들고 남으면 홀로 맞붙는 선까지)
+              const lag = f.hero ? 0.1 : Math.random() * 0.14; // 병사마다 조금씩 어긋나게 도착
               if (f.hero) { const y0 = p.y, lane = GROUND - 1.3; tween(p, 'y', y0, lane, t0, t0 + d / sp); f.yHome = y0; } // 지휘관은 대열 맨 앞(화면 쪽) 길로 나서 눈에 띄게
               if ((x1 - f.x) * dir > 0.05) { tween(p, 'x', f.x, x1, t0 + lag, t0 + lag + d / sp); f.x = x1; }
               if (ts === 'swoop') tween(f, 'air', f.air, 1.2, t0, t0 + d / sp); // 공중병: 높이 떠서 덮친다
@@ -330,7 +330,7 @@
         charge(att, attSide, def);
         if (res.counter) charge(def, defSide, att);
         const sol = actors.filter((f) => !f.hero), cx = Math.max(-2.2, Math.min(2.2, sol.reduce((m, f) => m + f.x, 0) / Math.max(1, sol.length) * 0.85)); // 실제로 맞붙는 곳으로
-        tween(CAM, 'z', 1.06, 1.14, t0, t0 + 0.45 / sp); tween(CAM, 'x', 0, cx, t0, t0 + 0.45 / sp); tween(CAM, 'y', 0, -0.2, t0, t0 + 0.45 / sp);
+        tween(CAM, 'x', 0, cx * 0.35, t0, t0 + 0.45 / sp); // 다가가지 않는다: 양쪽 부대가 끝까지 화면 안에 tween(CAM, 'y', 0, -0.2, t0, t0 + 0.45 / sp);
         // 부딪치는 순간: 두 앞줄이 서로 튕기며 크게 번쩍, 화면이 흔들리고 한순간 멈춘다
         tl.push({ t: t0 + 0.42 / sp, fn: () => {
           if (!meleeA) { shake(0.12, 0.2); return; }
@@ -465,11 +465,11 @@
     for (const f of actors) {
       if (!f.alive || f.home == null || Math.abs(f.rig.g.position.x - f.home) < 0.1) continue;
       const p = f.rig.g.position, face = f.side === 'L' ? 1 : -1, t1 = T + (f.hero ? 0 : Math.random() * 0.22) / sp, d = (0.6 + Math.random() * 0.15) / sp;
-      later(t1, () => { if (!f.alive) return; f.rig.face(-face); f.rig.loop('move', 1.1); });
+      later(t1, () => { if (!f.alive) return; f.rig.loop('move', 1.1); });
       tween(p, 'x', p.x, f.home, t1, t1 + d); f.x = f.home;
       if (f.yHome != null) tween(p, 'y', p.y, f.yHome, t1, t1 + d);
       if (f.air) tween(f, 'air', f.air, f.hero ? 0.85 : 0.6, t1, t1 + d); // 공중병은 원래 높이로
-      later(t1 + d, () => { if (!f.alive) return; f.rig.face(face); f.rig.loop('idle'); }); // 제자리에서 다시 적을 본다
+      later(t1 + d, () => { if (f.alive) f.rig.loop('idle'); }); // 제자리에서 다시 적을 본다
     }
   }
   // 결판 글자: 원작 노란 띠 위 큰 글자
@@ -499,7 +499,7 @@
       const d = tg[Math.floor(Math.random() * tg.length)], q = d.rig.g.position;
       const x1 = q.x + (Math.random() - 0.5) * 0.3, y1 = q.y + lift(d) + (d.hero ? 0.8 : 0.45);
       if (f.u.troop.kind === 'mage') fx('hit_energy', x1, y1, { k: 0.55, tint: 0xd6a8ff, renderOrder: 515 }); // 전자전: 적 몸에서 번쩍
-      else tracer(p.x + dir * 0.42, p.y + lift(f) + 0.62, x1, y1, au.side === 'e', 0.16, f.u.troop.def.sfx === 'missile');
+      else tracer(p.x + dir * 0.42, p.y + lift(f) + 0.62, x1, y1, au.side === 'e', 0.24, f.u.troop.def.sfx === 'missile');
     }
   }
 
@@ -648,7 +648,7 @@
   function tracer(x0, y0, x1, y1, bug, life, missile) {
     const name = missile ? 'missile' : bug ? 'bullet_bug' : 'bullet'; // 미사일 무기는 원작 미사일
     const h = fx(name, x0, y0, { loop: true, life: life + 0.1, rotation: Math.atan2(y1 - y0, x1 - x0), renderOrder: 520, tint: bug || missile ? 0xffffff : 0xffe2a0, k: missile ? 1 : 1 });
-    if (h) { if (!bug && !missile) h.mesh.scale.x *= 1.6; fxs.push({ fxh: h, t: 0, life, path: [x0, y0, x1, y1] }); }
+    if (h) { if (!bug && !missile) { h.mesh.scale.x *= 3.2; h.mesh.scale.y *= 2.6; } fxs.push({ fxh: h, t: 0, life, path: [x0, y0, x1, y1] }); } // 날아가는 탄이 눈에 보이게
   }
 
   function finish() {
