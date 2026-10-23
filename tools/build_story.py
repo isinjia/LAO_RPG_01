@@ -29,6 +29,8 @@ ICONS = {
     'e_NightChickC_N': 'PassivePanelIcon/PanelIcon_MP_NightChickC_N.png',
     'e_FABigChick_N': 'PassivePanelIcon/PanelIcon_MP_FABigChick_N.png',
     'e_Harvester_N': 'PassivePanelIcon/PanelIcon_MP_Harvester_N.png',
+    # 7지역
+    **{f'e_{m}': f'PassivePanelIcon/PanelIcon_MP_{m}.png' for m in ['Juggernaut_N', 'NestChaser_N', 'NestGuardian_N', 'Nest_B07', 'NightChickAQ_N', 'NightChickTD_N', 'Speaker_N', 'Tarantula_N']},
 }
 # 얼굴 그림이 없는 화자 -> 초상화
 NO_FACE = {'PECS_PuppHead_N': 'c_PECS_PuppHead_N', 'AGS_Fallen_N': 'c_AGS_Fallen_N'}
