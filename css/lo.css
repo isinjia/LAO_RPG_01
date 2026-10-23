@@ -744,3 +744,9 @@ i.dlv { font: normal 11px 'LO_B', sans-serif; color: #111; background: #8fd0ff; 
   .mbox.cols2 .opts, .mbox.cols2 .oslide, .mbox.cols2 .dnote { break-inside: avoid; }
   .mbox.cols2 .opts:last-child { column-span: all; }
 }
+/* 옵션: 소리 묶음은 한 단에 */
+.mbox.cols2 .ogrp { break-inside: avoid; }
+/* 도움말 탭 */
+.htabs { display: flex; gap: 6px; margin: 4px 0 10px; flex-wrap: wrap; }
+.htabs button { font: 13px 'LO_B', sans-serif; padding: 6px 14px; background: #1a1d26; color: #9aa6c4; border: 1px solid #ffffff1a; cursor: pointer; }
+.htabs button.on { background: var(--lo-y); color: #111; border-color: var(--lo-y); }

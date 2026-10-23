@@ -1371,7 +1371,7 @@
     const ready = R.skillsOf(u).some((s) => R.skillReady(u, s));
     const acts = [{ label: '공격', cls: tg.length ? 'gold' : '', disabled: !tg.length, fn: () => { ui.state = 'target'; setHint('공격할 적을 고르세요'); showActs([{ label: '취소', fn: cancel }]); if (tg.length === 1) showForecast(tg[0]); } }];
     if (R.skillsOf(u).length) acts.push({ label: '특기', sub: ready ? '사용 가능' : '대기 중', disabled: !ready, fn: openSkills });
-    if (u.x === ui.from[0] && u.y === ui.from[1] && R.canRefit(u)) acts.push({ label: '정비', sub: `병사 ${Math.round(R.REFIT_T * R.SQUAD)}명 보충`, fn: () => { refitAct(u); finishAct(u); } });
+    if (u.x === ui.from[0] && u.y === ui.from[1] && R.canRefit(u)) acts.push({ label: '정비', sub: `병사 ${Math.round(R.REFIT_T * R.healK() * R.SQUAD)}명 보충`, fn: () => { refitAct(u); finishAct(u); } });
     acts.push({ label: '대기', fn: () => finishAct(u) });
     acts.push({ label: '취소', fn: cancel });
     showActs(acts);
@@ -1853,6 +1853,7 @@
   // 추가 목표 한 줄 (작전 정보·위쪽 줄): ★ 이룬 것 / ☆ 아직
   function bonusLine(st, live) {
     if (st.kind) return '';
+    if (!live && mode !== 'map') R.diff = save.opts.diff || 'normal'; // 지도 밖에서는 지금 고른 난이도의 목표로
     const b = R.bonusOf(st), rec = (save.bonus || {})[st.idx] || {};
     const lost = live && G && G.units.some((u) => u.side === 'p' && !u.alive && !u.escaped);
     const t = b.turns ? (live ? `${G.turn > b.turns ? '☆' : rec.t ? '★' : '◇'} ${b.turns}턴 안에${G.turn <= b.turns ? ` (${b.turns - G.turn + 1}턴 남음)` : ' (지남)'}` : `${rec.t ? '★' : '☆'} ${b.turns}턴 안에 승리`) : '';
@@ -2245,9 +2246,9 @@
     modal(`<h3>옵션</h3>
       <div class="osec">난이도</div><div class="opts">${Object.keys(R.DIFF).map((k) => `<button data-a="dset:${k}" class="${(o.diff || 'normal') === k ? 'gold' : ''}">${R.DIFF[k].name} <small>${G && !G.ended && mode === 'map' ? `이 작전 ${Math.round(R.diffK(k) * 100)}%` : `${Math.round(R.DIFF[k].k * 100)}%`}</small></button>`).join('')}</div>
       <p class="dnote" style="margin:6px 2px 10px;color:#9aa6c4;font-size:13px">(${G && !G.ended && mode === 'map' ? `이 작전의 적 능력치 ${Math.round(R.diffK() * 100)}% · 지금 바로` : `적 능력치 ${Math.round(R.DIFF[o.diff || 'normal'].k * 100)}% × 장마다 ${Math.round(R.CH_K[0] * 100)}~${Math.round(R.CH_K[R.CH_K.length - 1] * 100)}%`})</p>
-      <div class="osec">소리</div>
+      <div class="ogrp"><div class="osec">소리</div>
       <div class="opts"><button data-a="sound">소리 전체: <b>${onoff(o.sound)}</b></button></div>
-      ${slider('bgmV', '배경음')}${slider('sfxV', '효과음')}${slider('voiceV', '음성')}
+      ${slider('bgmV', '배경음')}${slider('sfxV', '효과음')}${slider('voiceV', '음성')}</div>
       <div class="osec">대화</div><div class="opts">
       <button data-a="blip">글자 소리: <b>${onoff(o.blip)}</b></button>
       <button data-a="textSpd">글자 나오는 속도: <b>${['느리게', '보통', '빠르게'][o.textSpd]}</b></button></div>
@@ -2309,7 +2310,7 @@
       <p><b>병사 배속</b> · 출격 전에 영웅마다 병사를 고릅니다. 고를 수 있는 병사는 영웅의 전직 단계에 따라 늘어납니다.</p>
       <p><b>병사 10명</b> · 한 부대의 병사는 10명입니다. 남은 병사 수만큼만 공격하므로 병사가 줄면 부대가 약해집니다. 이동력은 영웅과 병사 중 느린 쪽을 따릅니다.</p>
       <p><b>병사 훈련</b> · 병사는 사지 않습니다 (랑그릿사 모바일처럼). 출격할 때마다 10명이 가득 찬 채로 나가고 전투가 끝나면 다시 채워집니다. 전투에서 얻은 <b>부품</b>으로 월드맵·출격 준비의 '병사 훈련'이나 마을 정비실의 포츈에게서 병종을 훈련하면 그 병사를 쓰는 모든 영웅의 병사가 강해집니다 (한 단계 +${Math.round(R.DRILL_K * 100)}%, 최대 ${R.DRILL_MAX}단계).</p>
-      <p><b>병사 보충</b> · 전투 중에는 고전 랑그릿사처럼 보충합니다. ① 아군 차례가 시작될 때 지휘관 콘스탄챠의 ${R.CMD_RANGE}칸 안에 있는 아군은 병사 1명 보충 ② 움직이지 않고 '정비'를 고르면 병사 ${Math.round(R.REFIT_T * R.SQUAD)}명 보충 + 영웅 체력 ${Math.round(R.REFIT_H * 100)}% (그 차례 행동은 끝) ③ 마을·기지 칸에서 차례를 시작하면 영웅·병사 10% 회복, 기지는 병사를 2명 더 보충 (적도 마찬가지). 병사가 모두 쓰러진 부대는 지휘 범위로는 돌아오지 않습니다.</p>
+      <p><b>병사 보충</b> · 전투 중에는 고전 랑그릿사처럼 보충합니다. ① 아군 차례가 시작될 때 지휘관 콘스탄챠의 ${R.CMD_RANGE}칸 안에 있는 아군은 병사 1명 보충 ② 움직이지 않고 '정비'를 고르면 병사 ${Math.round(R.REFIT_T * R.SQUAD)}명 보충 + 영웅 체력 ${Math.round(R.REFIT_H * 100)}% (그 차례 행동은 끝, 어려움은 보충이 60%) ③ 마을·기지 칸에서 차례를 시작하면 영웅·병사 10% 회복, 기지는 병사를 2명 더 보충 (적도 마찬가지). 병사가 모두 쓰러진 부대는 지휘 범위로는 돌아오지 않습니다.</p>
       <div class="osec">전투</div>
       <p><b>병종 상성</b> · 공격하는 병종이 이기는 상대를 칠 때 피해가 늘고, 거꾸로면 그만큼 줄어듭니다. 병사는 병사의 병종, 영웅은 영웅의 병종으로 따집니다.</p>
       <table class="keys">${relRows}</table>
@@ -2328,6 +2329,23 @@
       <div class="osec">조작</div>
       <p><b>조작</b> · 누르기: 선택·이동·공격 / 끌기: 지도 이동 / 두 손가락·휠: 확대 / 오른쪽 클릭·Esc: 취소 / 키보드: 방향키 커서 · Enter 결정 · Esc 취소 · Tab 다음 영웅 · U 한 수 되돌리기 · A 공격 · W 대기 · E 턴 종료 (전체 목록은 전투 중 H)</p>
       <div class="opts"><button class="gold" data-a="ok">확인</button></div>`, cb);
+    helpTabs();
+  }
+  // 도움말 탭: 부대·전투·성장·조작 묶음(osec)마다 한 탭, 누르면 그 묶음만 보인다
+  function helpTabs() {
+    const box = document.querySelector('#modal .mbox');
+    if (!box) return;
+    const secs = [...box.querySelectorAll(':scope > .osec')];
+    if (secs.length < 2) return;
+    const groups = secs.map((h) => { const g = [h]; let n = h.nextElementSibling; while (n && !n.classList.contains('osec') && !(n.classList.contains('opts') && n.querySelector('[data-a="ok"]'))) { g.push(n); n = n.nextElementSibling; } return g; });
+    const bar = document.createElement('div');
+    bar.className = 'htabs';
+    bar.innerHTML = secs.map((h, i) => `<button type="button" data-tab="${i}">${h.textContent}</button>`).join('');
+    box.insertBefore(bar, secs[0]);
+    const show = (k) => { groups.forEach((g, i) => g.forEach((e) => { e.style.display = i === k ? '' : 'none'; })); bar.querySelectorAll('button').forEach((b, i) => b.classList.toggle('on', i === k)); box.scrollTop = 0; };
+    bar.onclick = (e) => { const b = e.target.closest('[data-tab]'); if (!b) return; e.stopPropagation(); AU.play('lo_click', 0.4); show(+b.dataset.tab); };
+    // 첫 탭 앞의 글(영웅과 병사 등 '부대' 묶음 이전)은 늘 보인다
+    show(0);
   }
 
   // ── 화면들 ───────────────────────────────────────────────
