@@ -735,3 +735,66 @@ i.dlv { font: normal 11px 'LO_B', sans-serif; color: #111; background: #8fd0ff; 
 .rbonus { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin: 4px 0 2px; font: 14px 'LO_B', sans-serif; }
 .rbonus .ok { color: var(--lo-y); } .rbonus .no { color: #6f7890; } .rbonus b { font: 11px 'LO_B', sans-serif; color: #111; background: var(--lo-y); padding: 0 4px; }
 .rbonus small { flex-basis: 100%; font: 12px sans-serif; color: #9aa6c4; }
+/* 출격 준비 오른쪽 정보: 아래로 더 있으면 흐려지는 끝과 얇은 스크롤 막대로 알린다 (병사 목록 셋째 줄이 잘려 보이지 않게) */
+.pdetail { scrollbar-width: thin; scrollbar-color: #ffcc0088 transparent; padding-bottom: 28px; -webkit-mask-image: linear-gradient(#000 calc(100% - 26px), transparent); mask-image: linear-gradient(#000 calc(100% - 26px), transparent); }
+/* 옵션 창 (PC 가로): 두 단으로 나눠 1280×720 에서 스크롤 없이 */
+@media (orientation: landscape) and (min-width: 1000px) {
+  .mbox.cols2 { width: min(880px, 92vw); max-height: none; columns: 2; column-gap: 26px; }
+  .mbox.cols2 h3 { column-span: all; }
+  .mbox.cols2 .opts, .mbox.cols2 .oslide, .mbox.cols2 .dnote { break-inside: avoid; }
+  .mbox.cols2 .opts:last-child { column-span: all; }
+}
+/* 옵션: 소리 묶음은 한 단에 */
+.mbox.cols2 .ogrp { break-inside: avoid; }
+/* 도움말 탭 */
+.htabs { display: flex; gap: 6px; margin: 4px 0 10px; flex-wrap: wrap; }
+.htabs button { font: 13px 'LO_B', sans-serif; padding: 6px 14px; background: #1a1d26; color: #9aa6c4; border: 1px solid #ffffff1a; cursor: pointer; }
+.htabs button.on { background: var(--lo-y); color: #111; border-color: var(--lo-y); }
+/* 부대 현황 카드의 각성 단추 */
+.rcard .pperk { position: absolute; right: 6px; top: 34px; z-index: 3; font: 11px 'LO_B', sans-serif; padding: 3px 8px; background: #1a1d26e6; color: var(--lo-y); border: 1px solid var(--lo-y); cursor: pointer; }
+.rcard .pperk.new { background: var(--lo-y); color: #111; animation: pperkPulse 1.2s ease-in-out infinite alternate; }
+@keyframes pperkPulse { from { box-shadow: 0 0 0 #ffcc0000; } to { box-shadow: 0 0 12px #ffcc00aa; } }
+/* 출격 준비: 오른쪽 정보가 아래 도움말·출격 단추(높이 약 110px) 위에서 끝나게 */
+@media (orientation: landscape) and (min-width: 1000px) { .pdetail { bottom: calc(118px + var(--safe-b)); } }
+/* 출격 준비 오른쪽 정보 (PC 가로): 병사 배속을 특기보다 위로 올리고 줄 간격을 줄여 스크롤 없이 보이게 */
+@media (orientation: landscape) and (min-width: 1000px) {
+  .pdetail { gap: 6px; }
+  .pd-head b { font-size: 21px; } .pd-head { padding-bottom: 5px; }
+  .pd-stats div { padding: 4px 10px; }
+  .pd-skills div { padding: 5px 10px; margin-bottom: 3px; }
+  .ptr { padding: 4px 10px 4px 4px; } .ptr img { width: 40px; height: 40px; }
+  .pgoal { font-size: 14px; }
+}
+/* 결과 화면 (PC 가로): 영웅 줄을 두 단으로 낮게 → 8명까지 스크롤 없이, 전직·각성 알림은 목록 위 한 줄 */
+.rnotice { display: flex; flex-wrap: wrap; gap: 4px 16px; padding: 6px 10px; font-size: 13px; color: #dfe4ee; background: rgba(255, 204, 0, .1); border-left: 3px solid var(--lo-y); }
+.rnotice b { color: var(--lo-y); } .rnotice small { color: #9aa6c4; font-size: 12px; }
+.rrow .rnote b { margin-right: 6px; }
+@media (orientation: landscape) and (min-width: 1000px) {
+  .rlist { display: grid; grid-template-columns: 1fr 1fr; align-content: start; gap: 6px; }
+  .rrow { gap: 8px; padding: 6px 10px 6px 6px; }
+  .rrow > img { width: 46px; height: 46px; }
+  .rname b { font-size: 15px; } .rlv b { font-size: 16px; } .rinfo { gap: 2px; }
+}
+/* 옵션 (PC 가로 두 단): 마지막 줄(닫기)과 위 단 사이에 여백 */
+@media (orientation: landscape) and (min-width: 1000px) { .mbox.cols2 .opts:last-child { margin-top: 14px; } }
+.rnotice button { margin-left: auto; font: 12px 'LO_B', sans-serif; padding: 3px 10px; background: var(--lo-y); color: #111; border: 0; cursor: pointer; }
+/* 옵션 창의 실제 배율 줄, 전투 예상 창의 반격 여부: 조금 크고 밝게 */
+.mbox .dnote { font-size: 14px !important; color: #b8c2da !important; }
+#forecast .mid { font-size: 14px; color: #dfe4ee; }
+/* 각성 고르기: 고른 뒤 능력치 미리 보기 */
+.mbox .opts button .pprev { display: block; margin-top: 2px; font-size: 12px; color: #9aa6c4; } .mbox .opts button .pprev b { color: var(--lo-y); }
+/* 출격 준비의 전직·각성 줄: 누를 수 있는 단추로 보이게 */
+.pd-cc { cursor: pointer; } .pd-cc::after { content: '›'; margin-left: auto; font: 22px 'LO_B', sans-serif; color: var(--lo-y); }
+.pd-cc:hover { border-color: var(--lo-y); background: rgba(255, 204, 0, .1); }
+.mbox .opts button.gold b, .mbox .opts button.gold .pprev { color: #111; }
+/* 각성 고르기 (PC 가로): 첫째·둘째 칸을 나란히 → 스크롤 없이 */
+@media (orientation: landscape) and (min-width: 1000px) {
+  .mbox:has(.pslots) { width: min(900px, 94vw); }
+  .pslots { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }
+  .pslots .opts button { padding-top: 8px; padding-bottom: 8px; }
+}
+/* 작은 글씨 키우기: 출격 준비 아래 승패·상성 줄, 결과 화면 영웅 줄의 전직·각성 표시 */
+@media (orientation: landscape) and (min-width: 1000px) { .pgoal { font-size: 15px; } }
+.rrow .rnote { font-size: 13px; color: var(--lo-y); } .rrow .rnote b { color: var(--lo-y); }
+/* 작은 회색 안내 대비 높이기: 각성 창 제목 옆 안내, 결과 알림 줄 */
+.mbox h3 small { color: #b8c2da !important; } .rnotice { font-size: 14px; color: #fff; }

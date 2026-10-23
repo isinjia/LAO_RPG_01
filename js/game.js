@@ -1371,7 +1371,7 @@
     const ready = R.skillsOf(u).some((s) => R.skillReady(u, s));
     const acts = [{ label: '공격', cls: tg.length ? 'gold' : '', disabled: !tg.length, fn: () => { ui.state = 'target'; setHint('공격할 적을 고르세요'); showActs([{ label: '취소', fn: cancel }]); if (tg.length === 1) showForecast(tg[0]); } }];
     if (R.skillsOf(u).length) acts.push({ label: '특기', sub: ready ? '사용 가능' : '대기 중', disabled: !ready, fn: openSkills });
-    if (u.x === ui.from[0] && u.y === ui.from[1] && R.canRefit(u)) acts.push({ label: '정비', sub: `병사 ${Math.round(R.REFIT_T * R.SQUAD)}명 보충`, fn: () => { refitAct(u); finishAct(u); } });
+    if (u.x === ui.from[0] && u.y === ui.from[1] && R.canRefit(u)) acts.push({ label: '정비', sub: `병사 ${Math.round(R.REFIT_T * R.healK() * R.SQUAD)}명 보충`, fn: () => { refitAct(u); finishAct(u); } });
     acts.push({ label: '대기', fn: () => finishAct(u) });
     acts.push({ label: '취소', fn: cancel });
     showActs(acts);
@@ -1484,6 +1484,7 @@
     showInfo(d);
     showActs(null);
     setHint('같은 적을 한 번 더 누르면 공격합니다');
+    placeForecast(); // 안내 줄이 바뀐 뒤 다시 자리 잡기 (안내 줄을 가리지 않게)
   }
   // 예상 창 자리. 가로 화면(PC): 누른 목표 바로 옆 (눈길·마우스가 그대로), 공격자가 없는 쪽에
   // 세로 화면: 위에 두되 목표·공격자를 가리면 아래로
@@ -1494,7 +1495,8 @@
     if (innerWidth > innerHeight) { // 누른 목표 바로 옆: 오른쪽·왼쪽·아래·위 가운데 화면 안에 들고 목표·공격자를 가리지 않는 첫 자리
       el.classList.add('pc'); el.classList.remove('low');
       const w = el.offsetWidth * 1.15, h = el.offsetHeight * 1.15, gap = 56;
-      const top = ($('top').getBoundingClientRect().bottom || 60) + 8, bot = innerHeight - 8;
+      const hintR = $('hint').textContent ? $('hint').getBoundingClientRect() : null; // 위쪽 안내 줄도 가리지 않게
+      const top = Math.max(($('top').getBoundingClientRect().bottom || 60), hintR ? hintR.bottom : 0) + 8, bot = innerHeight - 8;
       const body = (p, big) => (big ? [p.x - 70, p.y - 120, p.x + 70, p.y + 40] : [p.x - 45, p.y - 75, p.x + 45, p.y + 30]); // 유닛 몸의 대략 화면 상자 (큰 철충은 크게)
       const hit = (r, b) => r[0] < b[2] && r[2] > b[0] && r[1] < b[3] && r[3] > b[1];
       const away = sa.x <= sp.x ? 1 : -1; // 공격자 반대쪽부터
@@ -1816,6 +1818,7 @@
     LOHUD.phase(side, G.turn, side === 'p' && G.stage.turnLimit ? `제한 ${G.stage.turnLimit}턴` : '', speedK);
     AU.play('lo_round', side === 'p' ? 0.5 : 0.35, side === 'p' ? 1 : 0.85); // 원작 라운드 소리 (경보음은 증원에만)
     await wait(900);
+    if (!G || G.ended) return; // 기다리는 사이 판이 끝났으면 (치트 자동 클리어 등) 여기서 멈춘다
     // 지형(마을·기지) 회복 + 수동 특기(재생) + 지휘관 곁 병사 보충
     const heals = R.phaseHeal(G, side);
     for (const r of heals) popSupply(r.u, r.hT, r.hH, r.cmd ? '지휘 ' : '');
@@ -1851,14 +1854,15 @@
   // 추가 목표 한 줄 (작전 정보·위쪽 줄): ★ 이룬 것 / ☆ 아직
   function bonusLine(st, live) {
     if (st.kind) return '';
+    if (!live && mode !== 'map') R.diff = save.opts.diff || 'normal'; // 지도 밖에서는 지금 고른 난이도의 목표로
     const b = R.bonusOf(st), rec = (save.bonus || {})[st.idx] || {};
     const lost = live && G && G.units.some((u) => u.side === 'p' && !u.alive && !u.escaped);
     const t = b.turns ? (live ? `${G.turn > b.turns ? '☆' : rec.t ? '★' : '◇'} ${b.turns}턴 안에${G.turn <= b.turns ? ` (${b.turns - G.turn + 1}턴 남음)` : ' (지남)'}` : `${rec.t ? '★' : '☆'} ${b.turns}턴 안에 승리`) : '';
     const n = live ? `${lost ? '☆' : rec.n ? '★' : '◇'} 퇴각 없이${lost ? ' (실패)' : ''}` : `${rec.n ? '★' : '☆'} 영웅 퇴각 없이 승리`;
     const killed = live && G ? G.units.filter((u) => u.side === 'e' && !u.alive).length : 0;
     const k = b.kills ? (live ? `${killed >= b.kills ? '★' : '◇'} 적 ${b.kills}기 격파 (${killed}/${b.kills})` : `${rec.k ? '★' : '☆'} 버티며 적 ${b.kills}기 이상 격파`) : '';
-    const easy = live && G && G.easedTo ? ' <small>(난이도를 낮춰 이번 판 추가 목표 보상 없음)</small>' : '';
-    return [t, k, n].filter(Boolean).join(' · ') + easy;
+    if (live && G && G.easedTo) return `<span style="color:#6f7890">${[t, k, n].filter(Boolean).join(' · ').replace(/[◇★]/g, '☆')}</span> <small>(난이도를 낮춰 이번 판 추가 목표 없음)</small>`;
+    return [t, k, n].filter(Boolean).join(' · ');
   }
   // ── 작전 중 저장 (이어하기): 아군 차례가 시작될 때마다 판 상태를 따로 저장해 두고, 타이틀의 「작전 이어하기」로 그 차례부터 되살린다 ──
   // 본편 작전(D.STAGES)만. 작전이 끝나면(승패) 지운다
@@ -1890,7 +1894,7 @@
     if (si < 0) { try { stage = JSON.parse(JSON.stringify(G.stage)); } catch (e) { return null; } }
     const ev = (window.BATTLE_EVENTS || {})[G.stage.idx] || [];
     const units = G.units.map((u) => ({
-      side: u.side, key: u.key, lv: u.lv, exp: u.exp, tier: u.tier, br: u.br, troop: u.troop ? u.troop.key : null, x: u.x, y: u.y,
+      side: u.side, key: u.key, lv: u.lv, exp: u.exp, tier: u.tier, br: u.br, perk: u.perk || null, perk2: u.perk2 || null, troop: u.troop ? u.troop.key : null, x: u.x, y: u.y,
       hp: u.hp, thp: u.troop ? u.troop.hp : 0, hpMax: u.hpMax, thpMax: u.troop ? u.troop.hpMax : 0, alive: u.alive, escaped: !!u.escaped, cd: u.cd, buffs: u.buffs, slow: u.slow || 0, slowNext: u.slowNext || 0, dealt: u.dealt || 0,
       nAct: u.nAct || 0, ai: u.ai, home: u.home, boss: !!u.boss, awake: !!u.awake, wave: u.wave, bornT: u.bornT, cmd: u.cmd ? G.units.indexOf(u.cmd) : -1, acted: u.side === 'p' && !!u.acted,
     }));
@@ -1917,7 +1921,7 @@
   function applySnap(d) {
     G.units = [];
     for (const s of d.units) {
-      const u = s.side === 'p' ? R.makeHero(G, s.key, { lv: s.lv, exp: s.exp, tier: s.tier, br: s.br }, s.troop, s.x, s.y) : R.makeEnemy(G, s.key, s.lv, s.x, s.y, { ai: s.ai, boss: s.boss });
+      const u = s.side === 'p' ? R.makeHero(G, s.key, { lv: s.lv, exp: s.exp, tier: s.tier, br: s.br, perk: s.perk, perk2: s.perk2 }, s.troop, s.x, s.y) : R.makeEnemy(G, s.key, s.lv, s.x, s.y, { ai: s.ai, boss: s.boss });
       Object.assign(u, { hp: s.hp, alive: s.alive, escaped: s.escaped, cd: s.cd || {}, buffs: s.buffs || [], slow: s.slow, slowNext: s.slowNext, dealt: s.dealt, nAct: s.nAct || 0, awake: s.awake, wave: s.wave, bornT: s.bornT, acted: !!s.acted });
       if (s.home) u.home = s.home;
       if (u.troop) u.troop.hp = s.thp;
@@ -2240,9 +2244,12 @@
     const o = save.opts;
     const onoff = (v) => (v ? '켜짐' : '꺼짐');
     const slider = (k, label) => `<label class="oslide"><span>${label}</span><input type="range" min="0" max="100" step="5" value="${o[k]}" data-k="${k}"><b>${o[k]}</b></label>`;
-    modal(`<h3>옵션</h3><div class="osec">소리</div>
+    modal(`<h3>옵션</h3>
+      <div class="osec">난이도</div><div class="opts">${Object.keys(R.DIFF).map((k) => `<button data-a="dset:${k}" class="${(o.diff || 'normal') === k ? 'gold' : ''}">${R.DIFF[k].name} <small>${G && !G.ended && mode === 'map' ? `이 작전 ${Math.round(R.diffK(k) * 100)}%` : `${Math.round(R.DIFF[k].k * 100)}%`}</small></button>`).join('')}</div>
+      <p class="dnote" style="margin:6px 2px 10px;color:#9aa6c4;font-size:13px">(${G && !G.ended && mode === 'map' ? `이 작전의 적 능력치 ${Math.round(R.diffK() * 100)}% · 지금 바로` : `적 능력치 ${Math.round(R.DIFF[o.diff || 'normal'].k * 100)}% × 장마다 ${Math.round(R.CH_K[0] * 100)}~${Math.round(R.CH_K[R.CH_K.length - 1] * 100)}%`})</p>
+      <div class="ogrp"><div class="osec">소리</div>
       <div class="opts"><button data-a="sound">소리 전체: <b>${onoff(o.sound)}</b></button></div>
-      ${slider('bgmV', '배경음')}${slider('sfxV', '효과음')}${slider('voiceV', '음성')}
+      ${slider('bgmV', '배경음')}${slider('sfxV', '효과음')}${slider('voiceV', '음성')}</div>
       <div class="osec">대화</div><div class="opts">
       <button data-a="blip">글자 소리: <b>${onoff(o.blip)}</b></button>
       <button data-a="textSpd">글자 나오는 속도: <b>${['느리게', '보통', '빠르게'][o.textSpd]}</b></button></div>
@@ -2250,15 +2257,14 @@
       <button data-a="fight">전투 장면: <b>${onoff(o.fight)}</b></button>
       <button data-a="fast">빠른 진행: <b>${onoff(o.fast)}</b></button>
       <button data-a="autoEnd">모두 행동하면 자동 턴 종료: <b>${onoff(o.autoEnd)}</b></button></div>
-      <div class="osec">난이도</div><div class="opts">${Object.keys(R.DIFF).map((k) => `<button data-a="dset:${k}" class="${(o.diff || 'normal') === k ? 'gold' : ''}">${R.DIFF[k].name} <small>${G && !G.ended && mode === 'map' ? `이 작전 ${Math.round(R.diffK(k) * 100)}%` : `${Math.round(R.DIFF[k].k * 100)}%`}</small></button>`).join('')}</div>
-      <div class="opts"><button data-a="diffinfo" disabled><small>(${G && !G.ended && mode === 'map' ? `이 작전의 적 능력치 ${Math.round(R.diffK() * 100)}% · 지금 바로` : `적 능력치 ${Math.round(R.DIFF[o.diff || 'normal'].k * 100)}% × 장마다 ${Math.round(R.CH_K[0] * 100)}~${Math.round(R.CH_K[R.CH_K.length - 1] * 100)}%`})</small></button>
-      <button data-a="close" class="gold">닫기</button></div>`, (a) => {
+      <div class="opts"><button data-a="close" class="gold">닫기</button></div>`, (a) => {
       if (['sound', 'blip', 'fight', 'fast', 'autoEnd'].includes(a)) { o[a] = !o[a]; if (a === 'fast') delete o.spd; }
       else if (a && a.startsWith('dset:')) { const k = a.slice(5); if (k !== (o.diff || 'normal')) { o.diff = k; diffNow(); if (G && !G.ended && mode === 'map') toast(`난이도 ${R.DIFF[k].name} · 지금 적 체력·능력치가 바뀌었습니다 (되돌리기도 새 배율로)`); } }
       else if (a === 'textSpd') o.textSpd = (o.textSpd + 1) % 3;
       else { writeSave(); if (back) back(); return; }
       writeSave(); applyOpts(); options(back);
     });
+    { const mb = document.querySelector('#modal .mbox'); if (mb) mb.classList.add('cols2'); } // PC: 두 단으로 (스크롤 없이)
     // 밀대: 움직이는 동안 바로 적용, 효과음은 크기를 들려준다
     document.querySelectorAll('#modal input[type=range]').forEach((r) => {
       r.oninput = () => { o[r.dataset.k] = +r.value; r.nextElementSibling.textContent = r.value; applyOpts(); };
@@ -2305,16 +2311,17 @@
       <p><b>병사 배속</b> · 출격 전에 영웅마다 병사를 고릅니다. 고를 수 있는 병사는 영웅의 전직 단계에 따라 늘어납니다.</p>
       <p><b>병사 10명</b> · 한 부대의 병사는 10명입니다. 남은 병사 수만큼만 공격하므로 병사가 줄면 부대가 약해집니다. 이동력은 영웅과 병사 중 느린 쪽을 따릅니다.</p>
       <p><b>병사 훈련</b> · 병사는 사지 않습니다 (랑그릿사 모바일처럼). 출격할 때마다 10명이 가득 찬 채로 나가고 전투가 끝나면 다시 채워집니다. 전투에서 얻은 <b>부품</b>으로 월드맵·출격 준비의 '병사 훈련'이나 마을 정비실의 포츈에게서 병종을 훈련하면 그 병사를 쓰는 모든 영웅의 병사가 강해집니다 (한 단계 +${Math.round(R.DRILL_K * 100)}%, 최대 ${R.DRILL_MAX}단계).</p>
-      <p><b>병사 보충</b> · 전투 중에는 고전 랑그릿사처럼 보충합니다. ① 아군 차례가 시작될 때 지휘관 콘스탄챠의 ${R.CMD_RANGE}칸 안에 있는 아군은 병사 1명 보충 ② 움직이지 않고 '정비'를 고르면 병사 ${Math.round(R.REFIT_T * R.SQUAD)}명 보충 + 영웅 체력 ${Math.round(R.REFIT_H * 100)}% (그 차례 행동은 끝) ③ 마을·기지 칸에서 차례를 시작하면 영웅·병사 10% 회복, 기지는 병사를 2명 더 보충 (적도 마찬가지). 병사가 모두 쓰러진 부대는 지휘 범위로는 돌아오지 않습니다.</p>
+      <p><b>병사 보충</b> · 전투 중에는 고전 랑그릿사처럼 보충합니다. ① 아군 차례가 시작될 때 지휘관 콘스탄챠의 ${R.CMD_RANGE}칸 안에 있는 아군은 병사 1명 보충 ② 움직이지 않고 '정비'를 고르면 병사 ${Math.round(R.REFIT_T * R.SQUAD)}명 보충 + 영웅 체력 ${Math.round(R.REFIT_H * 100)}% (그 차례 행동은 끝, 어려움은 보충이 60%) ③ 마을·기지 칸에서 차례를 시작하면 영웅·병사 10% 회복, 기지는 병사를 2명 더 보충 (적도 마찬가지). 병사가 모두 쓰러진 부대는 지휘 범위로는 돌아오지 않습니다.</p>
       <div class="osec">전투</div>
       <p><b>병종 상성</b> · 공격하는 병종이 이기는 상대를 칠 때 피해가 늘고, 거꾸로면 그만큼 줄어듭니다. 병사는 병사의 병종, 영웅은 영웅의 병종으로 따집니다.</p>
       <table class="keys">${relRows}</table>
-      <p><b>피해 흔들림</b> · 공격 예상 창의 숫자는 기댓값이고, 실제 피해는 그 ±10% 안에서 흔들립니다. 아군 부대는 한 번의 교전에 병사를 70%(어려움 80%)까지만 잃고, 넘친 피해의 40%는 영웅이 받습니다.</p>
-      <p><b>원거리</b> · 사격병은 사거리 2. 두 칸에서 쏘면 근접 부대는 반격하지 못합니다. 원거리 병종이 붙어서 싸우면 피해가 30%로 줄어듭니다.</p>
+      <p><b>피해 흔들림</b> · 공격 예상 창의 숫자는 기댓값이고, 실제 피해는 그 ±10% 안에서 흔들립니다. 아군 부대는 한 번의 교전에 병사를 70%(어려움 90%)까지만 잃고, 넘친 피해의 40%는 영웅이 받습니다.</p>
+      <p><b>원거리</b> · 사격병·전자전병은 사거리 2 이상 (영웅·적마다 다르고, 적 포대는 4칸까지 쏘기도 합니다). 두 칸에서 쏘면 근접 부대는 반격하지 못합니다. 원거리 병종이 붙어서 싸우면 원래 피해의 30%만 들어갑니다.</p>
       <p><b>적의 움직임</b> · 적은 무리마다 지휘관이 있고, 부대가 지휘관 둘레로 함께 진격합니다. 무리 중 하나라도 아군과 가까워지거나 한 차례가 지나면 무리 전체가 움직이고, 상성으로 이기는 상대를 먼저 노립니다. 우두머리를 지키는 호위는 우두머리 곁을 떠나지 않습니다. 「위험」 단추로 적이 닿는 범위를 확인하세요. 증원은 정해진 턴에 나타나고, 그 전에 지도 위 적을 모두 쓰러뜨리면 남은 증원이 곧바로 앞당겨 나옵니다 (증원까지 모두 쓰러뜨리면 승리).</p>
-      <p><b>난이도</b> · 옵션에서 고릅니다 (작전 도중에 바꾸면 그 자리에서 적의 체력·능력치가 바뀝니다). 쉬움: 적 능력치 85%, 적이 조심스럽고 늦게 움직임 · 보통: 107%(사수 작전은 ×0.95) · 어려움: 115%, 적이 처음부터 진격하고 쓰러뜨릴 수 있는 영웅을 집요하게 노림 (어려움은 배우는 1장 ×0.93·긴 6장 ×0.97, 적이 지킬 칸으로 몰려드는 사수 작전 ×0.88을 더 곱해 덜어 줌). 여기에 장마다 배율(95~106%)이 곱해지고, 옵션 창에는 지금 작전의 실제 배율이 나옵니다.</p>
+      <p><b>난이도</b> · 옵션에서 고릅니다 (작전 도중에 바꾸면 그 자리에서 적의 체력·능력치가 바뀝니다). 쉬움: 적 능력치 85%, 적이 조심스럽고 늦게 움직임 · 보통: 111%(배우는 1장 ×0.96, 사수 작전은 ×0.95) · 어려움: 120%, 적이 처음부터 진격하고 쓰러뜨릴 수 있는 영웅을 집요하게 노림 (어려움은 배우는 1장 ×0.9·긴 6장 ×0.97, 적이 지킬 칸으로 몰려드는 사수 작전 ×0.88을 더 곱해 덜어 줌). 여기에 장마다 배율(${Math.round(R.CH_K[0] * 100)}~${Math.round(R.CH_K[R.CH_K.length - 1] * 100)}%)이 곱해지고, 옵션 창에는 지금 작전의 실제 배율이 나옵니다.</p>
       <div class="osec">성장 · 진행</div>
       <p><b>경험치</b> · 전투가 끝나면 참가한 영웅 전원이 같은 양을 받고, 가장 많이 친 영웅(MVP)은 20%를 더 받습니다.</p>
+      <p><b>각성</b> · 영웅이 Lv.${R.PERK_LV}에 이르면 「출격 준비」나 「부대 현황」에서 각성 하나를 고릅니다: ${Object.values(R.PERKS).map((p) => `${p.name}(${p.desc})`).join(' · ')}. Lv.${R.PERK2_LV}에는 첫째와 다른 둘째 각성을 하나 더 고릅니다 (꾸준히 출격하면 보통 2장 중반에 첫째, 3장 끝 무렵에 둘째가 열립니다). 출격 준비·부대 현황에서 언제든 바꿀 수 있습니다.</p>
       <p><b>추가 목표</b> · 본편 작전마다 「정한 턴 안에 승리」(버티기·사수 작전은 「버티며 적 60% 이상 격파」)와 「영웅 퇴각 없이 승리」가 있습니다. 작전 도중 난이도를 낮춘 판은 세지 않습니다. 달성할 때마다 부품 보상이 25% 늘고, 작전 정보에 ★로 남습니다. 전투 중에는 위쪽 줄에 남은 턴이 보이고, 놓친 목표는 깬 작전의 「본편 다시 하기」(부품 60%)로 다시 노립니다.</p>
       <p><b>저장</b> · 작전 도중에도 행동이 끝날 때마다 저장되어 타이틀의 「작전 이어하기」로 돌아옵니다. 이번 차례 안에서는 U(또는 메뉴)로 한 수씩 되돌리거나, 메뉴의 「이번 차례 다시」로 차례 처음으로 돌아갈 수 있습니다.</p>
       <p><b>특기</b> · 쓰고 나면 정해진 턴 동안 다시 쓸 수 없습니다(괄호 안 숫자).</p>
@@ -2322,8 +2329,25 @@
       <p><b>재능</b> · 영웅마다 늘 켜져 있는 고유 재능이 있습니다 (지휘 범위 강화, 선제공격 강화, 피해 감소 등). 영웅 정보에서 확인하세요.</p>
       <p><b>지형</b> · 숲 +20%, 산·언덕·기지 +10%, 폐허·마을 +5% 방어. 기동병은 숲·산에서 느려지고, 공중병은 지형의 영향을 받지 않습니다. 적 칸은 지나갈 수 없습니다.</p>
       <div class="osec">조작</div>
-      <p><b>조작</b> · 누르기: 선택·이동·공격 / 끌기: 지도 이동 / 두 손가락·휠: 확대 / 오른쪽 클릭·Esc: 취소 / 키보드: 방향키 커서 · Enter 결정 · Esc 취소 · Tab 다음 영웅 · A 공격 · W 대기 · E 턴 종료 (전체 목록은 전투 중 H)</p>
+      <p><b>조작</b> · 누르기: 선택·이동·공격 / 끌기: 지도 이동 / 두 손가락·휠: 확대 / 오른쪽 클릭·Esc: 취소 / 키보드: 방향키 커서 · Enter 결정 · Esc 취소 · Tab 다음 영웅 · U 한 수 되돌리기 · A 공격 · W 대기 · E 턴 종료 (전체 목록은 전투 중 H)</p>
       <div class="opts"><button class="gold" data-a="ok">확인</button></div>`, cb);
+    helpTabs();
+  }
+  // 도움말 탭: 부대·전투·성장·조작 묶음(osec)마다 한 탭, 누르면 그 묶음만 보인다
+  function helpTabs() {
+    const box = document.querySelector('#modal .mbox');
+    if (!box) return;
+    const secs = [...box.querySelectorAll(':scope > .osec')];
+    if (secs.length < 2) return;
+    const groups = secs.map((h) => { const g = [h]; let n = h.nextElementSibling; while (n && !n.classList.contains('osec') && !(n.classList.contains('opts') && n.querySelector('[data-a="ok"]'))) { g.push(n); n = n.nextElementSibling; } return g; });
+    const bar = document.createElement('div');
+    bar.className = 'htabs';
+    bar.innerHTML = secs.map((h, i) => `<button type="button" data-tab="${i}">${h.textContent}</button>`).join('');
+    box.insertBefore(bar, secs[0]);
+    const show = (k) => { groups.forEach((g, i) => g.forEach((e) => { e.style.display = i === k ? '' : 'none'; })); bar.querySelectorAll('button').forEach((b, i) => b.classList.toggle('on', i === k)); box.scrollTop = 0; };
+    bar.onclick = (e) => { const b = e.target.closest('[data-tab]'); if (!b) return; e.stopPropagation(); AU.play('lo_click', 0.4); show(+b.dataset.tab); };
+    // 첫 탭 앞의 글(영웅과 병사 등 '부대' 묶음 이전)은 늘 보인다
+    show(0);
   }
 
   // ── 화면들 ───────────────────────────────────────────────
@@ -2364,7 +2388,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.22';
+  const GAME_VERSION = '1.36';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2765,17 +2789,40 @@
       const h = D.HEROES[id], s = save.heroes[id], c = CL.stats(id, s);
       return `<div class="pcard rcard" data-h="${id}"><div class="pimg ${id === 'pupphead' || id === 'fallen' ? 'whole' : ''}"><canvas class="pcv" data-stand="${standOf(id)}"></canvas></div>
         ${CL.canChange(id, s) ? '<i class="pcc">전직 가능</i>' : ''}
+        ${s.lv >= R.PERK_LV ? `<button class="pperk ${!s.perk || (s.lv >= R.PERK2_LV && !s.perk2) ? 'new' : ''}" data-a="perk:${id}">${!s.perk ? '각성 고르기' : s.lv >= R.PERK2_LV && !s.perk2 ? '둘째 각성' : [s.perk, s.perk2].filter(Boolean).map((p) => R.PERKS[p].name.replace(' 각성', '')).join('·') + ' 각성'}</button>` : ''}
         <div class="pfoot"><span class="plv">Lv.${s.lv}</span><b>${h.name}</b><small>${kindTag(c.kind)} · ${c.cls}</small></div>
         <div class="ptroop rst"><span>체력 ${c.hp}</span><span>공격 ${c.at}</span><span>방어 ${c.df}</span></div></div>`;
     }).join('');
     $('modal').classList.add('wide');
     modal(`<h3>부대 현황 <small style="color:#8d95a8;font:13px LO_M">합류 ${j.size}명 · 카드를 누르면 전직</small></h3><div class="rgrid">${cards}</div><div class="opts"><button class="gold" data-a="ok">닫기</button></div>`, (a, b) => {
       $('modal').classList.remove('wide');
+      if (a && a.startsWith('perk:')) { perkPick(a.slice(5), heroRoster); return; }
       const c = b && b.closest && b.closest('.rcard');
       if (c) classChange(c.dataset.h, heroRoster);
     });
     $('modal').querySelectorAll('.rcard').forEach((c) => (c.dataset.a = 'hero'));
     liveCards();
+  }
+  // 각성 고르기 (Lv20부터, 출격 밖에서 언제든 바꿀 수 있다)
+  function perkPick(id, back) {
+    const s = save.heroes[id], h = D.HEROES[id], two = s.lv >= R.PERK2_LV;
+    // 고르면 바뀌는 영웅 능력치를 미리 보여 준다 (다른 칸과 맞바꾸는 경우까지)
+    const now = CL.stats(id, s), NM = { hp: '체력', at: '공격', df: '방어', mov: '이동' };
+    const preview = (slot, k) => {
+      const t = { ...s }, key = slot === 1 ? 'perk' : 'perk2', old = t[key]; t[key] = k; if (t.perk === t.perk2) t[key === 'perk' ? 'perk2' : 'perk'] = old || null;
+      const c = CL.stats(id, t); return Object.keys(NM).filter((x) => c[x] !== now[x]).map((x) => `${NM[x]} ${now[x]}→<b>${c[x]}</b>`).join(' · ') || '지금과 같음';
+    };
+    const row = (slot, cur, other) => `<div class="pslot"><div class="osec">${slot === 1 ? `첫째 각성 (Lv.${R.PERK_LV})` : `둘째 각성 (Lv.${R.PERK2_LV}, 첫째와 다른 것)`}</div><div class="opts">${Object.keys(R.PERKS).map((k) => `<button data-a="p${slot}:${k}" class="${cur === k ? 'gold' : ''}"><b>${R.PERKS[k].name}</b> <small>${R.PERKS[k].desc}${other === k ? ' · 다른 칸과 맞바꿈' : ''}</small><small class="pprev">${cur === k ? '지금 고른 것' : other === k ? '두 칸을 바꿔도 능력치는 그대로' : preview(slot, k)}</small></button>`).join('')}</div></div>`;
+    modal(`<h3>${h.name} · 각성 <small style="color:#8d95a8;font:13px LO_M">출격 밖에서 언제든 바꿀 수 있음 · 데리고 가는 병사에도 같은 비율로 붙음</small></h3><div class="pslots">${row(1, s.perk, two ? s.perk2 : null)}${two ? row(2, s.perk2, s.perk) : `<div class="pslot"><p style="color:#8d95a8">Lv.${R.PERK2_LV}에 둘째 각성을 하나 더 고릅니다.</p></div>`}</div><div class="opts"><button data-a="back">돌아가기</button></div>`, (a) => {
+      const m = a && /^p([12]):(\w+)$/.exec(a);
+      if (m) {
+        const key = m[1] === '1' ? 'perk' : 'perk2';
+        const old = s[key]; s[key] = m[2]; if (s.perk === s.perk2) s[key === 'perk' ? 'perk2' : 'perk'] = old || null; writeSave(); // 다른 칸의 각성을 고르면 두 칸을 맞바꾼다
+        AU.play('lo_reinforce_eq', 0.6); heroVoice(id, 'Reinforce'); toast(`${h.name} · ${R.PERKS[m[2]].name}`);
+        return perkPick(id, back);
+      }
+      if (back) back();
+    });
   }
   const joined = () => new Set(D.STAGES.slice(0, Math.min(D.STAGES.length, save.clear + 1)).flatMap((s) => s.heroes));
   function heroStatLine(id) {
@@ -2958,10 +3005,11 @@
       return `<div class="pd-head"><b>${h.full}</b><span>${t.cls}</span></div>${sortie}
         <div class="pd-lv"><span>Lv.<b>${s.lv}</b></span><div class="pd-exp"><i style="width:${Math.min(100, s.exp)}%"></i></div>${next ? `<small>Lv.${next}에 전직</small>` : '<small>최종 전직</small>'}</div>
         <button class="pd-cc ${CL.canChange(id, s) ? 'ready' : ''}" id="pCC"><b>전직</b><small>${CL.canChange(id, s) ? '전직할 수 있습니다' : next ? `Lv.${next}부터 · 전직 나무 보기` : '최종 전직 완료 · 전직 나무 보기'}</small></button>
+        ${s.lv >= R.PERK_LV ? `<button class="pd-cc ${s.perk ? '' : 'ready'}" id="pPerk"><b>각성</b><small>${s.perk ? `${[s.perk, s.lv >= R.PERK2_LV ? s.perk2 : null].filter(Boolean).map((p) => R.PERKS[p].name).join(' · ')}${s.lv >= R.PERK2_LV && !s.perk2 ? ' · 둘째 각성을 고를 수 있습니다' : ' (바꾸기)'}` : '각성을 고를 수 있습니다'}</small></button>` : ''}
         <div class="pd-stats"><div><label>병종</label>${kindTag(t.kind)}</div><div><label>체력</label><b>${hp}</b></div><div><label>공격</label><b>${at}</b></div>
-          <div><label>방어</label><b>${df}</b></div><div><label>이동</label><b>${t.mov}</b></div><div><label>사거리</label><b>${t.rng}</b></div></div>
-        <div class="wi-sub">특기</div><div class="pd-skills">${t.skills.map((k) => { const sk = D.SKILLS[k]; return `<div><b>${sk.name}</b><small>재사용 ${sk.cd}턴 · ${sk.desc}</small></div>`; }).join('')}</div>
+          <div><label>방어</label><b>${df}</b></div><div><label>이동</label><b>${CL.stats(id, s).mov}</b></div><div><label>사거리</label><b>${t.rng}</b></div></div>
         <div class="wi-sub">병사 배속 <small>출격마다 10명 가득 · 공격받으면 병사가 먼저 피해</small></div><div class="pd-troops">${troops}</div>
+        <div class="wi-sub">특기</div><div class="pd-skills">${t.skills.map((k) => { const sk = D.SKILLS[k]; return `<div><b>${sk.name}</b><small>재사용 ${sk.cd}턴 · ${sk.desc}</small></div>`; }).join('')}</div>
         <button class="pd-drill" id="pDrill"><img src="${PARTS_ICON}" alt=""><b>병사 훈련</b><small>부품 ${save.parts || 0} · 병종마다 능력치 +${Math.round(R.DRILL_K * 100)}%씩</small></button>`;
     };
     const count = () => (st.free ? `<span class="pcnt">출전 ${st.heroes.length} / ${cap}</span>` : '');
@@ -3031,6 +3079,8 @@
     const bindCC = () => {
       const b = $('pCC');
       if (b) b.onclick = () => { AU.play('lo_click', 0.6); classChange(cur, (changed) => { if (changed) { const t = formOf(cur); if (!t.troops.includes(pick[cur])) pick[cur] = t.troops[0]; render(); bindCC(); } }); };
+      const pk = $('pPerk');
+      if (pk) pk.onclick = () => { AU.play('lo_click', 0.6); perkPick(cur, () => { render(); bindCC(); }); }; // 출격 준비에서도 각성
     };
     // 고를 때는 화면 전체를 다시 그리지 않고 바뀐 곳만 (움직이는 일러스트가 처음부터 다시 시작하지 않게)
     const bindTroops = () => {
@@ -3211,7 +3261,7 @@
   let G0last = {}; // 결과 화면이 보여 줄 끝난 판 (추가 목표)
   function result(st, win, gain, rows, turn, parts = 0) {
     return new Promise((res) => {
-      const mvp = win ? rows.filter((r) => r.alive).sort((a, b) => b.dealt - a.dealt)[0] || rows[0] : null;
+      const mvp = win ? rows.find((r) => r.notes.some((n) => n.startsWith('<b>MVP'))) || null : null; // 경험치 +20%를 받은 영웅만 MVP 표시 (아무도 치지 않은 판은 없음)
       const lead = rows.find((r) => r.id === 'constantia') || rows[0];
       const face = mvp || lead;
       AU.bgm(null);
@@ -3221,16 +3271,21 @@
         return `<div class="rrow ${r === mvp ? 'mvp' : ''}" style="animation-delay:${0.35 + i * 0.08}s">
           <img src="${IMG[iconOf(r.id)]}" alt=""><div class="rinfo"><div class="rname"><b>${r.name}</b>${r === mvp ? '<i>MVP</i>' : ''}${r.alive ? '' : '<small>퇴각</small>'}</div>
           <div class="rlv">Lv.<b>${r.lv1}</b>${up ? `<span class="rup">LEVEL UP</span>` : ''}<em>+${r.gain} EXP</em></div>
-          <div class="rbar"><i data-w="${r.exp1}" style="width:${up ? 0 : r.exp0}%"></i></div>${r.notes.map((n) => `<div class="rnote">${n}</div>`).join('')}</div></div>`;
+          <div class="rbar"><i data-w="${r.exp1}" style="width:${up ? 0 : r.exp0}%"></i></div>${r.notes.some((n) => !n.startsWith('<b>MVP')) ? `<div class="rnote">${r.notes.filter((n) => !n.startsWith('<b>MVP')).map((n) => n.split(' · ')[0]).join(' ')}</div>` : ''}</div></div>`;
       }).join('');
+      // 전직·각성 알림은 목록 위에 한 줄로 모은다 (영웅 줄에는 짧은 표시만)
+      const tell = (k) => rows.filter((r) => r.notes.some((n) => n.startsWith(`<b>${k}`))).map((r) => r.name);
+      const notice = ['전직 가능', '각성 가능', '둘째 각성 가능']
+        .map((k) => { const n = tell(k); return n.length ? `<span><b>${k}</b> ${n.join(', ')}</span>` : ''; }).join('');
       screen(`<div class="rscr ${win ? 'win' : 'lose'}"><div class="pbg"></div>
         <div class="rmvp"><canvas data-stand="${standOf(face.id)}"></canvas></div>
         <div class="rpanel">
           <div class="rhead">${win ? '<img src="assets/ui/UI_Battle_Main_missionclear_label_2.png" alt="MISSION COMPLETE">' : '<b class="rfail">MISSION FAILED</b>'}
             <div class="rstage"><span>${st.idx}</span>${st.title}<small>${turn}턴</small></div></div>
-          <div class="rsub">${win ? '참가 영웅 전원이 같은 경험치를 얻었습니다' : '얻은 경험치는 유지됩니다'}</div>
+          <div class="rsub">${win ? '참가 영웅 전원이 경험치를 얻었습니다 (MVP +20% · 적보다 레벨이 높으면 줄어듦)' : '얻은 경험치는 유지됩니다'}</div>
           ${parts ? `<div class="rparts"><img src="${PARTS_ICON}" alt=""><span>부품 <b>+${parts}</b></span><small>보유 ${save.parts} · 병사 훈련에 씁니다</small></div>` : ''}
           ${(G0last.bonus || []).length ? `<div class="rbonus">${G0last.bonus.map((x) => `<span class="${x.ok ? 'ok' : 'no'}">${x.ok ? '★' : '☆'} ${x.name}${x.first ? ' <b>NEW</b>' : ''}</span>`).join('')}<small>달성한 추가 목표마다 부품 +25%</small></div>` : ''}
+          ${notice ? `<div class="rnotice">${notice}<button id="rRoster">부대 현황에서 바로 고르기</button></div>` : ''}
           <div class="rlist">${list}</div>
           <div class="rbtns">${win ? '<button class="wgo" id="rOk"><b>확인</b><small>NEXT</small></button>' : '<button class="lo-btn dark" id="rSel">작전 선택</button><button class="wgo" id="rRetry"><b>다시 도전</b><small>RETRY</small></button>'}</div>
         </div></div>`);
@@ -3239,6 +3294,7 @@
       requestAnimationFrame(() => setTimeout(() => document.querySelectorAll('.rbar i').forEach((b) => (b.style.width = b.dataset.w + '%')), 500));
       if (parts) wait(450).then(() => AU.play('lo_coin', 0.6)); // 부품 보상: 원작 동전 소리
       if (rows.some((r) => r.lv1 > r.lv0)) wait(3400).then(() => AU.cut(AU.play('lo_rank_up', 0.45), 2.4)); // 승리 음악 앞머리가 지난 뒤 // 레벨 업: 원작 등급 상승 소리
+      if ($('rRoster')) $('rRoster').onclick = () => { AU.play('lo_click', 0.6); heroRoster(); }; // 결과 화면 위에 부대 현황(전직·각성)을 연다
       if ($('rOk')) $('rOk').onclick = () => { AU.play('lo_click', 0.7); res(); };
       if ($('rRetry')) $('rRetry').onclick = () => { AU.play('lo_click', 0.7); prep(st); };
       if ($('rSel')) $('rSel').onclick = () => { AU.play('lo_click', 0.7); stageSelect(); };
@@ -3270,6 +3326,8 @@
       row.lv1 = u.lv; row.exp1 = u.exp;
       // 전직은 랑그릿사처럼 직접 고른다: 레벨이 되면 알려 주기만 (출격 준비·부대 현황의 전직 버튼)
       if (CL.canChange(u.key, s) && !(row.lv0 >= D.TIER_LV[s.tier + 1])) row.notes.push(`<b>전직 가능</b> · 출격 준비에서 전직할 수 있습니다`);
+      if (row.lv0 < R.PERK_LV && u.lv >= R.PERK_LV && !s.perk) row.notes.push(`<b>각성 가능</b> · 출격 준비나 월드맵 「부대 현황」에서 각성을 고르세요`);
+      if (row.lv0 < R.PERK2_LV && u.lv >= R.PERK2_LV && !s.perk2) row.notes.push(`<b>둘째 각성 가능</b> · 출격 준비나 「부대 현황」에서 하나 더 고르세요`);
       void h;
       rows.push(row);
     }

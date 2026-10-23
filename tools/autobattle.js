@@ -98,7 +98,7 @@ if (process.env.ONLY) {
   console.log(st.idx, `Lv.${lv}`, `승 ${win}/${RUNS}`, win ? `평균 ${(turn / win).toFixed(1)}턴` : '', '진 판에 남은 적', JSON.stringify(left));
   process.exit(0);
 }
-const stat = {};
+const stat = {}, B = { w: 0, t: 0, tn: 0, n: 0, lost: 0 }; // 추가 목표 달성·영웅 퇴각 (이긴 판 기준)
 for (let run = 0; run < RUNS; run++) {
   const save = {}, joined = new Set(), drill = {};
   let parts = 0;
@@ -112,6 +112,8 @@ for (let run = 0; run < RUNS; run++) {
     });
     // 전직: 레벨이 되면 갈래를 번갈아 고른다
     for (const id of joined) while (CL.canChange(id, save[id])) { save[id].tier++; if (save[id].tier === 1) save[id].br = (id.length % 2) ? 'A' : 'B'; }
+    for (const id of joined) if (save[id].lv >= R.PERK_LV && !save[id].perk) save[id].perk = process.env.PERK || ['at', 'df', 'hp'][id.length % 3]; // 각성: 영웅마다 고정으로 고른다 (PERK=at|df|hp|mv 면 모두 그 각성 — 각성끼리 견줄 때)
+    for (const id of joined) if (save[id].lv >= R.PERK2_LV && !save[id].perk2) save[id].perk2 = process.env.PERK ? (process.env.PERK === 'hp' ? 'at' : 'hp') : ['df', 'hp', 'at'][id.length % 3];
     const lock = st.heroes.filter((id) => id === 'constantia' || speaks(st, id));
     const party = [...lock, ...[...joined].filter((id) => !lock.includes(id)).sort((a, b) => save[b].lv - save[a].lv)].slice(0, MAX_SORTIE);
     const play = si + 1 >= FROM;
@@ -134,7 +136,8 @@ for (let run = 0; run < RUNS; run++) {
       if (play && !res.win && process.env.WHY) { const G = res.G, ld = G.units.find((u) => u.lead); console.log(`  ${st.idx} 진 판: ${res.turn}턴 · 지휘관 ${ld && ld.alive ? '생존' : '퇴각'} · 아군 ${G.units.filter((u) => u.side === 'p' && u.alive).length}/${party.length} · 평균Lv ${(party.reduce((a, id) => a + save[id].lv, 0) / party.length).toFixed(1)} · 목표 칸 적 ${G.units.filter((u) => u.side === 'e' && u.alive && R.onTarget(G, u.x, u.y)).length}`); }
       if (play) {
         const s = stat[st.idx] || (stat[st.idx] = { n: 0, win: 0, turn: 0, alive: 0, lv: 0, party: 0, foes: 0, slow: 0, left: 0 });
-        s.n++; if (!res.win && res.turn > 40) s.slow++; if (!res.win) s.left += res.G.units.filter((u) => u.side === 'e' && u.alive).length; if (res.win) { s.win++; s.turn += res.turn; s.alive += res.G.units.filter((u) => u.side === 'p' && u.alive).length; }
+        s.n++; if (!res.win && res.turn > 40) s.slow++;
+        if (res.win && !st.kind) { const b = R.bonusOf(st), ps = res.G.units.filter((u) => u.side === 'p'); B.w++; if (b.turns && res.turn <= b.turns) B.t++; if (b.turns) B.tn++; if (ps.every((u) => u.alive || u.escaped)) B.n++; B.lost += ps.filter((u) => !u.alive && !u.escaped).length; } if (!res.win) s.left += res.G.units.filter((u) => u.side === 'e' && u.alive).length; if (res.win) { s.win++; s.turn += res.turn; s.alive += res.G.units.filter((u) => u.side === 'p' && u.alive).length; }
         s.lv += party.reduce((a, id) => a + save[id].lv, 0) / party.length; s.party = party.length; s.foes = st.waves.reduce((a, w) => a + w.units.length, 0);
       }
     } while (!res.win && tries < 4);
@@ -147,3 +150,4 @@ for (const st of D.STAGES) {
   console.log(st.idx.padEnd(5), `${st.map[0].length}x${st.map.length}`.padEnd(7), String(s.party).padStart(3), String(s.foes).padStart(3),
     `${Math.round((s.win / s.n) * 100)}%`.padStart(5), (s.win ? (s.turn / s.win).toFixed(1) : '-').padStart(6), (s.win ? (s.alive / s.win).toFixed(1) : '-').padStart(5), (s.lv / s.n).toFixed(1).padStart(6), String(s.slow).padStart(5), (s.n > s.win ? (s.left / (s.n - s.win)).toFixed(1) : '-').padStart(6));
 }
+console.log(`추가 목표: 턴 안에 ${B.tn ? Math.round((B.t / B.tn) * 100) : 0}% · 퇴각 없이 ${B.w ? Math.round((B.n / B.w) * 100) : 0}% · 이긴 판당 퇴각 영웅 ${B.w ? (B.lost / B.w).toFixed(2) : 0}명`);

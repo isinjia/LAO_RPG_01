@@ -37,7 +37,7 @@
     const u = {
       uid: ++uid, side: 'p', key: id, def: h, name: h.name, rig: CL ? CL.rigOf(id, st) : h.rig, icon: CL ? CL.iconOf(id, st) : h.icon,
       kind: tier.kind || h.kind, move: tier.move || h.move, rng: tier.rng || h.rng, form: CL ? tier : null,
-      lv: st.lv, exp: st.exp, tier: st.tier, br: st.br || 'A', cls: tier.cls, x, y, alive: true, acted: false, buffs: [], cd: {}, lead: !!h.lead,
+      lv: st.lv, exp: st.exp, tier: st.tier, br: st.br || 'A', perk: st.lv >= R.PERK_LV ? st.perk || null : null, perk2: st.lv >= R.PERK2_LV && st.perk2 !== st.perk ? st.perk2 || null : null, cls: tier.cls, x, y, alive: true, acted: false, buffs: [], cd: {}, lead: !!h.lead,
       troop: null,
     };
     const tk = troopKey && tier.troops.includes(troopKey) ? troopKey : tier.troops[0];
@@ -161,25 +161,36 @@
   // 난이도: 적 능력치(이동 제외) 배율. 작전을 시작할 때 옵션에서 정한다 (game.js)
   // ai: 적 판단의 대담함 — fear 다음 차례에 맞을 걱정, bar 공격을 그만두는 문턱(밑지는 정도), wake 나온 뒤 스스로 진격하기까지의 차례, kill 격파 노리기
   R.DIFF = {
-    easy: { k: 0.85, name: '쉬움', ai: { fear: 0.4, bar: -1.5, wake: 2, kill: 0, lead: 1.3, focus: 0 } },
-    normal: { k: 1.07, name: '보통', winAdj: { defend: 0.95 }, ai: { fear: 0.1, bar: -4, wake: 1, kill: 2, lead: 1.6, focus: 0.5 } }, // 보통도 쓰러뜨릴 수 있는 영웅은 노린다 (아군을 잃을 긴장)
-    hard: { k: 1.15, name: '어려움', troopCap: 0.8, chAdj: { 1: 0.93, 6: 0.97 }, winAdj: { defend: 0.88 }, ai: { fear: 0.05, bar: -6, wake: 0, kill: 4, lead: 2.4, focus: 2 } }, // focus: 이미 다친 영웅을 몰아 치는 협공 // lead: 적이 아군 지휘관을 노리는 무게
+    easy: { k: 0.85, bonusTurns: 2, name: '쉬움', ai: { fear: 0.4, bar: -1.5, wake: 2, kill: 0, lead: 1.3, focus: 0 } },
+    normal: { k: 1.11, bonusTurns: 1, chAdj: { 1: 0.96 }, name: '보통', winAdj: { defend: 0.95 }, ai: { fear: 0.1, bar: -4, wake: 1, kill: 2, lead: 1.6, focus: 0.5 } }, // 보통도 쓰러뜨릴 수 있는 영웅은 노린다 (아군을 잃을 긴장)
+    hard: { k: 1.2, name: '어려움', troopCap: 0.9, heal: 0.6, bonusTurns: -1, chAdj: { 1: 0.9, 6: 0.97 }, winAdj: { defend: 0.88 }, ai: { fear: 0.05, bar: -6, wake: 0, kill: 6, lead: 2.8, focus: 3.5 } }, // focus: 이미 다친 영웅을 몰아 치는 협공 // lead: 적이 아군 지휘관을 노리는 무게
   };
   R.aiOf = () => (R.DIFF[R.diff] || R.DIFF.normal).ai;
+  R.healK = () => ((R.DIFF[R.diff] || R.DIFF.normal).heal || 1); // 아군 정비·지휘관 곁 보충 배율 (어려움은 줄어든다)
   // 장마다 적 능력치 배율: 뒤로 갈수록 아군은 전직·병사 훈련이 쌓여 레벨보다 빨리 강해진다 (자동 대전에서 1장이 가장 어렵고 뒤는 쉬웠다)
-  R.CH_K = [0.95, 1, 1.03, 1.04, 1.05, 1.06];
+  R.CH_K = [0.95, 1, 1.03, 1.05, 1.07, 1.08]; // 4장부터는 Lv40 둘째 각성만큼 조금 더
   R.chK = 1;
   R.diff = 'normal';
   // 실제 배율 = 난이도 x 장 배율 x (어려움만) 장 보정 x 작전 종류 보정. 작전 하나하나를 깎지 않고 규칙으로 덜어 준다
   const diffK = (k = R.diff) => { const D0 = R.DIFF[k] || R.DIFF.normal; return D0.k * R.chK * ((D0.chAdj && D0.chAdj[R.ch]) || 1) * ((D0.winAdj && D0.winAdj[R.win]) || 1); };
   R.diffK = diffK; // 지금 작전의 실제 적 능력치 배율 (옵션 창이 그대로 보여 준다)
-  R.heroStat = function (u, k) {
+  // 각성 (Lv20부터 영웅마다 하나 고른다): 영웅과 그 병사의 능력치를 한쪽으로 기울인다. 출격 밖에서 언제든 바꿀 수 있다
+  R.PERK_LV = 20;
+  R.PERKS = {
+    at: { name: '공세 각성', desc: '영웅·병사 공격 +12%', k: { at: 0.12 } },
+    df: { name: '수비 각성', desc: '영웅·병사 방어 +18%', k: { df: 0.18 } },
+    hp: { name: '생존 각성', desc: '영웅·병사 체력 +18%', k: { hp: 0.18 } },
+    mv: { name: '기동 각성', desc: '영웅·병사 이동 +1, 방어 -6%', k: { mov: 1, df: -0.06 } }, // 이동은 값이 커서 방어를 조금 내준다
+  };
+  R.PERK2_LV = 40; // 두 번째 각성 (첫째와 다른 것)
+  const perkK = (u, k) => (u.side !== 'p' ? 0 : [u.perk, u.perk2].reduce((n, p) => n + ((p && R.PERKS[p] && R.PERKS[p].k[k]) || 0), 0));
+  R.heroStat = function (u, k, noPerk) {
     if (u.side === 'p') {
       const t = u.form || u.def.tiers[u.tier];
-      if (k === 'mov') return t.mov;
+      if (k === 'mov') return t.mov + perkK(u, 'mov');
       const m = (u.form && u.form.m[k]) || 1; // 전직한 직업의 병종 경향
       // 레벨 성장은 1레벨부터 이어서 세고, 전직 단계마다 6%씩 더 (전직해도 약해지지 않게)
-      return u.def.tiers[0][k] * (1 + 0.07 * (u.lv - 1)) * (1 + 0.06 * u.tier) * m;
+      return u.def.tiers[0][k] * (1 + 0.07 * (u.lv - 1)) * (1 + 0.06 * u.tier) * m * (noPerk ? 1 : 1 + perkK(u, k));
     }
     if (k === 'mov') return u.def.mov;
     return u.def[k] * (1 + 0.07 * (u.lv - 1)) * diffK();
@@ -188,14 +199,14 @@
   R.troopStat = function (u, k) {
     const t = u.troop.def;
     const v = t[k] * (1 + 0.06 * (u.lv - 1));
-    return (k === 'hp' ? v * (u.side === 'e' ? diffK() : 1) : v + R.heroStat(u, k) * 0.25) * (1 + R.DRILL_K * (u.troop.drill || 0));
+    return (k === 'hp' ? v * (u.side === 'e' ? diffK() : 1) : v + R.heroStat(u, k, true) * 0.25) * (1 + R.DRILL_K * (u.troop.drill || 0)) * (1 + perkK(u, k)); // 각성은 병사에 한 번만
   };
   R.atk = (u, part) => (part === 'T' ? R.troopStat(u, 'at') : R.heroStat(u, 'at')) * buffK(u, 'at');
   R.def = (u, part) => (part === 'T' ? R.troopStat(u, 'df') : R.heroStat(u, 'df')) * buffK(u, 'df');
   // 이동력 = 영웅과 (살아 있는) 병사 중 낮은 쪽
   R.mov = (u) => {
     let m = R.heroStat(u, 'mov');
-    if (R.troopAlive(u)) m = Math.min(m, u.troop.def.mov);
+    if (R.troopAlive(u)) m = Math.min(m, u.troop.def.mov + perkK(u, 'mov')); // 기동 각성은 병사 발도 +1
     if (m <= 0) return 0; // 붙박이 적(언더왓쳐 몸통 등)은 움직이지 않는다
     return Math.max(1, Math.round(m + u.buffs.reduce((s, b) => s + (b.mov || 0), 0) - (u.slow || 0)));
   };
@@ -216,7 +227,8 @@
     const last = Math.max(1, ...st.waves.map((w) => w.turn || 1));
     const timed = st.win !== 'survive' && st.win !== 'defend';
     const foes = st.waves.reduce((n, w) => n + w.units.length, 0);
-    return { turns: timed ? Math.max(6, last + 6) : 0, kills: timed ? 0 : Math.ceil(foes * 0.6) }; // 버티기·사수: 버티면서 적의 60% 이상 격파
+    const dT = (R.DIFF[R.diff] && R.DIFF[R.diff].bonusTurns) || 0; // 어려움은 추가 목표 턴이 짧다
+    return { turns: timed ? Math.max(6, last + 6 + dT) : 0, kills: timed ? 0 : Math.ceil(foes * 0.6) }; // 버티기·사수: 버티면서 적의 60% 이상 격파
   };
   R.TROOP_CAP = 0.7; // 한 교전에 잃는 병사 체력의 상한 (최대의 70%)
   R.DRILL_COST = [120, 320, 640, 1100, 1700]; // lv → lv+1 에 드는 부품 (한 병종 최대 3880). 본편 부품(기본 약 1만 600, 추가 목표를 다 이루면 1만 6천)으로 병종 셋~넷을 끝까지, 나머지는 중간까지
@@ -228,7 +240,7 @@
   // 정비: 회복량 {hH, hT} 을 돌려주고 바로 적용
   R.refit = function (u) {
     const hH = Math.min(u.hpMax - u.hp, Math.round(u.hpMax * R.REFIT_H));
-    const hT = u.troop ? Math.min(u.troop.hpMax - u.troop.hp, Math.round(u.troop.hpMax * R.REFIT_T)) : 0;
+    const hT = u.troop ? Math.min(u.troop.hpMax - u.troop.hp, Math.round(u.troop.hpMax * R.REFIT_T * R.healK())) : 0;
     u.hp += hH; if (u.troop) u.troop.hp += hT;
     return { hH, hT };
   };
@@ -240,7 +252,7 @@
       if (!u.alive || u.side !== side) continue;
       const tr = R.terr(G, u.x, u.y), h = (tr.heal || 0) + R.trait(u, 'regen');
       const cmd = !!(lead && lead !== u && R.dist(lead.x, lead.y, u.x, u.y) <= R.CMD_RANGE && u.troop && u.troop.hp > 0);
-      const t = h + (tr.supply || 0) + (cmd ? R.CMD_SUPPLY : 0);
+      const t = h + (tr.supply || 0) + (cmd ? R.CMD_SUPPLY * R.healK() : 0);
       const hH = Math.min(u.hpMax - u.hp, Math.round(u.hpMax * h));
       // 다 쓰러진 병사는 지휘 범위로는 돌아오지 않는다 (마을·기지·특기·정비로만)
       const hT = u.troop ? Math.min(u.troop.hpMax - u.troop.hp, Math.round(u.troop.hpMax * t)) : 0;
