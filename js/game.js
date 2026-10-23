@@ -1197,7 +1197,7 @@
     const t = e.target.closest && e.target.closest('.gtac'); let tip = document.getElementById('gtip');
     if (!t) { if (tip) tip.remove(); return; }
     if (!tip) { tip = document.createElement('div'); tip.id = 'gtip'; document.body.appendChild(tip); }
-    const r = t.getBoundingClientRect(); tip.textContent = t.dataset.tip; tip.style.left = r.left + 'px'; tip.style.top = (r.bottom + 8) + 'px';
+    const r = t.getBoundingClientRect(), box = (t.closest('#goalBox') || t).getBoundingClientRect(); tip.textContent = t.dataset.tip; tip.style.left = r.left + 'px'; tip.style.top = (Math.max(r.bottom, box.bottom) + 8) + 'px'; // 목표 줄 전체 아래 (둘째 줄을 가리지 않게)
   });
   function setTop() {
     const lim = G.stage.turnLimit || (G.stage.win === 'survive' || G.stage.win === 'defend' ? G.stage.turns : 0); // 버티기 작전은 버틸 턴
@@ -1211,7 +1211,7 @@
     $('goalBox').innerHTML = `${st.idx} ${st.title} · 승리: <b>${st.goal}</b>${nt ? ` · 증원 ${nt}턴` : ''}${R.diff !== 'normal' ? ` · <b>${R.DIFF[R.diff].name}</b>` : ''}${st.kind ? '' : ` · ${bonusLine(st, true)}`}`;
     const tac = G.tactic && R.TACTICS[G.tactic], tacOn = tac && G.tacUntil && G.turn <= G.tacUntil;
     $('goalBox').title = `패배: ${st.lose}${tacOn ? ` · 작전 전술 ${tac.name}: ${R.tacText(G.tactic, st)} (${G.tacUntil >= 99 ? '작전 내내' : `${G.tacUntil}턴까지`})` : ''}`;
-    if (tacOn) $('goalBox').insertAdjacentHTML('afterbegin', `<span class="gtac" data-tip="${R.tacText(G.tactic, st)}${G.tacUntil < 99 ? ` · ${G.tacUntil - G.turn + 1}턴 남음` : ''}${G.tacX > 1 ? ' (작전에 맞아 ×1.3 반영)' : ''}">${tac.name} ${G.tacUntil >= 99 ? '끝까지' : `~${G.tacUntil}턴`}</span> `);
+    if (tacOn) $('goalBox').insertAdjacentHTML('afterbegin', `<span class="gtac" data-tip="${R.tacText(G.tactic, st)}${G.tacUntil < 99 ? ` · ${G.tacUntil - G.turn + 1}턴 남음` : ''}${G.tacX > 1 ? ' (작전에 맞는 전술이라 강화됨)' : ''}">${tac.name} ${G.tacUntil >= 99 ? '끝까지' : `~${G.tacUntil}턴`}</span> `);
     $('btnEnd').disabled = G.side !== 'p' || busy;
     syncQuick(); renderRoster();
   }
@@ -2399,7 +2399,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.52';
+  const GAME_VERSION = '1.53';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -3040,7 +3040,7 @@
       $('pTac').onclick = () => {
         AU.play('lo_click', 0.6);
         const rec = R.tacFor(st), now = tacOf(st);
-        modal(`<h3 style="white-space:nowrap">작전 전술 <small style="font:13px LO_M">처음 몇 턴 출격한 아군 전원에게 · 작전마다 기억</small></h3><div class="opts">${Object.entries(R.TACTICS).map(([k, t]) => `<button data-a="${k}" class="${now === k ? 'gold' : ''}"><b>${t.name}</b>${k === rec ? ' <i class="trec">이 작전 추천 · 효과 ×1.3, 대가 덜함</i>' : ''} <small>${R.tacText(k, st)}</small><small class="pprev">${t.hint}${k === 'rush' ? ' · 방어가 낮아져 영웅을 잃기 쉬움' : ''}</small></button>`).join('')}</div>`, (a) => {
+        modal(`<h3 style="white-space:nowrap">작전 전술 <small style="font:13px LO_M">처음 몇 턴 출격한 아군 전원에게 · 작전마다 기억</small></h3><div class="opts">${Object.entries(R.TACTICS).map(([k, t]) => `<button data-a="${k}" class="${now === k ? 'gold' : ''}"><b>${t.name}</b>${k === rec ? ' <i class="trec">이 작전 추천 · 강화됨</i>' : ''} <small>${R.tacText(k, st)}</small><small class="pprev">${t.hint}${k === 'rush' ? ' · 방어가 낮아져 영웅을 잃기 쉬움' : ''}</small></button>`).join('')}</div>`, (a) => {
           if (a && R.TACTICS[a]) { (save.tactics = save.tactics || {})[st.idx] = a; writeSave(); const b = $('pTac'); if (b) { b.querySelector('b').textContent = R.TACTICS[a].name; b.querySelector('i').textContent = R.tacText(a, st); } }
         });
       };
