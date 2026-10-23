@@ -184,7 +184,7 @@
         D('town/t4_rock', 23, 7, 2, 0.8), D('town/t4_stal', 0, 12, 2, 1.5, { flip: 1 }), D('tiles/crystal1', 0, 9, 1, 1.4, { lit: [90, '120,240,230'] }), D('town/t4_rock', 21, 9, 2, 0.6),
         D('town/t4_ore', 18, 16, 2, 0.9), D('tiles/crystal1', 3, 16, 1, 1.3, { lit: [90, '120,240,230'] }),
         D('tiles/console', 18, 11, 2, 1.4, { lit: [90, '120,220,255'] }), D('tiles/gas', 20, 14, 2, 1.4), D('tiles/crate0', 11, 14, 1, 0.9), D('tiles/crate1', 10, 14, 1, 1.0), D('tiles/bags0', 15, 15, 2, 0.75),
-        D('town/t0_lamp', 7, 8, 1, 2.1, { lit: [120, '200,235,255'] }), D('town/t0_lamp', 10, 8, 1, 2.1, { lit: [120, '200,235,255'] }),
+        D('tiles/crystal0', 7, 8, 1, 1.4, { lit: [120, '90,230,220'] }), D('tiles/crystal1', 10, 8, 1, 1.2, { lit: [110, '120,240,230'] }),
         DEC('town/d_crack2', 4, 10, 4, 0.85), DEC('town/d_crack2', 17, 15, 3, 0.75), DEC('town/d_grate', 12, 13, 1.5),
         EXIT(12, 17), ...NPC([12, 11], [10, 11], [20, 10]), CON(14, 15),
       ],
@@ -201,7 +201,7 @@
         R(3, 9, 20, 6, 's'); R(1, 8, 24, 1, '_'); R(12, 8, 2, 10, '_');
       }),
       floor: { base: 'tiles/labd', zone: 'tiles/factory', zoneA: 0.3, path: 'tiles/labw', wall: 'tiles/labd', back: '#0b1218', pathA: 0.3, lane: 'rgba(90,220,255,.35)' },
-      sky: ['#04070b', '#0d1c26'], dark: 0.2, fx: 'dust', start: [12, 16],
+      sky: ['#04070b', '#0d1c26'], fx: 'dust', edgeLine: 5, start: [12, 16],
       back: [{ art: 'town/t5_platform', by: 5.15, h: 5.2, repeat: 1 }],
       objects: [
         BLD('cmd', 'town/t5_cmd', 10, 5, 6, 3, 12, { plinth: 0, glow: '140,230,255' }), BLD('shop', 'town/t5_shop', 18, 5, 6, 3, 20, { plinth: 0, glow: '255,90,90' }), BLD('cafe', 'town/t5_cafe', 2, 5, 6, 3, 4, { plinth: 0 }),
@@ -209,7 +209,7 @@
         D('town/t5_core', 8, 12, 2, 1.6, { lit: [130, '150,220,255'] }), D('town/t5_core', 16, 12, 2, 1.6, { lit: [130, '150,220,255'] }),
         D('town/t5_pillar', 1, 13, 1, 4.0), D('town/t5_pillar', 24, 13, 1, 4.0), D('town/t5_pillar', 9, 16, 1, 3.6), D('town/t5_pillar', 16, 16, 1, 3.6),
         D('tiles/console', 6, 15, 2, 1.4, { lit: [90, '120,220,255'] }), D('tiles/tank0', 21, 15, 1, 1.9, { lit: [90, '90,255,170'] }), D('tiles/tank1', 3, 15, 1, 1.9, { lit: [90, '90,255,170'] }),
-        D('town/b_bench', 10, 9, 2, 0.9), D('town/b_bench', 14, 9, 2, 0.9), D('tiles/crate0', 22, 8, 1, 0.9), D('tiles/crate1', 23, 8, 1, 1.0), D('tiles/sign', 1, 9, 1, 1.4),
+        D('town/b_bench', 10, 9, 2, 0.9), D('town/b_bench', 14, 9, 2, 0.9), D('tiles/crate0', 22, 8, 1, 0.9), D('tiles/crate1', 23, 8, 1, 1.0), D('tiles/crate1', 1, 9, 1, 1.0),
         DEC('town/d_grate', 5, 13, 1.5), DEC('town/d_grate', 18, 13, 1.5), DEC('town/d_grate', 10, 16, 1.5), DEC('town/d_crack', 19, 15, 2, 0.45),
         EXIT(12, 17), ...NPC([12, 11], [7, 10], [18, 13]), CON(14, 15),
       ],
@@ -279,10 +279,12 @@
     for (const [art, fx, dy, w, hh] of props || []) { const x = Math.max(1, Math.round(fx * W)), y = Math.min(H - 2, r0 + dy); if (x === mx || objects.some((o) => o.t === 'npc' && o.x >= x && o.x < x + w && o.y === y)) continue; objects.push({ t: 'deco', art, x, y, w, h: 1, hh, block: 1 }); }
     return { name, rows, indoor: 1, stage: { bg: bgPath, fl: st.fl, h: st.h, sc, top0, floorH, off, back: st.back }, bg: bgPath, tint, spawn: [mx, H - 2], objects };
   }
+  // 방 안 분위기 (장별): 어둠, 어둠 빛깔, 사령관 둘레 등불, 떠다니는 것
+  const ROOMATMO = { works: { dark: 0.12, darkC: '30,18,8', torch: 1, fx: 'dust' }, camp: { dark: 0.14, darkC: '30,22,10', torch: 1, fx: 'dust' }, sewer: { dark: 0.5, darkC: '4,12,16', torch: 1, fx: 'drip', tint: '#b4c6cc' }, station: { dark: 0.25, darkC: '6,12,22', torch: 1, fx: 'dust' }, snow: { dark: 0.28, darkC: '40,22,8', torch: 1, fx: 'dust', tint: '#ffd6a8' } };
   const ROOMBG0 = { cmd: 'town/r_train_0', shop: 'town/r_dis2_0', cafe: 'town/r_cafe4_0' }; // 1장
   function baseFor(look, name) {
     const m = TOWNMAPS[look] || TOWNMAPS.coast, R = m.rooms;
-    for (const k of ['cmd', 'shop', 'cafe']) MAPS[k] = R ? stageRoom(k, R[k].label, R[k].bg, R[k].tint, PROPS[R[k].label]) : stageRoom(k, ROOMNAME0[k], ROOMBG0[k]);
+    for (const k of ['cmd', 'shop', 'cafe']) MAPS[k] = Object.assign(R ? stageRoom(k, R[k].label, R[k].bg, R[k].tint, PROPS[R[k].label]) : stageRoom(k, ROOMNAME0[k], ROOMBG0[k]), ROOMATMO[look] || {});
     const objects = m.objects.map((o) => (o.t === 'building' ? Object.assign({}, o, { label: R ? R[o.to[0]].label : ROOMNAME0[o.to[0]] }) : o));
     return Object.assign({}, m, { name: name || '마을', bgm: 'lo_town', objects });
   }
@@ -464,6 +466,12 @@
       g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(0, y0, W, 10);
     }
     if (map.rows.some((r) => r.includes('b'))) layerOf((t) => t === 'b', F.back || '#222', 2);
+    if (map.edgeLine != null) { // 승강장 끝: 노란 점자 블록 띠
+      const y0 = map.edgeLine * TILE + 4;
+      g.fillStyle = '#c9a42a'; g.fillRect(0, y0, W, 14);
+      g.fillStyle = 'rgba(255,230,140,.55)'; for (let x = 4; x < W; x += 9) for (let k = 0; k < 2; k++) { g.beginPath(); g.arc(x, y0 + 4 + k * 6, 1.6, 0, 7); g.fill(); }
+      g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(0, y0 + 14, W, 3);
+    }
     // 가장자리 어둡게
     const vg = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.max(W, H) * 0.75);
     vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.28)');
@@ -639,7 +647,8 @@
   let lights = [], dk = null;
   function initLights() {
     lights = [];
-    if (map.indoor) return;
+    if (map.indoor && !map.stage) return;
+    if (map.stage) { const ex = map.objects.find((o) => o.t === 'exit'); if (ex) lights.push({ x: ex.x * TILE + TILE / 2, y: (ex.y + 0.6) * TILE, r: 110, c: '255,214,150', fl: 0.1, ph: 1 }); return; }
     for (const o of map.objects) {
       if (o.t === 'deco' && o.lit) {
         const hh = o.kind === 'fire' ? 0.5 : o.art && o.art.includes('lamp') ? (o.hh || 2) * 0.88 : o.kind === 'lighthouse' ? 4.6 : (o.hh || 1.6) * 0.5;
@@ -694,7 +703,7 @@
   const rnd = (a, b) => a + Math.random() * (b - a);
   function initFx() {
     fx = [];
-    emit = map.indoor ? [] : map.objects.filter((o) => o.t === 'deco' && (o.kind === 'fire' || o.sparks)).map((o) => ({ x: (o.x + o.w / 2) * TILE, y: (o.y + o.h) * TILE - (o.kind === 'fire' ? 34 : TILE * (o.hh || 2) * 0.62), fire: o.kind === 'fire' }));
+    emit = map.indoor && !map.stage ? [] : map.objects.filter((o) => o.t === 'deco' && (o.kind === 'fire' || o.sparks)).map((o) => ({ x: (o.x + o.w / 2) * TILE, y: (o.y + o.h) * TILE - (o.kind === 'fire' ? 34 : TILE * (o.hh || 2) * 0.62), fire: o.kind === 'fire' }));
     const n = { snow: 150, leaves: 22, dust: 60, drip: 45 }[map.fx] || 0;
     for (let i = 0; i < n; i++) fx.push(seedFx(map.fx, true));
   }
@@ -717,7 +726,7 @@
     for (const e of emit) if (Math.random() < dt * (e.fire ? 9 : 22)) fx.push({ k: 'spark', x: e.x + rnd(-10, 10), y: e.y, vx: rnd(-30, 30) * (e.fire ? 0.5 : 1.6), vy: rnd(-110, -40) * (e.fire ? 0.8 : 1.3), life: rnd(0.6, 1.4), t: 0, g: e.fire ? 10 : 160 });
     for (const e of emit) if (!e.fire && Math.random() < dt * 2.2) fx.push({ k: 'smoke', x: e.x + rnd(-8, 8), y: e.y - 20, vx: rnd(4, 14), vy: rnd(-26, -16), life: rnd(2.2, 3.4), t: 0, r: rnd(10, 16) });
     // 동굴 물방울: 천장에서 수로로
-    if (map.fx === 'drip' && Math.random() < dt * 2.5) fx.push({ k: 'drop', x: camX + Math.random() * vw, y: 0, vy: 0, to: rnd(4.1, 5.9) * TILE, t: 0, life: 9 });
+    if (map.fx === 'drip' && !map.indoor && Math.random() < dt * 2.5) fx.push({ k: 'drop', x: camX + Math.random() * vw, y: 0, vy: 0, to: rnd(4.1, 5.9) * TILE, t: 0, life: 9 });
     for (const p of fx) if (p.life) {
       p.t += dt;
       if (p.k === 'spark' || p.k === 'smoke') { p.x += p.vx * dt; p.y += p.vy * dt; if (p.g) p.vy += p.g * dt; }
@@ -768,7 +777,7 @@
     list.push({ y: pfy + 1.001, f: () => { const X = pfx * TILE + TILE / 2, Y = pfy * TILE + TILE - 4; if (window.CMDR) { ctx.save(); ctx.translate(X, Y); ctx.scale(1.5, 1.5); CMDR.draw(ctx, -24, -45, player.face, moving ? player.anim : 0); ctx.restore(); } } }); // 사령관은 동료 SD 키에 맞춰 1.5배
     list.sort((a, b) => a.y - b.y).forEach((d) => d.f());
     if (map.tint) { ctx.save(); ctx.globalCompositeOperation = 'multiply'; ctx.fillStyle = map.tint; ctx.fillRect(camX, camY, vw, vh); ctx.restore(); }
-    if (!map.indoor) { drawLights(vw, vh); drawFx(vw, vh); }
+    if (!map.indoor || map.stage) { drawLights(vw, vh); drawFx(vw, vh); }
     // 의뢰 표시는 어둠·날씨 위에 (늘 잘 보이게)
     for (const e of ents) if (opts.marker(e.id)) drawMarker(e.x * TILE + TILE / 2, e.y * TILE + TILE - 4 - (e.head || TILE * 1.6) - 4);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -906,7 +915,7 @@
     player.walk = !!moving || path.length > 0;
     player.flip = dir < 0;
     sdRender(ents, dt);
-    if (!map.indoor) stepFx(dt, cv.width / S);
+    if (!map.indoor || map.stage) stepFx(dt, cv.width / S);
     draw();
     if (banner > 0) banner -= dt;
     hud.classList.toggle('show', banner > 0);
