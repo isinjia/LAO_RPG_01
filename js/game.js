@@ -1202,7 +1202,9 @@
     const nt = R.nextWaveTurn(G);
     // 위쪽 줄은 작전명·승리 조건·(증원)·추가 목표만 (패배 조건·자세한 증원은 승리 조건 창: 띠를 누르거나 메뉴)
     $('goalBox').innerHTML = `${st.idx} ${st.title} · 승리: <b>${st.goal}</b>${nt ? ` · 증원 ${nt}턴` : ''}${R.diff !== 'normal' ? ` · <b>${R.DIFF[R.diff].name}</b>` : ''}${st.kind ? '' : ` · ${bonusLine(st, true)}`}`;
-    $('goalBox').title = `패배: ${st.lose}`;
+    const tac = G.tactic && R.TACTICS[G.tactic], tacOn = tac && G.tacUntil && G.turn <= G.tacUntil;
+    $('goalBox').title = `패배: ${st.lose}${tacOn ? ` · 작전 전술 ${tac.name}: ${tac.desc} (${G.tacUntil >= 99 ? '작전 내내' : `${G.tacUntil}턴까지`})` : ''}`;
+    if (tacOn) $('goalBox').insertAdjacentHTML('afterbegin', `<span class="gtac">${tac.name} (${tac.desc.replace(/^처음 \d+턴 /, '').replace(/ \(.*\)$/, '')}) ${G.tacUntil >= 99 ? '끝까지' : `~${G.tacUntil}턴`}</span> `);
     $('btnEnd').disabled = G.side !== 'p' || busy;
     syncQuick(); renderRoster();
   }
@@ -1729,7 +1731,7 @@
           if (s.fx === 'heal' && r.u.side === 'p' && r.u !== u) wait(400).then(() => AU.voice(r.u.key + '_Repair', 0.85)); // 고침을 받은 영웅의 원작 수리 음성
         }
         if (r.buff) {
-          r.u.buffs = r.u.buffs.filter((b) => !Object.keys(s.buff).some((k) => b[k]));
+          r.u.buffs = r.u.buffs.filter((b) => b.tac || !Object.keys(s.buff).some((k) => b[k])); // 작전 전술은 특기 버프와 따로 간다
           r.u.buffs.push({ ...s.buff, until: G.turn + 1, side: u.side });
           pop(r.u.x, r.u.y, Object.entries(s.buff).map(([k, n]) => ({ at: '공격', df: '방어', mov: '이동' }[k] + ' +' + Math.round(n * 100) + '%')).join(' '), 'info');
         }
@@ -1898,7 +1900,7 @@
       hp: u.hp, thp: u.troop ? u.troop.hp : 0, hpMax: u.hpMax, thpMax: u.troop ? u.troop.hpMax : 0, alive: u.alive, escaped: !!u.escaped, cd: u.cd, buffs: u.buffs, slow: u.slow || 0, slowNext: u.slowNext || 0, dealt: u.dealt || 0,
       nAct: u.nAct || 0, ai: u.ai, home: u.home, boss: !!u.boss, awake: !!u.awake, wave: u.wave, bornT: u.bornT, cmd: u.cmd ? G.units.indexOf(u.cmd) : -1, acted: u.side === 'p' && !!u.acted,
     }));
-    const d = { v: 1, si, idx: G.stage.idx, diff: R.diff, turn: G.turn, wave: G.wave, spawned: [...(G.spawned || [])], ev: [...(G.evDone || [])].map((e) => ev.indexOf(e)).filter((i) => i >= 0), units, rs: G.rs >>> 0, seed0: G.seed0 >>> 0, replay: !!G.stage.replay, easedTo: G.easedTo || null, start: stageStart, heroes: G.stage.heroes, free: G.stage.free, lock: G.stage.lock, stage };
+    const d = { v: 1, si, idx: G.stage.idx, diff: R.diff, turn: G.turn, wave: G.wave, spawned: [...(G.spawned || [])], ev: [...(G.evDone || [])].map((e) => ev.indexOf(e)).filter((i) => i >= 0), units, rs: G.rs >>> 0, seed0: G.seed0 >>> 0, replay: !!G.stage.replay, easedTo: G.easedTo || null, tactic: G.tactic || null, tacUntil: G.tacUntil || 0, start: stageStart, heroes: G.stage.heroes, free: G.stage.free, lock: G.stage.lock, stage };
     return d;
   }
   function suspendSave(turnStart) {
@@ -1961,6 +1963,7 @@
     applySnap(d);
     G.turnSnap = d.turnStart || (d.units.some((s) => s.acted) ? null : d); // 차례 처음의 판이 없으면 「이번 차례 다시」는 숨긴다
     G.easedTo = d.easedTo || null;
+    G.tactic = d.tactic || 'none'; G.tacUntil = d.tacUntil || 0; // 작전 전술 표시 (효과는 영웅 버프에 들어 있다)
     { const l = Object.keys(R.DIFF); if (d.diff && l.indexOf(R.diff) < l.indexOf(d.diff)) G.easedTo = R.diff; } // 타이틀에서 낮추고 이어해도 낮춘 판
     G.undo = d.undo || [];
     stageStart = d.start || { lv: {} };
@@ -2168,7 +2171,7 @@
       <h2>${d.ending.title}</h2>
       <p>${d.ending.desc}</p>
       <div class="ifend-note">${CHAPTERS[(D.STAGES[si].ch || 1) - 1].no}지역 · ${D.STAGES[si].idx} ${D.STAGES[si].title}에서 내린 판단 · IF 기록 ${n} / ${ifList().length}</div>
-      <div class="ifend-btns"><button class="wgo" id="ifBack"><b>선택의 순간으로</b><small>RETRY</small></button><button class="lo-btn dark" id="ifMap">월드맵으로</button></div>
+      <div class="ifend-btns"><button class="wgo" id="ifBack"><b>선택의 순간으로</b><small>다시 고르기</small></button><button class="lo-btn dark" id="ifMap">월드맵으로</button></div>
     </div></div>`);
     $('ifBack').onclick = () => { AU.play('lo_click', 0.7); AU.play('lo_trans_in', 0.5); if (part === 'start') startStage(si); else replayEnd(si); };
     $('ifMap').onclick = () => { AU.play('lo_click', 0.7); stageSelect(); };
@@ -2318,9 +2321,10 @@
       <p><b>피해 흔들림</b> · 공격 예상 창의 숫자는 기댓값이고, 실제 피해는 그 ±10% 안에서 흔들립니다. 아군 부대는 한 번의 교전에 병사를 70%(어려움 90%)까지만 잃고, 넘친 피해의 40%는 영웅이 받습니다.</p>
       <p><b>원거리</b> · 사격병·전자전병은 사거리 2 이상 (영웅·적마다 다르고, 적 포대는 4칸까지 쏘기도 합니다). 두 칸에서 쏘면 근접 부대는 반격하지 못합니다. 원거리 병종이 붙어서 싸우면 원래 피해의 30%만 들어갑니다.</p>
       <p><b>적의 움직임</b> · 적은 무리마다 지휘관이 있고, 부대가 지휘관 둘레로 함께 진격합니다. 무리 중 하나라도 아군과 가까워지거나 한 차례가 지나면 무리 전체가 움직이고, 상성으로 이기는 상대를 먼저 노립니다. 우두머리를 지키는 호위는 우두머리 곁을 떠나지 않습니다. 「위험」 단추로 적이 닿는 범위를 확인하세요. 증원은 정해진 턴에 나타나고, 그 전에 지도 위 적을 모두 쓰러뜨리면 남은 증원이 곧바로 앞당겨 나옵니다 (증원까지 모두 쓰러뜨리면 승리).</p>
-      <p><b>난이도</b> · 옵션에서 고릅니다 (작전 도중에 바꾸면 그 자리에서 적의 체력·능력치가 바뀝니다). 쉬움: 적 능력치 85%, 적이 조심스럽고 늦게 움직임 · 보통: 111%(배우는 1장 ×0.96, 사수 작전은 ×0.95) · 어려움: 120%, 적이 처음부터 진격하고 쓰러뜨릴 수 있는 영웅을 집요하게 노림 (어려움은 배우는 1장 ×0.9·긴 6장 ×0.97, 적이 지킬 칸으로 몰려드는 사수 작전 ×0.88을 더 곱해 덜어 줌). 여기에 장마다 배율(${Math.round(R.CH_K[0] * 100)}~${Math.round(R.CH_K[R.CH_K.length - 1] * 100)}%)이 곱해지고, 옵션 창에는 지금 작전의 실제 배율이 나옵니다.</p>
+      <p><b>난이도</b> · 옵션에서 고릅니다 (작전 도중에 바꾸면 그 자리에서 적의 체력·능력치가 바뀝니다). 쉬움: 적 능력치 85%, 적이 조심스럽고 늦게 움직임 · 보통: 111%(배우는 1장 ×0.93, 사수 작전은 ×0.95) · 어려움: 120%, 적이 처음부터 진격하고 쓰러뜨릴 수 있는 영웅을 집요하게 노림 (어려움은 배우는 1장 ×0.9, 적이 지킬 칸으로 몰려드는 사수 작전 ×0.92를 더 곱해 덜어 줌). 여기에 장마다 배율(${Math.round(R.CH_K[0] * 100)}~${Math.round(R.CH_K[R.CH_K.length - 1] * 100)}%)이 곱해지고, 옵션 창에는 지금 작전의 실제 배율이 나옵니다.</p>
       <div class="osec">성장 · 진행</div>
       <p><b>경험치</b> · 전투가 끝나면 참가한 영웅 전원이 같은 양을 받고, 가장 많이 친 영웅(MVP)은 20%를 더 받습니다.</p>
+      <p><b>작전 전술</b> · 출격 준비 아래 「작전 전술」 단추로 작전마다 하나 고릅니다: ${Object.values(R.TACTICS).filter((t) => t.buff).map((t) => `${t.name}(${t.desc})`).join(' · ')}. 출격한 아군 영웅·병사 전원에게 걸리고(도중에 합류한 아군은 빠짐), 처음엔 그 작전의 추천 전술이 골라져 있습니다. 걸려 있는 동안 위쪽 줄에 노랗게 표시됩니다.</p>
       <p><b>각성</b> · 영웅이 Lv.${R.PERK_LV}에 이르면 「출격 준비」나 「부대 현황」에서 각성 하나를 고릅니다: ${Object.values(R.PERKS).map((p) => `${p.name}(${p.desc})`).join(' · ')}. Lv.${R.PERK2_LV}에는 첫째와 다른 둘째 각성을 하나 더 고릅니다 (꾸준히 출격하면 보통 2장 중반에 첫째, 3장 끝 무렵에 둘째가 열립니다). 출격 준비·부대 현황에서 언제든 바꿀 수 있습니다.</p>
       <p><b>추가 목표</b> · 본편 작전마다 「정한 턴 안에 승리」(버티기·사수 작전은 「버티며 적 60% 이상 격파」)와 「영웅 퇴각 없이 승리」가 있습니다. 작전 도중 난이도를 낮춘 판은 세지 않습니다. 달성할 때마다 부품 보상이 25% 늘고, 작전 정보에 ★로 남습니다. 전투 중에는 위쪽 줄에 남은 턴이 보이고, 놓친 목표는 깬 작전의 「본편 다시 하기」(부품 60%)로 다시 노립니다.</p>
       <p><b>저장</b> · 작전 도중에도 행동이 끝날 때마다 저장되어 타이틀의 「작전 이어하기」로 돌아옵니다. 이번 차례 안에서는 U(또는 메뉴)로 한 수씩 되돌리거나, 메뉴의 「이번 차례 다시」로 차례 처음으로 돌아갈 수 있습니다.</p>
@@ -2388,7 +2392,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.37';
+  const GAME_VERSION = '1.43';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2803,6 +2807,8 @@
     $('modal').querySelectorAll('.rcard').forEach((c) => (c.dataset.a = 'hero'));
     liveCards();
   }
+  // 작전 전술: 작전마다 따로 기억 (고른 적 없으면 그 작전 추천 전술)
+  const tacOf = (st) => ((save.tactics || {})[st.idx]) || R.tacFor(st);
   // 각성 고르기 (Lv20부터, 출격 밖에서 언제든 바꿀 수 있다)
   function perkPick(id, back) {
     const s = save.heroes[id], h = D.HEROES[id], two = s.lv >= R.PERK2_LV;
@@ -2812,7 +2818,7 @@
       const t = { ...s }, key = slot === 1 ? 'perk' : 'perk2', old = t[key]; t[key] = k; if (t.perk === t.perk2) t[key === 'perk' ? 'perk2' : 'perk'] = old || null;
       const c = CL.stats(id, t); return Object.keys(NM).filter((x) => c[x] !== now[x]).map((x) => `${NM[x]} ${now[x]}→<b>${c[x]}</b>`).join(' · ') || '지금과 같음';
     };
-    const row = (slot, cur, other) => `<div class="pslot"><div class="osec">${slot === 1 ? `첫째 각성 (Lv.${R.PERK_LV})` : `둘째 각성 (Lv.${R.PERK2_LV}, 첫째와 다른 것)`}</div><div class="opts">${Object.keys(R.PERKS).map((k) => `<button data-a="p${slot}:${k}" class="${cur === k ? 'gold' : ''}"><b>${R.PERKS[k].name}</b> <small>${R.PERKS[k].desc}${other === k ? ' · 다른 칸과 맞바꿈' : ''}</small><small class="pprev">${cur === k ? '지금 고른 것' : other === k ? '두 칸을 바꿔도 능력치는 그대로' : preview(slot, k)}</small></button>`).join('')}</div></div>`;
+    const row = (slot, cur, other) => `<div class="pslot"><div class="osec">${slot === 1 ? `첫째 각성 (Lv.${R.PERK_LV})` : `둘째 각성 (Lv.${R.PERK2_LV}, 첫째와 다른 것)`}</div><div class="opts">${Object.keys(R.PERKS).map((k) => `<button data-a="p${slot}:${k}" class="${cur === k ? 'gold' : ''}"><b>${R.PERKS[k].name}</b> <small>${R.PERKS[k].desc}${other === k ? ' · 다른 칸과 맞바꿈' : ''}</small><small class="pprev">${cur === k ? '지금 고른 것' : other === k ? '두 칸을 바꿔도 능력치는 그대로' : '지금 → 바꾸면: ' + preview(slot, k)}</small></button>`).join('')}</div></div>`;
     modal(`<h3>${h.name} · 각성 <small style="color:#8d95a8;font:13px LO_M">출격 밖에서 언제든 바꿀 수 있음 · 데리고 가는 병사에도 같은 비율로 붙음</small></h3><div class="pslots">${row(1, s.perk, two ? s.perk2 : null)}${two ? row(2, s.perk2, s.perk) : `<div class="pslot"><p style="color:#8d95a8">Lv.${R.PERK2_LV}에 둘째 각성을 하나 더 고릅니다.</p></div>`}</div><div class="opts"><button data-a="back">돌아가기</button></div>`, (a) => {
       const m = a && /^p([12]):(\w+)$/.exec(a);
       if (m) {
@@ -3020,9 +3026,17 @@
         ${slots()}
         <div class="pdetail">${detail()}</div>
         <div class="pfootbar"><div class="pgoal"><span>승리 <b>${st.goal}</b></span><span>패배 ${st.lose}</span><span class="dim">소총병 ▶ 중장병 ▶ 기동병 ▶ 소총병 · 사격병 ▶ 공중병</span></div>
-          <button class="lo-btn dark" id="pHelp">도움말</button><button class="wgo pgo" id="pGo"><b>출격</b><small>SORTIE</small></button></div></div>`);
+          <button class="lo-btn dark ptac" id="pTac"><small>작전 전술</small><b>${(R.TACTICS[tacOf(st)] || R.TACTICS.none).name}</b></button><button class="lo-btn dark" id="pHelp">도움말</button><button class="wgo pgo" id="pGo"><b>출격</b><small>작전 개시</small></button></div></div>`);
       $('pBack').onclick = () => { AU.play('lo_click', 0.6); stageSelect(); };
       $('pHelp').onclick = () => { AU.play('lo_click', 0.6); help(); };
+      // 작전 전술 고르기: 처음 몇 턴의 흐름을 정한다 (작전마다 바꿀 수 있고, 다음 출격에도 그대로 남는다)
+      $('pTac').onclick = () => {
+        AU.play('lo_click', 0.6);
+        const rec = R.tacFor(st), now = tacOf(st);
+        modal(`<h3 style="white-space:nowrap">작전 전술 <small style="font:13px LO_M">처음 몇 턴 출격한 아군 전원에게 · 작전마다 기억</small></h3><div class="opts">${Object.entries(R.TACTICS).map(([k, t]) => `<button data-a="${k}" class="${now === k ? 'gold' : ''}"><b>${t.name}</b>${k === rec ? ' <i class="trec">이 작전 추천</i>' : ''} <small>${t.desc}</small></button>`).join('')}</div>`, (a) => {
+          if (a && R.TACTICS[a]) { (save.tactics = save.tactics || {})[st.idx] = a; writeSave(); const b = $('pTac'); if (b) b.querySelector('b').textContent = R.TACTICS[a].name; }
+        });
+      };
       $('pGo').onclick = () => {
         Object.assign(save.troops, pick);
         if (st.free) save.party = st.heroes.slice();
@@ -3163,6 +3177,7 @@
       if (!p) return;
       R.makeHero(G, id, save.heroes[id], save.troops[id], p[0], p[1]);
     });
+    R.applyTactic(G, tacOf(st)); // 출격 준비에서 고른 작전 전술 (작전마다 따로)
     R.spawnWave(G, 0);
     stageStart = { lv: Object.fromEntries(st.heroes.map((id) => [id, save.heroes[id].lv])) };
     const rigs = new Set();
@@ -3270,7 +3285,7 @@
         const up = r.lv1 > r.lv0, h = D.HEROES[r.id];
         return `<div class="rrow ${r === mvp ? 'mvp' : ''}" style="animation-delay:${0.35 + i * 0.08}s">
           <img src="${IMG[iconOf(r.id)]}" alt=""><div class="rinfo"><div class="rname"><b>${r.name}</b>${r === mvp ? '<i>MVP</i>' : ''}${r.alive ? '' : '<small>퇴각</small>'}</div>
-          <div class="rlv">Lv.<b>${r.lv1}</b>${up ? `<span class="rup">LEVEL UP</span>` : ''}<em>+${r.gain} EXP</em></div>
+          <div class="rlv">Lv.<b>${r.lv1}</b>${up ? `<span class="rup">레벨 업</span>` : ''}<em>+${r.gain} EXP</em></div>
           <div class="rbar"><i data-w="${r.exp1}" style="width:${up ? 0 : r.exp0}%"></i></div>${r.notes.some((n) => !n.startsWith('<b>MVP')) ? `<div class="rnote">${r.notes.filter((n) => !n.startsWith('<b>MVP')).map((n) => n.split(' · ')[0]).join(' ')}</div>` : ''}</div></div>`;
       }).join('');
       // 전직·각성 알림은 목록 위에 한 줄로 모은다 (영웅 줄에는 짧은 표시만)
@@ -3280,14 +3295,20 @@
       screen(`<div class="rscr ${win ? 'win' : 'lose'}"><div class="pbg"></div>
         <div class="rmvp"><canvas data-stand="${standOf(face.id)}"></canvas></div>
         <div class="rpanel">
-          <div class="rhead">${win ? '<img src="assets/ui/UI_Battle_Main_missionclear_label_2.png" alt="MISSION COMPLETE">' : '<b class="rfail">MISSION FAILED</b>'}
+          <div class="rhead">${win ? '<img src="assets/ui/UI_Battle_Main_missionclear_label_2.png" alt="MISSION COMPLETE">' : '<b class="rfail">작전 실패</b>'}
             <div class="rstage"><span>${st.idx}</span>${st.title}<small>${turn}턴</small></div></div>
           <div class="rsub">${win ? '참가 영웅 전원이 경험치를 얻었습니다 (MVP +20% · 적보다 레벨이 높으면 줄어듦)' : '얻은 경험치는 유지됩니다'}</div>
           ${parts ? `<div class="rparts"><img src="${PARTS_ICON}" alt=""><span>부품 <b>+${parts}</b></span><small>보유 ${save.parts} · 병사 훈련에 씁니다</small></div>` : ''}
           ${(G0last.bonus || []).length ? `<div class="rbonus">${G0last.bonus.map((x) => `<span class="${x.ok ? 'ok' : 'no'}">${x.ok ? '★' : '☆'} ${x.name}${x.first ? ' <b>NEW</b>' : ''}</span>`).join('')}<small>달성한 추가 목표마다 부품 +25%</small></div>` : ''}
           ${notice ? `<div class="rnotice">${notice}<button id="rRoster">부대 현황에서 바로 고르기</button></div>` : ''}
           <div class="rlist">${list}</div>
-          <div class="rbtns">${win ? '<button class="wgo" id="rOk"><b>확인</b><small>NEXT</small></button>' : '<button class="lo-btn dark" id="rSel">작전 선택</button><button class="wgo" id="rRetry"><b>다시 도전</b><small>RETRY</small></button>'}</div>
+          ${(() => { // 작전 요약: 목록 아래 빈자리에
+            const g = G0last; if (!g || !g.units) return '';
+            const foes = g.units.filter((u) => u.side === 'e'), down = foes.filter((u) => !u.alive).length, lost = rows.filter((r) => !r.alive).length;
+            const tac = g.tactic && g.tactic !== 'none' && R.TACTICS[g.tactic];
+            return `<div class="rsum"><span>적 격파 <b>${down}</b>/${foes.length}</span><span>퇴각 <b>${lost}</b>명</span><span>걸린 턴 <b>${turn}</b></span>${tac ? `<span>작전 전술 <b>${tac.name}</b></span>` : ''}<span>난이도 <b>${R.DIFF[R.diff].name}</b></span></div>`;
+          })()}
+          <div class="rbtns">${win ? '<button class="wgo" id="rOk"><b>확인</b><small>다음으로</small></button>' : '<button class="lo-btn dark" id="rSel">작전 선택</button><button class="wgo" id="rRetry"><b>다시 도전</b><small>처음부터</small></button>'}</div>
         </div></div>`);
       liveCards();
       wait(700).then(() => AU.voice(face.id + '_' + (win ? (mvp ? 'MVP' : 'SearchEnd') : 'Retreat')));

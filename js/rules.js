@@ -162,8 +162,8 @@
   // ai: 적 판단의 대담함 — fear 다음 차례에 맞을 걱정, bar 공격을 그만두는 문턱(밑지는 정도), wake 나온 뒤 스스로 진격하기까지의 차례, kill 격파 노리기
   R.DIFF = {
     easy: { k: 0.85, bonusTurns: 2, name: '쉬움', ai: { fear: 0.4, bar: -1.5, wake: 2, kill: 0, lead: 1.3, focus: 0 } },
-    normal: { k: 1.11, bonusTurns: 1, chAdj: { 1: 0.96 }, name: '보통', winAdj: { defend: 0.95 }, ai: { fear: 0.1, bar: -4, wake: 1, kill: 2, lead: 1.6, focus: 0.5 } }, // 보통도 쓰러뜨릴 수 있는 영웅은 노린다 (아군을 잃을 긴장)
-    hard: { k: 1.2, name: '어려움', troopCap: 0.9, heal: 0.6, bonusTurns: -1, chAdj: { 1: 0.9, 6: 0.97 }, winAdj: { defend: 0.88 }, ai: { fear: 0.05, bar: -6, wake: 0, kill: 6, lead: 2.8, focus: 3.5 } }, // focus: 이미 다친 영웅을 몰아 치는 협공 // lead: 적이 아군 지휘관을 노리는 무게
+    normal: { k: 1.11, bonusTurns: 1, chAdj: { 1: 0.93 }, name: '보통', winAdj: { defend: 0.95 }, ai: { fear: 0.1, bar: -4, wake: 1, kill: 2, lead: 1.6, focus: 0.5 } }, // 보통도 쓰러뜨릴 수 있는 영웅은 노린다 (아군을 잃을 긴장)
+    hard: { k: 1.2, name: '어려움', troopCap: 0.9, heal: 0.6, bonusTurns: -1, chAdj: { 1: 0.9 }, winAdj: { defend: 0.92 }, ai: { fear: 0.05, bar: -6, wake: 0, kill: 6, lead: 2.8, focus: 3.5 } }, // focus: 이미 다친 영웅을 몰아 치는 협공 // lead: 적이 아군 지휘관을 노리는 무게
   };
   R.aiOf = () => (R.DIFF[R.diff] || R.DIFF.normal).ai;
   R.healK = () => ((R.DIFF[R.diff] || R.DIFF.normal).heal || 1); // 아군 정비·지휘관 곁 보충 배율 (어려움은 줄어든다)
@@ -181,6 +181,23 @@
     df: { name: '수비 각성', desc: '영웅·병사 방어 +18%', k: { df: 0.18 } },
     hp: { name: '생존 각성', desc: '영웅·병사 체력 +18%', k: { hp: 0.18 } },
     mv: { name: '기동 각성', desc: '영웅·병사 이동 +1, 방어 -6%', k: { mov: 1, df: -0.06 } }, // 이동은 값이 커서 방어를 조금 내준다
+  };
+  // 작전 전술: 출격 준비에서 작전마다 하나 고른다. 처음 몇 턴만 아군 전원(영웅·병사)에 걸린다
+  R.TACTICS = {
+    none: { name: '전술 없음', desc: '아무 효과 없음' },
+    rush: { name: '돌격 명령', desc: '처음 3턴 공격 +22%, 방어 -15%', buff: { at: 0.22, df: -0.15 }, turns: 3 },
+    wall: { name: '방어 진형', desc: '처음 4턴 방어 +25% (버티기·사수 작전은 작전 내내)', buff: { df: 0.25 }, turns: 4, holdTurns: 99 },
+    swift: { name: '신속 전개', desc: '처음 3턴 이동 +1, 방어 -5%', buff: { mov: 1, df: -0.05 }, turns: 3 },
+  };
+  const holdStage = (st) => st && (st.win === 'survive' || st.win === 'defend');
+  R.tacTurns = (key, st) => { const t = R.TACTICS[key]; return t ? (holdStage(st) && t.holdTurns) || t.turns || 0 : 0; };
+  // 작전에 맞는 추천: 버티기·사수 → 방어 진형, 도달·탈출 → 신속 전개, 그 밖 → 돌격 명령
+  R.tacFor = (st) => (holdStage(st) ? 'wall' : st && (st.win === 'reach' || st.win === 'escape') ? 'swift' : 'rush');
+  R.applyTactic = (G, key) => {
+    const t = R.TACTICS[key]; G.tactic = t && t.buff ? key : 'none';
+    if (!t || !t.buff) return;
+    G.tacUntil = R.tacTurns(key, G.stage);
+    for (const u of G.units) if (u.side === 'p') u.buffs.push({ ...t.buff, until: 1 + G.tacUntil, side: 'p', tac: 1 });
   };
   R.PERK2_LV = 40; // 두 번째 각성 (첫째와 다른 것)
   const perkK = (u, k) => (u.side !== 'p' ? 0 : [u.perk, u.perk2].reduce((n, p) => n + ((p && R.PERKS[p] && R.PERKS[p].k[k]) || 0), 0));
