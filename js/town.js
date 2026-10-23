@@ -279,10 +279,12 @@
     for (const [art, fx, dy, w, hh] of props || []) { const x = Math.max(1, Math.round(fx * W)), y = Math.min(H - 2, r0 + dy); if (x === mx || objects.some((o) => o.t === 'npc' && o.x >= x && o.x < x + w && o.y === y)) continue; objects.push({ t: 'deco', art, x, y, w, h: 1, hh, block: 1 }); }
     return { name, rows, indoor: 1, stage: { bg: bgPath, fl: st.fl, h: st.h, sc, top0, floorH, off, back: st.back }, bg: bgPath, tint, spawn: [mx, H - 2], objects };
   }
+  // 방 안 분위기 (장별): 어둠, 어둠 빛깔, 사령관 둘레 등불, 떠다니는 것
+  const ROOMATMO = { works: { dark: 0.12, darkC: '30,18,8', torch: 1, fx: 'dust' }, camp: { dark: 0.14, darkC: '30,22,10', torch: 1, fx: 'dust' }, sewer: { dark: 0.5, darkC: '4,12,16', torch: 1, fx: 'drip', tint: '#b4c6cc' }, station: { dark: 0.25, darkC: '6,12,22', torch: 1, fx: 'dust' }, snow: { dark: 0.28, darkC: '40,22,8', torch: 1, fx: 'dust', tint: '#ffd6a8' } };
   const ROOMBG0 = { cmd: 'town/r_train_0', shop: 'town/r_dis2_0', cafe: 'town/r_cafe4_0' }; // 1장
   function baseFor(look, name) {
     const m = TOWNMAPS[look] || TOWNMAPS.coast, R = m.rooms;
-    for (const k of ['cmd', 'shop', 'cafe']) MAPS[k] = R ? stageRoom(k, R[k].label, R[k].bg, R[k].tint, PROPS[R[k].label]) : stageRoom(k, ROOMNAME0[k], ROOMBG0[k]);
+    for (const k of ['cmd', 'shop', 'cafe']) MAPS[k] = Object.assign(R ? stageRoom(k, R[k].label, R[k].bg, R[k].tint, PROPS[R[k].label]) : stageRoom(k, ROOMNAME0[k], ROOMBG0[k]), ROOMATMO[look] || {});
     const objects = m.objects.map((o) => (o.t === 'building' ? Object.assign({}, o, { label: R ? R[o.to[0]].label : ROOMNAME0[o.to[0]] }) : o));
     return Object.assign({}, m, { name: name || '마을', bgm: 'lo_town', objects });
   }
@@ -639,7 +641,8 @@
   let lights = [], dk = null;
   function initLights() {
     lights = [];
-    if (map.indoor) return;
+    if (map.indoor && !map.stage) return;
+    if (map.stage) { const ex = map.objects.find((o) => o.t === 'exit'); if (ex) lights.push({ x: ex.x * TILE + TILE / 2, y: (ex.y + 0.6) * TILE, r: 110, c: '255,214,150', fl: 0.1, ph: 1 }); return; }
     for (const o of map.objects) {
       if (o.t === 'deco' && o.lit) {
         const hh = o.kind === 'fire' ? 0.5 : o.art && o.art.includes('lamp') ? (o.hh || 2) * 0.88 : o.kind === 'lighthouse' ? 4.6 : (o.hh || 1.6) * 0.5;
@@ -694,7 +697,7 @@
   const rnd = (a, b) => a + Math.random() * (b - a);
   function initFx() {
     fx = [];
-    emit = map.indoor ? [] : map.objects.filter((o) => o.t === 'deco' && (o.kind === 'fire' || o.sparks)).map((o) => ({ x: (o.x + o.w / 2) * TILE, y: (o.y + o.h) * TILE - (o.kind === 'fire' ? 34 : TILE * (o.hh || 2) * 0.62), fire: o.kind === 'fire' }));
+    emit = map.indoor && !map.stage ? [] : map.objects.filter((o) => o.t === 'deco' && (o.kind === 'fire' || o.sparks)).map((o) => ({ x: (o.x + o.w / 2) * TILE, y: (o.y + o.h) * TILE - (o.kind === 'fire' ? 34 : TILE * (o.hh || 2) * 0.62), fire: o.kind === 'fire' }));
     const n = { snow: 150, leaves: 22, dust: 60, drip: 45 }[map.fx] || 0;
     for (let i = 0; i < n; i++) fx.push(seedFx(map.fx, true));
   }
@@ -768,7 +771,7 @@
     list.push({ y: pfy + 1.001, f: () => { const X = pfx * TILE + TILE / 2, Y = pfy * TILE + TILE - 4; if (window.CMDR) { ctx.save(); ctx.translate(X, Y); ctx.scale(1.5, 1.5); CMDR.draw(ctx, -24, -45, player.face, moving ? player.anim : 0); ctx.restore(); } } }); // 사령관은 동료 SD 키에 맞춰 1.5배
     list.sort((a, b) => a.y - b.y).forEach((d) => d.f());
     if (map.tint) { ctx.save(); ctx.globalCompositeOperation = 'multiply'; ctx.fillStyle = map.tint; ctx.fillRect(camX, camY, vw, vh); ctx.restore(); }
-    if (!map.indoor) { drawLights(vw, vh); drawFx(vw, vh); }
+    if (!map.indoor || map.stage) { drawLights(vw, vh); drawFx(vw, vh); }
     // 의뢰 표시는 어둠·날씨 위에 (늘 잘 보이게)
     for (const e of ents) if (opts.marker(e.id)) drawMarker(e.x * TILE + TILE / 2, e.y * TILE + TILE - 4 - (e.head || TILE * 1.6) - 4);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -906,7 +909,7 @@
     player.walk = !!moving || path.length > 0;
     player.flip = dir < 0;
     sdRender(ents, dt);
-    if (!map.indoor) stepFx(dt, cv.width / S);
+    if (!map.indoor || map.stage) stepFx(dt, cv.width / S);
     draw();
     if (banner > 0) banner -= dt;
     hud.classList.toggle('show', banner > 0);
