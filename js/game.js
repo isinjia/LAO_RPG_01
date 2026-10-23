@@ -1285,6 +1285,7 @@
   }
   function selectUnit(u) {
     AU.play('lo_click', 0.6);
+    if (u.side === 'p' && u.voiced !== G.turn) { u.voiced = G.turn; AU.voice(u.key + '_ActionApprove', 0.85); } // 차례마다 처음 고를 때만 원작 행동 승인 음성
     $('forecast').classList.add('hidden');
     ui.sel = u; ui.state = 'move'; ui.from = [u.x, u.y];
     ui.reach = R.reach(G, u);
@@ -1339,10 +1340,12 @@
         faceTo(u, nx);
         const from = v.g.position.clone(), to = tilePos(nx, ny);
         const dur = (u.move === 'horse' || u.move === 'fly' ? 0.1 : 0.13) / speedK;
+        const step = AU.stepOf(u); // 칸마다 원작 발소리 (걷기·달리기·기계 발), 나는 몸은 처음에 제트 소리만
+        if (step) AU.play(step, step === 'lo_walk' ? 0.45 : 0.35, 0.92 + Math.random() * 0.16);
         animate(dur, (k) => v.g.position.lerpVectors(from, to, k), () => { u.x = nx; u.y = ny; i++; stepTile(); });
       };
       stepTile();
-      AU.play('lo_click', 0.25);
+      if (u.move === 'fly') AU.play('lo_fly', 0.35);
     });
   }
   function openActions() {
@@ -1570,8 +1573,8 @@
     wait(150).then(() => popDmg(a, res.aT, res.aH));
     refreshView(a); refreshView(d);
     const deaths = [];
-    if (d.hp <= 0) deaths.push(kill(d));
-    if (a.hp <= 0) deaths.push(kill(a));
+    if (d.hp <= 0) deaths.push(kill(d, save.opts.fight));
+    if (a.hp <= 0) deaths.push(kill(a, save.opts.fight));
     await Promise.all(deaths);
     if (deaths.length) await wait(200);
   }
@@ -1587,6 +1590,7 @@
     if (weaponKind(a) !== 'melee') fxAt(a.x, a.y, 'muzzle', 120); // 연출을 꺼도 지도에서 총구 번쩍임
     await wait(380);
     fxAt(d.x, d.y, weaponKind(a));
+    AU.hit(a.def.sfx, AU.mech(d), 0.5);
     vd.rig.c.setFlash(1);
     await wait(120);
     vd.rig.c.setFlash(0);
@@ -1597,23 +1601,27 @@
       if (weaponKind(d) !== 'melee') fxAt(d.x, d.y, 'muzzle', 120);
       await wait(380);
       fxAt(a.x, a.y, weaponKind(d));
+      AU.hit(d.def.sfx, AU.mech(a), 0.5);
       va.rig.c.setFlash(1);
       await wait(120);
       va.rig.c.setFlash(0);
     }
     await wait(130);
   }
-  async function kill(u) {
+  async function kill(u, quiet) { // quiet: 전투 장면에서 쓰러지는 소리를 이미 냈다
     u.alive = false; u.hp = 0;
     const v = views.get(u.uid);
     pop(u.x, u.y, u.side === 'p' ? '퇴각' : '격파!', 'info big', 1.3);
+    if (!quiet) { // 전투 장면에서 이미 울렸으면 거듭하지 않는다
+      AU.fall(u, 0.65); if (u.side === 'e') AU.play(u.def.big || u.boss ? 'expB' : 'expM', 0.5);
+      if (u.side === 'p') wait(250).then(() => AU.voice(u.key + '_Retreat', 0.9));
+    }
     fxAt(u.x, u.y, u.side === 'e' ? (u.def.big ? 'bigboom' : 'boom') : 'dust'); // 원작 효과: 철충은 폭발
     if (v) {
       for (const r of [v.rig, ...v.soldiers.map((s) => s.rig)]) if (r.c.has('die')) r.once('die', 1.4 * speedK, true);
       await animateP(0.9, (k) => { for (const r of [v.rig, ...v.soldiers.map((s) => s.rig)]) r.c.setOpacity(1 - k * k); });
       removeView(u);
     }
-    if (u.boss || u.lead) AU.play(u.side === 'p' ? 'fail' : 'expB', 0.6);
     updateDanger();
   }
   // 특기 갈래마다 다른 원작 효과 연출 (지도 위)
@@ -1667,7 +1675,9 @@
     panTo(tx, ty);
     LOHUD.cutin(u, s.name, speedK); // 원작식 특기 컷인
     fxAt(u.x, u.y, s.power ? 'charge' : 'cast', 300); // 시전자 둘레에 원작 기 모으기 효과
-    AU.play('charge', 0.5);
+    AU.play('charge', 0.5); AU.play('lo_cast', 0.45);
+    if (u.side === 'p') AU.voice(u.key + (u.key === 'fallen' ? '_BattleFocus' : '_SpSkill'), 0.9); // 원작 특기 음성
+    else if (u.boss && AU.unitSfx(u, 'roar')) AU.play(AU.unitSfx(u, 'roar'), 0.6);
     await wait(950);
     if (v) { // 특기 몸동작: 전용 동작이 없으면 공격 동작을 빠르게 한 번 + 병사들도 함께
       if (v.rig.c.has('skill')) v.rig.once('skill', Math.max(1, v.rig.dur('skill') / 1.6) * speedK);
@@ -1678,6 +1688,10 @@
     OV.area = area; drawOverlay();
     await wait(500);
     AU.play(s.sfx, 0.8);
+    const own = AU.skillSfx(u); // 영웅·우두머리 고유 특기 소리 (길면 줄여 끊는다)
+    if (own && (s.power || u.side === 'e')) AU.cut(AU.play(own, 0.5), 2.6);
+    const sup = { heal: 'lo_heal', buff: 'lo_buff', shield: 'lo_shield' }[s.fx];
+    if (sup) AU.play(sup, 0.6);
     const travel = skillFx(u, s, area, tx, ty);
     await wait(350 + travel);
     const deaths = [];
@@ -1686,7 +1700,8 @@
         R.apply(r.u, r.toT, r.toH);
         u.dealt = (u.dealt || 0) + r.toT + r.toH;
         popDmg(r.u, r.toT, r.toH);
-        if (s.slow) { r.u.slowNext = s.slow; fxAt(r.u.x, r.u.y, 'debuff', 200); }
+        if (s.slow) { r.u.slowNext = s.slow; fxAt(r.u.x, r.u.y, 'debuff', 200); wait(200).then(() => AU.play('lo_debuff', 0.35)); }
+        AU.hit(s.sfx, AU.mech(r.u), 0.4, 0.9 + Math.random() * 0.2);
         refreshView(r.u);
         if (r.u.hp <= 0) deaths.push(kill(r.u));
       } else {
@@ -1724,7 +1739,7 @@
   async function reinforce(i) {
     const list = R.spawnWave(G, i);
     LOHUD.caution('철충 증원!', `${list.length}기 출현`);
-    AU.play('reinforce', 0.7);
+    AU.cut(AU.play('lo_d_alarm', 0.45), 2); AU.play('lo_warn', 0.4); // 원작 경보
     for (const u of list) { addView(u); fxAt(u.x, u.y, 'spawn'); }
     if (list[0]) panTo(list[0].x, list[0].y, true);
     setTop();
@@ -1778,12 +1793,12 @@
     if (side === 'p' && G.stage.turnLimit && G.turn > G.stage.turnLimit) { await endStage(false, '제한 턴을 넘겼습니다'); return; }
     if (side === 'p' && (G.stage.win === 'survive' || G.stage.win === 'defend') && G.turn > G.stage.turns) { await endStage(true, `${G.stage.turns}턴을 버텼습니다`); return; }
     LOHUD.phase(side, G.turn, side === 'p' && G.stage.turnLimit ? `제한 ${G.stage.turnLimit}턴` : '', speedK);
-    AU.play(side === 'p' ? 'start' : 'warning', 0.5);
+    AU.play(side === 'p' ? (G.turn > 1 ? 'lo_round' : 'start') : 'warning', 0.5);
     await wait(900);
     // 지형(마을·기지) 회복 + 수동 특기(재생) + 지휘관 곁 병사 보충
     const heals = R.phaseHeal(G, side);
     for (const r of heals) popSupply(r.u, r.hT, r.hH, r.cmd ? '지휘 ' : '');
-    if (heals.length) { AU.play('energy', 0.4); await wait(500); }
+    if (heals.length) { AU.play('lo_heal', 0.45); await wait(500); }
     if (side === 'p') await battleEvent('turn:' + G.turn);
     if (side === 'e') { // 정해진 턴의 적 차례에 증원
       for (const i of R.wavesAt(G, G.turn)) await reinforce(i);
@@ -2233,9 +2248,11 @@
   }
 
   let stageSel = -1; // 예전 이름 유지: 선택(정보 창)한 지점
+  let loginVoiced = false;
   function stageSelect() {
     leaveMap();
     AU.bgm('lo_lobby');
+    if (!loginVoiced) { loginVoiced = true; wait(600).then(() => AU.voice('constantia_Login')); } // 처음 지휘실에 들어오면 원작 접속 음성
     const ch = curCh(), CH = CHAPTERS[ch];
     save.chapter = ch;
     if (save.node == null || !nodeOpen(save.node) || !nodeIds().includes(save.node)) save.node = Math.max(...nodeIds().filter((i) => i !== WT && nodeOpen(i)));
@@ -2499,7 +2516,7 @@
       <div class="dlist">${rows}</div><div class="opts"><button class="gold" data-a="ok">닫기</button></div>`, (a) => {
       if (a && a.startsWith('d:')) {
         const k = a.slice(2), lv = drillLv(k), cost = R.drillCost(lv);
-        if (lv < R.DRILL_MAX && save.parts >= cost) { save.parts -= cost; save.drill[k] = lv + 1; writeSave(); AU.play('lo_equip', 0.7); }
+        if (lv < R.DRILL_MAX && save.parts >= cost) { save.parts -= cost; save.drill[k] = lv + 1; writeSave(); AU.play('lo_reinforce_eq', 0.7); }
         drillMenu(done, k);
         return;
       }
@@ -2545,6 +2562,7 @@
   // 전직 (랑그릿사식 전직 나무): 기본 → 갈래 A·B 중 하나(Lv5) → 같은 갈래 상위 직업(Lv10). 직업마다 원작 스킨 일러스트·SD
   function classChange(id, done) {
     const h = D.HEROES[id], s = save.heroes[id];
+    heroVoice(id, 'Leader'); // 원작 대표 지정 음성
     const opts = CL.options(id, s);
     let sel = opts[0] || CL.cur(id, s);
     let changed = false;
@@ -2605,7 +2623,7 @@
       $('ccGo').onclick = () => {
         if (!opts.some((o) => key(o) === key(sel)) || !CL.canChange(id, s)) return;
         s.tier = sel.tier; s.br = sel.br; writeSave(); changed = true;
-        AU.play('lo_join', 0.8); heroVoice(id, 'Join');
+        AU.cut(AU.play('lo_rank_up_ss', 0.6), 3); heroVoice(id, 'Join');
         toast(`전직 · ${h.name} → ${sel.cls}`);
         ov.classList.add('flash');
         setTimeout(() => ov.classList.remove('flash'), 700);
@@ -2947,7 +2965,7 @@
       const lead = rows.find((r) => r.id === 'constantia') || rows[0];
       const face = mvp || lead;
       AU.bgm(null);
-      AU.play(win ? 'lo_win_music' : 'fail', 0.7);
+      if (win) AU.play('lo_win_music', 0.7);
       const list = rows.map((r, i) => {
         const up = r.lv1 > r.lv0, h = D.HEROES[r.id];
         return `<div class="rrow ${r === mvp ? 'mvp' : ''}" style="animation-delay:${0.35 + i * 0.08}s">
@@ -2968,6 +2986,8 @@
       liveCards();
       wait(700).then(() => AU.voice(face.id + '_' + (win ? (mvp ? 'MVP' : 'SearchEnd') : 'Retreat')));
       requestAnimationFrame(() => setTimeout(() => document.querySelectorAll('.rbar i').forEach((b) => (b.style.width = b.dataset.w + '%')), 500));
+      if (parts) wait(450).then(() => AU.play('lo_coin', 0.6)); // 부품 보상: 원작 동전 소리
+      if (rows.some((r) => r.lv1 > r.lv0)) wait(1300).then(() => AU.cut(AU.play('lo_rank_up', 0.55), 2.4)); // 레벨 업: 원작 등급 상승 소리
       if ($('rOk')) $('rOk').onclick = () => { AU.play('lo_click', 0.7); res(); };
       if ($('rRetry')) $('rRetry').onclick = () => { AU.play('lo_click', 0.7); prep(st); };
       if ($('rSel')) $('rSel').onclick = () => { AU.play('lo_click', 0.7); stageSelect(); };
@@ -2981,7 +3001,7 @@
     await wait(400);
     LOHUD.result(win, why || (win ? st.goal + ' 달성' : '콘스탄챠가 퇴각했습니다'));
     AU.bgm(null);
-    AU.play(win ? 'lo_win' : 'fail', 0.8);
+    AU.play(win ? 'lo_win' : 'lo_d_whiteout', 0.8);
     await wait(1700);
     // 경험치: 그 장소 본편 기준. 의뢰는 조금 더, 고난도는 1장 끝 기준으로
     const gain = Math.round(R.stageExp(st.kind === 'side' && st.side.kind === 'Ex' ? 9 : st.id - 1, win) * (st.kind === 'side' ? 1.25 : 1));

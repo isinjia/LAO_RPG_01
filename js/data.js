@@ -1241,7 +1241,7 @@
       ],
     },
     {
-      id: 32, ch: 4, idx: '4-8', title: '철길 위에서', bgm: 'lo_boss1', goal: '광폭화 레이더 격파', lose: '콘스탄챠 퇴각', win: 'boss',
+      id: 32, ch: 4, idx: '4-8', title: '철길 위에서', bgm: 'lo_boss2', goal: '광폭화 레이더 격파', lose: '콘스탄챠 퇴각', win: 'boss',
       heroes: ['constantia', 'marie', 'griffon', 'amy', 'coco', 'lrl'],
       // 달리는 열차 위: 좁고 긴 선로 통로를 따라 철충이 쫓아온다
       map: [
@@ -1479,7 +1479,7 @@
       ],
     },
     {
-      id: 40, ch: 5, idx: '5-8', title: '깊고 깊은 감시자', bgm: 'lo_boss1', night: true, goal: '언더왓쳐 격파', lose: '콘스탄챠 퇴각', win: 'boss',
+      id: 40, ch: 5, idx: '5-8', title: '깊고 깊은 감시자', bgm: 'lo_boss2', night: true, goal: '언더왓쳐 격파', lose: '콘스탄챠 퇴각', win: 'boss',
       heroes: ['constantia', 'marie', 'griffon', 'scathy', 'coco', 'lrl'],
       // 심연의 방: 맨 위에 버틴 언더왓쳐 몸통과 팔·발전기·센서
       map: [
@@ -1719,7 +1719,7 @@
       ],
     },
     {
-      id: 48, ch: 6, idx: '6-8', title: '새로운 육체', bgm: 'lo_boss1', night: true, goal: '익스큐셔너 격파', lose: '콘스탄챠 퇴각', win: 'boss',
+      id: 48, ch: 6, idx: '6-8', title: '새로운 육체', bgm: 'lo_boss3', night: true, goal: '익스큐셔너 격파', lose: '콘스탄챠 퇴각', win: 'boss',
       heroes: ['constantia', 'labiata', 'marie', 'griffon', 'scathy', 'coco'],
       // 생체 재건 설비: 실험체가 쏟아지고 익스큐셔너가 두 칼날을 거느리고 내려온다
       map: [

@@ -585,7 +585,7 @@
     if (!moving && path.length && !busy) {
       const [nx, ny] = path[0];
       if (!walkable(nx, ny)) path = [];
-      else { if (nx !== px) dir = nx < px ? -1 : 1; player.face = nx < px ? 'left' : nx > px ? 'right' : ny < py ? 'up' : 'down'; moving = 1; player.from = [px, py]; px = nx; py = ny; player.t = 0; }
+      else { if (nx !== px) dir = nx < px ? -1 : 1; player.face = nx < px ? 'left' : nx > px ? 'right' : ny < py ? 'up' : 'down'; moving = 1; player.from = [px, py]; px = nx; py = ny; player.t = 0; AU.play('lo_walk', 0.35, 0.92 + Math.random() * 0.16); } // 한 칸마다 원작 흙길 발소리
     }
     if (moving) {
       player.t += dt * 4.6; player.anim += dt * 9;
