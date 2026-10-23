@@ -160,6 +160,14 @@
     Prefeb_FadeOutandRustle: async () => { AU.play('lo_d_rustle', 0.9); await toBlack(true, 1.0); await tw(500); },
     Prefeb_InjectionSound: async () => { AU.play('lo_d_inject', 0.8); await flash('#cfe8ff', 0.4, 0.25); },
     Prefeb_MetalHowling: async () => { AU.play('lo_d_metal', 0.9); await shake(8, 0.6); },
+    Prefab_Sound: async () => { AU.bgm('lo_boss3'); }, // 원작: 대화 도중 06 BGM_Battle_Boss_03 으로 바꿔 튼다
+    Prefab_Explosion_02: async () => { AU.play('lo_d_explosion2', 0.9); flash('#ffd9a0', 0.35, 0.6); await shake(14, 0.4); },
+    Prefab_GunFire_02: async () => { AU.play('lo_d_gunfire2', 0.8); await flash('#fff', 0.12, 0.3); },
+    Prefab_FootStep_01: async () => { AU.play('lo_d_foot', 0.8); },
+    Prefab_Alarm_01: async () => { AU.cut(AU.play('lo_d_alarm', 0.7), 3); },
+    Prefab_Break_01: async () => { AU.play('lo_d_break', 0.9); await shake(10, 0.4); },
+    Prefab_DoorOpen_01: async () => { AU.play('lo_d_door', 0.7); },
+    DoorKnock_01: async () => { AU.play('lo_d_knock', 0.8); },
   };
 
   // 장소 자막: 원작 lblBGDesc(크게) + lblBGname(작게)를 화면 가운데에

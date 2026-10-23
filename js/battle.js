@@ -240,6 +240,9 @@
       ui.querySelector('.fnums').innerHTML = '';
       ui.querySelector('.fvs small').textContent = res.rel > 0 ? `${a.name} 상성 우위` : res.rel < 0 ? `${a.name} 상성 열세` : '';
       setSide('L', L); setSide('R', Rr);
+      K.AU.play('lo_whoosh', 0.45); // 전투 장면으로 넘어가는 바람 소리
+      if (a.side === 'p') K.AU.voice(a.key + '_BattleFocus', 0.85); // 먼저 치는 우리 영웅의 원작 전투 음성
+      else if (d.side === 'p') K.AU.voice(d.key + '_BattleFocus', 0.85); // 적이 먼저 치면 막는 우리 영웅의 원작 전투 음성
 
       const mk = (u, side) => {
         const dir = side === 'L' ? -1 : 1;
@@ -388,9 +391,9 @@
       switch (f.st) {
         case 'wait':
           if (--f.wait > 0) break;
-          if (f.role === 'foot') { f.st = 'adv'; f.rig.loop('move', 1.1); }
+          if (f.role === 'foot') { f.st = 'adv'; f.rig.loop('move', 1.1); moveSnd(f); }
           else if (f.role === 'cav' || f.role === 'fly' || f.role === 'dash') {
-            f.st = 'run'; f.goal = f.dir * S.lim; f.hitSet = new Set(); f.rig.loop('move', f.role === 'cav' ? 2.2 : 1.6);
+            f.st = 'run'; f.goal = f.dir * S.lim; f.hitSet = new Set(); f.rig.loop('move', f.role === 'cav' ? 2.2 : 1.6); moveSnd(f);
             const dur = (Math.abs(f.goal - p.x) / ((f.role === 'dash' ? 5 : 4) * PX)) * FR / S.sp;
             streak(f, T, dur);
             if (f.hero) trail(f, T, dur); // 지휘관 돌진의 잔상
@@ -441,7 +444,7 @@
             const q = o.rig.g.position;
             if (Math.abs(q.x - p.x) * 2 <= W(f) + W(o) && (f.role === 'fly' || Math.abs(q.y - p.y) < 0.5)) { f.hitSet.add(o); land(f, o, false); if (S.n % 3 === 0) f.rig.once('atk', 1.8); }
           }
-          if (S.n % 12 === 0 && f.role !== 'fly') fx('dust_step', p.x, p.y + 0.05, { flipX: f.dir < 0, k: f.hero ? 1 : 0.7, renderOrder: 90 }); // 12프레임마다 말발굽 먼지
+          if (S.n % 12 === 0 && f.role !== 'fly') { fx('dust_step', p.x, p.y + 0.05, { flipX: f.dir < 0, k: f.hero ? 1 : 0.7, renderOrder: 90 }); if (f.hero || f === f.S.from[1]) window.KIT.AU.play(window.KIT.AU.mech(f.u) ? 'lo_walk_r' : 'lo_run', 0.35, 0.9 + Math.random() * 0.2); } // 12프레임마다 말발굽 먼지 + 원작 달리기 소리
           if (!arrived) break;
           if (f.role === 'fly' && --f.atk > 0) { f.goal = -f.goal; f.hitSet = new Set(); f.rig.face(Math.sign(f.goal)); break; } // 비병은 되짚어 다시 꿰뚫는다
           goHome(f, f.role === 'dash' ? 5 : 4);
@@ -462,12 +465,12 @@
           const at = f.hero ? 3 : 8, cyc = f.hero ? 16 : 24;
           if (f.timer === 1) f.rig.once('atk', 1.2);
           if (f.timer === at) { const l = foes(f); if (l.length) shot(f, l.slice().sort((x, y) => (x.pend || 0) - (y.pend || 0) || Math.random() - 0.5)[0]); }
-          if (f.timer >= cyc) { f.timer = 0; if (--f.atk <= 0) { f.st = 'done'; f.rig.loop('idle'); } }
+          if (f.timer >= cyc) { f.timer = 0; if (--f.atk <= 0) { f.st = 'done'; f.rig.loop('idle'); } else if (f.hero) window.KIT.AU.play('lo_reload', 0.3); } // 다시 쏘기 전 원작 장전 소리
           break;
         }
         case 'cast': { // 마법 지휘관: 한 번 주문을 건다
           f.timer++;
-          if (f.timer === 2) f.rig.once('atk', 1);
+          if (f.timer === 2) { f.rig.once('atk', 1); window.KIT.AU.play('lo_cast', 0.5); window.KIT.AU.play(f.u.def.sfx, 0.5); }
           if (f.timer === 8) foes(f).sort(() => Math.random() - 0.5).slice(0, 4).forEach((o, i) => later(T + i * 0.06 / S.sp, () => { if (o.alive) { const q = o.rig.g.position; fx('hit_energy', q.x, q.y + lift(o) + 0.6, { k: 0.9, tint: 0xd6a8ff, renderOrder: 530 }); land(f, o, true); } }));
           if (f.timer >= 24) f.st = 'done';
           break;
@@ -478,10 +481,19 @@
     const busy = S.all.some((f) => f.alive && f.st !== 'done' && f.st !== 'idle');
     if ((!busy && S.flying <= 0) || S.n >= S.cap) simEnd();
   }
+  // 움직이기 시작할 때 한 번 (부대마다): 걷는 보병은 행군, 기병은 달리기, 비병은 제트, 근접 지휘관은 날랜 돌진
+  function moveSnd(f) {
+    const AU = window.KIT.AU, S = f.S, mech = AU.mech(f.u);
+    const name = f.role === 'fly' ? 'lo_fly' : f.role === 'dash' ? 'lo_dash' : f.role === 'cav' ? (mech ? 'lo_walk_rb' : 'lo_run') : mech ? 'lo_walk_r' : 'lo_march';
+    if (S.mv && S.mv[name] && T - S.mv[name] < 0.5) return;
+    (S.mv || (S.mv = {}))[name] = T;
+    AU.play(name, f.role === 'fly' ? 0.4 : 0.5, 0.95 + Math.random() * 0.1);
+  }
   // 탄: 쏜 자리에서 노린 적까지 낮은 포물선 (64px 넘게 떨어지면 더 높이), 최대 34프레임
   function shot(f, o) {
     const S = SIM, p = f.rig.g.position, q = o.rig.g.position;
     muzzle(f, f.S.au);
+    if (T - (f.S.fire || -1) > 0.07) { f.S.fire = T; window.KIT.AU.play(f.hero ? f.u.def.sfx : f.u.troop ? f.u.troop.def.sfx : f.u.def.sfx, f.hero ? 0.55 : 0.4, 0.94 + Math.random() * 0.12); } // 쏘는 소리 (원작 무기 소리)
     const x0 = p.x + f.dir * 0.42, y0 = p.y + lift(f) + (f.hero ? 1.0 : 0.62), x1 = q.x, y1 = q.y + lift(o) + (o.hero ? 0.8 : 0.45);
     const dpx = Math.abs(x1 - x0) / S.PX, life = (Math.min(34, Math.max(6, dpx / 5)) * FR) / S.sp;
     const w = weaponOf(f, f.S.au);
@@ -500,7 +512,12 @@
     if (window.FXLIB) { fx(HIT_FX[w], hx, hy, { k: dst.hero ? 0.85 : 0.45, flipX: dst.side === 'L', rotation: (Math.random() - 0.5) * 0.5 }); if (w === 'melee' && Math.random() < 0.5) fx('slash_line', hx, hy, { k: dst.hero ? 1 : 0.7, rotation: (Math.random() - 0.5) * 1.2 }); }
     else spark(hx, hy, ranged);
     dst.flashT = T;
-    if (T - S.snd > 0.09) { S.snd = T; window.KIT.AU.play(ranged ? 'expS' : src.hero ? S.au.def.sfx : (S.au.troop ? S.au.troop.def.sfx : S.au.def.sfx), ranged ? 0.4 : 0.6); }
+    if (T - S.snd > 0.09) { // 맞는 소리: 무기 갈래 × 맞은 몸 (철충은 쇳소리). 근접은 휘두르는 소리와 함께
+      S.snd = T;
+      const AU = window.KIT.AU, sfx = src.hero ? S.au.def.sfx : (S.au.troop ? S.au.troop.def.sfx : S.au.def.sfx), r = 0.92 + Math.random() * 0.16;
+      if (ranged) { AU.hit(sfx, AU.mech(S.du), 0.45, r); if (AU.weapon(sfx) === 'heavy') AU.play('expS', 0.35, r); }
+      else { AU.play(AU.mech(S.au) ? 'lo_swing_r' : 'lo_swing', 0.45, r); AU.hit(AU.weapon(sfx) === 'sword' ? 'slash' : 'swing', AU.mech(S.du), 0.5, r); }
+    }
     spendBlow(S, dst);
     if (dst.alive && dst.st !== 'run') dst.kbF = 4;
   }
@@ -520,7 +537,7 @@
     if (alive().length > keep && victim && !victim.hero) die(victim);
     while (alive().length > keep) { const q = (victim || heroF).rig.g.position; die(alive().sort((x, y) => Math.abs(x.rig.g.position.x - q.x) - Math.abs(y.rig.g.position.x - q.x))[0]); }
     setBars(S.toSide, S.du, Sx.thp, Sx.hp);
-    if (dH > 0) { shakeBust(S.toSide); shake(adv ? 0.38 : 0.22, 0.28); hitStop(adv ? 0.12 : 0.07); } else shake(0.08, 0.14);
+    if (dH > 0) { shakeBust(S.toSide); shake(adv ? 0.38 : 0.22, 0.28); hitStop(adv ? 0.12 : 0.07); if (adv) window.KIT.AU.play('lo_hit_big', 0.5); } else shake(0.08, 0.14); // 상성 우위로 지휘관을 친 강한 일격: 묵직한 원작 타격음
     if (Sx.hp <= 0.5 && heroF && heroF.alive) die(heroF);
     return true;
   }
@@ -580,6 +597,7 @@
         if (s.counter && i === 0) tl.push({ t: e.t - 0.12 / sp, fn: () => wordOver(s.from, 'counter') }); // 원작 「반격」 글자
         tl.push({ t: e.t, fn: () => {
           const who = e.who === 'hero' ? [hero] : troops;
+          if (!e.melee && who.some((f) => f && f.alive)) window.KIT.AU.play(e.who === 'hero' ? s.au.def.sfx : s.au.troop ? s.au.troop.def.sfx : s.au.def.sfx, e.who === 'hero' ? 0.55 : 0.45, 0.94 + Math.random() * 0.12); // 일제 사격 소리 (원작 무기 소리)
           for (const f of who) {
             if (!f || !f.alive) continue;
             const speed = Math.max(1, f.rig.dur('atk') / (f.hero ? 1.6 : 1.1)) * sp * (0.9 + Math.random() * 0.25);
@@ -618,7 +636,7 @@
     while (s.to.filter((f) => !f.hero && f.alive).length > keep) die(s.to.filter((f) => !f.hero && f.alive).sort((p, q) => Math.abs(p.x) - Math.abs(q.x))[0]);
     setBars(s.toSide, s.du, Sx.thp, Sx.hp);
     if (dH > 0) { shakeBust(s.toSide); shake(0.22, 0.24); hitStop(0.07); } else shake(0.1, 0.16);
-    if (dH > 0 && adv) { shake(0.38, 0.32); hitStop(0.12); } // 상성 우위 강한 일격
+    if (dH > 0 && adv) { shake(0.38, 0.32); hitStop(0.12); window.KIT.AU.play('lo_hit_big', 0.5); } // 상성 우위 강한 일격
     if (Sx.hp <= 0.5 && heroF && heroF.alive) die(heroF);
   }
 
@@ -669,6 +687,15 @@
       tl.push({ t: t1, fn: () => shake(0.22, 0.35) });
       tl.push({ t: t1 + 0.24 / sp, fn: () => {
         banner(side, u.side === 'e' ? '격파' : '퇴각', u.side === 'e');
+        const AU = window.KIT.AU; // 결판: 묵직한 일격 소리 + 이긴 우리 영웅의 원작 승리 소리 / 진 우리 영웅의 퇴각 음성
+        AU.play('lo_hit_big', 0.6);
+        const won = [a, d].find((x) => x.side === 'p' && x !== u && hpEnd(x) > 0.5);
+        if (u.side === 'e' && won) later(T + 0.35, () => { const w = AU.unitSfx(won, 'win'); if (w) AU.play(w, 0.6); });
+        else if (u.side === 'p') {
+          later(T + 0.3, () => AU.voice(u.key + '_Retreat', 0.9));
+          const foe = [a, d].find((x) => x.side === 'e' && hpEnd(x) > 0.5), w = foe && AU.unitSfx(foe, 'win'); // 이긴 철충 지휘관의 원작 승리 소리
+          if (w) later(T + 0.6, () => AU.cut(AU.play(w, 0.5), 2.5));
+        }
         actors.filter((f) => f.alive && f.side !== side).forEach((f, i) => { // 이긴 쪽은 펄쩍 뛰며 무기를 든다
           const q = f.rig.g.position, y0 = q.y, t = T + 0.05 + (i % 4) * 0.05;
           tween(q, 'y', y0, y0 + 0.3, t, t + 0.14); tween(q, 'y', y0 + 0.3, y0, t + 0.14, t + 0.3);
@@ -739,6 +766,10 @@
     { const p = f.rig.g.position; // 원작 효과: 철충은 폭발, 바이오로이드는 쓰러지는 먼지
       if (f.u.side === 'e') fx(f.hero && f.u.def.big ? 'explosion_big' : 'explosion_small', p.x, p.y + lift(f) + (f.hero ? 0.9 : 0.5), { k: f.hero ? 1 : 0.55, renderOrder: 540 });
       else fx('dust_fall', p.x, p.y + 0.15, { k: f.hero ? 1 : 0.8, renderOrder: 95 }); }
+    { const AU = window.KIT.AU, r = 0.9 + Math.random() * 0.2; // 쓰러지는 소리: 지휘관은 원작 고유 소리, 병사는 몸에 맞게 (철충은 작은 폭발)
+      if (f.hero) { AU.fall(f.u, 0.75); if (f.u.side === 'e') AU.play(f.u.def.big ? 'expB' : 'expM', 0.55); }
+      else if (f.u.side === 'e') { AU.play('expS', 0.3, r); AU.play('lo_fall_r', 0.3, r); }
+      else AU.play('lo_fall', 0.4, r); }
     if (f.shadow) f.shadow.visible = false;
     if (f.ring) f.ring.visible = false;
     const away = f.side === 'L' ? -1 : 1;
@@ -822,7 +853,7 @@
     } else spark(hx, hy, ranged);
     dst.flashT = T; // 맞으면 하얗게 번쩍 (랑그릿사처럼)
     if (dst.alive) { dst.kb = (dst.hero ? 0.2 : 0.3) * (crit ? 1.7 : 1); dst.kbT = T; } // 맞은 반대쪽으로 확 밀린다
-    if (snd) K.AU.play(far ? 'expS' : src.hero ? au.def.sfx : (au.troop ? au.troop.def.sfx : au.def.sfx), far ? 0.35 : 0.6);
+    if (snd) { const sfx = src.hero ? au.def.sfx : (au.troop ? au.troop.def.sfx : au.def.sfx); if (!far) K.AU.play(sfx, 0.5); K.AU.hit(sfx, K.AU.mech(dst.u), 0.45); }
   }
   function spark(x, y, ranged) {
     const tex = window.KIT.tex(ranged ? 'fx_spark' : 'fx_firehit');
