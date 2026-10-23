@@ -184,6 +184,54 @@ TOP = {'r_lab': 120}  # 위쪽의 흐린 회색 띠는 잘라 낸다
 MAT = {'r_cap': (840, 790, 1100, 845)}  # 문 앞 깔개 글자가 거꾸로(180도) 그려져 있어 깔개만 바로 돌린다 (원본 좌표)
 
 
+def composite():
+    """원작 조각을 겹쳐 새 건물 두 채를 만든다
+    t1_bunker: 바닷가 벼랑 바위에 박힌 강철 문 (1장 지휘실, 등대 아래 비밀기지 입구)
+    t6_bunker: 눈 더미에 파묻힌 연구소 문 (6장 정비실)"""
+    rock = shrink(cut('BG_11_island/BG_main_Cliff_2.png', 28, 692, 1235, 749), 680)
+    door = Image.open(os.path.join(OUT, 'b_center.webp')).convert('RGBA').crop((196, 96, 364, 410))
+    W, H = rock.size
+    out = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+    out.alpha_composite(rock)
+    dh = int(H * 0.62); dw = int(door.width * dh / door.height)
+    door = door.resize((dw, dh), Image.LANCZOS)
+    # 문 둘레를 바위 속 그늘로 (파낸 자리)
+    hole = Image.new('RGBA', (dw + 40, dh + 24), (0, 0, 0, 0))
+    a = np.zeros((dh + 24, dw + 40), np.float32); a[12:, 14:-14] = 1
+    hole = Image.fromarray(np.dstack([np.full(a.shape + (3,), 28, np.uint8), (a * 200).astype(np.uint8)])).filter(ImageFilter.GaussianBlur(8))
+    x0 = W // 2 - dw // 2; y0 = H - dh - int(H * 0.04)
+    hole = Image.fromarray(np.dstack([np.full(a.shape + (3,), 18, np.uint8), (np.clip(a * 1.2, 0, 1) * 235).astype(np.uint8)])).filter(ImageFilter.GaussianBlur(10))
+    out.alpha_composite(hole, (x0 - 20, y0 - 12))
+    da = np.asarray(door).astype(np.float32); da[:, :, :3] *= np.array([0.78, 0.8, 0.76]); door = Image.fromarray(da.astype(np.uint8))  # 바위 그늘 속 빛깔
+    out.alpha_composite(door, (x0, y0))
+    # 문 양옆 가장자리 위로 바위가 조금씩 덮이게
+    ra = np.asarray(rock).astype(np.float32)
+    band = np.zeros(ra.shape[:2], np.float32)
+    for ex in (x0, x0 + dw):
+        xs = np.arange(W); w = np.clip(1 - np.abs(xs - ex) / 16, 0, 1)
+        band[y0 + 20:, :] = np.maximum(band[y0 + 20:, :], w[None, :])
+    rng = np.random.default_rng(5)
+    nz = np.asarray(Image.fromarray((rng.random((H // 8 + 1, W // 8 + 1)) * 255).astype(np.uint8)).resize((W, H), Image.BICUBIC)).astype(np.float32) / 255
+    ra[:, :, 3] *= np.clip(band * (0.4 + nz), 0, 1)
+    out.alpha_composite(Image.fromarray(ra.astype(np.uint8)))
+    out.save(os.path.join(OUT, 't1_bunker.webp'), quality=90, method=6)
+
+    mound = Image.open(os.path.join(OUT, 't6_mound.webp')).convert('RGBA')
+    lab = Image.open(os.path.join(OUT, 't6_shop.webp')).convert('RGBA')
+    W = 720; mh = int(mound.height * W / mound.width) + 60
+    mound = mound.resize((W, mh), Image.LANCZOS)
+    lh = int(mh * 1.25); lw = int(lab.width * lh / lab.height)
+    lab = lab.resize((lw, lh), Image.LANCZOS)
+    H = lh + 10
+    out = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+    out.alpha_composite(mound, (0, H - mh))
+    out.alpha_composite(lab, (W // 2 - lw // 2, H - lh))
+    # 양옆 눈 더미를 다시 덮어 문이 눈 속에 묻힌 것처럼
+    L = mound.crop((0, 0, int(W * 0.36), mh)); R = mound.crop((int(W * 0.64), 0, W, mh))
+    out.alpha_composite(L, (0, H - mh)); out.alpha_composite(R, (int(W * 0.64), H - mh))
+    out.save(os.path.join(OUT, 't6_bunker.webp'), quality=90, method=6)
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     for name, (src, x, y, w, h, n) in PIECES.items():
@@ -215,6 +263,7 @@ def main():
         if name in FLIP:
             im = im.transpose(Image.FLIP_LEFT_RIGHT)
         im.save(os.path.join(OUT, name + '.webp'), quality=88, method=6)
+    composite()
     puddle().save(os.path.join(OUT, 'd_puddle.webp'), quality=90)
     for name, (src, x, y, w, h) in GROUND.items():
         im = Image.open(B + src).convert('RGB').crop((x, y, x + w, y + h)).resize((512, 512), Image.LANCZOS)
