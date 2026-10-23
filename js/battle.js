@@ -292,7 +292,7 @@
         const meleeA = att.some((f) => !f.hero && isMelee(f)), meleeD = res.counter && def.some((f) => !f.hero && isMelee(f));
         const fA = frontX(att, dA), fD = frontX(def, -dA);
         const meetX = fA != null && fD != null ? (meleeD ? (fA + fD) / 2 : fD - dA * 0.7) : null; // 몸집 큰 철충과도 겹치지 않을 만큼
-        const meleeOf = (f) => (f.hero ? ['rush', 'wall', 'lance'].includes(styleOf(f)) : isMelee(f)); // 지휘관: 보병·창병·기병이면 맞붙으러 나간다
+        const meleeOf = (f) => (f.hero ? ['rush', 'wall', 'lance', 'swoop'].includes(styleOf(f)) : isMelee(f)); // 지휘관: 보병·창병·기병이면 맞붙으러 나간다
         const charge = (list, side, foe) => {
           const dir = side === 'L' ? 1 : -1, me = frontX(list, dir), theirs = frontX(foe, -dir) ?? (foe.find((f) => f.hero) || {}).x;
           const shift = meetX != null && me != null ? meetX - dir * 0.55 - me : 0; // 내 앞줄이 맞붙는 선까지
@@ -302,8 +302,9 @@
             if (meleeOf(f) && shift * dir > 0.05) { // 줄을 지킨 채 달려든다 (기병은 빠르게, 중장병은 천천히)
               const ts = sty, d = ts === 'lance' ? 0.4 : ts === 'wall' ? 0.6 : 0.5;
               run(ts === 'lance' ? 2.4 : ts === 'wall' ? 0.9 : 1.5, ts === 'lance' ? 0.9 : f.hero ? 1 : 0.4);
-              const x1 = f.hero ? meetX - dir * (!list.some((o) => !o.hero && isMelee(o)) ? 0.9 : ts === 'lance' ? 2.6 : 2.8) : f.x + shift + (Math.random() - 0.5) * 0.1; // 지휘관은 제 병사들 바로 뒤 (병사가 총을 들고 남으면 홀로 맞붙는 선까지)
+              const x1 = f.hero ? meetX - dir * (!list.some((o) => !o.hero && isMelee(o)) ? 1.3 + (f.u.def.big ? 0.6 : 0) : ts === 'lance' ? 2.6 : 2.8) : f.x + shift + (Math.random() - 0.5) * 0.1; // 지휘관은 제 병사들 바로 뒤 (병사가 총을 들고 남으면 홀로 맞붙는 선까지)
               if ((x1 - f.x) * dir > 0.05) { tween(p, 'x', f.x, x1, t0, t0 + d / sp); f.x = x1; }
+              if (ts === 'swoop') tween(f, 'air', f.air, 1.2, t0, t0 + d / sp); // 공중병: 높이 떠서 덮친다
               return;
             }
             if (sty === 'stay') return; // 궁병·전자전·의무 병종은 (지휘관도) 제자리에서 쏘거나 주문을 건다
@@ -464,6 +465,7 @@
       const p = f.rig.g.position;
       f.rig.loop('move', 1.3);
       tween(p, 'x', p.x, f.home, T, T + 0.45 / sp); f.x = f.home;
+      if (f.air) tween(f, 'air', f.air, f.hero ? 0.85 : 0.6, T, T + 0.45 / sp); // 공중병은 원래 높이로
       later(T + 0.47 / sp, () => f.alive && f.rig.loop('idle'));
     }
   }
@@ -485,7 +487,7 @@
   function strike(f, to, au, sp) {
     const sty = styleOf(f), p = f.rig.g.position, dir = f.side === 'L' ? 1 : -1, x = f.x;
     const out = (d, a, b) => { tween(p, 'x', x, x + d * dir, T, T + a / sp); tween(p, 'x', x + d * dir, x, T + a / sp, T + b / sp); };
-    if (f.hero ? ['rush', 'wall', 'lance'].includes(sty) : isMelee(f)) { out(sty === 'lance' ? 0.45 : 0.3, 0.08, 0.3); return; } // 맞붙은 자리에서 찌르듯 한 걸음
+    if (f.hero ? ['rush', 'wall', 'lance', 'swoop'].includes(sty) : isMelee(f)) { out(sty === 'lance' ? 0.45 : 0.3, 0.08, 0.3); return; } // 맞붙은 자리에서 찌르듯 한 걸음
     if (sty === 'swoop') { out(0.25, 0.12, 0.4); tween(f, 'air', f.air, 0.3, T, T + 0.12 / sp); tween(f, 'air', 0.3, 1.5, T + 0.14 / sp, T + 0.42 / sp); }
     else if (sty === 'stay' && !f.hero && f.u.troop.kind !== 'priest') {
       const tg = to.filter((o) => o.alive);
@@ -498,7 +500,7 @@
   }
 
   // 몸으로 맞붙는 병사: 근접 무기이거나, 돌격(기동)·밀고 나가는(중장) 병과
-  const isMelee = (f) => { const tr = f.u.troop; return !!tr && (['lance', 'wall'].includes(STYLE[tr.kind]) || WEAPON[tr.def.sfx] === 'melee'); };
+  const isMelee = (f) => { const tr = f.u.troop; return !!tr && (['lance', 'wall', 'swoop'].includes(STYLE[tr.kind]) || WEAPON[tr.def.sfx] === 'melee'); }; // 공중병도 맞붙는 선까지 날아가 싸운다
   const isRanged = (src, au) => { const kind = src.hero ? au.kind : au.troop && au.troop.kind; return au.rng > 1 || kind === 'arch'; };
 
   // 쓰러질 때 (랑그릿사식): 한 번 하얗게 번쩍인 뒤 맞은 반대쪽으로 튕겨 날아가며 뒤로 넘어가고, 어두워지며 옅어져 사라진다
