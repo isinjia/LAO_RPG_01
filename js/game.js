@@ -1220,10 +1220,10 @@
     const st = G.stage;
     const nt = R.nextWaveTurn(G);
     // 위쪽 줄은 작전명·승리 조건·(증원)·추가 목표만 (패배 조건·자세한 증원은 승리 조건 창: 띠를 누르거나 메뉴)
-    $('goalBox').innerHTML = `${st.idx} · 승리: <b>${st.goal}</b>${nt ? ` · 증원 ${nt}턴` : ''}${R.diff !== 'normal' ? ` · <b>${R.DIFF[R.diff].name}</b>` : ''}${st.kind ? '' : ` · ${bonusLine(st, true)}`}`;
+    $('goalBox').innerHTML = `<span class="gmain">${st.idx} · 승리: <b>${st.goal}</b>${nt ? ` · 증원 ${nt}턴` : ''}${R.diff !== 'normal' ? ` · <b>${R.DIFF[R.diff].name}</b>` : ''}</span>${st.kind ? '' : `<span class="gbon">추가 목표 ${bonusLine(st, true)}</span>`}`; // 둘째 줄: 추가 목표
     const tac = G.tactic && R.TACTICS[G.tactic], tacOn = tac && G.tacUntil && G.turn <= G.tacUntil;
     $('goalBox').title = `${st.idx} ${st.title} · 패배: ${st.lose}${tacOn ? ` · 작전 전술 ${tac.name}: ${R.tacText(G.tactic, st)} (${G.tacUntil >= 99 ? '작전 내내' : `${G.tacUntil}턴까지`})` : ''}`;
-    if (tacOn) $('goalBox').insertAdjacentHTML('afterbegin', `<span class="gtac" data-tip="${R.tacText(G.tactic, st).replace(/ \(약화는 처음 \d+턴만\)/, '')}${G.tacUntil < 99 ? ` · ${G.tacUntil - G.turn + 1}턴 남음${G.tacCostUntil && G.tacCostUntil < G.tacUntil ? (G.turn <= G.tacCostUntil ? `(약화는 ${G.tacCostUntil - G.turn + 1}턴 더)` : '(약화 끝남)') : ''}` : ''}${G.tacX > 1 ? ' · ★추천 강화' : ''}">${tac.name} ${G.tacUntil >= 99 ? '끝까지' : `~${G.tacUntil}턴`}</span> `);
+    if (tacOn) $('goalBox').querySelector('.gmain').insertAdjacentHTML('afterbegin', `<span class="gtac" data-tip="${R.tacText(G.tactic, st).replace(/ \(약화는 처음 \d+턴만\)/, '')}${G.tacUntil < 99 ? ` · ${G.tacUntil - G.turn + 1}턴 남음${G.tacCostUntil && G.tacCostUntil < G.tacUntil ? (G.turn <= G.tacCostUntil ? `(약화는 ${G.tacCostUntil - G.turn + 1}턴 더)` : '(약화 끝남)') : ''}` : ''}${G.tacX > 1 ? ' · ★추천 강화' : ''}">${tac.name} ${G.tacUntil >= 99 ? '끝까지' : `~${G.tacUntil}턴`}</span> `);
     $('btnEnd').disabled = G.side !== 'p' || busy;
     syncQuick(); renderRoster();
   }
@@ -2420,7 +2420,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.83';
+  const GAME_VERSION = '1.86';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
