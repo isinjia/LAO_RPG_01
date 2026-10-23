@@ -26,6 +26,26 @@ window.FSHOT = {
     await new Promise((r) => setTimeout(r, 200));
     return [a.name, e.name, GAME.mode];
   },
+  // 필름 띠: t0 부터 dt 간격으로 n 장을 찍어 한 장에 늘어놓는다 (전투 장면 3D만, 글자판 제외). 화면 위에 덮어 보여 준다
+  async strip(t0, dt, n, cols = 3, crop = [0.1, 0.2, 0.8, 0.5]) { // crop: 장면에서 잘라 볼 곳 [왼, 위, 폭, 높이] (비율)
+    await this.at(t0);
+    const cv = document.querySelector('canvas'), w = 520, sx = crop[0] * cv.width, sy = crop[1] * cv.height, sw = crop[2] * cv.width, shh = crop[3] * cv.height, h = Math.round(w * shh / sw);
+    const rows = Math.ceil(n / cols), sh = document.createElement('canvas');
+    sh.width = w * cols; sh.height = h * rows;
+    const g = sh.getContext('2d');
+    g.font = 'bold 18px sans-serif'; g.fillStyle = '#ff0';
+    for (let i = 0; i < n; i++) {
+      if (i) { GAME.step(dt); this.t += dt; } else GAME.step(0.001);
+      g.drawImage(cv, sx, sy, sw, shh, (i % cols) * w, Math.floor(i / cols) * h, w, h);
+      g.fillText(this.t.toFixed(2) + 's', (i % cols) * w + 6, Math.floor(i / cols) * h + 22);
+    }
+    let im = document.getElementById('fshotStrip');
+    if (!im) { im = document.createElement('img'); im.id = 'fshotStrip'; im.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;object-fit:contain;background:#000;z-index:99999'; document.body.appendChild(im); }
+    im.src = sh.toDataURL('image/jpeg', 0.8);
+    im.style.display = '';
+    return this.t;
+  },
+  hide() { const im = document.getElementById('fshotStrip'); if (im) im.style.display = 'none'; },
   async at(t) {
     if (t > this.t) await GAME.run(t - this.t);
     this.t = t;

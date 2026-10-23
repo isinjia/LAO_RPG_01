@@ -97,7 +97,7 @@
       g.setTransform(1, 0, 0, 0.5, 0, 16);
       g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
       shadowGeo = new THREE.PlaneGeometry(1, 0.5);
-      shadowMat = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthTest: false, depthWrite: false, opacity: 0.55 });
+      shadowMat = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthTest: false, depthWrite: false, opacity: 0.8 });
     }
     const m = new THREE.Mesh(shadowGeo, shadowMat);
     const w = (f.hero ? 1.25 : 0.8) * (f.air ? 0.8 : 1);
@@ -106,9 +106,25 @@
     m.renderOrder = 5; // 배경 위, 모든 유닛 아래
     f.rig.g.add(m);
     f.shadow = m;
+    if (f.hero) { // 영웅 발밑: 편 색 고리 (병사 속에서도 지휘관이 한눈에)
+      const r = new THREE.Mesh(shadowGeo, ringMat(f.side));
+      r.scale.set(1.9, 1.9 * 0.6, 1); r.position.set(0, 0.03, 0); r.renderOrder = 6;
+      f.rig.g.add(r); f.ring = r;
+    }
     // 공중병: 리그만 들어 올리고 천천히 오르내린다
     f.by0 = f.rig.c.root.position.y; f.bx0 = f.rig.c.root.position.x;
     f.bob = Math.random() * Math.PI * 2;
+  }
+  const RINGS = {};
+  function ringMat(side) {
+    if (RINGS[side]) return RINGS[side];
+    const c = document.createElement('canvas'); c.width = 256; c.height = 128;
+    const g = c.getContext('2d'), col = side === 'L' ? '63,180,255' : '255,64,98';
+    g.setTransform(1, 0, 0, 0.5, 0, 0);
+    const gr = g.createRadialGradient(128, 128, 60, 128, 128, 124);
+    gr.addColorStop(0, `rgba(${col},0)`); gr.addColorStop(0.55, `rgba(${col},0.25)`); gr.addColorStop(0.8, `rgba(${col},0.95)`); gr.addColorStop(0.88, 'rgba(255,255,255,0.9)'); gr.addColorStop(1, `rgba(${col},0)`);
+    g.fillStyle = gr; g.fillRect(0, 0, 256, 256);
+    return (RINGS[side] = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending }));
   }
   const isAir = (u, hero) => (hero ? u.kind : u.troop && u.troop.kind) === 'fly';
   const lift = (f) => (f.air ? f.air + Math.sin(T * 3 + f.bob) * 0.07 : 0);
@@ -126,7 +142,7 @@
     for (let i = 0; i < n; i++) {
       const row = i % 3, col = Math.floor(i / 3); // 앞 열부터 채운다
       const jx = PORT() ? 0 : (Math.random() - 0.5) * 0.14, jy = (Math.random() - 0.5) * 0.08; // 자로 잰 듯한 격자가 아니게 살짝 흐트러뜨린다
-      out.push([dir * (front + col * span + (row === 1 ? span * 0.45 : 0) + jx), GROUND - 0.3 + row * 0.45 + jy, row]);
+      out.push([dir * (front + col * span + (row === 1 ? span * 0.45 : 0) + jx), GROUND - 0.75 + row * 0.85 + jy, row]);
     }
     return out;
   }
@@ -156,7 +172,7 @@
     try {
       if (!window.SD || !SD.template(u.rig)) return null;
       if (!BR) {
-        const c = document.createElement('canvas'); c.width = c.height = 420;
+        const c = document.createElement('canvas'); c.width = c.height = 640;
         const r = new THREE.WebGLRenderer({ canvas: c, alpha: true, antialias: true, preserveDrawingBuffer: true, premultipliedAlpha: false });
         r.setClearColor(0x000000, 0);
         BR = { c, r, scene: new THREE.Scene() };
@@ -222,7 +238,7 @@
         const f = side === 'L' ? 1 : -1;
         const list = [];
         const native = u.side === 'p' ? 1 : -1;
-        const hh = (u.def.big ? 2.8 : 2.0) * (u.def.sizeK || 1);
+        const hh = (u.def.big ? 3.3 : 2.5) * (u.def.sizeK || 1); // 영웅은 병사(1.5)보다 확실히 크게
         const hero = new K.Rig(u.rig, hh, native);
         hero.face(f);
         // 영웅 몸 폭만큼 화면 가장자리 안쪽으로 (세로 화면처럼 좁을 때 잘리지 않게)
@@ -265,17 +281,50 @@
       let t0 = enter + 0.3 / sp;
       // 근접: 공격하는 쪽은 크게, 반격하는 쪽도 맞받아 함께 나선다. 병사는 병과마다 랑그릿사식으로 (STYLE)
       if (!split) {
-        const charge = (list, side, far, foe) => {
+        const charge = (list, side, far, foe, gapAdd) => { // gapAdd 가 있으면 적 앞줄 코앞까지 (맞붙기), 없으면 far 만큼만
           const dir = side === 'L' ? 1 : -1;
           const front = (l, d) => l.filter((f) => !f.hero).reduce((m, f) => (m == null || f.x * d > m * d ? f.x : m), null); // d 쪽으로 가장 나온 병사
           const mine = front(list, dir), theirs = front(foe, -dir) ?? (foe.find((f) => f.hero) || {}).x;
+          // 짝 싸움 (랑그릿사): 근접 병사는 저마다 적 병사 하나를 골라 그 코앞까지 파고든다. 앞에 선 병사끼리 먼저 짝 짓는다
+          const pairs = new Map();
+          if (gapAdd != null) {
+            const melee = list.filter((f) => !f.hero && ['rush', 'wall', 'lance'].includes(styleOf(f)) && !isRanged(f, f.u)).sort((p, q) => (q.x - p.x) * dir);
+            const foes = foe.filter((f) => !f.hero).sort((p, q) => (p.x - q.x) * dir);
+            if (foes.length) melee.forEach((f, i) => pairs.set(f, [foes[i % foes.length], i >= foes.length ? (i % 2 ? 0.22 : -0.22) : 0]));
+            // 반격하는 쪽도 맞붙으면: 짝끼리 둘 사이 한가운데서 만난다 (싸움이 전장 폭 전체로 퍼진다). 적 병사는 처음 짝 하나만 마중 나간다
+            if (res.counter) for (const [f, [e, oy]] of pairs) if (!e.meet && oy === 0 && !isRanged(e, e.u) && styleOf(e) !== 'stay') {
+              const mid = (f.x + e.x) / 2;
+              e.meet = { x: mid + dir * 0.36, y: e.y };
+              pairs.set(f, [{ x: e.meet.x, y: e.y }, 0]);
+            }
+          }
           list.forEach((f) => {
             const sty = styleOf(f), p = f.rig.g.position;
+            if (f.meet) { // 짝을 마중 나가 한가운데서 맞붙는다
+              const x1 = f.meet.x;
+              tl.push({ t: t0, fn: () => f.rig.loop('move', 1.4) });
+              tween(p, 'x', f.x, x1, t0, t0 + 0.42 / sp);
+              f.x = x1; f.meet = null;
+              return;
+            }
             if (sty === 'stay') return;
             const run = (speed, dust) => tl.push({ t: t0, fn: () => { f.rig.loop('move', speed); if (Math.random() < dust) fx('dust_step', p.x, f.y + 0.05, { flipX: side === 'R', k: f.hero ? 1 : 0.7, renderOrder: 90 }); } });
-            let adv = far * dir, dur = 0.45;
-            if (sty === 'wall') { adv *= 0.55; dur = 0.6; run(0.8, 0.15); } // 대열을 지켜 천천히 밀고 나간다
-            else if (sty === 'lance') { adv *= 1.5; dur = 0.32; run(2.2, 0.9); } // 먼지를 일으키며 빠르게 돌격
+            // 맞붙기: 내 앞줄이 적 앞줄에서 병과별 거리만큼 떨어진 곳까지 달려든다 (영웅도 같은 만큼 따라 나선다)
+            const ts = f.hero && f.u.troop ? styleOf({ u: f.u }) : sty; // 영웅은 제 병사들과 같은 만큼 나선다
+            if (ts === 'stay') return; // 뒤에서 쏘는 병사를 거느린 영웅은 그 자리에서
+            const gap = (ts === 'lance' ? 0.85 : ts === 'wall' ? 1.0 : 1.15) + (gapAdd || 0);
+            const reach = gapAdd != null && mine != null && theirs != null ? Math.max(far, Math.min(VW * 0.32, (theirs - dir * gap - mine) * dir)) : far;
+            let adv = reach * dir, dur = gapAdd != null ? 0.5 : 0.45;
+            if (pairs.has(f)) { // 짝 지은 적 앞으로: 앞뒤뿐 아니라 위아래로도 비켜 들어가 적 대열 사이에 섞인다
+              const [e, oy] = pairs.get(f), d = sty === 'lance' ? 0.38 : sty === 'wall' ? 0.6 : 0.5;
+              const x1 = e.x - dir * ((sty === 'lance' ? 0.62 : 0.72) + gapAdd) + (Math.random() - 0.5) * 0.08, y1 = e.y + 0.05 + oy;
+              run(sty === 'lance' ? 2.2 : sty === 'wall' ? 0.9 : 1.4, sty === 'lance' ? 0.9 : 0.4);
+              tween(p, 'x', f.x, x1, t0, t0 + d / sp); tween(p, 'y', f.y, y1, t0, t0 + d / sp);
+              f.x = x1; f.y = y1;
+              return;
+            }
+            if (sty === 'wall') { if (gapAdd == null) adv *= 0.55; dur = 0.65; run(0.8, 0.15); } // 대열을 지켜 천천히 밀고 나간다
+            else if (sty === 'lance') { if (gapAdd == null) adv *= 1.5; dur = 0.38; run(2.2, 0.9); } // 먼지를 일으키며 빠르게 돌격
             else if (sty === 'swoop' && theirs != null) { // 높이 떠올라 적 앞줄 위로
               adv = theirs - mine - dir * 0.35; dur = 0.5; run(1.3, 0);
               tween(f, 'air', f.air, 1.5, t0, t0 + dur / sp);
@@ -294,11 +343,22 @@
           });
         };
         // 맞붙되 두 부대 앞줄 사이에 틈을 남긴다 (한 덩어리로 겹치지 않게)
-        charge(att, attSide, Math.min(0.7, VW * 0.045), def);
-        if (res.counter) charge(def, defSide, Math.min(0.3, VW * 0.02), att);
-        const cx = (attSide === 'L' ? 1 : -1) * 0.6;
+        const dstep = res.counter ? Math.min(0.3, VW * 0.02) : 0;
+        charge(att, attSide, Math.min(0.7, VW * 0.045), def, dstep);
+        if (res.counter) charge(def, defSide, dstep, att);
+        const sol = actors.filter((f) => !f.hero), cx = Math.max(-2.2, Math.min(2.2, sol.reduce((m, f) => m + f.x, 0) / Math.max(1, sol.length) * 0.85)); // 실제로 맞붙는 곳으로
         tween(CAM, 'z', 1, 1.1, t0, t0 + 0.45 / sp); tween(CAM, 'x', 0, cx, t0, t0 + 0.45 / sp); tween(CAM, 'y', 0, -0.2, t0, t0 + 0.45 / sp);
-        tl.push({ t: t0 + 0.42 / sp, fn: () => { shake(0.12, 0.2); fx('dust_fall', cx, GROUND + 0.1, { k: 1.4, renderOrder: 95 }); } });
+        // 부딪치는 순간 (랑그릿사): 두 앞줄이 서로 튕기며 크게 번쩍, 화면이 흔들리고 한순간 멈춘다
+        const melee = [...att, ...def].some((f) => !f.hero && ['rush', 'wall', 'lance', 'swoop', 'blink'].includes(styleOf(f)) && !isRanged(f, f.u));
+        tl.push({ t: t0 + 0.42 / sp, fn: () => {
+          fx('dust_fall', cx, GROUND + 0.1, { k: 1.6, renderOrder: 95 });
+          if (!melee) { shake(0.12, 0.2); return; }
+          shake(0.4, 0.32); hitStop(0.1);
+          const hitLine = (list, side) => { const d = side === 'L' ? 1 : -1; const fr = list.filter((f) => !f.hero && f.alive).sort((p, q) => (q.x - p.x) * d).slice(0, 3); fr.forEach((f) => { f.kb = 0.45; f.kbT = T; f.flashT = T; }); return fr; };
+          const fa = hitLine(att, attSide); hitLine(def, defSide);
+          fa.forEach((f, i) => { const q = f.rig.g.position; fx(i ? 'hit_slash' : 'hit_heavy', q.x + (attSide === 'L' ? 0.5 : -0.5), q.y + 0.6, { k: i ? 0.75 : 0.85, renderOrder: 530, rotation: (Math.random() - 0.5) * 0.6 }); });
+          K.AU.play('expM', 0.5);
+        } });
         t0 += 0.55 / sp;
       }
       // 재능 발동 판 (원작 패시브 표시): 이번 교전에 효과가 있는 재능만
@@ -373,8 +433,8 @@
           const keep = figN(s.du, S.thp);
           while (s.to.filter((f) => !f.hero && f.alive).length > keep) die(s.to.filter((f) => !f.hero && f.alive).sort((p, q) => Math.abs(p.x) - Math.abs(q.x))[0]);
           setBars(s.toSide, s.du, S.thp, S.hp);
-          if (dH > 0) { shakeBust(s.toSide); shake(0.16, 0.2); hitStop(0.05); } else shake(0.06, 0.14);
-          if (dH > 0 && (s.counter ? res.rel < 0 : res.rel > 0)) { shake(0.3, 0.3); hitStop(0.09); } // 상성 우위 강한 일격
+          if (dH > 0) { shakeBust(s.toSide); shake(0.22, 0.24); hitStop(0.07); } else { shake(0.1, 0.16); hitStop(0.03); }
+          if (dH > 0 && (s.counter ? res.rel < 0 : res.rel > 0)) { shake(0.38, 0.32); hitStop(0.12); } // 상성 우위 강한 일격
           if (S.hp <= 0.5 && heroF.alive) die(heroF);
         } });
         end = Math.max(end, hitT + (far ? TRAVEL / sp : 0) + 0.2 / sp);
@@ -435,7 +495,7 @@
   const isRanged = (src, au) => { const kind = src.hero ? au.kind : au.troop && au.troop.kind; return au.rng > 1 || kind === 'arch'; };
 
   // 쓰러질 때 (랑그릿사식): 한 번 하얗게 번쩍인 뒤 맞은 반대쪽으로 튕겨 날아가며 뒤로 넘어가고, 어두워지며 옅어져 사라진다
-  const DIE_KNOCK = 0.3, DIE_END = 0.85; // 날아가는 시간, 사라질 때까지
+  const DIE_KNOCK = 0.42, DIE_END = 0.95; // 날아가는 시간, 사라질 때까지
   function die(f) {
     if (!f || !f.alive) return;
     f.alive = false;
@@ -443,11 +503,14 @@
       if (f.u.side === 'e') fx(f.hero && f.u.def.big ? 'explosion_big' : 'explosion_small', p.x, p.y + lift(f) + (f.hero ? 0.9 : 0.5), { k: f.hero ? 1 : 0.55, renderOrder: 540 });
       else fx('dust_fall', p.x, p.y + 0.15, { k: f.hero ? 1 : 0.8, renderOrder: 95 }); }
     if (f.shadow) f.shadow.visible = false;
+    if (f.ring) f.ring.visible = false;
     const away = f.side === 'L' ? -1 : 1;
     let k = f.hero ? 0.7 : 1;
     if (PORT()) k *= 0.7; // 세로 화면은 좁아서 덜 밀려난다
     const g = f.rig.g.position;
-    f.fly = { t: 0, x0: g.x, y0: g.y, dx: away * (0.9 + Math.random() * 0.6) * k, hop: (0.35 + Math.random() * 0.2) * k, tilt: -away * (0.55 + Math.random() * 0.35) * (f.hero ? 0.6 : 1) };
+    const heavy = f.u.def.big || f.hero; // 큰 몸·영웅은 덜 날아간다
+    f.fly = { t: 0, x0: g.x, y0: g.y, dx: away * (heavy ? 0.8 : 1.6 + Math.random() * 1.1) * k, hop: (heavy ? 0.3 : 0.7 + Math.random() * 0.45) * k, tilt: -away * (heavy ? 0.5 : 1.0 + Math.random() * 0.9) };
+    hitStop(f.hero ? 0.14 : 0.035); if (f.hero) shake(0.45, 0.4);
     f.rig.c.speed = 0.25; // 자세는 맞은 순간에서 거의 멈춘다
     f.flashT = null; f.rig.c.setFlash(1);
   }
@@ -462,7 +525,7 @@
   // 원작 피해 숫자 글꼴: 적이 맞으면 노랑, 아군이 맞으면 주황, 상성 우위로 친 영웅 피해는 빨강(강한 일격)
   function dmgNum(f, n, kind) {
     const p = f.rig.g.position, [sx, sy] = toScreen(p.x + (Math.random() - 0.5) * 0.3, p.y + lift(f) + (f.hero ? 2.3 : 1.4) + Math.random() * 0.3, f.side);
-    const px = (f.hero ? 46 : 32) * Math.min(1.4, Math.max(0.75, innerHeight / 800));
+    const px = (f.hero ? 58 : 40) * Math.min(1.4, Math.max(0.75, innerHeight / 800));
     LOHUD.float(LOHUD.num(Math.max(1, n), kind, kind === 'cri' ? px * 1.2 : px), sx, sy, kind === 'cri' ? 'big' : '', el().querySelector('.fnums'), 1000);
   }
   // 원작 글자 그림(반격 등)·재능 발동 판을 그 편 영웅 머리 위에
@@ -513,12 +576,12 @@
     }
     const hx = p.x + (Math.random() - 0.5) * 0.4, hy = p.y + up + h * (0.4 + Math.random() * 0.5);
     if (window.FXLIB) { // 원작 타격 효과 (무기 갈래별) + 상성 우위로 영웅을 친 강한 일격
-      fx(HIT_FX[w], hx, hy, { k: dst.hero ? 0.95 : 0.55, flipX: dst.side === 'L', rotation: (Math.random() - 0.5) * 0.5 });
+      fx(HIT_FX[w], hx, hy, { k: dst.hero ? 1.15 : 0.7, flipX: dst.side === 'L', rotation: (Math.random() - 0.5) * 0.5 });
       if (w === 'melee' && Math.random() < 0.5) fx('slash_line', hx, hy, { k: dst.hero ? 1 : 0.7, rotation: (Math.random() - 0.5) * 1.2 });
       if (crit) fx('hit_crit', hx, hy + 0.1, { k: 1.1, renderOrder: 530 });
     } else spark(hx, hy, ranged);
     dst.flashT = T; // 맞으면 하얗게 번쩍 (랑그릿사처럼)
-    if (dst.alive) { dst.kb = (dst.hero ? 0.1 : 0.16) * (crit ? 1.8 : 1); dst.kbT = T; } // 맞은 반대쪽으로 움찔
+    if (dst.alive) { dst.kb = (dst.hero ? 0.2 : 0.3) * (crit ? 1.7 : 1); dst.kbT = T; } // 맞은 반대쪽으로 확 밀린다
     if (snd) K.AU.play(far ? 'expS' : src.hero ? au.def.sfx : (au.troop ? au.troop.def.sfx : au.def.sfx), far ? 0.35 : 0.6);
   }
   function spark(x, y, ranged) {
@@ -564,7 +627,7 @@
     const w = weaponOf(f, au);
     if (w === 'melee' || !f.alive) return;
     const p = f.rig.g.position, dir = f.side === 'L' ? 1 : -1;
-    fx(MUZZLE_FX[w], p.x + dir * (f.hero ? 0.6 : 0.42), p.y + lift(f) + (f.hero ? 1.0 : 0.62), { flipX: dir < 0, k: f.hero ? 1.0 : 0.55, tint: w === 'energy' ? 0x9fd8ff : 0xffffff, renderOrder: 515 });
+    fx(MUZZLE_FX[w], p.x + dir * (f.hero ? 0.6 : 0.42), p.y + lift(f) + (f.hero ? 1.0 : 0.62), { flipX: dir < 0, k: f.hero ? 1.1 : 0.65, tint: w === 'energy' ? 0x9fd8ff : 0xffffff, renderOrder: 515 });
   }
   // 날아가는 탄 (예광탄): 원작 탄 효과를 반복 재생하며 x0,y0 에서 x1,y1 로 옮긴다
   function tracer(x0, y0, x1, y1, bug, life, missile) {
@@ -610,8 +673,11 @@
     for (const f of actors) {
       f.rig.update(dt);
       if (f.air && f.alive) f.rig.c.root.position.y = f.by0 + lift(f);
-      if (f.kb) { const k = (T - f.kbT) / 0.2; f.rig.c.root.position.x = f.bx0 + (f.side === 'L' ? -1 : 1) * f.kb * (k >= 1 ? 0 : Math.sin(Math.min(1, k * 2.2) * Math.PI / 2) * (1 - k)); if (k >= 1) f.kb = 0; }
-      if (f.flashT != null) { const k = (T - f.flashT) / 0.18; f.rig.c.setFlash(k >= 1 ? 0 : k < 0.3 ? 1 : (1 - k) / 0.7); if (k >= 1) f.flashT = null; }
+      if (f.kb) { // 0.05초에 확 밀리고 0.3초에 걸쳐 제자리로
+        const e = T - f.kbT, k = e / 0.32, v = e < 0.05 ? Math.sin((e / 0.05) * Math.PI / 2) : Math.pow(Math.max(0, 1 - (e - 0.05) / 0.27), 2);
+        f.rig.c.root.position.x = f.bx0 + (f.side === 'L' ? -1 : 1) * f.kb * (k >= 1 ? 0 : v); if (k >= 1) f.kb = 0;
+      }
+      if (f.flashT != null) { const k = (T - f.flashT) / 0.09; f.rig.c.setFlash(k >= 1 ? 0 : 0.6 * (k < 0.3 ? 1 : (1 - k) / 0.7)); if (k >= 1) f.flashT = null; } // 하얗게 다 덮지 않고 밝게만
       if (f.fly) { // 튕겨 밀려나기 → 하얗게 깜빡이며 옅어지다 사라짐
         const q = f.fly, g = f.rig.g;
         q.t += dt;
@@ -619,7 +685,7 @@
         g.position.x = q.x0 + q.dx * e;
         g.position.y = q.y0 + q.hop * Math.sin(Math.PI * a);
         g.rotation.z = q.tilt * e;
-        f.rig.c.setFlash(Math.max(0, 1 - q.t / 0.1)); // 맞은 순간 한 번만 번쩍
+        f.rig.c.setFlash(0.7 * Math.max(0, 1 - q.t / 0.1)); // 맞은 순간 한 번만 번쩍
         const dk = Math.min(1, q.t / DIE_KNOCK); f.rig.c.setTint(1 - 0.55 * dk, 1 - 0.58 * dk, 1 - 0.5 * dk); // 어두워진다
         f.rig.c.setOpacity(q.t < DIE_KNOCK ? 1 : Math.max(0, 1 - (q.t - DIE_KNOCK) / (DIE_END - DIE_KNOCK)));
         if (q.t >= DIE_END) { g.visible = false; f.fly = null; }

@@ -323,7 +323,7 @@
   #fight { --pw: min(25vw, 360px); }
   #fight .fband { display: block; position: absolute; left: 0; right: 0; bottom: 0; height: min(30vh, 220px); z-index: 1; pointer-events: none;
     background: linear-gradient(0deg, rgba(4, 6, 11, .96) 0%, rgba(4, 6, 11, .9) 50%, rgba(4, 6, 11, 0) 100%); }
-  #fight .fcorner { width: var(--pw); height: min(42vh, 390px); bottom: 0; z-index: 3; }
+  #fight .fcorner { width: var(--pw); height: min(36vh, 330px); bottom: 0; z-index: 3; }
   /* 초상은 화면 끝이 아니라 가운데 판 양옆에 붙는다 (넓은 화면에서도 판과 한 덩어리) */
   #fight { --pnw: min(calc(100vw - 2 * var(--pw) + 12px), 820px); }
   #fight .fcorner.L { left: calc(50% - var(--pnw) / 2 - var(--pw) + 6px); }
@@ -334,7 +334,7 @@
   #fight .fpanel { z-index: 3; }
   #fight .fcorner.stand .fimg { left: 50%; top: 2%; height: 250%; filter: drop-shadow(0 4px 16px rgba(0, 0, 0, .6)); }
   #fight .fcorner.stand.whole .fimg { top: 10%; height: 104%; }
-  #fight .fcorner.sd .fimg { left: 50%; top: auto; bottom: 9%; width: 47%; height: auto; aspect-ratio: 1; padding: 0; background: none; clip-path: none; transform: translateX(-50%); filter: drop-shadow(0 4px 16px rgba(0, 0, 0, .65)); }
+  #fight .fcorner.sd .fimg { left: 50%; top: auto; bottom: 11%; width: 41%; height: auto; aspect-ratio: 1; padding: 0; background: none; clip-path: none; transform: translateX(-50%); filter: drop-shadow(0 4px 16px rgba(0, 0, 0, .65)); }
   #fight .fcorner:not(.stand):not(.sd) .fimg { bottom: 26%; width: 26%; }
   #fight .fbust::before { background: radial-gradient(32% 55% at 50% 78%, color-mix(in srgb, var(--c) 38%, transparent) 0%, transparent 100%); }
   #fight .fpanel { width: var(--pnw); bottom: calc(14px + var(--safe-b)); }
@@ -370,7 +370,7 @@
 #fight::after { content: ''; position: absolute; inset: 0; z-index: 20; pointer-events: none; background: #000; opacity: 0; transition: opacity .26s ease-in; }
 #fight.fout::after { opacity: 1; }
 /* 결판 글자: 쓰러진 쪽 위에 노란 띠와 큰 기울임 글자 */
-#fight .fresult { position: absolute; top: 30%; z-index: 6; transform: translateX(-50%) skewX(-12deg); padding: 6px 46px 8px; pointer-events: none;
+#fight .fresult { position: absolute; top: 14%; z-index: 6; transform: translateX(-50%) skewX(-12deg); padding: 6px 46px 8px; pointer-events: none;
   background: linear-gradient(90deg, transparent, rgba(0, 0, 0, .78) 18%, rgba(0, 0, 0, .78) 82%, transparent); animation: fresultIn .32s cubic-bezier(.2, 1.5, .4, 1) both; }
 #fight .fresult.L { left: 30%; } #fight .fresult.R { left: 70%; }
 #fight.split .fresult.L { left: 25%; } #fight.split .fresult.R { left: 75%; }
@@ -380,3 +380,14 @@
   text-shadow: 0 3px 0 #000, 0 0 18px rgba(255, 204, 0, .7); }
 #fight .fresult.bad b { color: #ff6a7a; text-shadow: 0 3px 0 #000, 0 0 18px rgba(255, 60, 80, .7); }
 @keyframes fresultIn { 0% { opacity: 0; transform: translateX(-50%) skewX(-12deg) scale(1.8); } 100% { opacity: 1; transform: translateX(-50%) skewX(-12deg) scale(1); } }
+
+/* 재능 발동 띠: 크게, 초상 위쪽에서 미끄러져 들어온다 */
+#fight .lopassive { top: 12%; bottom: auto; padding: 8px 26px 9px 18px; }
+#fight .lopassive.L { left: calc(50% - var(--pnw, 652px) / 2 - var(--pw, 320px) + 18px); }
+#fight .lopassive.R { right: calc(50% - var(--pnw, 652px) / 2 - var(--pw, 320px) + 18px); padding: 8px 18px 9px 26px; }
+#fight .lopassive small { font-size: 11px; }
+#fight .lopassive b { font-size: 24px; }
+/* 아래 판의 작은 영어 보조 글자는 뺀다 */
+#fight .frow > span small { display: none; }
+/* 적 초상(원작 모델로 그린 윗몸): 편 색 테두리 빛으로 아군 일러스트와 결을 맞춘다 */
+#fight .fcorner.sd .fimg { filter: drop-shadow(0 0 2px #ff4062) drop-shadow(0 0 10px rgba(255, 64, 98, .55)) drop-shadow(0 4px 14px rgba(0, 0, 0, .7)) !important; }
