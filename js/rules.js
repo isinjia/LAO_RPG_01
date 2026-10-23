@@ -14,7 +14,7 @@
   R.newGame = function (stage) {
     const map = stage.map.map((row) => row.split(''));
     R.ch = stage.ch || 1; R.win = stage.win; // 어려움의 사수 작전은 적이 지킬 칸으로 몰려들어 배율을 덜어 준다 (winAdj)
-    R.chK = R.CH_K[R.ch - 1] || R.CH_K[R.CH_K.length - 1]; // 장마다 적 능력치 배율 (아래). 어려움은 1장·6장(chAdj)과 사수 작전(winAdj)을 조금 덜어 준다
+    R.chK = R.CH_K[R.ch - 1] || R.CH_K[R.CH_K.length - 1]; // 장마다 적 능력치 배율 (아래). 보통·어려움은 1장(chAdj), 사수 작전(winAdj)을 조금 덜어 준다
     return { stage, map, w: map[0].length, h: map.length, units: [], turn: 1, side: 'p', wave: 0, drill: {} }; // drill: 병사 훈련 단계 (save.drill)
   };
   R.inB = (G, x, y) => x >= 0 && y >= 0 && x < G.w && y < G.h;
@@ -180,13 +180,13 @@
     at: { name: '공세 각성', desc: '영웅·병사 공격 +12%', k: { at: 0.12 } },
     df: { name: '수비 각성', desc: '영웅·병사 방어 +18%', k: { df: 0.18 } },
     hp: { name: '생존 각성', desc: '영웅·병사 체력 +18%', k: { hp: 0.18 } },
-    mv: { name: '기동 각성', desc: '영웅·병사 이동 +1, 방어 -6%', k: { mov: 1, df: -0.06 } }, // 이동은 값이 커서 방어를 조금 내준다
+    mv: { name: '기동 각성', desc: '영웅·병사 이동 +1, 방어 -3%', k: { mov: 1, df: -0.03 } }, // 이동은 값이 커서 방어를 조금 내준다
   };
   // 작전 전술: 출격 준비에서 작전마다 하나 고른다. 처음 몇 턴만 아군 전원(영웅·병사)에 걸린다
   R.TACTICS = {
     none: { name: '전술 없음', desc: '아무 효과 없음' },
     rush: { name: '돌격 명령', desc: '처음 3턴 공격 +22%, 방어 -15%', buff: { at: 0.22, df: -0.15 }, turns: 3 },
-    wall: { name: '방어 진형', desc: '처음 4턴 방어 +25% (버티기·사수 작전은 작전 내내)', buff: { df: 0.25 }, turns: 4, holdTurns: 99 },
+    wall: { name: '방어 진형', desc: '처음 4턴 방어 +25% (버티기·사수 작전은 작전 내내 방어 +25%·공격 +10%)', buff: { df: 0.25 }, holdBuff: { df: 0.25, at: 0.1 }, turns: 4, holdTurns: 99 },
     swift: { name: '신속 전개', desc: '처음 3턴 이동 +1, 방어 -5%', buff: { mov: 1, df: -0.05 }, turns: 3 },
   };
   const holdStage = (st) => st && (st.win === 'survive' || st.win === 'defend');
@@ -197,7 +197,8 @@
     const t = R.TACTICS[key]; G.tactic = t && t.buff ? key : 'none';
     if (!t || !t.buff) return;
     G.tacUntil = R.tacTurns(key, G.stage);
-    for (const u of G.units) if (u.side === 'p') u.buffs.push({ ...t.buff, until: 1 + G.tacUntil, side: 'p', tac: 1 });
+    const b = (holdStage(G.stage) && t.holdBuff) || t.buff; // 방어 진형은 버티는 작전에서 반격으로 적을 줄이게 공격도 조금
+    for (const u of G.units) if (u.side === 'p') u.buffs.push({ ...b, until: 1 + G.tacUntil, side: 'p', tac: 1 });
   };
   R.PERK2_LV = 40; // 두 번째 각성 (첫째와 다른 것)
   const perkK = (u, k) => (u.side !== 'p' ? 0 : [u.perk, u.perk2].reduce((n, p) => n + ((p && R.PERKS[p] && R.PERKS[p].k[k]) || 0), 0));
