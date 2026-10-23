@@ -188,8 +188,6 @@
         setBars(cls, u, st[u.uid].thp, st[u.uid].hp, true);
       };
       ui.querySelector('.fnums').innerHTML = '';
-      ui.querySelectorAll('.ftot').forEach((e) => { e.classList.remove('on', 'pop'); e.querySelector('b').textContent = ''; });
-      tot = { L: 0, R: 0 };
       ui.querySelector('.fvs small').textContent = res.rel > 0 ? `${a.name} 상성 우위` : res.rel < 0 ? `${a.name} 상성 열세` : '';
       setSide('L', L); setSide('R', Rr);
 
@@ -332,7 +330,6 @@
             const adv = s.counter ? res.rel < 0 : res.rel > 0;
             if (n > 0.05) dmgNum(v, n, v.hero && adv ? 'cri' : s.du.side === 'p' ? 'me' : 'base');
           });
-          addTotal(s.toSide, dT + dH);
           const keep = figN(s.du, S.thp);
           while (s.to.filter((f) => !f.hero && f.alive).length > keep) die(s.to.filter((f) => !f.hero && f.alive).sort((p, q) => Math.abs(p.x) - Math.abs(q.x))[0]);
           setBars(s.toSide, s.du, S.thp, S.hp);
@@ -388,7 +385,6 @@
   }
 
   // 피해 숫자: 맞은 몸 머리 위에서 크게 튀어나왔다가 위로 떠오르며 사라진다 (화면 좌표로 옮겨 HTML 글자로)
-  let tot = { L: 0, R: 0 };
   function toScreen(x, y, side) {
     const W = innerWidth, H = innerHeight;
     let c = cam, x0 = 0, w = W;
@@ -415,14 +411,6 @@
     e.innerHTML = `<small>PASSIVE</small><b>${name}</b>`;
     el().querySelector('.fnums').appendChild(e);
     setTimeout(() => e.remove(), 1700);
-  }
-  // 그 편이 받은 피해 합계 (정보판 위 별 모양)
-  function addTotal(side, n) {
-    if (n <= 0) return;
-    tot[side] += n;
-    const e = el().querySelector('.fcorner.' + side + ' .ftot');
-    e.querySelector('b').textContent = Math.round(tot[side]);
-    e.classList.add('on'); e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop');
   }
 
   // 분할 화면을 건너는 탄: 쏜 쪽 화면 끝으로 사라졌다가 맞는 쪽 화면에서 날아든다
