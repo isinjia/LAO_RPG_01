@@ -133,8 +133,8 @@
         EXIT(12, 17), ...NPC([11, 10], [7, 12, -1], [19, 13]), CON(14, 15),
       ],
       rooms: {
-        cmd: Object.assign(ROOM('작업 지휘소', 'r_train_0', 365, ['#5a5a66', '#a9a7b8'], [D('town/r_mm4_11', 1, 2, 2, 1.7), D('town/r_mk0_3', 9, 2, 1, 1.5), D('town/r_andr2_42', 11, 2, 1, 1.6), D('town/r_iron1_7', 4, 6, 2, 0.8)]), { tint: '#ffe4c8' }),
-        shop: Object.assign(ROOM('철공 작업장', 'r_dis1_0', 355, ['#6b5552', '#b59d96'], [D('town/r_iron2_2', 1, 2, 2, 1.9), D('town/r_iron1_6', 10, 2, 2, 1.6), D('town/r_iron1_15', 10, 5, 2, 1.3)]), { tint: '#ffd9b8' }),
+        cmd: Object.assign(ROOM('작업 지휘소', 'r_mm4_0', 365, ['#5a5a66', '#a9a7b8'], [D('town/r_mm4_11', 1, 2, 2, 1.7), D('town/r_mk0_3', 9, 2, 1, 1.5), D('town/r_andr2_42', 11, 2, 1, 1.6), D('town/r_iron1_7', 4, 6, 2, 0.8)]), { tint: '#ffe4c8' }),
+        shop: Object.assign(ROOM('철공 작업장', 'r_rein1_0', 355, ['#6b5552', '#b59d96'], [D('town/r_iron2_2', 1, 2, 2, 1.9), D('town/r_iron1_6', 10, 2, 2, 1.6), D('town/r_iron1_15', 10, 5, 2, 1.3)]), { tint: '#ffd9b8' }),
         cafe: ROOM('배식소', 'r_cafe1_0', 268, ['#8f877a', '#ece7de'], [D('town/r_cafe1_2', 8, 2, 3, 1.9), D('town/r_cafe1_1', 4, 4, 3, 1.0), D('town/r_cafe1_1', 8, 5, 3, 1.0), D('town/r_cafe3_2', 1, 2, 1, 1.0), D('town/r_cafe2_3', 2, 2, 1, 0.6)]),
       },
     },
@@ -160,7 +160,7 @@
       ],
       rooms: {
         cmd: ROOM('진지 지휘소', 'r_dis1_0', 355, ['#3f6b62', '#8fc0b3'], [D('town/r_mm2_2', 2, 2, 1, 1.6), D('town/r_dis1_10', 11, 2, 1, 1.8), D('tiles/crate1', 1, 6, 1, 1.0)]),
-        shop: Object.assign(ROOM('무기고', 'r_mm0_0', 370, ['#6b5552', '#b59d96'], [D('town/r_res2_16', 1, 2, 1, 2.0), D('town/r_res1_8', 11, 2, 1, 1.8), D('tiles/crate1', 10, 5, 1, 1.0)]), { tint: '#eef2dc' }),
+        shop: Object.assign(ROOM('무기고', 'r_rein2_0', 370, ['#6b5552', '#b59d96'], [D('town/r_res2_16', 1, 2, 1, 2.0), D('town/r_res1_8', 11, 2, 1, 1.8), D('tiles/crate1', 10, 5, 1, 1.0)]), { tint: '#eef2dc' }),
         cafe: Object.assign(ROOM('야전 식당', 'r_cafe2_0', 268, ['#8f877a', '#ece7de'], [D('town/r_cafe2_1', 3, 4, 3, 1.0), D('town/r_cafe2_3b', 8, 2, 3, 1.3), D('town/r_cafe2_2', 8, 5, 3, 1.0), D('town/r_cafe2_3', 1, 2, 1, 0.6), D('town/r_cafe2_1', 3, 6, 3, 1.0), D('town/r_cafe3_2', 11, 2, 1, 1.0), D('town/r_cafe1_1', 8, 7, 3, 1.0, { block: 0 })]), { tint: '#f1e0c0' }),
       },
     },
@@ -187,7 +187,7 @@
       ],
       rooms: {
         cmd: Object.assign(ROOM('드론 관제실', 'r_secret', 556, ['#3c5a5c', '#88a9ab'], [D('town/r_mk4_1', 1, 6, 1, 1.4), D('town/r_mm2_2', 11, 7, 1, 1.5)]), { floorTex: 'tiles/labd', tint: '#a9bcc6' }),
-        shop: Object.assign(ROOM('드론 격납고', 'r_train_0', 365, ['#55606e', '#9aa6b6'], [D('town/r_iron1_5b', 1, 2, 1, 1.9), D('town/r_iron2_16', 11, 2, 1, 2.2)]), { tint: '#9fb6be' }),
+        shop: Object.assign(ROOM('드론 격납고', 'r_parts_1', 365, ['#55606e', '#9aa6b6'], [D('town/r_iron1_5b', 1, 2, 1, 1.9), D('town/r_iron2_16', 11, 2, 1, 2.2)]), { tint: '#9fb6be' }),
         cafe: Object.assign(ROOM('보급고 휴게실', 'r_ware', 552, ['#8f877a', '#ece7de'], [D('town/r_cafe5_1', 4, 4, 3, 1.1), D('town/r_cafe2_1', 8, 4, 3, 1.0), D('town/r_cafe3_2', 11, 3, 1, 1.0)]), { floorTex: 'tiles/factory', tint: '#b9c6cc' }),
       },
     },
@@ -213,7 +213,7 @@
       lights: [5, 12.5, 20].flatMap((x) => [9, 13, 16].map((y) => [x, y, 210, '200,230,255'])), // 천장 조명: 고르게
       rooms: {
         cmd: Object.assign(ROOM('서버 관제실', 'r_arch', 552, ['#2f4f4a', '#7fa69c'], [D('town/r_andr2_10', 2, 6, 3, 1.0), D('tiles/server', 9, 6, 2, 1.1)]), { floorTex: 'tiles/labd' }),
-        shop: Object.assign(ROOM('열차 정비실', 'r_train_0', 365, ['#55606e', '#9aa6b6'], [D('town/r_iron1_9', 1, 2, 2, 1.7), D('town/r_var2_14', 11, 2, 1, 2.4)]), { tint: '#d2deef' }),
+        shop: Object.assign(ROOM('열차 정비실', 'r_rein3_0', 365, ['#55606e', '#9aa6b6'], [D('town/r_iron1_9', 1, 2, 2, 1.7), D('town/r_var2_14', 11, 2, 1, 2.4)]), { tint: '#d2deef' }),
         cafe: ROOM('역무실 휴게실', 'r_cafe5_0', 268, ['#8f877a', '#ece7de'], [D('town/r_cafe5_3', 8, 2, 3, 1.0), D('town/r_cafe2_1', 3, 4, 3, 1.0), D('town/r_cafe4_1', 8, 5, 3, 1.1), D('town/r_cafe3_2', 1, 2, 1, 1.0)]),
       },
     },
@@ -241,19 +241,42 @@
       rooms: { // 숨어 지내던 곳이라 방마다 따뜻한 등불 빛
         cmd: Object.assign(ROOM('분교 은신처', 'r_cap', 546, ['#6a5a50', '#b8a495'], [D('town/r_cafe4_1b', 1, 6, 3, 1.0)]), { floorTex: 'tiles/labw' }),
         shop: Object.assign(ROOM('연구소 정비실', 'r_bio', 498, ['#6b5b62', '#b8a2ab'], [D('town/r_iron1_9', 10, 4, 2, 1.5)]), { floorTex: 'tiles/labw' }),
-        cafe: Object.assign(ROOM('산장 쉼터', 'r_cafe4_0', 268, ['#8f877a', '#ece7de'], [D('town/r_cafe4_2', 8, 2, 3, 1.2), D('town/r_cafe5_1', 3, 4, 3, 1.1), D('town/r_cafe4_1', 8, 5, 3, 1.1), D('town/r_cafe4_3', 1, 2, 1, 1.6)]), { tint: '#ffe2bf' }),
+        cafe: Object.assign(ROOM('산장 쉼터', 'r_cafe3_0', 268, ['#8f877a', '#ece7de'], [D('town/r_cafe4_2', 8, 2, 3, 1.2), D('town/r_cafe5_1', 3, 4, 3, 1.1), D('town/r_cafe4_1', 8, 5, 3, 1.1), D('town/r_cafe4_3', 1, 2, 1, 1.6)]), { tint: '#ffe2bf' }),
       },
     },
   };
   const ROOMS0 = { cmd: MAPS.cmd, shop: MAPS.shop, cafe: MAPS.cafe }; // 1장 방 (원래 그대로)
   const ROOMNAME0 = { cmd: '지휘실', shop: '정비실', cafe: '휴게실' };
+  // ── 방: 원작 기지 시설 보기처럼 방 그림 한 장을 그대로 펼치고, 그림 속 바닥 위를 걷는다 ──
+  // 그림의 뒷벽은 비율 그대로, 바닥 부분만 걸을 자리가 넉넉하도록(3칸 남짓) 세로로 늘린다.
+  // fl: 그림(가로 1024 기준)에서 바닥이 시작하는 높이, blk: 바닥 위에 선 큰 기계 자리(가로 비율 구간, 지나갈 수 없음)
+  const STAGE = {
+    r_train_0: { fl: 335, h: 512 }, r_dis2_0: { fl: 335, h: 512, blk: [[0.66, 1]] }, r_mm4_0: { fl: 395, h: 512, blk: [[0.06, 0.27], [0.43, 0.63], [0.88, 1]] },
+    r_rein1_0: { fl: 360, h: 512 }, r_dis1_0: { fl: 360, h: 512 }, r_rein2_0: { fl: 345, h: 512, blk: [[0.66, 1]] },
+    r_parts_1: { fl: 370, h: 512, blk: [[0, 0.17]] }, r_rein3_0: { fl: 345, h: 512, blk: [[0.66, 1]] },
+    r_cap: { fl: 425, h: 546, blk: [[0.6, 0.79]] }, r_arch: { fl: 425, h: 552, blk: [[0, 0.16]] }, r_secret: { fl: 425, h: 556 },
+    r_ware: { fl: 430, h: 552, blk: [[0, 0.2], [0.82, 1]] }, r_bio: { fl: 415, h: 498 },
+    r_cafe1_0: { fl: 232, h: 340, w: 24 }, r_cafe2_0: { fl: 232, h: 340, w: 24 }, r_cafe3_0: { fl: 232, h: 340, w: 24 },
+    r_cafe4_0: { fl: 232, h: 340, w: 24 }, r_cafe5_0: { fl: 232, h: 340, w: 24 },
+  };
+  // 사람 자리 (가로 비율, 바닥 첫 줄에서 몇 줄 아래)
+  const STAGE_NPC = { cmd: [['johanna', 0.6, 0], ['marie', 0.3, 1], ['labiata', 0.76, 1]], shop: [['fortune', 0.5, 0], ['pupphead', 0.26, 1], ['coco', 0.72, 1]], cafe: [['amy', 0.22, 1], ['scathy', 0.8, 1]] };
+  function stageRoom(k, name, bgPath, tint) {
+    const key = bgPath.replace('town/', ''), st = STAGE[key] || { fl: 340, h: 512 };
+    const W = st.w || 20, sc = (W * TILE) / 1024, top0 = st.fl * sc, floorH = Math.max((st.h - st.fl) * sc, TILE * 3.3);
+    const H = Math.ceil((top0 + floorH) / TILE), off = H * TILE - (top0 + floorH);
+    const r0 = Math.min(H - 2, Math.ceil((off + top0) / TILE + 0.45));
+    const blocked = (x) => x < 1 || x > W - 2 || (st.blk || []).some(([a, b]) => (x + 0.5) / W > a && (x + 0.5) / W < b);
+    const rows = [];
+    for (let y = 0; y < H; y++) { let r = ''; for (let x = 0; x < W; x++) r += y < r0 || blocked(x) ? '#' : 'M'; rows.push(r); }
+    const mx = Math.floor(W / 2), free = (x) => { for (let d = 0; d < W; d++) for (const s of [1, -1]) { const t = x + d * s; if (t > 0 && t < W - 1 && !blocked(t) && t !== mx) return t; } return x; };
+    const objects = [{ t: 'exit', x: mx, y: H - 1, w: 1, h: 1, to: 'back' }, ...STAGE_NPC[k].map(([id, fx, dy]) => ({ t: 'npc', id, x: free(Math.round(fx * W)), y: Math.min(H - 2, r0 + dy), dir: fx > 0.5 ? -1 : 1 }))];
+    return { name, rows, indoor: 1, stage: { bg: bgPath, fl: st.fl, h: st.h, sc, top0, floorH, off }, bg: bgPath, tint, spawn: [mx, H - 2], objects };
+  }
+  const ROOMBG0 = { cmd: 'town/r_train_0', shop: 'town/r_dis2_0', cafe: 'town/r_cafe4_0' }; // 1장
   function baseFor(look, name) {
     const m = TOWNMAPS[look] || TOWNMAPS.coast, R = m.rooms;
-    for (const k in ROOMS0) {
-      const o = ROOMS0[k], r = R && R[k];
-      MAPS[k] = r ? Object.assign({}, o, { name: r.label, bg: r.bg, fl: r.fl, wall: r.wall, tint: r.tint, floorTex: r.floorTex,
-        objects: [...o.objects.filter((x) => x.t === 'exit' || x.t === 'npc'), ...r.deco] }) : o;
-    }
+    for (const k of ['cmd', 'shop', 'cafe']) MAPS[k] = R ? stageRoom(k, R[k].label, R[k].bg, R[k].tint) : stageRoom(k, ROOMNAME0[k], ROOMBG0[k]);
     const objects = m.objects.map((o) => (o.t === 'building' ? Object.assign({}, o, { label: R ? R[o.to[0]].label : ROOMNAME0[o.to[0]] }) : o));
     return Object.assign({}, m, { name: name || '마을', bgm: 'lo_town', objects });
   }
@@ -357,6 +380,7 @@
     const W = map.w * TILE, H = map.h * TILE;
     const c = document.createElement('canvas'); c.width = W; c.height = H;
     const g = c.getContext('2d');
+    if (map.stage) { drawStage(g); return c; }
     if (map.indoor) { drawRoomFloor(g); return c; }
     const pat = (n, sc = 0.75) => { const im = img(n); if (!ok(im)) return '#6a8a4a'; const p = g.createPattern(im, 'repeat'); p.setTransform(new DOMMatrix().scale(sc)); return p; };
     // 칸 모양 바닥 층: 칸 값(있다 1, 없다 0)을 부드럽게 이어 붙인 뒤 잡음을 섞어 경계를 자연스럽게 흔든다.
@@ -465,6 +489,21 @@
     const dx = Math.floor(map.w / 2) * TILE;
     g.fillStyle = 'rgba(40,34,28,.9)'; g.fillRect(dx + 6, y2 - 4, TILE - 12, TILE - 8);
     g.fillStyle = '#e8c547'; g.fillRect(dx + 6, y2 - 4, TILE - 12, 3);
+  }
+  // 방 그림 한 장: 뒷벽은 비율 그대로, 바닥은 걸을 자리만큼 세로로 늘린다. 문 자리(아래 가운데)에 문 매트
+  function drawStage(g) {
+    const st = map.stage, im = img(st.bg), mw = map.w * TILE, mh = map.h * TILE;
+    g.fillStyle = '#05070c'; g.fillRect(0, 0, mw, mh);
+    if (ok(im)) {
+      const k = im.width / 1024;
+      g.drawImage(im, 0, 0, im.width, st.fl * k, 0, st.off, mw, st.top0);
+      g.drawImage(im, 0, st.fl * k, im.width, (st.h - st.fl) * k, 0, st.off + st.top0, mw, st.floorH);
+    }
+    const sg = g.createLinearGradient(0, mh - TILE * 1.2, 0, mh); sg.addColorStop(0, 'rgba(0,0,0,0)'); sg.addColorStop(1, 'rgba(0,0,0,.35)');
+    g.fillStyle = sg; g.fillRect(0, mh - TILE * 1.2, mw, TILE * 1.2);
+    const dx = Math.floor(map.w / 2) * TILE;
+    g.fillStyle = 'rgba(40,34,28,.85)'; g.fillRect(dx + 6, mh - TILE + 10, TILE - 12, TILE - 14);
+    g.fillStyle = '#e8c547'; g.fillRect(dx + 6, mh - TILE + 10, TILE - 12, 3);
   }
   function drawRoomBack() {
     const im = img(map.bg); if (!ok(im)) return;
@@ -706,11 +745,11 @@
     const ppx = pfx * TILE + TILE / 2, ppy = pfy * TILE + TILE / 2;
     camX = mw < vw ? (mw - vw) / 2 : Math.max(0, Math.min(mw - vw, ppx - vw / 2));
     let top = 0;
-    if (map.indoor) { const bi = img(map.bg); top = ok(bi) ? Math.min(-TILE * 3.2, 2 * TILE + 6 - (map.fl * (map.w * TILE - TILE * 2 + 28)) / bi.width + 30) : -TILE * 3.2; } // 뒷벽 그림 높이만큼 위를 더 보여 준다 (천장 끝 조금은 잘려도 된다)
+    if (map.indoor && !map.stage) { const bi = img(map.bg); top = ok(bi) ? Math.min(-TILE * 3.2, 2 * TILE + 6 - (map.fl * (map.w * TILE - TILE * 2 + 28)) / bi.width + 30) : -TILE * 3.2; } // 뒷벽 그림 높이만큼 위를 더 보여 준다 (천장 끝 조금은 잘려도 된다)
     camY = mh - top < vh ? top - (vh - (mh - top)) / 2 : Math.max(top, Math.min(mh - vh, ppy - vh / 2));
     ctx.setTransform(S, 0, 0, S, -camX * S, -camY * S);
     ctx.drawImage(layer, 0, 0);
-    if (map.indoor) drawRoomBack();
+    if (map.indoor && !map.stage) drawRoomBack();
     else { drawBack(); drawWater(Math.floor(camX / TILE), Math.floor(camY / TILE), Math.ceil((camX + vw) / TILE), Math.ceil((camY + vh) / TILE)); }
     // 깊이 순서: 아래쪽(발 위치가 큰) 것이 앞
     const list = [];
@@ -760,7 +799,7 @@
   // 칸에 도착했을 때: 문·출구 확인
   function arrived() {
     for (const o of map.objects) {
-      if (o.t === 'building' && px === o.door && py === o.y + o.h - 1) { backTo = ['base', o.door, o.y + o.h]; warp(o.to); return true; }
+      if (o.t === 'building' && px === o.door && py === o.y + o.h - 1) { backTo = ['base', o.door, o.y + o.h]; const r = MAPS[o.to[0]]; warp(r && r.spawn ? [o.to[0], ...r.spawn] : o.to); return true; }
       if (o.t === 'exit' && px >= o.x && px < o.x + o.w && py >= o.y && py < o.y + o.h) {
         if (o.to) warp(o.to === 'back' ? backTo || ['base', ...(MAPS.base.start || [12, 16])] : o.to); else leave();
         return true;
