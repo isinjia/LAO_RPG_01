@@ -1211,7 +1211,7 @@
     $('goalBox').innerHTML = `${st.idx} · 승리: <b>${st.goal}</b>${nt ? ` · 증원 ${nt}턴` : ''}${R.diff !== 'normal' ? ` · <b>${R.DIFF[R.diff].name}</b>` : ''}${st.kind ? '' : ` · ${bonusLine(st, true)}`}`;
     const tac = G.tactic && R.TACTICS[G.tactic], tacOn = tac && G.tacUntil && G.turn <= G.tacUntil;
     $('goalBox').title = `${st.idx} ${st.title} · 패배: ${st.lose}${tacOn ? ` · 작전 전술 ${tac.name}: ${R.tacText(G.tactic, st)} (${G.tacUntil >= 99 ? '작전 내내' : `${G.tacUntil}턴까지`})` : ''}`;
-    if (tacOn) $('goalBox').insertAdjacentHTML('afterbegin', `<span class="gtac" data-tip="${R.tacText(G.tactic, st).replace(/ \(대가는 \d+턴만\)/, '')}${G.tacUntil < 99 ? ` · ${G.tacUntil - G.turn + 1}턴 남음${G.tacCostUntil && G.tacCostUntil < G.tacUntil ? (G.turn <= G.tacCostUntil ? `(대가 ${G.tacCostUntil - G.turn + 1}턴)` : '(대가 끝남)') : ''}` : ''}${G.tacX > 1 ? ' · ★추천 강화' : ''}">${tac.name} ${G.tacUntil >= 99 ? '끝까지' : `~${G.tacUntil}턴`}</span> `);
+    if (tacOn) $('goalBox').insertAdjacentHTML('afterbegin', `<span class="gtac" data-tip="${R.tacText(G.tactic, st).replace(/ \(대가는 \d+턴만\)/, '')}${G.tacUntil < 99 ? ` · ${G.tacUntil - G.turn + 1}턴 남음${G.tacCostUntil && G.tacCostUntil < G.tacUntil ? (G.turn <= G.tacCostUntil ? `(약화는 ${G.tacCostUntil - G.turn + 1}턴 더)` : '(약화 끝남)') : ''}` : ''}${G.tacX > 1 ? ' · ★추천 강화' : ''}">${tac.name} ${G.tacUntil >= 99 ? '끝까지' : `~${G.tacUntil}턴`}</span> `);
     $('btnEnd').disabled = G.side !== 'p' || busy;
     syncQuick(); renderRoster();
   }
@@ -2407,7 +2407,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.64';
+  const GAME_VERSION = '1.65';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2529,7 +2529,7 @@
       const mark = town ? (sideNew().length ? '<b class="wq">!</b>' : '') : sides.length ? '<b class="wq s">!</b>' : '';
       const tag = town ? townOf().name : st.idx;
       const sMax = town ? 0 : 1 + (R.bonusOf(st).turns || R.bonusOf(st).kills ? 1 : 0), sv = town ? [] : Object.values((save.bonus || {})[st.idx] || {}).filter(Boolean), sGot = sv.length, sHard = sv.filter((v) => v >= 2).length;
-      const em = town ? '<em class="town">TOWN</em>' : clear ? `<em>CLEAR <span class="wst${sGot >= sMax ? ' full' : ''}">${'<b class="hs">★</b>'.repeat(sHard)}${'★'.repeat(sGot - sHard)}${'☆'.repeat(Math.max(0, sMax - sGot))}</span></em>` : id === save.clear ? '<em class="new">NEW</em>' : '';
+      const em = town ? '<em class="town">TOWN</em>' : clear ? `<em>CLEAR <span class="wst${sGot >= sMax ? ' full' : ''}">${'<b class="hs">✦</b>'.repeat(sHard)}${'★'.repeat(sGot - sHard)}${'☆'.repeat(Math.max(0, sMax - sGot))}</span></em>` : id === save.clear ? '<em class="new">NEW</em>' : '';
       return `<button class="wnode ${clear ? 'clear' : ''} ${town ? 'town' : ''} c${col}" data-n="${id}">
         <i class="ol" style="background-image:url(assets/ui/UI_WolrdMap_Chapter_Icon_Selected_OL_${col}.png)"></i>
         <i class="base" style="background-image:url(assets/ui/UI_WolrdMap_Chapter_Icon_Base_${col}.png)"></i>
@@ -2545,7 +2545,7 @@
       <div class="whead"><button class="wback" id="sBack" aria-label="뒤로"></button>
         <div class="wtitle"><small>CHAPTER ${String(CH.no).padStart(2, '0')}</small><b>${CH.name}</b></div>
         ${chOpen() > 0 ? `<div class="wchap"><button id="sPrev" ${ch > 0 ? '' : 'disabled'} aria-label="이전 지역">‹</button><span>${CH.no} / ${chOpen() + 1}</span><button id="sNext" ${ch < chOpen() ? '' : 'disabled'} aria-label="다음 지역">›</button></div>` : ''}</div>
-      <div class="wtools"><button class="lo-btn dark" id="sHero">부대 현황</button><button class="lo-btn dark" id="sDrill">병사 훈련</button><button class="lo-btn dark" id="sIf">IF 기록</button><button class="lo-btn dark" id="sOpt">옵션</button><span class="wstar" title="본편 추가 목표 ★ · 10개마다 부품 보상">★ ${starCount()}/${starMax()}${(() => { const h = Object.values(save.bonus || {}).reduce((n, r) => n + Object.values(r).filter((v) => v >= 2).length, 0); return h ? ` <b class="hs">어려움 ★${h}</b>` : ''; })()}<small>${starCount() < starMax() ? `다음 보상까지 ${10 - (starCount() % 10)}개` : '모두 모음'}</small></span>${save.partEndSeen || save.clear >= D.STAGES.length ? '<button class="lo-btn dark" id="sPart">1부 기록</button>' : ''}</div>
+      <div class="wtools"><button class="lo-btn dark" id="sHero">부대 현황</button><button class="lo-btn dark" id="sDrill">병사 훈련</button><button class="lo-btn dark" id="sIf">IF 기록</button><button class="lo-btn dark" id="sOpt">옵션</button><span class="wstar" title="본편 추가 목표 ★ · 10개마다 부품 보상">★ ${starCount()}/${starMax()}${(() => { const h = Object.values(save.bonus || {}).reduce((n, r) => n + Object.values(r).filter((v) => v >= 2).length, 0); return h ? ` <b class="hs">어려움 ✦${h}</b>` : ''; })()}<small>${starCount() < starMax() ? `다음 보상까지 ${10 - (starCount() % 10)}개` : '모두 모음'}</small></span>${save.partEndSeen || save.clear >= D.STAGES.length ? '<button class="lo-btn dark" id="sPart">1부 기록</button>' : ''}</div>
       <button class="wchlbtn" id="sChlBtn"><small>CHAPTER</small><b>${String(CH.no).padStart(2, '0')}</b><span>챕터 목록</span></button>
       <div class="wchl" id="sChl"><div class="wchl-h"><small>CHAPTER LIST</small><b>챕터 선택</b><button class="wchl-x" id="sChlX" aria-label="닫기"></button></div>
         <div class="wchl-l">${CH_LIST.map((c, i) => { const open = c.inGame && i <= chOpen(); return `<button class="wch ${i === ch ? 'on' : ''} ${open ? '' : 'lock'}" data-i="${i}">
@@ -3389,7 +3389,7 @@
       const rec = (save.bonus = save.bonus || {})[st.idx] = save.bonus[st.idx] || {};
       // 어려움에서 이룬 ★는 따로 붉은 ★로 남긴다 (값 2) — 어려움에 도전할 이유
       const hardOk = R.diff === 'hard';
-      for (const x of bonus) { x.first = x.ok && (!rec[x.k] || (hardOk && rec[x.k] < 2)); if (x.ok) { if (hardOk && rec[x.k] === 1) x.name += ' (어려움 ★)'; rec[x.k] = Math.max(rec[x.k] || 0, hardOk ? 2 : 1); } }
+      for (const x of bonus) { x.first = x.ok && (!rec[x.k] || (hardOk && rec[x.k] < 2)); if (x.ok) { if (hardOk && rec[x.k] === 1) x.name += ' (어려움 ✦)'; rec[x.k] = Math.max(rec[x.k] || 0, hardOk ? 2 : 1); } }
       parts = Math.round(parts * (1 + (hardOk ? 0.35 : 0.25) * bonus.filter((x) => x.ok).length) * (st.replay ? 0.6 : 1)); // 본편 다시 하기는 60%, 어려움은 추가 목표마다 +35%
       // ★ 모으기: 모은 추가 목표가 10개를 넘길 때마다 부품 보상 (한 번씩)
       const stars = starCount(), paid = save.starPaid || 0;

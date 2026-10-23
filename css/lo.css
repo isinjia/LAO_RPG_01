@@ -837,3 +837,6 @@ i.dlv { font: normal 11px 'LO_B', sans-serif; color: #111; background: #8fd0ff; 
 .wnode em .wst { color: #9aa6c4; letter-spacing: -1px; } .wnode em .wst.full { color: var(--lo-y); }
 .wnode em .wst { color: #c9d2e6; text-shadow: 0 0 3px #000, 0 0 2px #000; } .wnode em .wst .hs { color: #ff5a6e; font-weight: normal; }
 .wtools .wstar .hs { margin-left: 6px; color: #ff5a6e; font-weight: normal; }
+/* 월드맵 ★: 크게, 어려움 ✦는 붉고 빛나게. 아래 ★ 칸 글씨도 크게 */
+.wnode em .wst { font-size: 13px; letter-spacing: 0; } .wnode em .wst .hs { text-shadow: 0 0 4px #ff2a44, 0 0 2px #000; }
+.wtools .wstar { font-size: 17px; } .wtools .wstar small { font-size: 13px; }

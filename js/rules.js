@@ -178,7 +178,7 @@
   R.PERK_LV = 20;
   R.PERKS = {
     at: { name: '공세 각성', desc: '영웅·병사 공격 +15%', k: { at: 0.15 } },
-    df: { name: '수비 각성', desc: '영웅·병사 방어 +22%', k: { df: 0.22 } },
+    df: { name: '수비 각성', desc: '영웅·병사 방어 +25%', k: { df: 0.25 } },
     hp: { name: '생존 각성', desc: '영웅·병사 체력 +18%', k: { hp: 0.18 } },
     mv: { name: '기동 각성', desc: '영웅·병사 이동 +1', k: { mov: 1 } },
   };
@@ -200,7 +200,7 @@
     const NM = { at: '공격', df: '방어', mov: '이동' };
     const fx = Object.entries(b).map(([k, v]) => k === 'mov' ? `이동 +${v}` : `${NM[k]} ${v > 0 ? '+' : ''}${Math.round((v > 0 ? v * x : v / x ** 1.5) * 100)}%`).join(', ');
     const costN = x > 1 && n < 99 && Object.values(b).some((v) => v < 0) ? Math.max(1, n - 1) : 0;
-    return `${n >= 99 ? '작전 내내' : `처음 ${n}턴`} ${fx}${costN ? ` (대가는 ${costN}턴만)` : ''}`;
+    return `${n >= 99 ? '작전 내내' : `처음 ${n}턴`} ${fx}${costN ? ` (약화는 처음 ${costN}턴만)` : ''}`;
   };
   R.applyTactic = (G, key) => {
     const t = R.TACTICS[key]; G.tactic = t && t.buff ? key : 'none';
