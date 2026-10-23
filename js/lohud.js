@@ -71,7 +71,7 @@
   H.phase = function (side, turn, sub, speed = 1) {
     const p = side === 'p';
     return show(`<div class="lb-band"></div><div class="lb-line"></div>
-      <div class="lb-in"><small>TURN ${String(turn).padStart(2, '0')}</small><b>${p ? 'PLAYER PHASE' : 'ENEMY PHASE'}</b><span>${p ? '아군 차례' : '적 차례'}${sub ? ' · ' + sub : ''}</span></div>`,
+      <div class="lb-in"><small>${turn}턴</small><b>${p ? '아군 차례' : '적 차례'}</b><span>${sub || (p ? '명령을 내리세요' : '적이 움직입니다')}</span></div>`,
     'phase ' + (p ? 'p' : 'e'), 1600);
   };
   // 작전 개시: 원작 MISSION START 글자 그림
@@ -87,7 +87,7 @@
   // 작전 결과: 원작 MISSION COMPLETE 글자 / 실패는 빨간 띠
   H.result = function (win, sub) {
     return show(`<div class="lb-band"></div><div class="lb-line"></div>
-      <div class="lb-in">${win ? '<img src="assets/ui/UI_Battle_Main_missionclear_label_2.png" alt="MISSION COMPLETE">' : '<b>MISSION FAILED</b>'}<span>${win ? '작전 성공' : '작전 실패'} · ${sub}</span></div>`,
+      <div class="lb-in">${win ? '<img src="assets/ui/UI_Battle_Main_missionclear_label_2.png" alt="MISSION COMPLETE">' : '<b>작전 실패</b>'}<span>${win ? '작전 성공 · ' : ''}${sub}</span></div>`,
     'result ' + (win ? 'win' : 'e'), 2000);
   };
   // 특기 컷인: 인물 그림이 사선 띠 안으로 미끄러져 들어오고 특기 이름이 박힌다

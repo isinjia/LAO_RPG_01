@@ -163,7 +163,7 @@
   R.DIFF = {
     easy: { k: 0.85, bonusTurns: 2, name: '쉬움', ai: { fear: 0.4, bar: -1.5, wake: 2, kill: 0, lead: 1.3, focus: 0 } },
     normal: { k: 1.11, bonusTurns: 1, chAdj: { 1: 0.93 }, name: '보통', winAdj: { defend: 0.95 }, ai: { fear: 0.1, bar: -4, wake: 1, kill: 2, lead: 1.6, focus: 0.5 } }, // 보통도 쓰러뜨릴 수 있는 영웅은 노린다 (아군을 잃을 긴장)
-    hard: { k: 1.2, name: '어려움', troopCap: 0.9, heal: 0.6, bonusTurns: -1, chAdj: { 1: 0.9, 6: 0.97 }, winAdj: { defend: 0.88 }, ai: { fear: 0.05, bar: -6, wake: 0, kill: 6, lead: 2.8, focus: 3.5 } }, // focus: 이미 다친 영웅을 몰아 치는 협공 // lead: 적이 아군 지휘관을 노리는 무게
+    hard: { k: 1.2, name: '어려움', troopCap: 0.9, heal: 0.6, bonusTurns: -1, chAdj: { 1: 0.9 }, winAdj: { defend: 0.92 }, ai: { fear: 0.05, bar: -6, wake: 0, kill: 6, lead: 2.8, focus: 3.5 } }, // focus: 이미 다친 영웅을 몰아 치는 협공 // lead: 적이 아군 지휘관을 노리는 무게
   };
   R.aiOf = () => (R.DIFF[R.diff] || R.DIFF.normal).ai;
   R.healK = () => ((R.DIFF[R.diff] || R.DIFF.normal).heal || 1); // 아군 정비·지휘관 곁 보충 배율 (어려움은 줄어든다)
@@ -185,7 +185,7 @@
   // 작전 전술: 출격 준비에서 작전마다 하나 고른다. 처음 몇 턴만 아군 전원(영웅·병사)에 걸린다
   R.TACTICS = {
     none: { name: '전술 없음', desc: '아무 효과 없음' },
-    rush: { name: '돌격 명령', desc: '처음 3턴 공격 +22%, 방어 -10%', buff: { at: 0.22, df: -0.1 }, turns: 3 },
+    rush: { name: '돌격 명령', desc: '처음 3턴 공격 +22%, 방어 -15%', buff: { at: 0.22, df: -0.15 }, turns: 3 },
     wall: { name: '방어 진형', desc: '처음 4턴 방어 +25% (버티기·사수 작전은 작전 내내)', buff: { df: 0.25 }, turns: 4, holdTurns: 99 },
     swift: { name: '신속 전개', desc: '처음 3턴 이동 +1, 방어 -5%', buff: { mov: 1, df: -0.05 }, turns: 3 },
   };
