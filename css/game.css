@@ -354,3 +354,13 @@ html.kbd #roster .rh::after { content: attr(data-n); position: absolute; left: 2
   .title2 .tsub { letter-spacing: 3px; font-size: 12px; }
   .title2 .tmenu { top: 46%; }
 }
+
+/* 화면을 누르기 전에도 항상 보이는 타이틀 옵션 */
+.title2 .tquickopt {
+  position: absolute; z-index: 2;
+  top: calc(12px + var(--safe-t)); right: calc(16px + var(--safe-r));
+  min-width: 88px; min-height: 44px; padding: 8px 18px;
+  border: 1px solid #ffffff66; border-radius: 0;
+  background: #0b1020cc; color: #fff; font-size: 16px;
+}
+.title2 .tquickopt:hover { background: #263348; }
