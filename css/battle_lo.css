@@ -415,3 +415,4 @@
 }
 /* 원거리 전투(화면 둘): 건너뛰기 안내를 가운데 구분선에서 비켜 오른쪽 위로 */
 #fight.split .fskip { left: auto; right: calc(16px + var(--safe-r)); transform: none; }
+#hint.warn { color: #ffb3bd; background: linear-gradient(90deg, transparent, rgba(80, 10, 20, .92) 12%, rgba(80, 10, 20, .92) 88%, transparent); }

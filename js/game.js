@@ -1090,7 +1090,7 @@
   const ui = { state: 'idle', sel: null, reach: null, from: null, target: null, skill: null, skillTile: null };
   let busy = false;
   let mode = 'boot'; // boot | screen | talk | map | fight
-  function setHint(t) { $('hint').textContent = t || ''; }
+  function setHint(t) { $('hint').textContent = t || ''; $('hint').classList.remove('warn'); }
   const kindTag = (k) => `<span class="kind" style="color:${D.KIND[k].color}">${D.KIND[k].name}</span>`;
   const bars = (u) => `<div class="bars2 ${u.side}">${u.troop ? `<div class="bar2 t"><i style="width:${(u.troop.hp / u.troop.hpMax) * 100}%"></i><b>병사 ${R.soldiers(u)}/10명 · ${Math.round(u.troop.hp)}</b></div>` : ''}<div class="bar2 h"><i style="width:${(u.hp / u.hpMax) * 100}%"></i><b>영웅 ${Math.round(u.hp)} / ${u.hpMax}</b></div></div>`;
   function showInfo(u, tile) {
@@ -1226,6 +1226,13 @@
       const n = ui.reach.get(ui.reach.key(t[0], t[1]));
       OV.path = n && n.stop ? R.path(ui.reach, t[0], t[1]) : null;
       drawOverlay();
+      // 옮길 칸이 적 여럿의 공격이 닿는 곳이면 미리 알린다 (지휘관·다친 영웅은 한 기만 닿아도)
+      if (OV.path && ui.sel) {
+        const th = ui.threat || (ui.threat = R.threatMap(G, 'p')), c = th[t[1] * G.w + t[0]], u = ui.sel;
+        const risky = c >= 3 || (c >= 1 && (u.lead || u.hp < u.hpMax * 0.5));
+        setHint(risky ? `⚠ 이 칸은 적 ${c}기의 공격이 닿습니다${u.lead ? ` — ${u.name}${(() => { const c = u.name.charCodeAt(u.name.length - 1) - 0xac00; return c >= 0 && c < 11172 ? (c % 28 ? '이' : '가') : '이(가)'; })()} 쓰러지면 패배` : c >= 3 ? ' — 집중 공격 위험' : ' — 영웅이 다쳐 있음'}` : ui.moveHint);
+        $('hint').classList.toggle('warn', risky);
+      }
     }
     if (ui.state === 'skill' && t) previewSkillArea(t);
     if (ui.state === 'idle' && t) { const u = R.unitAt(G, t[0], t[1]); showInfo(u, u ? null : t); }
@@ -1306,14 +1313,15 @@
     if (u.side === 'p' && u.voiced !== G.turn) { u.voiced = G.turn; AU.voice(u.key + '_ActionApprove', 0.85); } // 차례마다 처음 고를 때만 원작 행동 승인 음성
     $('forecast').classList.add('hidden');
     ui.sel = u; ui.state = 'move'; ui.from = [u.x, u.y];
-    ui.reach = R.reach(G, u);
+    ui.reach = R.reach(G, u); ui.threat = null; // 적 공격이 닿는 칸 수 (옮길 칸 경고용, 필요할 때 한 번만 센다)
     const rg = ranges(u, ui.reach);
     OV.move = rg.mv; OV.atk = rg.atk; OV.aura = auraTiles(u); OV.path = null; OV.targets = null;
     drawOverlay();
     showInfo(u);
     panTo(u.x, u.y); // 정보창·버튼에 가리면 보이는 곳으로
     showActs([{ label: '취소', fn: deselect }]);
-    setHint('파란 칸: 이동 · 빨간 칸의 적을 누르면 다가가 공격 · 영웅을 다시 누르면 제자리에서 행동');
+    ui.moveHint = '파란 칸: 이동 · 빨간 칸의 적을 누르면 다가가 공격 · 영웅을 다시 누르면 제자리에서 행동';
+    setHint(ui.moveHint);
     renderRoster();
   }
   function deselect() {
@@ -2308,7 +2316,7 @@
       <p><b>① 움직이기</b> · 영웅을 누르면 파란 칸(이동)과 빨간 칸(공격)이 보입니다. 빨간 칸의 적을 누르면 다가가 공격하기 전에 <b>예상 피해</b>를 보여 줍니다.</p>
       <p><b>② 병사가 먼저</b> · 한 칸은 영웅 1명 + 병사 10명입니다. 병사가 먼저 맞고, 영웅이 쓰러지면 퇴각합니다. 지휘관 <b>콘스탄챠</b>가 쓰러지면 패배합니다.</p>
       <p><b>③ 상성</b> · 소총병 ▶ 중장병 ▶ 기동병 ▶ 소총병, 사격병 ▶ 공중병. 이기는 상대를 골라 치세요.</p>
-      <p><b>④ 위험 범위</b> · 오른쪽 위 「위험」을 누르면 적이 다음 차례에 닿는 칸이 보입니다. 적은 지휘관을 따라 함께 진격해 옵니다.</p>
+      <p><b>④ 위험 범위</b> · 오른쪽 위 「위험」을 누르면 적이 다음 차례에 닿는 칸이 보입니다. 영웅을 옮길 칸이 적 여럿(지휘관·다친 영웅은 한 기)의 공격이 닿는 곳이면 위쪽 안내가 붉게 바뀌어 미리 알려 줍니다. 적은 지휘관을 따라 함께 진격해 옵니다.</p>
       <p><b>⑤ 정비</b> · 움직이지 않고 「정비」를 고르면 병사와 체력이 회복됩니다.</p>
       <div class="opts"><button class="gold" data-a="ok">작전 시작</button><button data-a="more">규칙 자세히</button></div>`, (a) => (a === 'more' ? help(cb) : cb && cb()));
   }
@@ -2399,7 +2407,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.59';
+  const GAME_VERSION = '1.60';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
