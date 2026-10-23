@@ -756,3 +756,12 @@ i.dlv { font: normal 11px 'LO_B', sans-serif; color: #111; background: #8fd0ff; 
 @keyframes pperkPulse { from { box-shadow: 0 0 0 #ffcc0000; } to { box-shadow: 0 0 12px #ffcc00aa; } }
 /* 출격 준비: 오른쪽 정보가 아래 도움말·출격 단추(높이 약 110px) 위에서 끝나게 */
 @media (orientation: landscape) and (min-width: 1000px) { .pdetail { bottom: calc(118px + var(--safe-b)); } }
+/* 출격 준비 오른쪽 정보 (PC 가로): 병사 배속을 특기보다 위로 올리고 줄 간격을 줄여 스크롤 없이 보이게 */
+@media (orientation: landscape) and (min-width: 1000px) {
+  .pdetail { gap: 6px; }
+  .pd-head b { font-size: 21px; } .pd-head { padding-bottom: 5px; }
+  .pd-stats div { padding: 4px 10px; }
+  .pd-skills div { padding: 5px 10px; margin-bottom: 3px; }
+  .ptr { padding: 4px 10px 4px 4px; } .ptr img { width: 40px; height: 40px; }
+  .pgoal { font-size: 14px; }
+}

@@ -2317,10 +2317,10 @@
       <p><b>피해 흔들림</b> · 공격 예상 창의 숫자는 기댓값이고, 실제 피해는 그 ±10% 안에서 흔들립니다. 아군 부대는 한 번의 교전에 병사를 70%(어려움 90%)까지만 잃고, 넘친 피해의 40%는 영웅이 받습니다.</p>
       <p><b>원거리</b> · 사격병·전자전병은 사거리 2 이상 (영웅·적마다 다르고, 적 포대는 4칸까지 쏘기도 합니다). 두 칸에서 쏘면 근접 부대는 반격하지 못합니다. 원거리 병종이 붙어서 싸우면 원래 피해의 30%만 들어갑니다.</p>
       <p><b>적의 움직임</b> · 적은 무리마다 지휘관이 있고, 부대가 지휘관 둘레로 함께 진격합니다. 무리 중 하나라도 아군과 가까워지거나 한 차례가 지나면 무리 전체가 움직이고, 상성으로 이기는 상대를 먼저 노립니다. 우두머리를 지키는 호위는 우두머리 곁을 떠나지 않습니다. 「위험」 단추로 적이 닿는 범위를 확인하세요. 증원은 정해진 턴에 나타나고, 그 전에 지도 위 적을 모두 쓰러뜨리면 남은 증원이 곧바로 앞당겨 나옵니다 (증원까지 모두 쓰러뜨리면 승리).</p>
-      <p><b>난이도</b> · 옵션에서 고릅니다 (작전 도중에 바꾸면 그 자리에서 적의 체력·능력치가 바뀝니다). 쉬움: 적 능력치 85%, 적이 조심스럽고 늦게 움직임 · 보통: 107%(사수 작전은 ×0.95) · 어려움: 115%, 적이 처음부터 진격하고 쓰러뜨릴 수 있는 영웅을 집요하게 노림 (어려움은 배우는 1장 ×0.93·긴 6장 ×0.97, 적이 지킬 칸으로 몰려드는 사수 작전 ×0.88을 더 곱해 덜어 줌). 여기에 장마다 배율(${Math.round(R.CH_K[0] * 100)}~${Math.round(R.CH_K[R.CH_K.length - 1] * 100)}%)이 곱해지고, 옵션 창에는 지금 작전의 실제 배율이 나옵니다.</p>
+      <p><b>난이도</b> · 옵션에서 고릅니다 (작전 도중에 바꾸면 그 자리에서 적의 체력·능력치가 바뀝니다). 쉬움: 적 능력치 85%, 적이 조심스럽고 늦게 움직임 · 보통: 107%(사수 작전은 ×0.95) · 어려움: 120%, 적이 처음부터 진격하고 쓰러뜨릴 수 있는 영웅을 집요하게 노림 (어려움은 배우는 1장 ×0.93·긴 6장 ×0.97, 적이 지킬 칸으로 몰려드는 사수 작전 ×0.88을 더 곱해 덜어 줌). 여기에 장마다 배율(${Math.round(R.CH_K[0] * 100)}~${Math.round(R.CH_K[R.CH_K.length - 1] * 100)}%)이 곱해지고, 옵션 창에는 지금 작전의 실제 배율이 나옵니다.</p>
       <div class="osec">성장 · 진행</div>
       <p><b>경험치</b> · 전투가 끝나면 참가한 영웅 전원이 같은 양을 받고, 가장 많이 친 영웅(MVP)은 20%를 더 받습니다.</p>
-      <p><b>각성</b> · 영웅이 Lv.${R.PERK_LV}에 이르면 「부대 현황」에서 각성 하나를 고릅니다: ${Object.values(R.PERKS).map((p) => `${p.name}(${p.desc})`).join(' · ')}. Lv.${R.PERK2_LV}에는 첫째와 다른 둘째 각성을 하나 더 고릅니다. 출격 밖에서 언제든 바꿀 수 있습니다.</p>
+      <p><b>각성</b> · 영웅이 Lv.${R.PERK_LV}에 이르면 「출격 준비」나 「부대 현황」에서 각성 하나를 고릅니다: ${Object.values(R.PERKS).map((p) => `${p.name}(${p.desc})`).join(' · ')}. Lv.${R.PERK2_LV}에는 첫째와 다른 둘째 각성을 하나 더 고릅니다 (꾸준히 출격하면 보통 2장 중반에 첫째, 3장 끝 무렵에 둘째가 열립니다). 출격 준비·부대 현황에서 언제든 바꿀 수 있습니다.</p>
       <p><b>추가 목표</b> · 본편 작전마다 「정한 턴 안에 승리」(버티기·사수 작전은 「버티며 적 60% 이상 격파」)와 「영웅 퇴각 없이 승리」가 있습니다. 작전 도중 난이도를 낮춘 판은 세지 않습니다. 달성할 때마다 부품 보상이 25% 늘고, 작전 정보에 ★로 남습니다. 전투 중에는 위쪽 줄에 남은 턴이 보이고, 놓친 목표는 깬 작전의 「본편 다시 하기」(부품 60%)로 다시 노립니다.</p>
       <p><b>저장</b> · 작전 도중에도 행동이 끝날 때마다 저장되어 타이틀의 「작전 이어하기」로 돌아옵니다. 이번 차례 안에서는 U(또는 메뉴)로 한 수씩 되돌리거나, 메뉴의 「이번 차례 다시」로 차례 처음으로 돌아갈 수 있습니다.</p>
       <p><b>특기</b> · 쓰고 나면 정해진 턴 동안 다시 쓸 수 없습니다(괄호 안 숫자).</p>
@@ -2387,7 +2387,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.28';
+  const GAME_VERSION = '1.29';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -3001,8 +3001,8 @@
         ${s.lv >= R.PERK_LV ? `<button class="pd-cc ${s.perk ? '' : 'ready'}" id="pPerk"><b>각성</b><small>${s.perk ? `${[s.perk, s.lv >= R.PERK2_LV ? s.perk2 : null].filter(Boolean).map((p) => R.PERKS[p].name).join(' · ')}${s.lv >= R.PERK2_LV && !s.perk2 ? ' · 둘째 각성을 고를 수 있습니다' : ' (바꾸기)'}` : '각성을 고를 수 있습니다'}</small></button>` : ''}
         <div class="pd-stats"><div><label>병종</label>${kindTag(t.kind)}</div><div><label>체력</label><b>${hp}</b></div><div><label>공격</label><b>${at}</b></div>
           <div><label>방어</label><b>${df}</b></div><div><label>이동</label><b>${CL.stats(id, s).mov}</b></div><div><label>사거리</label><b>${t.rng}</b></div></div>
-        <div class="wi-sub">특기</div><div class="pd-skills">${t.skills.map((k) => { const sk = D.SKILLS[k]; return `<div><b>${sk.name}</b><small>재사용 ${sk.cd}턴 · ${sk.desc}</small></div>`; }).join('')}</div>
         <div class="wi-sub">병사 배속 <small>출격마다 10명 가득 · 공격받으면 병사가 먼저 피해</small></div><div class="pd-troops">${troops}</div>
+        <div class="wi-sub">특기</div><div class="pd-skills">${t.skills.map((k) => { const sk = D.SKILLS[k]; return `<div><b>${sk.name}</b><small>재사용 ${sk.cd}턴 · ${sk.desc}</small></div>`; }).join('')}</div>
         <button class="pd-drill" id="pDrill"><img src="${PARTS_ICON}" alt=""><b>병사 훈련</b><small>부품 ${save.parts || 0} · 병종마다 능력치 +${Math.round(R.DRILL_K * 100)}%씩</small></button>`;
     };
     const count = () => (st.free ? `<span class="pcnt">출전 ${st.heroes.length} / ${cap}</span>` : '');
