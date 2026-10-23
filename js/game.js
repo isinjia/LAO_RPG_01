@@ -2414,7 +2414,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.78';
+  const GAME_VERSION = '1.79';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2424,7 +2424,7 @@
     screen(`<div class="title2">
       <div class="tbg"></div><div class="tlight"></div><div class="tmotes">${motes}</div><div class="tvig"></div>
       <div class="tcenter"><img class="tlogo" src="assets/title/logo.webp" alt=""><div class="tsub">개발자 B의 내 마음대로 LAST ORIGIN</div></div>
-      <div class="ttouch" id="tTouch">화면을 터치해 주세요</div>
+      <button class="tquickopt" id="tQuickOpt">옵션</button><div class="ttouch" id="tTouch">화면을 터치해 주세요</div>
       <div class="tmenu hidden" id="tMenu">
         ${sus ? `<button id="tResume">작전 이어하기 <small>${sus.idx} · ${sus.turn}턴</small></button>` : ''}
         ${has ? '<button id="tCont">이어하기</button>' : ''}
@@ -2453,7 +2453,7 @@
       else start();
     };
     $('tHelp').onclick = () => { AU.play('lo_click', 0.7); help(); };
-    $('tOpt').onclick = () => { AU.play('lo_click', 0.7); options(); };
+    $('tOpt').onclick = $('tQuickOpt').onclick = () => { AU.play('lo_click', 0.7); options(); };
   }
   // ── 월드맵 (창세기전식): 원작 3D 지역 지도 위 지점을 눌러 부대가 길을 따라 이동한다 ──
   // 지점 = 본편 작전 장소 8곳 + 마을(등대 아래 비밀기지). 아직 깨지 않은 본편 지점에 가면 이야기 전투,
