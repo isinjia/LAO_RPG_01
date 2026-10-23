@@ -1846,7 +1846,7 @@
         { turn: 1, at: [8, 6], units: [C('bigchick', 83), C('harvesterx', 83), C('fabigchick', 83), C('bigchick', 83)] },
         { turn: 3, at: [14, 1], units: [C('shielderx', 83), C('fabigchick', 83), C('jugger', 83), C('shielderx', 83), C('fabigchick', 83)] },
         { turn: 5, at: [21, 8], units: [C('bigchicks', 84), C('fabigchick', 84), C('bigchickx', 84), C('bigchick', 84), C('bigchicks', 84), C('fabigchick', 84)] },
-        { turn: 7, at: [12, 12], units: [C('bigchicks', 85), C('bigchickx', 85), C('jugger', 85), C('phalanx', 85), C('bigchicks', 85), C('bigchickx', 85)] },
+        { turn: 7, at: [12, 12], units: [C('bigchicks', 85), C('bigchickx', 85), C('bigchick', 85), C('phalanx', 85), C('bigchicks', 85), C('bigchickx', 85)] },
       ],
     },
     {
@@ -1874,7 +1874,7 @@
       waves: [
         { turn: 1, at: [9, 9], units: [C('bigchicks', 85), C('harvesterx', 85), C('legionsp', 85), C('bigchicks', 85)] },
         { turn: 3, at: [3, 5], units: [C('harvesterx', 85), C('legionsp', 85), C('detectoraa', 85), C('harvesterx', 85), C('legionsp', 85)] },
-        { turn: 5, at: [16, 5], units: [C('legionmk2', 86), C('sniper', 86), C('harvesterx', 86), C('legione', 86), C('legionmk2', 86), C('sniper', 86)] },
+        { turn: 5, at: [16, 5], units: [C('legionmk2', 86), C('sniper', 86), C('harvesterx', 86), C('legionmk2', 86), C('legionmk2', 86), C('sniper', 86)] },
         { turn: 6, at: [9, 1], boss: 'speaker', units: [C('bigchicks', 87), C('legionmk2', 87), C('sniper', 87), C('speaker', 88), C('bigchicks', 87), C('legionmk2', 87), C('sniper', 87)] },
       ],
     },
@@ -1964,7 +1964,7 @@
       ],
     },
     {
-      id: 56, ch: 7, idx: '7-8', title: '별의 아이', bgm: 'lo_boss3', night: true, goal: '네스트 격파', lose: '콘스탄챠 퇴각', win: 'boss',
+      id: 56, ch: 7, idx: '7-8', title: '별의 아이', bgm: 'lo_boss3', goal: '네스트 격파', lose: '콘스탄챠 퇴각', win: 'boss',
       heroes: ['constantia', 'marie', 'labiata', 'griffon', 'scathy', 'coco'],
       map: [
         'xxxxxxxxxxxxxxxxxxxx',
