@@ -206,7 +206,7 @@
     if (!t || !t.buff) return;
     G.tacUntil = R.tacTurns(key, G.stage);
     const b0 = (holdStage(G.stage) && t.holdBuff) || t.buff; // 방어 진형은 버티는 작전에서 반격으로 적을 줄이게 공격도 조금
-    // 작전에 맞는 전술(추천)을 고르면 좋은 효과만 1.3배 (대가는 그대로)
+    // 작전에 맞는 전술(추천)을 고르면 좋은 효과 1.3배, 대가는 아래에서 덜어 준다
     G.tacX = key === R.tacFor(G.stage) ? 1.3 : 1;
     // 추천이면 대가는 2/3로 덜어 준다 (돌격 명령 방어 -15% → -10%)
     const b = Object.fromEntries(Object.entries(b0).map(([k, v]) => [k, k === 'mov' ? v : Math.round((v > 0 ? v * G.tacX : v / G.tacX ** 1.5) * 1000) / 1000]));
