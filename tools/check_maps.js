@@ -39,6 +39,27 @@ for (const st of D.STAGES) {
   if (stuck) errs.push(`걸어서 아군에게 못 오는 적 ${stuck}기`);
   { let lone = 0; for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (foot(m[y][x]) && m[y][x] !== '=' && !rs.has(x + ',' + y)) lone++; // 걸어서 못 닿는 땅 (막힌 빈 칸·떨어진 섬)
     if (lone) errs.push(`걸어서 못 닿는 땅 ${lone}칸`); }
+  // ── 참고 게임(랑그릿사·슈퍼로봇대전·파이어 엠블렘) 원칙 검사 ──
+  const pd = (from) => { const d = new Map([[from[0] + ',' + from[1], 0]]), q = [from]; while (q.length) { const [x, y] = q.shift(), k0 = d.get(x + ',' + y); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy, k = nx + ',' + ny; if (nx < 0 || ny < 0 || nx >= W || ny >= H || d.has(k) || !foot(m[ny][nx])) continue; d.set(k, k0 + 1); q.push([nx, ny]); } } return d; };
+  const fromS = pd(st.starts[0]);
+  const foes = G.units.filter((u) => u.side === 'e');
+  const w0u = foes.filter((u) => u.wave0), wNu = foes.filter((u) => !u.wave0);
+  const dist0 = w0u.map((u) => fromS.get(u.x + ',' + u.y)).filter((v) => v != null);
+  // ① 첫 교전: 가장 가까운 첫 무리 적까지 걸음 ≤ 10 (도보 3칸씩 3턴 안)
+  if (dist0.length && Math.min(...dist0) > 10) errs.push(`첫 교전이 늦음 (가장 가까운 적까지 ${Math.min(...dist0)}걸음)`);
+  // ② 흩어짐: 첫 무리가 6기 이상이면 걸음 거리 폭이 8 이상 (앞 경계·본대·후방으로 나뉨)
+  if (w0u.length >= 6 && dist0.length && Math.max(...dist0) - Math.min(...dist0) < 8) errs.push(`첫 무리가 한 덩어리 (거리 폭 ${Math.max(...dist0) - Math.min(...dist0)})`);
+  // ③ 빈 땅: 걸을 칸마다 '할 일'(적이 서는 칸·시작 칸·기지·마을·증원 자리)에서 5걸음 안. 아니면 죽은 땅
+  { const hot = [...st.starts, ...foes.map((u) => [u.x, u.y])];
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if ('cv'.includes(m[y][x])) hot.push([x, y]);
+    st.waves.forEach((w) => [w.at, w.at2].filter(Boolean).forEach((p) => hot.push(p)));
+    const near = new Map(); const q = [];
+    hot.forEach(([x, y]) => { const k = x + ',' + y; if (!near.has(k)) { near.set(k, 0); q.push([x, y]); } });
+    while (q.length) { const [x, y] = q.shift(), k0 = near.get(x + ',' + y); if (k0 >= 5) continue; for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy, k = nx + ',' + ny; if (nx < 0 || ny < 0 || nx >= W || ny >= H || near.has(k) || !foot(m[ny][nx])) continue; near.set(k, k0 + 1); q.push([nx, ny]); } }
+    let dead = 0; for (const k of rs) if (!near.has(k)) dead++;
+    if (dead > rs.size * 0.06) errs.push(`죽은 땅 ${dead}칸 (할 일에서 5걸음 밖, ${Math.round((dead / rs.size) * 100)}%)`); }
+  // ④ 밀도: 걸을 칸 ÷ (적+아군) ≤ 9 (그보다 넓으면 걷기만 하는 지도)
+  { const per = rs.size / (foes.length + 8); if (per > 9) errs.push(`너무 넓음 (유닛당 ${per.toFixed(1)}칸)`); }
   // 평가에서 되풀이된 감점 (설계 검사)
   const isW = (x, y) => x >= 0 && y >= 0 && x < W && y < H && foot(m[y][x]);
   const nb = (x, y) => [[1, 0], [-1, 0], [0, 1], [0, -1]].filter(([dx, dy]) => isW(x + dx, y + dy)).length;
