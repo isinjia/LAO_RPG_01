@@ -82,7 +82,7 @@
     (G.spawned || (G.spawned = new Set())).add(i);
     G.wave = Math.max(G.wave, i);
     const spots = w.form ? R.formSpots(G, w) : R.freeAround(G, w.at[0], w.at[1], 'foot', w.units.length);
-    const list = w.units.map(([t, lv], k) => spots[k] && R.makeEnemy(G, t, lv, spots[k][0], spots[k][1], { boss: w.boss === t, ai: w.boss === t ? 'guard' : 'charge' })).filter(Boolean);
+    const list = w.units.map(([t, lv], k) => spots[k] && R.makeEnemy(G, t, lv, spots[k][0], spots[k][1], { boss: w.boss === t, ai: w.boss === t || w.hold ? 'guard' : 'charge' })).filter(Boolean);
     if (i > 0) list.forEach((u) => { u.awake = true; });
     return list;
   };

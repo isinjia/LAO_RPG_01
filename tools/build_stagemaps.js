@@ -382,7 +382,11 @@ function nearFoot(g, p, avoid) {
 
 const out = {};
 let bad = 0;
+// 손으로 설계한 전략 지도 (tools/maps/chNN.js). 있으면 자동 지도 대신 쓴다
+const HAND = {};
+for (const f of require('fs').readdirSync(__dirname + '/maps').filter((f) => /^ch\d+\.js$/.test(f))) Object.assign(HAND, require('./maps/' + f));
 for (const st of D.STAGES) {
+  if (HAND[st.idx]) { const h = HAND[st.idx]; out[st.idx] = { map: h.map, starts: h.starts, waves: h.waves, tip: h.tip }; continue; }
   const sp = SPEC[st.idx];
   if (!sp) continue;
   const [arch, W, H, dir, waveSpec] = sp;
@@ -444,7 +448,7 @@ const body = `// tools/build_stagemaps.js 로 만듦 (손으로 고치지 말 �
   for (const st of (typeof window !== 'undefined' ? window : globalThis).DATA.STAGES) {
     const m = M[st.idx];
     if (!m) continue;
-    st.map = m.map; st.starts = m.starts;
+    st.map = m.map; st.starts = m.starts; if (m.tip) st.tip = m.tip;
     st.waves.forEach((w, i) => Object.assign(w, m.waves[i]));
   }
 })();
