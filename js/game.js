@@ -1210,8 +1210,8 @@
     // 위쪽 줄은 작전명·승리 조건·(증원)·추가 목표만 (패배 조건·자세한 증원은 승리 조건 창: 띠를 누르거나 메뉴)
     $('goalBox').innerHTML = `${st.idx} ${st.title} · 승리: <b>${st.goal}</b>${nt ? ` · 증원 ${nt}턴` : ''}${R.diff !== 'normal' ? ` · <b>${R.DIFF[R.diff].name}</b>` : ''}${st.kind ? '' : ` · ${bonusLine(st, true)}`}`;
     const tac = G.tactic && R.TACTICS[G.tactic], tacOn = tac && G.tacUntil && G.turn <= G.tacUntil;
-    $('goalBox').title = `패배: ${st.lose}${tacOn ? ` · 작전 전술 ${tac.name}: ${tac.desc} (${G.tacUntil >= 99 ? '작전 내내' : `${G.tacUntil}턴까지`})` : ''}`;
-    if (tacOn) $('goalBox').insertAdjacentHTML('afterbegin', `<span class="gtac" data-tip="${tac.desc}${G.tacUntil < 99 ? ` · ${G.tacUntil - G.turn + 1}턴 남음` : ''}${G.tacX > 1 ? ' · 작전에 맞아 효과 ×1.3' : ''}">${tac.name} ${G.tacUntil >= 99 ? '끝까지' : `~${G.tacUntil}턴`}</span> `);
+    $('goalBox').title = `패배: ${st.lose}${tacOn ? ` · 작전 전술 ${tac.name}: ${R.tacText(G.tactic, st)} (${G.tacUntil >= 99 ? '작전 내내' : `${G.tacUntil}턴까지`})` : ''}`;
+    if (tacOn) $('goalBox').insertAdjacentHTML('afterbegin', `<span class="gtac" data-tip="${R.tacText(G.tactic, st)}${G.tacUntil < 99 ? ` · ${G.tacUntil - G.turn + 1}턴 남음` : ''}${G.tacX > 1 ? ' (작전에 맞아 ×1.3 반영)' : ''}">${tac.name} ${G.tacUntil >= 99 ? '끝까지' : `~${G.tacUntil}턴`}</span> `);
     $('btnEnd').disabled = G.side !== 'p' || busy;
     syncQuick(); renderRoster();
   }
@@ -2399,7 +2399,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.48';
+  const GAME_VERSION = '1.49';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -3033,15 +3033,15 @@
         ${slots()}
         <div class="pdetail">${detail()}</div>
         <div class="pfootbar"><div class="pgoal"><span>승리 <b>${st.goal}</b></span><span>패배 ${st.lose}</span><span class="dim">소총병 ▶ 중장병 ▶ 기동병 ▶ 소총병 · 사격병 ▶ 공중병</span></div>
-          <button class="lo-btn dark ptac" id="pTac"><small>작전 전술</small><b>${(R.TACTICS[tacOf(st)] || R.TACTICS.none).name}</b><i>${(R.TACTICS[tacOf(st)] || R.TACTICS.none).desc.replace(/ \(.*\)$/, '')}</i></button><button class="lo-btn dark" id="pHelp">도움말</button><button class="wgo pgo" id="pGo"><b>출격</b><small>작전 개시</small></button></div></div>`);
+          <button class="lo-btn dark ptac" id="pTac"><small>작전 전술</small><b>${(R.TACTICS[tacOf(st)] || R.TACTICS.none).name}</b><i>${R.tacText(tacOf(st), st)}</i></button><button class="lo-btn dark" id="pHelp">도움말</button><button class="wgo pgo" id="pGo"><b>출격</b><small>작전 개시</small></button></div></div>`);
       $('pBack').onclick = () => { AU.play('lo_click', 0.6); stageSelect(); };
       $('pHelp').onclick = () => { AU.play('lo_click', 0.6); help(); };
       // 작전 전술 고르기: 처음 몇 턴의 흐름을 정한다 (작전마다 바꿀 수 있고, 다음 출격에도 그대로 남는다)
       $('pTac').onclick = () => {
         AU.play('lo_click', 0.6);
         const rec = R.tacFor(st), now = tacOf(st);
-        modal(`<h3 style="white-space:nowrap">작전 전술 <small style="font:13px LO_M">처음 몇 턴 출격한 아군 전원에게 · 작전마다 기억</small></h3><div class="opts">${Object.entries(R.TACTICS).map(([k, t]) => `<button data-a="${k}" class="${now === k ? 'gold' : ''}"><b>${t.name}</b>${k === rec ? ' <i class="trec">이 작전 추천 · 효과 ×1.3</i>' : ''} <small>${t.desc}</small><small class="pprev">${t.hint}</small></button>`).join('')}</div>`, (a) => {
-          if (a && R.TACTICS[a]) { (save.tactics = save.tactics || {})[st.idx] = a; writeSave(); const b = $('pTac'); if (b) { b.querySelector('b').textContent = R.TACTICS[a].name; b.querySelector('i').textContent = R.TACTICS[a].desc.replace(/ \(.*\)$/, ''); } }
+        modal(`<h3 style="white-space:nowrap">작전 전술 <small style="font:13px LO_M">처음 몇 턴 출격한 아군 전원에게 · 작전마다 기억</small></h3><div class="opts">${Object.entries(R.TACTICS).map(([k, t]) => `<button data-a="${k}" class="${now === k ? 'gold' : ''}"><b>${t.name}</b>${k === rec ? ' <i class="trec">이 작전 추천 · 좋은 효과 ×1.3 반영</i>' : ''} <small>${R.tacText(k, st)}</small><small class="pprev">${t.hint}${k === 'rush' ? ' · 방어가 낮아져 영웅을 잃기 쉬움' : ''}</small></button>`).join('')}</div>`, (a) => {
+          if (a && R.TACTICS[a]) { (save.tactics = save.tactics || {})[st.idx] = a; writeSave(); const b = $('pTac'); if (b) { b.querySelector('b').textContent = R.TACTICS[a].name; b.querySelector('i').textContent = R.tacText(a, st); } }
         });
       };
       $('pGo').onclick = () => {

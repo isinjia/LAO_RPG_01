@@ -178,7 +178,7 @@
   R.PERK_LV = 20;
   R.PERKS = {
     at: { name: '공세 각성', desc: '영웅·병사 공격 +12%', k: { at: 0.12 } },
-    df: { name: '수비 각성', desc: '영웅·병사 방어 +18%', k: { df: 0.18 } },
+    df: { name: '수비 각성', desc: '영웅·병사 방어 +22%', k: { df: 0.22 } },
     hp: { name: '생존 각성', desc: '영웅·병사 체력 +18%', k: { hp: 0.18 } },
     mv: { name: '기동 각성', desc: '영웅·병사 이동 +1, 방어 -3%', k: { mov: 1, df: -0.03 } }, // 이동은 값이 커서 방어를 조금 내준다
   };
@@ -193,6 +193,14 @@
   R.tacTurns = (key, st) => { const t = R.TACTICS[key]; return t ? (holdStage(st) && t.holdTurns) || t.turns || 0 : 0; };
   // 작전에 맞는 추천: 버티기·사수 → 방어 진형, 도달·탈출 → 신속 전개, 그 밖 → 돌격 명령
   R.tacFor = (st) => (holdStage(st) ? 'wall' : st && (st.win === 'reach' || st.win === 'escape') ? 'swift' : 'rush');
+  // 그 작전에서 실제로 걸리는 수치로 쓴 설명 (추천이면 좋은 효과 ×1.3을 계산해 넣는다)
+  R.tacText = (key, st) => {
+    const t = R.TACTICS[key]; if (!t || !t.buff) return t ? t.desc : '';
+    const hold = holdStage(st), x = key === R.tacFor(st) ? 1.3 : 1, b = (hold && t.holdBuff) || t.buff, n = R.tacTurns(key, st);
+    const NM = { at: '공격', df: '방어', mov: '이동' };
+    const fx = Object.entries(b).map(([k, v]) => k === 'mov' ? `이동 +${v}` : `${NM[k]} ${v > 0 ? '+' : ''}${Math.round((v > 0 ? v * x : v) * 100)}%`).join(', ');
+    return `${n >= 99 ? '작전 내내' : `처음 ${n}턴`} ${fx}`;
+  };
   R.applyTactic = (G, key) => {
     const t = R.TACTICS[key]; G.tactic = t && t.buff ? key : 'none';
     if (!t || !t.buff) return;
