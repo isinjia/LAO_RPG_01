@@ -394,6 +394,15 @@
   background: linear-gradient(90deg, transparent, rgba(0,0,0,.7) 20%, rgba(0,0,0,.7) 80%, transparent); opacity: 0; transition: opacity .4s; }
 #townHud.show .tn-name { opacity: 1; }
 #townHud .tn-out { position: absolute; right: calc(12px + var(--safe-r)); top: calc(12px + var(--safe-t)); pointer-events: auto; height: 42px; min-width: 120px; font-size: 14px; }
+#townHud .tn-quest { position: absolute; left: calc(12px + var(--safe-l, 0px)); top: calc(12px + var(--safe-t)); width: 250px; padding: 8px 12px 10px; display: none;
+  background: linear-gradient(180deg, rgba(10,14,22,.86), rgba(10,14,22,.72)); border-left: 3px solid #ffcc00; box-shadow: 0 4px 14px rgba(0,0,0,.4); }
+#townHud .tn-quest.on { display: block; }
+#townHud .tn-quest h4 { margin: 0 0 6px; font: 14px 'LO_B', sans-serif; color: #ffcc00; letter-spacing: 1px; }
+#townHud .tn-quest h4 small { color: #fff9; font-size: 11px; margin-left: 4px; }
+#townHud .tn-quest div { display: flex; gap: 8px; align-items: baseline; padding: 3px 0; font-size: 12px; color: #e9edf5; border-top: 1px solid rgba(255,255,255,.08); }
+#townHud .tn-quest div b { flex: none; min-width: 64px; color: #9fd7ff; font-weight: 700; }
+#townHud .tn-quest div.ex span { color: #ffb4a8; }
+#townHud .tn-help b { color: #ffcc00; }
 #townHud .tn-help { position: absolute; left: 0; right: 0; bottom: calc(10px + var(--safe-b)); text-align: center; font-size: 12px; color: #fffa; text-shadow: 0 1px 3px #000; }
 #talkBg.see { background: transparent; }
 #talkBg.see .tbg, #talkBg.see .tshade { display: none; }

@@ -2245,7 +2245,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.99';
+  const GAME_VERSION = '1.01';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2293,11 +2293,11 @@
   // 1장 마을은 1-3을 깨면, 2장부터는 그 장의 첫 작전을 깨면 열린다. look: 마을 필드의 꾸밈 (js/town.js)
   const TOWNS = [
     { name: '등대 아래 비밀기지', sub: '오르카 임시 거점', look: 'coast', desc: '등대 아래에 숨겨진 옛 비밀기지. 오르카의 임시 거점이다.' },
-    { name: '헤파이스 철공소 거점', sub: '공단 지대 임시 거점', look: 'ruin', desc: '마리를 찾아 헤매던 공단 지대. 헤파이스 철공소 옆 무너진 창고들을 고쳐 쓴 거점이다.' },
-    { name: '고갯길 진지', sub: '81번 실험장 앞 전진 진지', look: 'forest', desc: '실험장으로 이어지는 고갯길 숲속 진지. 갑자기 늘어난 철충 증원을 막아 내던 자리다.' },
-    { name: '패스파인더 기지', sub: '지하 수로 옆 드론 기지', look: 'cave', desc: '지하 수로 옆, 에이다의 패스파인더 드론이 드나드는 지하 기지.' },
-    { name: '건너편 역사 거점', sub: '언더와처 시설 입구', look: 'station', desc: '지하 철도를 달려 닿은 건너편 역사. 서버 구역으로 들어가기 전 숨을 고르는 곳.' },
-    { name: '라비아타의 은신처', sub: '홀로 버티던 곳', look: 'hill', desc: '라비아타가 홀로 몸을 숨기고 버티던 은신처. 이제는 오르카의 쉼터가 되었다.' },
+    { name: '헤파이스 철공소 거점', sub: '공단 지대 임시 거점', look: 'works', desc: '마리를 찾아 헤매던 공단 지대. 헤파이스 철공소 옆 창고 거리를 고쳐 쓴 거점이다. 쇳물 바가지에서 아직 불티가 튄다.' },
+    { name: '고갯길 진지', sub: '81번 실험장 앞 전진 진지', look: 'camp', desc: '81번 실험장 정문 앞 고갯마을. 빈집들을 진지로 고쳐 철충 증원을 막아 내던 자리다.' },
+    { name: '패스파인더 기지', sub: '지하 수로 옆 드론 기지', look: 'sewer', desc: '지하 수로 옆 동굴, 에이다의 패스파인더 드론이 드나드는 지하 기지. 빛나는 결정이 길을 밝힌다.' },
+    { name: '건너편 역사 거점', sub: '언더와처 시설 입구', look: 'station', desc: '지하 철도를 달려 닿은 건너편 역사 승강장. 언더와처 시설 금고문 앞에서 서버 구역으로 들어가기 전 숨을 고른다.' },
+    { name: '라비아타의 은신처', sub: '홀로 버티던 곳', look: 'snow', desc: '눈 덮인 산속, 라비아타가 홀로 몸을 숨기고 버티던 은신처. 이제는 모닥불이 꺼지지 않는 오르카의 쉼터다.' },
   ];
   const TOWN = { unlock: 3 }; // 포츈(병사 훈련)이 기지에 오는 때
   const townOf = (c = curCh()) => TOWNS[c] || TOWNS[TOWNS.length - 1];
@@ -2325,8 +2325,9 @@
   }
   const sideList = () => (window.SIDE || []);
   const sideState = (idx) => (save.side || {})[idx];
-  // 마을에서 받을 수 있는 의뢰 (아직 받지 않은 것)
-  const sideNew = () => sideList().filter((s) => save.clear >= s.unlock && !sideState(s.idx));
+  // 마을에서 받을 수 있는 의뢰 (아직 받지 않은 것): 지금 장의 작전 지점에서 나가는 의뢰만 그 장 마을에 들어온다
+  const sideCh = (s) => chOf(s.base - 1);
+  const sideNew = (c = curCh()) => sideList().filter((s) => sideCh(s) === c && save.clear >= s.unlock && !sideState(s.idx));
   const partyLv = () => { const j = [...joined()]; return j.length ? Math.round(j.reduce((s, id) => s + save.heroes[id].lv, 0) / j.length) : 1; };
 
   // 작전 자료: 본편은 D.STAGES 그대로, 소탕전·의뢰는 그 장소 본편의 지도와 시작 칸을 빌려 만든다
@@ -2558,16 +2559,20 @@
   const NPC_NAME = { fortune: '포츈' };
   const npcName = (id) => (D.HEROES[id] ? D.HEROES[id].full : NPC_NAME[id] || id);
   const STAND_OF = { pupphead: 'PECS_PuppHead_N', fallen: 'AGS_Fallen_N' }; // 표정 그림이 없는 기계
+  // 의뢰를 맡기는 사람: 아직 합류하지 않았거나 이 마을에 없으면 콘스탄챠가 대신 전한다
+  const inTown = (id) => (id === 'fortune' ? save.clear >= TOWN.unlock : id === 'constantia' || joined().has(id));
+  const giverOf = (s) => (inTown(s.giver) ? s.giver : 'constantia');
   async function enterTown() {
     hideScreen();
     leaveMap();
     mode = 'town';
     await TOWNF.enter({
       name: townOf().name, look: townOf().look,
-      present: (id) => (id === 'fortune' ? save.clear >= TOWN.unlock : id === 'constantia' || joined().has(id)),
-      marker: (id) => sideNew().some((s) => s.giver === id),
+      present: inTown,
+      marker: (id) => sideNew().some((s) => giverOf(s) === id),
+      quests: () => sideNew().map((s) => ({ t: s.title, who: npcName(giverOf(s)), ex: s.kind === 'Ex' })),
       talk: async (id) => {
-        const q = sideNew().find((s) => s.giver === id);
+        const q = sideNew().find((s) => giverOf(s) === id);
         if (q) {
           // 원작 의뢰 대화 (곁가지 작전 앞 대화)
           const S = window.STORY && STORY[q.idx];
@@ -3168,7 +3173,7 @@
         const nx = CHAPTERS[chOf(si) + 1];
         modal(`<h3>${C0.no}지역 완료</h3><p>「${C0.name}」을(를) 모두 마쳤습니다.${nx ? '' : ' 플레이해 주셔서 감사합니다!'}</p>`
           + (nx ? `<p style="color:#9aa6c4">새 지역 「${nx.name}」이(가) 열렸습니다. 월드맵 위 화살표로 지나온 지역을 다시 찾아갈 수 있습니다.</p>` : '')
-          + (sideNew().length ? `<p style="color:#9aa6c4">마을에 새 의뢰가 들어왔습니다.</p>` : '') + '<div class="opts"><button class="gold" data-a="ok">확인</button></div>');
+          + (sideNew(chOf(si)).length ? `<p style="color:#9aa6c4">${townOf(chOf(si)).name}에 이 지역의 마지막 의뢰가 들어왔습니다. 월드맵 위 화살표로 돌아가 받을 수 있습니다.</p>` : '') + '<div class="opts"><button class="gold" data-a="ok">확인</button></div>');
       } else if (!st.kind && sideNew().length) modal(`<h3>새 의뢰</h3><p>${townOf().name}에 새 의뢰가 들어왔습니다.</p><div class="opts"><button class="gold" data-a="ok">확인</button></div>`);
     }
     busy = false;
@@ -3293,7 +3298,7 @@
     // 시험용 훅
     window.GAME = {
       get G() { return G; }, get mode() { return mode; }, get ui() { return ui; }, save, R, D,
-      launch, prep, setAuto, resumeSuspend, startStage, endTurn, onTap, fitCamera, views, camera, cam, stageSelect, title, enterTown, fightBgOf, attack,
+      launch, prep, setAuto, resumeSuspend, startStage, endTurn, onTap, fitCamera, views, camera, cam, stageSelect, title, enterTown, fightBgOf, attack, sideNew, giverOf,
       // 창이 숨겨져 rAF가 멈춘 상태에서 시험할 때: 시간을 직접 진행하고 한 장 찍어 서버에 저장
       step(sec) { for (let i = 0; i < Math.round(sec * 30); i++) step(1 / 30); },
       // 시간을 진행하면서 약속(Promise)들도 풀리게 한다 (숨은 창에서도 타이머 제한 없이)
