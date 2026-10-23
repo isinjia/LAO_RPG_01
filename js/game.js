@@ -2030,7 +2030,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '0.61';
+  const GAME_VERSION = '0.62';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2270,7 +2270,7 @@
       for (const id of nodeIds().filter(nodeOpen)) { const s = WM3D.project(nodePos(id)); if (!s) continue; const dd = Math.hypot(s.x - x, s.y - y); if (dd < bd) { bd = dd; best = id; } }
       const btn = ev.target.closest('.wnode');
       if (btn) best = btn.dataset.n === WT ? WT : +btn.dataset.n;
-      if (best == null) { const p = WM3D.pick(x, y); if (p) { AU.play('lo_pick', 0.5); walkTo(p, null); } return; }
+      if (best == null) { const p = WM3D.pick(x, y); if (p) walkTo(p, null); return; } // 빈 땅은 소리 없이 걷기만
       AU.play('lo_pick', 0.5);
       const np = nodePos(best);
       if (best === save.node && !moving && Math.hypot(tokPos[0] - np[0], tokPos[2] - np[2]) < 1e-3) { stageSel = best; nodeInfo(); return; }
