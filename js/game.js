@@ -397,7 +397,7 @@
     const L = landOf(G.stage), DK = decoTex(L);
     const root = new THREE.Group();
     const night = !!G.stage.night && !L.indoor; // 실내는 바닥 그림부터 어두워 밤빛을 덧씌우지 않는다 (지형이 안 보이게 되므로)
-    const pc = new THREE.Color(night ? 0xaab4dc : 0xffffff); // 소품 빛깔 (밤, 갈래 빛깔). 밤이어도 지형은 읽히게
+    const pc = new THREE.Color(night ? 0xbcc6e8 : 0xffffff); // 소품 빛깔 (밤, 갈래 빛깔). 밤이어도 지형은 읽히게
     if (L.prop) pc.multiply(new THREE.Color(L.prop));
     // 바닥 바깥 (어두운 판)
     const outer = new THREE.Mesh(new THREE.PlaneGeometry(G.w + 80, G.h + 80), new THREE.MeshBasicMaterial({ color: night ? 0x0b0f1a : L.outer }));
@@ -407,7 +407,7 @@
     const gc = drawGround(G);
     const gt = new THREE.CanvasTexture(gc);
     gt.anisotropy = renderer.capabilities.getMaxAnisotropy();
-    const ground = new THREE.Mesh(new THREE.PlaneGeometry(G.w + PAD * 2, G.h + PAD * 2), new THREE.MeshBasicMaterial({ map: gt, color: night ? 0xa6b2dc : 0xffffff }));
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(G.w + PAD * 2, G.h + PAD * 2), new THREE.MeshBasicMaterial({ map: gt, color: night ? 0xbac4e6 : 0xffffff }));
     ground.rotation.x = -Math.PI / 2; ground.position.set(G.w / 2, 0, G.h / 2);
     root.add(ground);
     // 물결 (움직이는 겹 무늬)
@@ -548,7 +548,7 @@
       soldiers.push(s);
     }
     const big = !!(u.lead || u.boss || u.def.big);
-    const ring = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.9), new THREE.MeshBasicMaterial({ map: getRingTex(u.side, big), transparent: true, depthTest: false, depthWrite: false }));
+    const ring = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 1.0), new THREE.MeshBasicMaterial({ map: getRingTex(u.side, big), transparent: true, depthTest: false, depthWrite: false }));
     ring.rotation.x = -Math.PI / 2; ring.position.y = 0.012; ring.renderOrder = 4;
     g.add(ring);
     const bc = canvas(112, 40);
@@ -966,6 +966,7 @@
     }
     if (k === 'KeyC') { const u = ui.sel; if (u) { panTo(u.x, u.y, true); setCursor(u.x, u.y, false); } else panTo(kcur[0], kcur[1], true); return; }
     if (k === 'KeyE') { endTurnAsk(); return; }
+    if (k === 'KeyU') { if (ui.state === 'idle' && G.undo && G.undo.length) undoLast(); else if (ui.state === 'idle') toast('되돌릴 수가 없습니다'); return; }
     if (k === 'KeyM') { if (ui.state === 'idle') openMenu(); return; }
   }
   function keyHelp() {
@@ -979,7 +980,7 @@
       ${row('A · S', '공격 · 특기 (행동 버튼에 표시)')}${row('Space · W', '행동 버튼이 떠 있을 때는 대기 (이 영웅의 차례 끝내기)')}
       ${row('E', '턴 종료')}${row('Q', '자동 전투')}${row('V', '배속 ×1 → ×2 → ×3')}${row('F', '전투 장면 켜기·끄기')}
       ${row('R', '적의 공격 범위 (위험)')}${row('C', '카메라를 고른 영웅에게')}${row('+ / −', '확대 · 축소 (휠도 됩니다)')}
-      ${row('M', '메뉴')}${row('H · F1', '이 창')}
+      ${row('U', '한 수 되돌리기 (이번 차례 안)')}${row('M', '메뉴')}${row('H · F1', '이 창')}
       ${row('전투 장면', 'Enter · Space · Esc 건너뛰기')}${row('대화', 'Enter · Space 다음 · Esc 넘기기')}
       </table><div class="opts"><button class="gold" data-a="ok">닫기</button></div>`, () => {});
   }
@@ -1199,7 +1200,9 @@
     ph.className = G.side;
     const st = G.stage;
     const nt = R.nextWaveTurn(G);
-    $('goalBox').innerHTML = `${st.idx} ${st.title} · 승리: <b>${st.goal}</b>${nt ? ` · 증원 ${nt}턴` : ''} · 패배: ${st.lose}${R.diff !== 'normal' ? ` · 난이도 <b>${R.DIFF[R.diff].name}</b>` : ''}`;
+    // 위쪽 줄은 작전명·승리 조건·(증원)·추가 목표만 (패배 조건·자세한 증원은 승리 조건 창: 띠를 누르거나 메뉴)
+    $('goalBox').innerHTML = `${st.idx} ${st.title} · 승리: <b>${st.goal}</b>${nt ? ` · 증원 ${nt}턴` : ''}${R.diff !== 'normal' ? ` · <b>${R.DIFF[R.diff].name}</b>` : ''}${st.kind ? '' : ` · ${bonusLine(st, true)}`}`;
+    $('goalBox').title = `패배: ${st.lose}`;
     $('btnEnd').disabled = G.side !== 'p' || busy;
     syncQuick(); renderRoster();
   }
@@ -1289,6 +1292,7 @@
     setHint(u.side === 'e' ? `${u.name}: 이동·공격 가능 범위` : '');
   }
   function selectUnit(u) {
+    if (!ui.sel || ui.sel !== u || ui.state === 'idle') undoMark();
     AU.play('lo_click', 0.6);
     if (u.side === 'p' && u.voiced !== G.turn) { u.voiced = G.turn; AU.voice(u.key + '_ActionApprove', 0.85); } // 차례마다 처음 고를 때만 원작 행동 승인 음성
     $('forecast').classList.add('hidden');
@@ -1509,6 +1513,7 @@
   }
   function backToTarget() { $('forecast').classList.add('hidden'); LOHUD.target(null); ui.target = null; openActions(); }
   async function confirmAttack() {
+    undoPush(); // 공격하다 쓰러져도 되돌릴 수 있게 치기 전에 쌓는다
     const a = ui.sel, d = ui.target;
     if (!a || !d) return;
     $('forecast').classList.add('hidden'); LOHUD.target(null);
@@ -1538,7 +1543,9 @@
     }
   }
   function finishAct(u) {
+    undoPush();
     u.acted = true;
+    setTimeout(() => { if (G && !busy && G.side === 'p') suspendSave(); }, 0); // 이어하기: 행동이 끝날 때마다 (차례 도중에 꺼도 잃지 않게)
     refreshView(u);
     deselect();
     updateDanger();
@@ -1560,8 +1567,9 @@
 
   // ── 행동 실행 (아군·적 공용) ─────────────────────────────
   async function attack(a, d) {
+    seedFor(a);
     faceTo(a, d.x); faceTo(d, a.x);
-    const res = R.combat(G, a, d, a.x, a.y, Math.random);
+    const res = R.combat(G, a, d, a.x, a.y, grand);
     if (save.opts.fight) {
       await Promise.all([a, d].flatMap((u) => [u.rig, u.troop && u.troop.rig]).filter((r) => r && !SD.template(r)).map((r) => SD.prepare(r))); // 처음 보는 리그도 전투 장면 전에
       LOHUD.target(null);
@@ -1675,6 +1683,7 @@
     return 0;
   }
   async function useSkill(u, sk, tx, ty) {
+    seedFor(u);
     const s = D.SKILLS[sk];
     u.cd[sk] = s.cd + 1; // 다음 차례 시작에 1 줄어 s.cd 턴 동안 못 쓴다
     faceTo(u, tx);
@@ -1702,7 +1711,7 @@
     const travel = skillFx(u, s, area, tx, ty);
     await wait(350 + travel);
     const deaths = [];
-    for (const r of R.skillEffect(G, u, sk, tx, ty, Math.random)) {
+    for (const r of R.skillEffect(G, u, sk, tx, ty, grand)) {
       if (r.toT != null) {
         R.apply(r.u, r.toT, r.toH);
         u.dealt = (u.dealt || 0) + r.toT + r.toH;
@@ -1791,6 +1800,8 @@
   // ── 차례 진행 ───────────────────────────────────────────
   async function startPhase(side) {
     G.side = side;
+    G.undo = []; G.pendingSnap = null; // 되돌리기는 그 차례 안에서만 (적 차례를 보고 되감지 못하게)
+    for (const u of G.units) u.nAct = 0;
     for (const u of G.units) {
       if (!u.alive) continue;
       u.buffs = u.buffs.filter((b) => !(b.side === side && b.until <= G.turn));
@@ -1816,48 +1827,138 @@
     G.units.forEach(refreshView);
     updateDanger();
     if (side === 'e') await enemyPhase();
-    else { suspendSave(); setTop(); setHint(''); const lead = G.units.find((u) => u.lead && u.alive); if (lead) panTo(lead.x, lead.y); if (autoOn) autoPlayer(); }
+    else { suspendSave(true); setTop(); setHint(G.turn === 1 ? (!G.stage.kind && EARLY_TIPS[G.stage.idx]) || TYPE_TIPS[G.stage.win] || '' : ''); const lead = G.units.find((u) => u.lead && u.alive); if (lead) panTo(lead.x, lead.y); if (autoOn) autoPlayer(); }
+  }
+  // 첫 작전들의 한 줄 길잡이 (첫 차례 아래 안내 줄에)
+  const EARLY_TIPS = {
+    '1-1': '길잡이 · 영웅을 누르고 파란 칸을 눌러 움직이세요. 빛나는 칸에 서면 그 영웅은 지도를 빠져나갑니다',
+    '1-2': '길잡이 · 빨간 칸의 적을 누르면 예상 피해가 나옵니다. 사격병은 공중병에, 소총병은 중장병에 강합니다',
+    '1-3': '길잡이 · 적과 맞닿는 칸에 들어서면 멈춥니다(지배 영역). 다친 부대는 움직이지 않고 「정비」로 병사를 채우세요',
+    '1-4': '길잡이 · 오른쪽 위 「위험」(R)을 켜면 적이 다음 차례에 닿는 칸이 보입니다',
+    '1-5': '길잡이 · 지휘관 콘스탄챠 곁 2칸 안의 부대는 차례마다 병사 1명을 보충받습니다. 함께 움직이세요',
+    '1-6': '길잡이 · 버티기 작전: 정한 턴까지 살아남으면 이깁니다. 숲(+20%)·언덕(+10%)에서 버티세요',
+    '1-7': '길잡이 · 제한 턴 안에 적을 모두 쓰러뜨려야 합니다. 특기(S)는 재사용 대기가 있으니 아끼지 말고 쓰세요',
+    '1-8': '길잡이 · 우두머리를 쓰러뜨리면 이깁니다. 호위는 우두머리 곁을 떠나지 않으니 하나씩 끌어내세요',
+  };
+  // 2장부터는 작전 종류마다 한 줄 (첫 차례)
+  const TYPE_TIPS = {
+    reach: '도달 작전 · 영웅 하나가 빛나는 칸에 닿으면 이깁니다. 빠른 기동병·공중병을 보내세요',
+    escape: '탈출 작전 · 살아 있는 영웅이 모두 빛나는 칸으로 빠져나가면 이깁니다',
+    survive: '버티기 작전 · 정한 턴까지 살아남으면 이깁니다. 숲·언덕에 자리 잡고 정비로 버티세요',
+    defend: '사수 작전 · 빛나는 칸에 적이 들어오면 집니다. 영웅을 그 칸 위에 세워 막으세요',
+    boss: '우두머리 작전 · 우두머리를 쓰러뜨리면 이깁니다. 호위는 곁을 떠나지 않으니 하나씩 끌어내세요',
+  };
+  // 추가 목표 한 줄 (작전 정보·위쪽 줄): ★ 이룬 것 / ☆ 아직
+  function bonusLine(st, live) {
+    if (st.kind) return '';
+    const b = R.bonusOf(st), rec = (save.bonus || {})[st.idx] || {};
+    const lost = live && G && G.units.some((u) => u.side === 'p' && !u.alive && !u.escaped);
+    const t = b.turns ? (live ? `${G.turn > b.turns ? '☆' : rec.t ? '★' : '◇'} ${b.turns}턴 안에${G.turn <= b.turns ? ` (${b.turns - G.turn + 1}턴 남음)` : ' (지남)'}` : `${rec.t ? '★' : '☆'} ${b.turns}턴 안에 승리`) : '';
+    const n = live ? `${lost ? '☆' : rec.n ? '★' : '◇'} 퇴각 없이${lost ? ' (실패)' : ''}` : `${rec.n ? '★' : '☆'} 영웅 퇴각 없이 승리`;
+    const killed = live && G ? G.units.filter((u) => u.side === 'e' && !u.alive).length : 0;
+    const k = b.kills ? (live ? `${killed >= b.kills ? '★' : '◇'} 적 ${b.kills}기 격파 (${killed}/${b.kills})` : `${rec.k ? '★' : '☆'} 버티며 적 ${b.kills}기 이상 격파`) : '';
+    const easy = live && G && G.easedTo ? ' <small>(난이도를 낮춰 이번 판 추가 목표 보상 없음)</small>' : '';
+    return [t, k, n].filter(Boolean).join(' · ') + easy;
   }
   // ── 작전 중 저장 (이어하기): 아군 차례가 시작될 때마다 판 상태를 따로 저장해 두고, 타이틀의 「작전 이어하기」로 그 차례부터 되살린다 ──
   // 본편 작전(D.STAGES)만. 작전이 끝나면(승패) 지운다
   const SUSPEND_KEY = 'orca_srpg_suspend';
   function suspendClear() { try { localStorage.removeItem(SUSPEND_KEY); } catch (e) { /* 저장 불가 환경 */ } }
   function suspendLoad() {
-    try { const d = JSON.parse(localStorage.getItem(SUSPEND_KEY) || 'null'); return d && d.v === 1 && D.STAGES[d.si] && D.STAGES[d.si].idx === d.idx ? d : null; } catch (e) { return null; }
+    try { const d = JSON.parse(localStorage.getItem(SUSPEND_KEY) || 'null'); return d && d.v === 1 && (d.stage || (D.STAGES[d.si] && D.STAGES[d.si].idx === d.idx)) ? d : null; } catch (e) { return null; }
   }
-  function suspendSave() {
-    if (!G || G.ended) return;
-    const si = D.STAGES.indexOf(G.stage);
-    if (si < 0) { suspendClear(); return; }
+  // 판의 난수 (피해 ±10%): 판에 씨앗을 두고 저장·되돌리기 때 함께 되살린다 → 되돌려서 같은 행동을 하면 같은 결과 (다시 굴려 고르지 못하게)
+  function grand() {
+    if (!G) return Math.random();
+    let t = (G.rs = ((G.rs >>> 0) + 0x6d2b79f5) >>> 0); // mulberry32
+    t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  }
+  // 행동마다 씨앗을 새로: 판의 씨앗 + 차례 + 그 유닛의 자리(순번)로 정한다 → 행동 순서를 바꿔도 그 행동의 흔들림은 같다
+  function seedFor(u) {
+    if (!G) return;
+    u.nAct = (u.nAct || 0) + 1; // 한 차례에 두 번 행동하면 다른 씨앗
+    let h = ((G.seed0 >>> 0) ^ Math.imul(G.turn + 1, 0x9e3779b1) ^ Math.imul(G.units.indexOf(u) + 1, 0x85ebca77) ^ Math.imul(u.nAct, 0xc2b2ae35)) >>> 0;
+    h = Math.imul(h ^ (h >>> 16), 0x7feb352d); h = Math.imul(h ^ (h >>> 15), 0x846ca68b);
+    G.rs = (h ^ (h >>> 16)) >>> 0;
+  }
+  // 판 상태 한 장 (작전 중 저장·한 수 되돌리기가 같이 쓴다). 본편이 아닌 작전(소탕전·의뢰)은 작전 자체도 함께 담는다
+  function snapData() {
+    if (!G || G.ended) return null;
+    const si = G.stage.kind ? -1 : D.STAGES.findIndex((b) => b.idx === G.stage.idx); // 출격 준비는 본편 작전을 복사해(출전 인원) 넘긴다
+    let stage = null;
+    if (si < 0) { try { stage = JSON.parse(JSON.stringify(G.stage)); } catch (e) { return null; } }
     const ev = (window.BATTLE_EVENTS || {})[G.stage.idx] || [];
     const units = G.units.map((u) => ({
       side: u.side, key: u.key, lv: u.lv, exp: u.exp, tier: u.tier, br: u.br, troop: u.troop ? u.troop.key : null, x: u.x, y: u.y,
-      hp: u.hp, thp: u.troop ? u.troop.hp : 0, alive: u.alive, escaped: !!u.escaped, cd: u.cd, buffs: u.buffs, slow: u.slow || 0, slowNext: u.slowNext || 0, dealt: u.dealt || 0,
-      ai: u.ai, home: u.home, boss: !!u.boss, awake: !!u.awake, wave: u.wave, bornT: u.bornT, cmd: u.cmd ? G.units.indexOf(u.cmd) : -1,
+      hp: u.hp, thp: u.troop ? u.troop.hp : 0, hpMax: u.hpMax, thpMax: u.troop ? u.troop.hpMax : 0, alive: u.alive, escaped: !!u.escaped, cd: u.cd, buffs: u.buffs, slow: u.slow || 0, slowNext: u.slowNext || 0, dealt: u.dealt || 0,
+      nAct: u.nAct || 0, ai: u.ai, home: u.home, boss: !!u.boss, awake: !!u.awake, wave: u.wave, bornT: u.bornT, cmd: u.cmd ? G.units.indexOf(u.cmd) : -1, acted: u.side === 'p' && !!u.acted,
     }));
-    const d = { v: 1, si, idx: G.stage.idx, diff: R.diff, turn: G.turn, wave: G.wave, spawned: [...(G.spawned || [])], ev: [...(G.evDone || [])].map((e) => ev.indexOf(e)).filter((i) => i >= 0), units, start: stageStart };
+    const d = { v: 1, si, idx: G.stage.idx, diff: R.diff, turn: G.turn, wave: G.wave, spawned: [...(G.spawned || [])], ev: [...(G.evDone || [])].map((e) => ev.indexOf(e)).filter((i) => i >= 0), units, rs: G.rs >>> 0, seed0: G.seed0 >>> 0, replay: !!G.stage.replay, easedTo: G.easedTo || null, start: stageStart, heroes: G.stage.heroes, free: G.stage.free, lock: G.stage.lock, stage };
+    return d;
+  }
+  function suspendSave(turnStart) {
+    const d = snapData();
+    if (!d) { suspendClear(); return; }
+    if (turnStart) G.turnSnap = d; // 「이번 차례 다시」는 차례가 시작될 때의 판으로
+    else if (G.turnSnap && G.turnSnap.turn === d.turn) d.turnStart = G.turnSnap; // 이어한 뒤에도 차례 처음으로 돌아갈 수 있게 함께 담는다
+    if (!turnStart && G.undo && G.undo.length) d.undo = G.undo.slice(-10); // 한 수 되돌리기 기록도 (이어한 뒤에도 되돌릴 수 있게)
     try { localStorage.setItem(SUSPEND_KEY, JSON.stringify(d)); } catch (e) { /* 저장 불가 환경 */ }
   }
-  async function resumeSuspend() {
-    const d = suspendLoad();
-    if (!d) return stageSelect();
-    const st = D.STAGES[d.si];
-    hideScreen();
-    if (G) leaveMap();
-    R.diff = d.diff || 'normal';
-    G = R.newGame(st);
-    G.drill = save.drill || {};
-    buildWorld();
+  // 한 수 되돌리기: 영웅을 고를 때 판을 찍어 두고, 그 영웅이 행동을 마치면 되돌리기 목록에 쌓는다 (이번 차례 안에서만, 최대 10수)
+  function undoMark() { if (G && G.side === 'p' && !busy) G.pendingSnap = snapData(); }
+  function undoPush() { if (!G || !G.pendingSnap) return; (G.undo = G.undo || []).push(G.pendingSnap); if (G.undo.length > 10) G.undo.shift(); G.pendingSnap = null; }
+  async function undoLast() {
+    if (!G || busy || G.side !== 'p' || !G.undo || !G.undo.length) return;
+    const rest = G.undo.slice(0, -1), d = G.undo[G.undo.length - 1];
+    if (restoreInPlace(d, '한 수 되돌렸습니다')) G.undo = rest;
+  }
+  // 판 한 장을 지금 판(G)에 되살린다: 유닛을 새로 만들고 차례·증원·사건 진행을 맞춘다 (지도·불러오기는 그대로)
+  function applySnap(d) {
+    G.units = [];
     for (const s of d.units) {
       const u = s.side === 'p' ? R.makeHero(G, s.key, { lv: s.lv, exp: s.exp, tier: s.tier, br: s.br }, s.troop, s.x, s.y) : R.makeEnemy(G, s.key, s.lv, s.x, s.y, { ai: s.ai, boss: s.boss });
-      Object.assign(u, { hp: s.hp, alive: s.alive, escaped: s.escaped, cd: s.cd || {}, buffs: s.buffs || [], slow: s.slow, slowNext: s.slowNext, dealt: s.dealt, awake: s.awake, wave: s.wave, bornT: s.bornT, acted: false });
+      Object.assign(u, { hp: s.hp, alive: s.alive, escaped: s.escaped, cd: s.cd || {}, buffs: s.buffs || [], slow: s.slow, slowNext: s.slowNext, dealt: s.dealt, nAct: s.nAct || 0, awake: s.awake, wave: s.wave, bornT: s.bornT, acted: !!s.acted });
       if (s.home) u.home = s.home;
       if (u.troop) u.troop.hp = s.thp;
+      if (s.hpMax && s.hpMax !== u.hpMax) u.hp = (s.hp * u.hpMax) / s.hpMax; // 그 사이 난이도가 바뀌었으면 체력을 비율대로
+      if (u.troop && s.thpMax && s.thpMax !== u.troop.hpMax) u.troop.hp = (s.thp * u.troop.hpMax) / s.thpMax;
     }
     d.units.forEach((s, i) => { if (s.cmd >= 0) G.units[i].cmd = G.units[s.cmd]; });
     G.turn = d.turn; G.wave = d.wave; G.spawned = new Set(d.spawned); G.side = 'p';
-    const ev = (window.BATTLE_EVENTS || {})[st.idx] || [];
+    if (d.rs != null) G.rs = d.rs;
+    G.seed0 = d.seed0 != null ? d.seed0 : d.rs >>> 0;
+    const ev = (window.BATTLE_EVENTS || {})[G.stage.idx] || [];
     G.evDone = new Set(d.ev.map((i) => ev[i]).filter(Boolean));
+  }
+  // 같은 작전 안에서 되돌리기: 불러오기 화면 없이 그 자리에서 유닛만 바꿔 놓는다 (위험 범위·카메라는 그대로)
+  function restoreInPlace(d, msg) {
+    if (!G || busy || !d || d.idx !== G.stage.idx) return false;
+    deselect();
+    clearViews();
+    applySnap(d);
+    for (const u of G.units) if (u.alive) addView(u);
+    G.units.forEach(refreshView);
+    updateDanger(); setTop(); setHint(''); renderRoster();
+    suspendSave();
+    toast(msg);
+    return true;
+  }
+  async function resumeSuspend(given, msg) {
+    const d = given || suspendLoad();
+    if (!d) return stageSelect();
+    const st = d.stage || Object.assign({}, D.STAGES[d.si], d.heroes ? { heroes: d.heroes, free: d.free, lock: d.lock } : {}, d.replay ? { replay: true } : {});
+    hideScreen();
+    if (G) leaveMap();
+    R.diff = save.opts.diff || d.diff || 'normal'; // 지금 옵션의 난이도로 (저장 뒤 바꿨으면 적 체력은 applySnap 이 비율대로 맞춘다)
+    G = R.newGame(st);
+    G.drill = save.drill || {};
+    buildWorld();
+    applySnap(d);
+    G.turnSnap = d.turnStart || (d.units.some((s) => s.acted) ? null : d); // 차례 처음의 판이 없으면 「이번 차례 다시」는 숨긴다
+    G.easedTo = d.easedTo || null;
+    { const l = Object.keys(R.DIFF); if (d.diff && l.indexOf(R.diff) < l.indexOf(d.diff)) G.easedTo = R.diff; } // 타이틀에서 낮추고 이어해도 낮춘 판
+    G.undo = d.undo || [];
     stageStart = d.start || { lv: {} };
     const rigs = new Set();
     G.units.forEach((u) => { rigs.add(u.rig); if (u.troop) rigs.add(u.troop.rig); });
@@ -1879,7 +1980,7 @@
     G.units.forEach(refreshView);
     updateDanger();
     setTop(); setHint('');
-    toast(`${st.idx} ${st.title} · ${d.turn}턴부터 이어서 합니다`);
+    toast(msg || `${st.idx} ${st.title} · ${d.turn}턴부터 이어서 합니다`);
     const lead = G.units.find((u) => u.lead && u.alive); if (lead) panTo(lead.x, lead.y);
   }
   async function endTurn() {
@@ -2110,31 +2211,29 @@
   }
   function openMenu() {
     if (mode !== 'map') return;
-    const o = save.opts;
-    const onoff = (v) => (v ? '켜짐' : '꺼짐');
     modal(`<h3>메뉴</h3><div class="opts">
-      <button data-a="fight">전투 장면: <b>${onoff(o.fight)}</b></button>
-      <button data-a="fast">빠른 진행: <b>${onoff(o.fast)}</b></button>
-      <button data-a="autoEnd">모두 행동하면 자동 턴 종료: <b>${onoff(o.autoEnd)}</b></button>
-      <button data-a="opts">옵션 (소리·대화·전투)</button>
+      <button data-a="opts">옵션 (소리·대화·전투 장면·빠른 진행·난이도)</button>
       <button data-a="help">도움말 (규칙·조작)</button>
       <button data-a="keys">키보드 단축키 (H)</button>
       <button data-a="goal">승리·패배 조건</button>
+      ${G.turnSnap && G.turnSnap.turn === G.turn && G.side === 'p' ? '<button data-a="redo">이번 차례 다시 (차례가 시작될 때로)</button>' : ''}
+      ${G.undo && G.undo.length && G.side === 'p' ? `<button data-a="undo">한 수 되돌리기 (U) <small>${G.undo.length}수</small></button>` : ''}
       <button data-a="retry">처음부터 다시</button>
       <button data-a="quit" class="red">작전 포기 (선택 화면으로)</button>
       <button data-a="close" class="gold">닫기</button></div>`, (a) => {
-      if (['fight', 'fast', 'autoEnd', 'sound'].includes(a)) {
-        o[a] = !o[a]; writeSave();
-        if (a === 'fast') delete o.spd;
-        speedK = spdOf(o); AU.setOn(o.sound); syncQuick();
-        openMenu();
-      } else if (a === 'opts') options(openMenu);
+      if (a === 'opts') options(openMenu);
       else if (a === 'help') help();
       else if (a === 'keys') keyHelp();
       else if (a === 'goal') goalInfo();
-      else if (a === 'retry') { const st = G.stage; leaveMap(); prep(st); }
-      else if (a === 'quit') { leaveMap(); stageSelect(); }
+      else if (a === 'retry') askSure('처음부터 다시', '이 작전을 출격 준비부터 다시 합니다. 지금까지의 진행은 사라집니다.', () => { const st = G.stage; suspendClear(); leaveMap(); prep(st); });
+      else if (a === 'redo') { const d = G.turnSnap; if (restoreInPlace(d, '이번 차례를 처음부터 다시 합니다')) { G.undo = []; G.turnSnap = d; } } // 차례가 시작될 때 찍어 둔 판으로
+      else if (a === 'undo') undoLast();
+      else if (a === 'quit') askSure('작전 포기', '작전을 포기하고 선택 화면으로 나갑니다. 이 작전의 진행은 사라집니다.', () => { suspendClear(); leaveMap(); stageSelect(); }); // 포기한 작전은 이어하기에 남기지 않는다
     });
+  }
+  // 되돌릴 수 없는 일 앞의 확인 창 (아니면 메뉴로)
+  function askSure(title, text, yes) {
+    modal(`<h3>${title}</h3><p>${text}</p><div class="opts"><button class="red" data-a="y">${title}</button><button data-a="n">취소</button></div>`, (a) => (a === 'y' ? yes() : openMenu()));
   }
   // 옵션 창: 소리 크기는 밀대로 바로 바뀌고, 켜기/끄기·속도는 누를 때마다 바뀐다. back: 닫은 뒤 돌아갈 곳
   function options(back) {
@@ -2150,11 +2249,12 @@
       <div class="osec">전투</div><div class="opts">
       <button data-a="fight">전투 장면: <b>${onoff(o.fight)}</b></button>
       <button data-a="fast">빠른 진행: <b>${onoff(o.fast)}</b></button>
-      <button data-a="autoEnd">모두 행동하면 자동 턴 종료: <b>${onoff(o.autoEnd)}</b></button>
-      <button data-a="diff">난이도: <b>${R.DIFF[o.diff || 'normal'].name}</b> <small>(적 능력치 ${Math.round(R.DIFF[o.diff || 'normal'].k * 100)}% · 다음 작전부터)</small></button>
+      <button data-a="autoEnd">모두 행동하면 자동 턴 종료: <b>${onoff(o.autoEnd)}</b></button></div>
+      <div class="osec">난이도</div><div class="opts">${Object.keys(R.DIFF).map((k) => `<button data-a="dset:${k}" class="${(o.diff || 'normal') === k ? 'gold' : ''}">${R.DIFF[k].name} <small>${G && !G.ended && mode === 'map' ? `이 작전 ${Math.round(R.diffK(k) * 100)}%` : `${Math.round(R.DIFF[k].k * 100)}%`}</small></button>`).join('')}</div>
+      <div class="opts"><button data-a="diffinfo" disabled><small>(${G && !G.ended && mode === 'map' ? `이 작전의 적 능력치 ${Math.round(R.diffK() * 100)}% · 지금 바로` : `적 능력치 ${Math.round(R.DIFF[o.diff || 'normal'].k * 100)}% × 장마다 ${Math.round(R.CH_K[0] * 100)}~${Math.round(R.CH_K[R.CH_K.length - 1] * 100)}%`})</small></button>
       <button data-a="close" class="gold">닫기</button></div>`, (a) => {
       if (['sound', 'blip', 'fight', 'fast', 'autoEnd'].includes(a)) { o[a] = !o[a]; if (a === 'fast') delete o.spd; }
-      else if (a === 'diff') { const l = Object.keys(R.DIFF); o.diff = l[(l.indexOf(o.diff || 'normal') + 1) % l.length]; }
+      else if (a && a.startsWith('dset:')) { const k = a.slice(5); if (k !== (o.diff || 'normal')) { o.diff = k; diffNow(); if (G && !G.ended && mode === 'map') toast(`난이도 ${R.DIFF[k].name} · 지금 적 체력·능력치가 바뀌었습니다 (되돌리기도 새 배율로)`); } }
       else if (a === 'textSpd') o.textSpd = (o.textSpd + 1) % 3;
       else { writeSave(); if (back) back(); return; }
       writeSave(); applyOpts(); options(back);
@@ -2165,10 +2265,26 @@
       r.onchange = () => { writeSave(); if (r.dataset.k === 'sfxV') AU.play('lo_click', 1); if (r.dataset.k === 'voiceV') AU.voice('constantia_SortiePick'); };
     });
   }
+  // 작전 도중 난이도 바꾸기: 적의 최대 체력을 새 배율로 다시 셈하고 남은 체력은 비율대로 (되돌리기 기록은 남기고, 되살릴 때 applySnap 이 비율대로 맞춘다)
+  function diffNow() {
+    if (!G || G.ended || mode !== 'map') return;
+    const l = Object.keys(R.DIFF);
+    if (l.indexOf(save.opts.diff || 'normal') < l.indexOf(R.diff)) G.easedTo = save.opts.diff; // 작전 도중 낮췄다 (추가 목표 보상 없음)
+    R.diff = save.opts.diff || 'normal';
+    for (const u of G.units) {
+      if (u.side !== 'e') continue;
+      const rH = u.hpMax ? u.hp / u.hpMax : 1, rT = u.troop && u.troop.hpMax ? u.troop.hp / u.troop.hpMax : 1;
+      u.hpMax = Math.round(R.heroStat(u, 'hp')); u.hp = u.hpMax * rH;
+      if (u.troop) { u.troop.hpMax = Math.round(R.troopStat(u, 'hp')); u.troop.hp = u.troop.hpMax * rT; }
+      refreshView(u);
+    }
+    // 되돌리기·「이번 차례 다시」의 판은 그대로 둔다: 되살릴 때 체력을 새 배율에 비율대로 맞춘다 (applySnap)
+    updateDanger(); setTop(); suspendSave();
+  }
   function goalInfo() {
     const st = G.stage;
-    modal(`<h3>${st.idx} ${st.title}</h3><p>승리 조건: <b>${st.goal}</b></p><p>패배 조건: ${st.lose}</p>
-      <p style="color:#9aa6c4">적 무리를 모두 쓰러뜨리면 다음 무리가 나타납니다 (전체 ${st.waves.length}무리).</p><div class="opts"><button class="gold" data-a="ok">확인</button></div>`);
+    modal(`<h3>${st.idx} ${st.title}</h3><p>승리 조건: <b>${st.goal}</b></p><p>패배 조건: ${st.lose}</p>${st.kind ? '' : `<p>추가 목표: ${bonusLine(st, true)} <small>(하나마다 부품 +25%)</small></p>`}
+      <p style="color:#9aa6c4">${st.waves.length > 1 ? `증원은 ${st.waves.slice(1).map((w) => w.turn + '턴').join(' · ')}에 나타나고, 그 전에 지도 위 적을 모두 쓰러뜨리면 곧바로 앞당겨 나옵니다 (전체 ${st.waves.length}무리).` : '증원이 없는 작전입니다.'}</p><div class="opts"><button class="gold" data-a="ok">확인</button></div>`);
   }
   // 첫 작전 안내: 규칙 전체 대신 꼭 알아야 할 다섯 가지만. 자세한 규칙은 메뉴의 도움말(H)
   function firstTips(cb) {
@@ -2181,21 +2297,31 @@
       <div class="opts"><button class="gold" data-a="ok">작전 시작</button><button data-a="more">규칙 자세히</button></div>`, (a) => (a === 'more' ? help(cb) : cb && cb()));
   }
   function help(cb) {
+    // 상성 표: 공격하는 병종 ▶ 이기는 병종 (js/data.js 의 REL 에서 그대로)
+    const relRows = Object.entries(D.REL).map(([a, m]) => `<tr><td>${kindTag(a)}</td><td>${Object.entries(m).map(([d, k]) => `▶ ${kindTag(d)} <b>+${Math.round(k * 100)}%</b>`).join(' &nbsp; ')}</td></tr>`).join('');
     modal(`<h3>도움말</h3>
+      <div class="osec">부대</div>
       <p><b>영웅과 병사</b> · 지도 위 한 칸은 영웅 한 명과 배속된 병사 부대입니다. 공격받으면 <b>병사가 먼저</b> 피해를 받고, 병사가 전멸하면 영웅이 직접 맞습니다. 영웅이 쓰러지면 그 칸은 퇴각합니다.</p>
       <p><b>병사 배속</b> · 출격 전에 영웅마다 병사를 고릅니다. 고를 수 있는 병사는 영웅의 전직 단계에 따라 늘어납니다.</p>
       <p><b>병사 10명</b> · 한 부대의 병사는 10명입니다. 남은 병사 수만큼만 공격하므로 병사가 줄면 부대가 약해집니다. 이동력은 영웅과 병사 중 느린 쪽을 따릅니다.</p>
       <p><b>병사 훈련</b> · 병사는 사지 않습니다 (랑그릿사 모바일처럼). 출격할 때마다 10명이 가득 찬 채로 나가고 전투가 끝나면 다시 채워집니다. 전투에서 얻은 <b>부품</b>으로 월드맵·출격 준비의 '병사 훈련'이나 마을 정비실의 포츈에게서 병종을 훈련하면 그 병사를 쓰는 모든 영웅의 병사가 강해집니다 (한 단계 +${Math.round(R.DRILL_K * 100)}%, 최대 ${R.DRILL_MAX}단계).</p>
       <p><b>병사 보충</b> · 전투 중에는 고전 랑그릿사처럼 보충합니다. ① 아군 차례가 시작될 때 지휘관 콘스탄챠의 ${R.CMD_RANGE}칸 안에 있는 아군은 병사 1명 보충 ② 움직이지 않고 '정비'를 고르면 병사 ${Math.round(R.REFIT_T * R.SQUAD)}명 보충 + 영웅 체력 ${Math.round(R.REFIT_H * 100)}% (그 차례 행동은 끝) ③ 마을·기지 칸에서 차례를 시작하면 영웅·병사 10% 회복, 기지는 병사를 2명 더 보충 (적도 마찬가지). 병사가 모두 쓰러진 부대는 지휘 범위로는 돌아오지 않습니다.</p>
-      <p><b>병종 상성</b> · 소총병 ▶ 중장병 ▶ 기동병 ▶ 소총병 (+30%), 사격병 ▶ 공중병 (+40%), 공중병 ▶ 소총병 (+20%)·전자전병 (+30%), 전자전병 ▶ 중장병 (+30%), 침투병 ▶ 사격병·전자전병 (+30%), 의무병 ▶ 변이체 (+80%). 그 밖에는 상성이 없습니다. 병사는 병사의 병종, 영웅은 영웅의 병종으로 따집니다.</p>
+      <div class="osec">전투</div>
+      <p><b>병종 상성</b> · 공격하는 병종이 이기는 상대를 칠 때 피해가 늘고, 거꾸로면 그만큼 줄어듭니다. 병사는 병사의 병종, 영웅은 영웅의 병종으로 따집니다.</p>
+      <table class="keys">${relRows}</table>
+      <p><b>피해 흔들림</b> · 공격 예상 창의 숫자는 기댓값이고, 실제 피해는 그 ±10% 안에서 흔들립니다. 아군 부대는 한 번의 교전에 병사를 70%(어려움 80%)까지만 잃고, 넘친 피해의 40%는 영웅이 받습니다.</p>
       <p><b>원거리</b> · 사격병은 사거리 2. 두 칸에서 쏘면 근접 부대는 반격하지 못합니다. 원거리 병종이 붙어서 싸우면 피해가 30%로 줄어듭니다.</p>
-      <p><b>적의 움직임</b> · 적은 무리마다 지휘관이 있고, 부대가 지휘관 둘레로 함께 진격합니다. 무리 중 하나라도 아군과 가까워지거나 한 차례가 지나면 무리 전체가 움직이고, 상성으로 이기는 상대를 먼저 노립니다. 우두머리를 지키는 호위는 우두머리 곁을 떠나지 않습니다. 「위험」 단추로 적이 닿는 범위를 확인하세요. 증원은 정해진 턴에 나타나며, 그 전에 적을 모두 쓰러뜨리면 승리합니다.</p>
-      <p><b>난이도</b> · 옵션에서 고릅니다 (다음 작전부터). 쉬움: 적 능력치 85%, 적이 조심스럽고 늦게 움직임 · 보통: 105% · 어려움: 115%, 적이 처음부터 진격하고 쓰러뜨릴 수 있는 영웅을 집요하게 노림.</p>
-      <p><b>경험치</b> · 전투가 끝나면 참가한 영웅 전원이 같은 양을 받습니다.</p>
+      <p><b>적의 움직임</b> · 적은 무리마다 지휘관이 있고, 부대가 지휘관 둘레로 함께 진격합니다. 무리 중 하나라도 아군과 가까워지거나 한 차례가 지나면 무리 전체가 움직이고, 상성으로 이기는 상대를 먼저 노립니다. 우두머리를 지키는 호위는 우두머리 곁을 떠나지 않습니다. 「위험」 단추로 적이 닿는 범위를 확인하세요. 증원은 정해진 턴에 나타나고, 그 전에 지도 위 적을 모두 쓰러뜨리면 남은 증원이 곧바로 앞당겨 나옵니다 (증원까지 모두 쓰러뜨리면 승리).</p>
+      <p><b>난이도</b> · 옵션에서 고릅니다 (작전 도중에 바꾸면 그 자리에서 적의 체력·능력치가 바뀝니다). 쉬움: 적 능력치 85%, 적이 조심스럽고 늦게 움직임 · 보통: 107%(사수 작전은 ×0.95) · 어려움: 115%, 적이 처음부터 진격하고 쓰러뜨릴 수 있는 영웅을 집요하게 노림 (어려움은 배우는 1장 ×0.93·긴 6장 ×0.97, 적이 지킬 칸으로 몰려드는 사수 작전 ×0.88을 더 곱해 덜어 줌). 여기에 장마다 배율(95~106%)이 곱해지고, 옵션 창에는 지금 작전의 실제 배율이 나옵니다.</p>
+      <div class="osec">성장 · 진행</div>
+      <p><b>경험치</b> · 전투가 끝나면 참가한 영웅 전원이 같은 양을 받고, 가장 많이 친 영웅(MVP)은 20%를 더 받습니다.</p>
+      <p><b>추가 목표</b> · 본편 작전마다 「정한 턴 안에 승리」(버티기·사수 작전은 「버티며 적 60% 이상 격파」)와 「영웅 퇴각 없이 승리」가 있습니다. 작전 도중 난이도를 낮춘 판은 세지 않습니다. 달성할 때마다 부품 보상이 25% 늘고, 작전 정보에 ★로 남습니다. 전투 중에는 위쪽 줄에 남은 턴이 보이고, 놓친 목표는 깬 작전의 「본편 다시 하기」(부품 60%)로 다시 노립니다.</p>
+      <p><b>저장</b> · 작전 도중에도 행동이 끝날 때마다 저장되어 타이틀의 「작전 이어하기」로 돌아옵니다. 이번 차례 안에서는 U(또는 메뉴)로 한 수씩 되돌리거나, 메뉴의 「이번 차례 다시」로 차례 처음으로 돌아갈 수 있습니다.</p>
       <p><b>특기</b> · 쓰고 나면 정해진 턴 동안 다시 쓸 수 없습니다(괄호 안 숫자).</p>
       <p><b>지배 영역</b> · 적과 맞닿는 칸에 들어서면 그 자리에서 멈춥니다. 적 사이를 빠져나갈 수 없으니 길목을 막아 지키세요 (적도 마찬가지).</p>
       <p><b>재능</b> · 영웅마다 늘 켜져 있는 고유 재능이 있습니다 (지휘 범위 강화, 선제공격 강화, 피해 감소 등). 영웅 정보에서 확인하세요.</p>
       <p><b>지형</b> · 숲 +20%, 산·언덕·기지 +10%, 폐허·마을 +5% 방어. 기동병은 숲·산에서 느려지고, 공중병은 지형의 영향을 받지 않습니다. 적 칸은 지나갈 수 없습니다.</p>
+      <div class="osec">조작</div>
       <p><b>조작</b> · 누르기: 선택·이동·공격 / 끌기: 지도 이동 / 두 손가락·휠: 확대 / 오른쪽 클릭·Esc: 취소 / 키보드: 방향키 커서 · Enter 결정 · Esc 취소 · Tab 다음 영웅 · A 공격 · W 대기 · E 턴 종료 (전체 목록은 전투 중 H)</p>
       <div class="opts"><button class="gold" data-a="ok">확인</button></div>`, cb);
   }
@@ -2238,19 +2364,19 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.02';
+  const GAME_VERSION = '1.21';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
     AU.bgm('lo_title');
-    const has = save.clear > 0 || Object.values(save.heroes).some((h) => h.lv > 1);
+    const has = save.clear > 0 || Object.values(save.heroes).some((h) => h.lv > 1), sus = suspendLoad();
     const motes = Array.from({ length: 14 }, (_, i) => `<i style="left:${(i * 53) % 100}%;animation-delay:${-(i * 1.7) % 9}s;animation-duration:${8 + (i % 5)}s;--s:${0.4 + (i % 4) * 0.25}"></i>`).join('');
     screen(`<div class="title2">
       <div class="tbg"></div><div class="tlight"></div><div class="tmotes">${motes}</div><div class="tvig"></div>
       <div class="tcenter"><img class="tlogo" src="assets/title/logo.webp" alt=""><div class="tsub">개발자 B의 내 마음대로 LAST ORIGIN</div></div>
       <div class="ttouch" id="tTouch">화면을 터치해 주세요</div>
       <div class="tmenu hidden" id="tMenu">
-        ${suspendLoad() ? `<button id="tResume">작전 이어하기 <small>${suspendLoad().idx} · ${suspendLoad().turn}턴</small></button>` : ''}
+        ${sus ? `<button id="tResume">작전 이어하기 <small>${sus.idx} · ${sus.turn}턴</small></button>` : ''}
         ${has ? '<button id="tCont">이어하기</button>' : ''}
         <button id="tNew">처음부터</button>
         <button id="tOpt">옵션</button>
@@ -2527,13 +2653,16 @@
       const j = joined();
       const heroHtml = st.heroes.map((h) => { const H = D.HEROES[h]; return `<div class="whero ${j.has(h) ? '' : 'new'}"><img src="${IMG[H.icon]}" alt=""><small>${j.has(h) ? 'Lv.' + save.heroes[h].lv : '합류'}</small></div>`; }).join('');
       acts = `<div class="wi-row"><label>승리 조건</label><span>${st.goal}</span></div><div class="wi-row"><label>패배 조건</label><span>${st.lose}</span></div>${st.tip ? `<div class="wi-row"><label>작전 요지</label><span>${st.tip}</span></div>` : ''}
-        <div class="wi-sub">적 정보 <small>증원 ${st.waves.length - 1}회</small></div><div class="wi-foes">${foeHtml}</div>
+        <div class="wi-row"><label>추가 목표</label><span>${bonusLine(st)} <small>(하나마다 부품 +25%)</small></span></div>
+        <div class="wi-sub">적 정보 <small>${st.waves.length > 1 ? `증원 ${st.waves.slice(1).map((w) => w.turn + '턴').join(' · ')}` : '증원 없음'}</small></div><div class="wi-foes">${foeHtml}</div>
         <div class="wi-sub">출격 인원 <small>기본 ${st.heroes.length}명 · 출격 준비에서 최대 ${Math.min(MAX_SORTIE, new Set([...j, ...st.heroes]).size)}명</small></div><div class="wi-heroes">${heroHtml}</div>
         <button class="wgo" id="sGo"><b>작전 개시</b><small>BATTLE START</small></button>`;
     } else {
       const lv = partyLv();
       acts = `<div class="wi-sub">할 수 있는 일</div><div class="wi-acts">
         ${sides.map((s) => `<button class="wact side" data-side="${s.idx}"><b>${s.kind === 'Ex' ? '고난도' : '의뢰'} · ${s.title}</b><small>${s.desc}</small><em>적 Lv.${Math.min(...s.waves.flat().map((u) => u[1]))}~</em></button>`).join('')}
+        <div class="wi-row"><label>추가 목표</label><span>${bonusLine(st)}</span></div>
+        ${(() => { const b = R.bonusOf(st), rec = (save.bonus || {})[st.idx] || {}; return (b.turns && !rec.t) || (b.kills && !rec.k) || !rec.n; })() ? '<button class="wact" id="sReplay"><b>본편 다시 하기</b><small>놓친 추가 목표에 다시 도전한다. 적 편성은 본편 그대로, 부품은 60%.</small></button>' : ''}
         <button class="wact" id="sRep"><b>소탕전</b><small>이 지역에 남은 철충을 다시 쓸어 낸다. 적이 부대 레벨에 맞춰 나온다. 출격은 시나리오대로 ${st.heroes.length}명.</small><em>적 Lv.${lv - 1}~</em></button>
         ${S ? '<button class="wact dim" id="sStory"><b>이야기 다시 보기</b><small>이 작전의 앞뒤 대화를 다시 본다.</small></button>' : ''}
         ${done.map((s) => `<div class="wdone">완료한 의뢰 · ${s.title}</div>`).join('')}</div>`;
@@ -2542,6 +2671,7 @@
       <p class="wi-desc">${S ? S.desc : ''}</p>${acts}`;
     if ($('sGo')) $('sGo').onclick = () => { AU.play('lo_click', 0.7); startStage(id); };
     if ($('sRep')) $('sRep').onclick = () => { AU.play('lo_click', 0.7); prep(repeatStage(id)); };
+    if ($('sReplay')) $('sReplay').onclick = () => { AU.play('lo_click', 0.7); prep(Object.assign({}, D.STAGES[id], { replay: true })); }; // 본편 다시: 추가 목표만 노린다
     if ($('sStory')) $('sStory').onclick = async () => { AU.play('lo_click', 0.7); hideScreen(); AU.bgm(S.bgmStart); await story(S.start); AU.bgm(S.bgmEnd); await story(S.end); stageSelect(); };
     document.querySelectorAll('.wact.side').forEach((b) => (b.onclick = () => { AU.play('lo_click', 0.7); prep(sideStage(b.dataset.side)); }));
     placeInfo();
@@ -2601,14 +2731,22 @@
     const rows = MY_TROOPS.map((k) => {
       const t = D.TROOPS[k], lv = drillLv(k), max = lv >= R.DRILL_MAX, cost = R.drillCost(lv), u = users(k);
       return `<div class="drow ${k === focus ? 'on' : ''}"><img src="${IMG[t.icon]}" alt=""><span class="dinfo"><b>${t.name}</b>${kindTag(t.kind)}
-        <small>훈련 ${lv} / ${R.DRILL_MAX} · 체력·공격·방어 +${Math.round(lv * R.DRILL_K * 100)}%${u.length ? ` · ${u.join(', ')}` : ' · 아직 쓰는 영웅 없음'}</small>
+        <small>훈련 ${lv} / ${R.DRILL_MAX} · 체력·공격·방어 +${Math.round(lv * R.DRILL_K * 100)}%${max ? '' : ` → <b>+${Math.round((lv + 1) * R.DRILL_K * 100)}%</b>`}${u.length ? ` · ${u.join(', ')}` : ' · 아직 쓰는 영웅 없음'}</small>
         <em class="dpips">${Array.from({ length: R.DRILL_MAX }, (_, i) => `<i class="${i < lv ? 'on' : ''}"></i>`).join('')}</em></span>
-        <button class="dbtn ${max ? '' : 'gold'}" data-a="d:${k}" ${max || save.parts < cost ? 'disabled' : ''}>${max ? '최대' : `<b>훈련</b><small><img src="${PARTS_ICON}" alt="">${cost}</small>`}</button></div>`;
+        <button class="dbtn ${max ? '' : 'gold'}" data-a="d:${k}" ${max || save.parts < cost ? 'disabled' : ''}>${max ? '최대' : `<b>훈련</b><small><img src="${PARTS_ICON}" alt="">${cost}</small>`}</button>
+        ${lv ? `<button class="dbtn" data-a="u:${k}" title="한 단계 되돌리고 부품 ${Math.round(R.drillCost(lv - 1) * 0.8)} 돌려받기"><b>되돌리기</b><small><img src="${PARTS_ICON}" alt="">+${Math.round(R.drillCost(lv - 1) * 0.8)}</small></button>` : ''}</div>`;
     }).join('');
     modal(`<h3>병사 훈련 <span class="dparts"><img src="${PARTS_ICON}" alt="">부품 <b>${save.parts || 0}</b></span></h3>
       <p class="dnote">병사는 따로 사지 않습니다. 출격할 때마다 10명이 가득 찬 채로 나가고, 전투가 끝나면 다시 채워집니다.
-      전투에서 얻은 <b>부품</b>으로 병종을 훈련하면 그 병사를 쓰는 모든 영웅의 병사가 강해집니다 (한 단계 +${Math.round(R.DRILL_K * 100)}%).</p>
+      전투에서 얻은 <b>부품</b>으로 병종을 훈련하면 그 병사를 쓰는 모든 영웅의 병사가 강해집니다 (한 단계 +${Math.round(R.DRILL_K * 100)}%).
+      단계마다 비용이 크게 오르므로 본편 부품으로는 <b>병종 셋쯤만 끝까지</b> 올릴 수 있습니다. 주력 영웅들이 함께 쓰는 병종에 몰아 주는 것이 좋습니다. 잘못 올렸으면 「되돌리기」로 한 단계 내리고 부품 80%를 돌려받습니다.</p>
       <div class="dlist">${rows}</div><div class="opts"><button class="gold" data-a="ok">닫기</button></div>`, (a) => {
+      if (a && a.startsWith('u:')) { // 훈련 되돌리기: 한 단계 내리고 그 단계 비용의 80%를 돌려받는다 (잘못 고른 배분을 고칠 수 있게)
+        const k = a.slice(2), lv = drillLv(k);
+        if (lv > 0) { save.drill[k] = lv - 1; save.parts = (save.parts || 0) + Math.round(R.drillCost(lv - 1) * 0.8); writeSave(); AU.play('lo_click', 0.5); }
+        drillMenu(done, k);
+        return;
+      }
       if (a && a.startsWith('d:')) {
         const k = a.slice(2), lv = drillLv(k), cost = R.drillCost(lv);
         if (lv < R.DRILL_MAX && save.parts >= cost) { save.parts -= cost; save.drill[k] = lv + 1; writeSave(); AU.play('lo_reinforce_eq', 0.7); const who = [...joined()].filter((id) => formOf(id).troops.includes(k)); if (who.length) heroVoice(who[Math.floor(Math.random() * who.length)], 'Reinforce'); } // 원작 강화 음성 (그 병사를 쓰는 영웅)
@@ -2758,7 +2896,19 @@
     const lock = b.heroes.filter((id) => id === 'constantia' || speaks(id) || !(save.joined || []).includes(id));
     return Object.assign({}, b, { free: MAX_SORTIE, lock, heroes: [...lock, ...b.heroes.filter((id) => !lock.includes(id))] });
   }
+  // 출격 준비: 같은 본편 작전에서 두 번 졌으면 난이도를 한 단계 낮출지 묻는다 (바로 이번 출격부터)
   function prep(x) {
+    prepScreen(x);
+    const st = stageOf(x), n = (save.loss || {})[st.idx] || 0, l = Object.keys(R.DIFF), i = l.indexOf(save.opts.diff || 'normal');
+    if (st.kind || n < 2 || i <= 0) return;
+    setTimeout(() => modal(`<h3>난이도 낮추기</h3><p>${st.idx} ${st.title}에서 ${n}번 졌습니다. 난이도를 <b>${R.DIFF[l[i]].name}</b>에서 <b>${R.DIFF[l[i - 1]].name}</b>으로 낮출까요? 이번 출격부터 적용되고, 옵션에서 언제든 되돌릴 수 있습니다.</p>
+      <div class="opts"><button class="gold" data-a="y">${R.DIFF[l[i - 1]].name}으로 낮추기</button><button data-a="n">이대로 도전</button></div>`, (a) => {
+      if (a === 'y') { save.opts.diff = l[i - 1]; toast(`난이도 ${R.DIFF[l[i - 1]].name}`); }
+      if (a === 'y') save.loss[st.idx] = 0; else save.loss[st.idx] = n - 2; // 낮추면 진 횟수를 비우고, 이대로 도전하면 두 번을 빼 두 번 더 졌을 때 다시 묻는다
+      writeSave();
+    }), 700);
+  }
+  function prepScreen(x) {
     let st = stageOf(x);
     if (!st.kind && !st.lock) st = sortieOf(st);
     // 고정 인원 (소탕전·의뢰는 지휘관 콘스탄챠만), 나머지는 합류한 영웅 중에서 st.free 명까지 고른다
@@ -2941,6 +3091,7 @@
     R.diff = save.opts.diff || 'normal'; // 난이도는 작전을 시작할 때 정해진다
     suspendClear(); // 새 작전을 시작하면 이어하던 작전은 버린다
     G = R.newGame(st);
+    G.seed0 = G.rs = (Math.random() * 4294967296) >>> 0; // 이 판의 난수 씨앗
     G.drill = save.drill || {};
     buildWorld();
     // 처음 합류하는 영웅은 일행 평균 레벨 근처에서 시작한다 (본작처럼 뒤늦게 합류해도 뒤처지지 않게)
@@ -3057,6 +3208,7 @@
   }
 
   // 결과: 원작 MISSION COMPLETE 화면 (최우수 인물 전신 + 음성, 영웅별 경험치 막대)
+  let G0last = {}; // 결과 화면이 보여 줄 끝난 판 (추가 목표)
   function result(st, win, gain, rows, turn, parts = 0) {
     return new Promise((res) => {
       const mvp = win ? rows.filter((r) => r.alive).sort((a, b) => b.dealt - a.dealt)[0] || rows[0] : null;
@@ -3078,6 +3230,7 @@
             <div class="rstage"><span>${st.idx}</span>${st.title}<small>${turn}턴</small></div></div>
           <div class="rsub">${win ? '참가 영웅 전원이 같은 경험치를 얻었습니다' : '얻은 경험치는 유지됩니다'}</div>
           ${parts ? `<div class="rparts"><img src="${PARTS_ICON}" alt=""><span>부품 <b>+${parts}</b></span><small>보유 ${save.parts} · 병사 훈련에 씁니다</small></div>` : ''}
+          ${(G0last.bonus || []).length ? `<div class="rbonus">${G0last.bonus.map((x) => `<span class="${x.ok ? 'ok' : 'no'}">${x.ok ? '★' : '☆'} ${x.name}${x.first ? ' <b>NEW</b>' : ''}</span>`).join('')}<small>달성한 추가 목표마다 부품 +25%</small></div>` : ''}
           <div class="rlist">${list}</div>
           <div class="rbtns">${win ? '<button class="wgo" id="rOk"><b>확인</b><small>NEXT</small></button>' : '<button class="lo-btn dark" id="rSel">작전 선택</button><button class="wgo" id="rRetry"><b>다시 도전</b><small>RETRY</small></button>'}</div>
         </div></div>`);
@@ -3105,10 +3258,13 @@
     // 경험치: 그 장소 본편 기준. 의뢰는 조금 더, 고난도는 1장 끝 기준으로
     const gain = Math.round(R.stageExp(st.kind === 'side' && st.side.kind === 'Ex' ? 9 : st.id - 1, win) * (st.kind === 'side' ? 1.25 : 1));
     const rows = [];
+    // 최우수(가장 많이 친 살아남은 영웅)는 경험치 +20% (모두 같은 몫에 더해 영웅마다 크는 맛)
+    const mvpU = win ? g.units.filter((x) => x.side === 'p' && (x.alive || x.escaped)).sort((a, b) => (b.dealt || 0) - (a.dealt || 0))[0] : null;
     for (const u of g.units.filter((x) => x.side === 'p')) {
       const s = save.heroes[u.key], h = D.HEROES[u.key];
       const row = { id: u.key, name: u.name, lv0: stageStart.lv[u.key], exp0: s.exp, alive: u.alive || !!u.escaped, dealt: u.dealt || 0, notes: [] };
-      row.gain = st.kind ? gain : R.expFor(u.lv, R.foeLv(st), gain);
+      row.gain = Math.round((st.kind ? gain : R.expFor(u.lv, R.foeLv(st), gain)) * (u === mvpU && (u.dealt || 0) > 0 ? 1.2 : 1));
+      if (u === mvpU && (u.dealt || 0) > 0) row.notes.push('<b>MVP</b> · 경험치 +20%');
       R.addExp(u, row.gain);
       s.lv = u.lv; s.exp = u.exp;
       row.lv1 = u.lv; row.exp1 = u.exp;
@@ -3118,15 +3274,30 @@
       rows.push(row);
     }
     // 부품: 병사 훈련에 쓴다 (지면 조금)
-    const parts = R.parts(st.kind === 'side' && st.side.kind === 'Ex' ? 9 : st.id - 1, win, st.kind);
+    let parts = R.parts(st.kind === 'side' && st.side.kind === 'Ex' ? 9 : st.id - 1, win, st.kind);
+    // 추가 목표 (본편): 정한 턴 안에 · 영웅 퇴각 없이 → 하나마다 부품 +25%, 처음 달성하면 기록
+    const bonus = [];
+    if (win && !st.kind) {
+      const b = R.bonusOf(st), noLoss = g.units.filter((u) => u.side === 'p').every((u) => u.alive || u.escaped);
+      if (b.turns) bonus.push({ k: 't', name: `${b.turns}턴 안에 승리`, ok: g.turn <= b.turns });
+      if (b.kills) bonus.push({ k: 'k', name: `버티며 적 ${b.kills}기 이상 격파`, ok: g.units.filter((u) => u.side === 'e' && !u.alive).length >= b.kills });
+      bonus.push({ k: 'n', name: '영웅 퇴각 없이 승리', ok: noLoss });
+      if (g.easedTo) bonus.forEach((x) => { x.ok = false; x.name += ' (난이도를 낮춘 판)'; }); // 작전 도중 난이도를 낮췄으면 이 판은 추가 목표를 하나도 세지 않는다
+      const rec = (save.bonus = save.bonus || {})[st.idx] = save.bonus[st.idx] || {};
+      for (const x of bonus) { x.first = x.ok && !rec[x.k]; if (x.ok) rec[x.k] = 1; }
+      parts = Math.round(parts * (1 + 0.25 * bonus.filter((x) => x.ok).length) * (st.replay ? 0.6 : 1)); // 본편 다시 하기는 60%
+    }
+    g.bonus = bonus;
     save.parts = (save.parts || 0) + parts;
     const clear0 = save.clear;
     if (win && !st.kind) save.clear = Math.max(save.clear, st.id);
+    if (!st.kind && !st.replay) { save.loss = save.loss || {}; save.loss[st.idx] = win ? 0 : (save.loss[st.idx] || 0) + 1; } // 두 번 지면 출격 준비에서 난이도를 낮출지 묻는다
     if (win && st.kind === 'side') { save.side = save.side || {}; save.side[st.idx] = 'done'; }
     window.GAME_LAST = { idx: st.idx, win, turn: g.turn, wave: g.wave + 1, alive: g.units.filter((u) => u.side === 'p').map((u) => u.name + (u.alive ? ':' + Math.round(u.hp) : u.escaped ? ':탈출' : 'x')).join(' ') };
     writeSave();
     const si = st.id - 1;
     leaveMap();
+    G0last = g;
     await result(st, win, gain, rows, g.turn, parts);
     // 이야기: 본편과 의뢰는 끝 대화 (소탕전은 없음)
     if (st.kind === 'if') { // IF 작전: 이기면 IF 뒷이야기와 IF 엔딩, 지면 다시 도전
@@ -3135,13 +3306,14 @@
       busy = false;
       return;
     }
-    const S = st.kind !== 'repeat' && window.STORY && STORY[st.idx];
+    const S = st.kind !== 'repeat' && !st.replay && window.STORY && STORY[st.idx]; // 본편 다시 하기는 끝 대화 없이
     if (win && S) {
       AU.bgm(S.bgmEnd);
       const d = !st.kind ? await storyPart(st, 'end') : (await story(S.end), null);
       if (d) { save.clear = clear0; writeSave(); busy = false; return ifBranch(d, si, 'end'); } // 잘못된 판단: 이 작전은 아직 마치지 못한 것으로
     }
-    if (win) afterWin(st, si);
+    if (win) { if (st.replay) stageSelect(); else afterWin(st, si); }
+    else if (st.replay) stageSelect();
     busy = false;
   }
   // 이긴 뒤 월드맵으로: 지역을 마쳤으면 다음 지역 지도와 안내
@@ -3162,7 +3334,7 @@
 
   // ── 상단 버튼 ───────────────────────────────────────────
   $('btnEnd').onclick = () => { AU.play('lo_click', 0.5); endTurnAsk(); };
-  $('btnMenu').onclick = () => { AU.play('lo_click', 0.5); if (busy && G && G.side === 'e') return; openMenu(); };
+  $('btnMenu').onclick = (e) => { e.stopPropagation(); AU.play('lo_click', 0.5); if (busy && G && G.side === 'e') return; if (!busy && ui.sel) { for (let i = 0; i < 4 && ['menu', 'target', 'forecast', 'skill', 'skillpick'].includes(ui.state); i++) cancel(); deselect(); } openMenu(); }; // 고르던 영웅은 제자리로 돌리고 메뉴
   $('btnDanger').onclick = () => { AU.play('lo_click', 0.5); toggleDanger(); };
   $('btnAuto').onclick = () => { AU.play('lo_click', 0.5); setAuto(!autoOn); };
   $('btnSpd').onclick = () => { AU.play('lo_click', 0.5); cycleSpd(); };
@@ -3279,7 +3451,7 @@
     // 시험용 훅
     window.GAME = {
       get G() { return G; }, get mode() { return mode; }, get ui() { return ui; }, save, R, D,
-      launch, prep, setAuto, resumeSuspend, startStage, endTurn, onTap, fitCamera, views, camera, cam, stageSelect, title, enterTown, fightBgOf, attack, sideNew, giverOf,
+      launch, prep, setAuto, resumeSuspend, grand, startStage, endTurn, onTap, fitCamera, views, camera, cam, stageSelect, title, enterTown, fightBgOf, attack, sideNew, giverOf,
       // 창이 숨겨져 rAF가 멈춘 상태에서 시험할 때: 시간을 직접 진행하고 한 장 찍어 서버에 저장
       step(sec) { for (let i = 0; i < Math.round(sec * 30); i++) step(1 / 30); },
       // 시간을 진행하면서 약속(Promise)들도 풀리게 한다 (숨은 창에서도 타이머 제한 없이)

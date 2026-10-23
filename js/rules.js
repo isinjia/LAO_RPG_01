@@ -13,7 +13,8 @@
   // ── 지도 ───────────────────────────────────────────────
   R.newGame = function (stage) {
     const map = stage.map.map((row) => row.split(''));
-    R.chK = R.CH_K[(stage.ch || 1) - 1] || R.CH_K[R.CH_K.length - 1]; // 장마다 적 능력치 배율 (아래)
+    R.ch = stage.ch || 1; R.win = stage.win; // 어려움의 사수 작전은 적이 지킬 칸으로 몰려들어 배율을 덜어 준다 (winAdj)
+    R.chK = R.CH_K[R.ch - 1] || R.CH_K[R.CH_K.length - 1]; // 장마다 적 능력치 배율 (아래). 어려움은 1장·6장(chAdj)과 사수 작전(winAdj)을 조금 덜어 준다
     return { stage, map, w: map[0].length, h: map.length, units: [], turn: 1, side: 'p', wave: 0, drill: {} }; // drill: 병사 훈련 단계 (save.drill)
   };
   R.inB = (G, x, y) => x >= 0 && y >= 0 && x < G.w && y < G.h;
@@ -160,16 +161,18 @@
   // 난이도: 적 능력치(이동 제외) 배율. 작전을 시작할 때 옵션에서 정한다 (game.js)
   // ai: 적 판단의 대담함 — fear 다음 차례에 맞을 걱정, bar 공격을 그만두는 문턱(밑지는 정도), wake 나온 뒤 스스로 진격하기까지의 차례, kill 격파 노리기
   R.DIFF = {
-    easy: { k: 0.85, name: '쉬움', ai: { fear: 0.4, bar: -1.5, wake: 2, kill: 0 } },
-    normal: { k: 1.05, name: '보통', ai: { fear: 0.15, bar: -4, wake: 1, kill: 0 } },
-    hard: { k: 1.15, name: '어려움', ai: { fear: 0.05, bar: -6, wake: 0, kill: 4 } },
+    easy: { k: 0.85, name: '쉬움', ai: { fear: 0.4, bar: -1.5, wake: 2, kill: 0, lead: 1.3, focus: 0 } },
+    normal: { k: 1.07, name: '보통', winAdj: { defend: 0.95 }, ai: { fear: 0.1, bar: -4, wake: 1, kill: 2, lead: 1.6, focus: 0.5 } }, // 보통도 쓰러뜨릴 수 있는 영웅은 노린다 (아군을 잃을 긴장)
+    hard: { k: 1.15, name: '어려움', troopCap: 0.8, chAdj: { 1: 0.93, 6: 0.97 }, winAdj: { defend: 0.88 }, ai: { fear: 0.05, bar: -6, wake: 0, kill: 4, lead: 2.4, focus: 2 } }, // focus: 이미 다친 영웅을 몰아 치는 협공 // lead: 적이 아군 지휘관을 노리는 무게
   };
   R.aiOf = () => (R.DIFF[R.diff] || R.DIFF.normal).ai;
   // 장마다 적 능력치 배율: 뒤로 갈수록 아군은 전직·병사 훈련이 쌓여 레벨보다 빨리 강해진다 (자동 대전에서 1장이 가장 어렵고 뒤는 쉬웠다)
-  R.CH_K = [0.95, 1, 1.03, 1.06, 1.08, 1.1];
+  R.CH_K = [0.95, 1, 1.03, 1.04, 1.05, 1.06];
   R.chK = 1;
   R.diff = 'normal';
-  const diffK = () => (R.DIFF[R.diff] || R.DIFF.normal).k * R.chK;
+  // 실제 배율 = 난이도 x 장 배율 x (어려움만) 장 보정 x 작전 종류 보정. 작전 하나하나를 깎지 않고 규칙으로 덜어 준다
+  const diffK = (k = R.diff) => { const D0 = R.DIFF[k] || R.DIFF.normal; return D0.k * R.chK * ((D0.chAdj && D0.chAdj[R.ch]) || 1) * ((D0.winAdj && D0.winAdj[R.win]) || 1); };
+  R.diffK = diffK; // 지금 작전의 실제 적 능력치 배율 (옵션 창이 그대로 보여 준다)
   R.heroStat = function (u, k) {
     if (u.side === 'p') {
       const t = u.form || u.def.tiers[u.tier];
@@ -208,8 +211,17 @@
   //  · 정비: 움직이지 않은 영웅이 이번 행동을 쉬면 병사 3명 보충 + 영웅 체력 10% (고전작의 치료 명령)
   //  · 마을·기지 칸: 차례 시작에 영웅·병사 회복 (기지는 병사를 더 보충)
   R.DRILL_K = 0.08; R.DRILL_MAX = 5; // 한 단계 +8% (최대 +40%): 무엇을 훈련할지 고르는 맛이 나게
-  R.drillCost = (lv) => 120 * (lv + 1); // lv → lv+1 에 드는 부품
-  R.parts = (stageIndex, win, kind) => Math.round((60 + 10 * stageIndex) * (win ? 1 : 0.3) * (kind === 'repeat' ? 0.6 : kind === 'side' ? 1.2 : 1));
+  // 추가 목표 (본편 작전): 정한 턴 안에 승리 · 영웅 퇴각 없이 승리. 하나마다 부품 +25%
+  R.bonusOf = (st) => {
+    const last = Math.max(1, ...st.waves.map((w) => w.turn || 1));
+    const timed = st.win !== 'survive' && st.win !== 'defend';
+    const foes = st.waves.reduce((n, w) => n + w.units.length, 0);
+    return { turns: timed ? Math.max(6, last + 6) : 0, kills: timed ? 0 : Math.ceil(foes * 0.6) }; // 버티기·사수: 버티면서 적의 60% 이상 격파
+  };
+  R.TROOP_CAP = 0.7; // 한 교전에 잃는 병사 체력의 상한 (최대의 70%)
+  R.DRILL_COST = [120, 320, 640, 1100, 1700]; // lv → lv+1 에 드는 부품 (한 병종 최대 3880). 본편 부품(기본 약 1만 600, 추가 목표를 다 이루면 1만 6천)으로 병종 셋~넷을 끝까지, 나머지는 중간까지
+  R.drillCost = (lv) => R.DRILL_COST[Math.min(lv, R.DRILL_COST.length - 1)];
+  R.parts = (stageIndex, win, kind) => Math.round((44 + 7.5 * stageIndex) * (win ? 1 : 0.3) * (kind === 'repeat' ? 0.6 : kind === 'side' ? 1.2 : 1));
   R.CMD_RANGE = 2; R.CMD_SUPPLY = 0.1;
   R.REFIT_T = 0.3; R.REFIT_H = 0.1;
   R.canRefit = (u) => u.side === 'p' && (u.hp < u.hpMax || !!(u.troop && u.troop.hp < u.troop.hpMax));
@@ -373,10 +385,15 @@
     const sd = { hp: d.hp, thp: d.troop ? d.troop.hp : 0, x: d.x, y: d.y };
     const counter = dist <= d.rng || (dist <= 3 && R.trait(d, 'rangeCounter') > 0); // 대응 포격: 멀리서 맞아도 반격
     const N = R.ROUNDS, rounds = [];
+    // 한 번의 교전으로 아군 부대가 통째로 무너지지 않게: 병사는 한 교전에 최대 병사 체력의 70%까지만 잃고, 그동안은 영웅에게 넘치지 않는다
+    const capK = (R.DIFF[R.diff] && R.DIFF[R.diff].troopCap) || R.TROOP_CAP;
+    const floorOf = (u, st) => (u.side === 'p' && u.troop && st.thp > 0 ? Math.max(0, st.thp - u.troop.hpMax * capK) : 0); // 아군 부대만 (상성이 불리해도 한 번에 무너지지 않게)
+    const floorA = floorOf(a, sa), floorD = floorOf(d, sd);
+    const cap = (s, st, floor) => { if (floor > 0 && st.thp - s.toT < floor) { const over = s.toT - Math.max(0, st.thp - floor); s.toT -= over; s.toH = (s.toH || 0) + over * 0.4; } return s; }; // 넘친 피해의 40%는 영웅이 받는다
     let rel = 0;
     for (let i = 0; i < N && sa.hp > 0.5 && sd.hp > 0.5; i++) {
-      const s1 = strike(G, a, sa, d, sd, dist, 1 / N, rnd, true);
-      const s2 = counter ? strike(G, d, sd, a, sa, dist, 0.8 / N, rnd, false) : { toT: 0, toH: 0 };
+      const s1 = cap(strike(G, a, sa, d, sd, dist, 1 / N, rnd, true), sd, floorD);
+      const s2 = counter ? cap(strike(G, d, sd, a, sa, dist, 0.8 / N, rnd, false), sa, floorA) : { toT: 0, toH: 0 };
       if (!i) rel = s1.rel;
       sd.thp -= s1.toT; sd.hp -= s1.toH; sa.thp -= s2.toT; sa.hp -= s2.toH; // 동시에
       rounds.push({ dT: s1.toT, dH: s1.toH, aT: s2.toT, aH: s2.toH });
@@ -537,12 +554,14 @@
     }
     return m;
   };
-  const value = (o) => (o.lead ? 2.4 : o.boss ? 2 : 1);
+  let foeTurn = false; // 지금 판단하는 쪽이 적인가 (아군 지휘관을 노리는 무게는 난이도마다, 아군 자동 진행은 지휘관을 늘 아낀다)
+  const value = (o) => (o.lead ? (foeTurn ? R.aiOf().lead : 2.4) : o.boss ? 2 : 1);
   const caution = (u) => (u.lead ? 2.2 : u.boss ? 1.2 : u.side === 'p' && u.hp < u.hpMax * 0.5 ? 1.2 : 0);
   // 한 유닛의 할 일: { to:[x,y], act:'attack'|'skill'|'wait', target, skill, tx, ty }
   R.plan = function (G, u, fields) {
     const reach = R.reach(G, u);
     const foeAI = u.side === 'e';
+    foeTurn = foeAI;
     if (foeAI && !u.awake) { // 깨어나기: 무리 중 하나라도 아군과 가까워지거나(이동+사거리+2) 나온 지 한 차례가 지나면 무리 전체가 함께 진격한다
       const mates = G.units.filter((o) => o.alive && o.side === 'e' && (o === u || (o.wave != null && o.wave === u.wave)));
       const close = mates.some((m) => m.awake || G.units.some((o) => o.alive && o.side === 'p' && R.dist(o.x, o.y, m.x, m.y) <= R.mov(m) + m.rng + 2));
@@ -554,7 +573,7 @@
     // 작전 목표 (아군 자동): 사수 작전은 지킬 칸에 올라서서 막고, 도달·탈출 작전은 목표 칸으로 다가간다
     const W0 = G.stage.win, tgts = u.side === 'p' && G.stage.target ? G.stage.target : null;
     const guardOpen = tgts && W0 === 'defend' ? tgts.filter(([x, y]) => { const o = R.unitAt(G, x, y); return !o || o === u; }) : [];
-    const objK = (x, y) => (guardOpen.some(([a, b]) => a === x && b === y) ? 8 : 0) - (guardOpen.length ? Math.max(0, Math.min(...tgts.map(([a, b]) => R.dist(a, b, x, y))) - 2) * 1.2 : 0); // 지킬 칸이 비어 있으면 멀리 나가 싸우지 않는다
+    const objK = (x, y) => (guardOpen.some(([a, b]) => a === x && b === y) ? 8 : 0) - (tgts && W0 === 'defend' ? Math.max(0, Math.min(...tgts.map(([a, b]) => R.dist(a, b, x, y))) - 3) * 1.2 : 0); // 사수 작전: 지킬 칸에서 멀리 나가 싸우지 않는다 (막던 영웅이 쓰러져도 곧 메우게)
     // 받을 피해 예상: 다음 차례에 이 칸에 닿는 적들이 저마다 나를 친다고 치고 잃을 몫을 점수로 뺀다
     // (상성이 불리한 적일수록 크게 잡힌다). 우리 편 자동 진행은 그대로, 적은 덜 겁내게 0.4배
     const foes = G.units.filter((o) => o.alive && o.side !== u.side && (o.side === 'p' || o.awake || o.ai !== 'guard'));
@@ -593,8 +612,9 @@
     // 사수 작전: 빈 지킬 칸에 가장 가까운 아군이 그 칸을 막아선다 (그 자리에서 칠 수 있으면 친다)
     for (const [gx, gy] of guardOpen) {
       if (!tiles.some((t) => t.x === gx && t.y === gy)) continue;
-      const mine = R.dist(u.x, u.y, gx, gy);
-      if (G.units.some((o) => o !== u && o.alive && o.side === u.side && !o.acted && R.dist(o.x, o.y, gx, gy) < mine)) continue;
+      const mine = R.dist(u.x, u.y, gx, gy), mates = G.units.filter((o) => o !== u && o.alive && o.side === u.side && !o.lead);
+      if (u.lead && mates.length) continue; // 지휘관은 막아서지 않는다 (쓰러지면 진다)
+      if (mates.some((o) => !o.acted && R.dist(o.x, o.y, gx, gy) < mine)) continue;
       const tg = R.targetsFrom(G, u, gx, gy).map((o) => ({ o, e: R.combat(G, u, o, gx, gy) })).sort((p, q) => q.e.dT + q.e.dH - (p.e.dT + p.e.dH))[0];
       return tg ? { to: [gx, gy], act: 'attack', target: tg.o, sc: 50 } : { to: [gx, gy], act: 'wait', sc: 50 };
     }
@@ -603,7 +623,12 @@
       for (const o of R.targetsFrom(G, u, t.x, t.y)) {
         const e = R.combat(G, u, o, t.x, t.y);
         let sc = ((e.dT + e.dH * 1.6) / R.totalMax(o)) * 10 * value(o) - ((e.aT + e.aH * 1.6) / myMax) * 10 * value(u) * (foeAI ? 0.4 : 0.7) + terrK - risk(t.x, t.y);
-        if (foeAI) sc += (e.rel > 0 ? 3 : e.rel < 0 ? -1.5 : 0) + (e.dDead ? R.aiOf().kill : 0); // 적: 상성으로 이기는 상대를 먼저 고른다 (어려움은 쓰러뜨릴 수 있는 상대를 더 노린다)
+        // 적: 상성으로 이기는 상대를 먼저, 쓰러뜨릴 수 있는 상대(kill)와 많이 다친 영웅(focus, 협공)에 무게를 더한다 (난이도마다 R.DIFF.ai)
+        if (foeAI) sc += (e.rel > 0 ? 3 : e.rel < 0 ? -1.5 : 0) + (e.dDead ? R.aiOf().kill : 0) + R.aiOf().focus * (1 - R.total(o) / R.totalMax(o))
+          + (u.rng > 1 && R.dist(t.x, t.y, o.x, o.y) === 1 ? -3 : 0); // 원거리 적은 붙지 않고 사거리에서 쏜다
+        // 아군 자동: 우두머리 작전은 우두머리를(반격이 아파도), 도달·탈출 작전은 목표 칸을 막고 선 적을 친다
+        else if (W0 === 'boss' && o.boss) sc += 6;
+        else if (tgts && (W0 === 'reach' || W0 === 'escape') && tgts.some(([x, y]) => x === o.x && y === o.y)) sc += 6;
         if (e.dDead) sc += 6 * value(o);
         if (e.aDead) sc -= 12 * value(u);
         consider(sc, { to: [t.x, t.y], act: 'attack', target: o });
@@ -634,8 +659,8 @@
     }
     if (best && best.sc > (foeAI ? R.aiOf().bar : -1)) return best; // 적은 크게 밑지는 싸움이 아니면 친다
     { const g = guardOpen.find(([x, y]) => tiles.some((t) => t.x === x && t.y === y)); if (g) return { to: [g[0], g[1]], act: 'wait', sc: 0 }; } // 지킬 칸이 비었으면 올라선다
-    if (tgts && (W0 === 'reach' || W0 === 'escape' || (W0 === 'defend' && guardOpen.length))) { // 도달 작전: 목표 칸으로 / 사수 작전: 빈 지킬 칸으로 돌아간다 (위험한 칸은 피하면서)
-      const pts = W0 === 'defend' ? guardOpen : tgts, key = 'to' + u.move + (W0 === 'defend' ? pts.join('|') : '');
+    if (tgts && (W0 === 'reach' || W0 === 'escape' || W0 === 'defend')) { // 도달 작전: 목표 칸으로 / 사수 작전: 빈 지킬 칸으로 돌아간다 (위험한 칸은 피하면서)
+      const pts = W0 === 'defend' && guardOpen.length ? guardOpen : tgts, key = 'to' + u.move + (W0 === 'defend' ? pts.join('|') : '');
       const ft = fields[key] || (fields[key] = R.distFieldTo(G, u.move, pts));
       let mv = null;
       for (const t of tiles) { const sc = ft[t.y * G.w + t.x] + moveRisk(t.x, t.y) * 0.5 - terrDef(G, u, t.x, t.y) * 0.5; if (!mv || sc < mv.sc) mv = { sc, t }; }
@@ -644,6 +669,13 @@
     if (u.ai === 'guard') return { to: [u.x, u.y], act: 'wait' };
     const f = fields[u.move + u.side] || (fields[u.move + u.side] = R.distField(G, u.move, u.side));
     const lead = foeAI && u.cmd && u.cmd !== u && u.cmd.alive ? u.cmd : null; // 따라갈 지휘관 (지휘관이 쓰러지면 저마다 진격)
+    // 크게 다친 적(30% 아래)은 칠 만한 상대가 없으면 지휘관 곁(없으면 뒤)으로 물러나 숨을 고른다
+    const hurt = foeAI && !u.boss && R.total(u) < R.totalMax(u) * 0.3;
+    if (hurt) {
+      let mv = null;
+      for (const t of tiles) { const sc = (lead ? R.dist(t.x, t.y, lead.x, lead.y) * 1.5 : 0) - f[t.y * G.w + t.x] * 0.8 + moveRisk(t.x, t.y) * 0.6 - terrDef(G, u, t.x, t.y) * 2; if (!mv || sc < mv.sc) mv = { sc, t }; }
+      if (mv) return { to: [mv.t.x, mv.t.y], act: 'wait' };
+    }
     let mv = null;
     for (const t of tiles) {
       let sc = f[t.y * G.w + t.x];
@@ -651,6 +683,7 @@
       sc -= terrDef(G, u, t.x, t.y) * 0.5;
       sc += moveRisk(t.x, t.y) * (foeAI ? 0.4 : 1);
       if (lead) sc += Math.max(0, R.dist(t.x, t.y, lead.x, lead.y) - (lead.ai === 'guard' ? 4 : 2)) * 2.5; // 지휘관 둘레(2칸, 버티는 우두머리면 4칸)에서 벗어나지 않게
+      if (foeAI && u.rng > 1 && foes.some((o) => R.dist(o.x, o.y, t.x, t.y) === 1)) sc += 4; // 원거리 적은 그냥 움직일 때도 아군 바로 옆에는 서지 않는다
       if (!mv || sc < mv.sc) mv = { sc, t };
     }
     return mv ? { to: [mv.t.x, mv.t.y], act: 'wait' } : { to: [u.x, u.y], act: 'wait' };

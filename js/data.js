@@ -425,8 +425,8 @@
       ],
       starts: [[9, 13], [8, 14], [10, 14], [9, 14], [10, 13], [8, 13], [9, 12], [8, 15]],
       waves: [
-        { turn: 1, at: [8, 7], units: [C('chick', 3), C('chick', 3), C('launcher', 3), C('launcher', 3)] },
-        { turn: 3, at: [7, 0], units: [C('launcher', 3), C('shielder', 2), C('chick', 3), C('chick', 3), C('launcher', 3)] },
+        { turn: 1, at: [8, 7], units: [C('chick', 3), C('launcher', 3), C('launcher', 3)] },
+        { turn: 3, at: [7, 0], units: [C('launcher', 3), C('shielder', 2), C('chick', 3), C('chick', 3)] }, // 셋이 싸우는 초반에 급경사라 런처 하나를 뺐다
       ],
     },
     {
@@ -536,9 +536,9 @@
       ],
       starts: [[7, 12], [8, 12], [7, 13], [8, 13], [6, 11], [9, 11], [6, 12], [7, 11]],
       waves: [
-        { turn: 1, at: [13, 7], units: [C('chick', 7), C('launcher', 8), C('shielder', 8), C('launcher', 8), C('chick', 7), C('launcher', 8)] },
-        { turn: 3, at: [4, 2], units: [C('shielder', 8), C('launcher', 8), C('shielder', 8), C('launcher', 9), C('launcher', 8), C('launcher', 8)] },
-        { turn: 5, at: [15, 0], units: [C('launcher', 10), C('shielder', 10), C('launcher', 10), C('chick', 11), C('launcher', 10), C('emperor', 10)] },
+        { turn: 1, at: [13, 7], units: [C('chick', 7), C('launcher', 7), C('shielder', 7), C('launcher', 7), C('chick', 7), C('launcher', 7)] }, // 1장의 고비를 조금 낮춤
+        { turn: 3, at: [4, 2], units: [C('shielder', 8), C('launcher', 8), C('shielder', 8), C('launcher', 8), C('launcher', 8)] }, // 1장의 벽이 너무 높아 런처 하나를 뺐다
+        { turn: 5, at: [15, 0], units: [C('launcher', 9), C('shielder', 9), C('launcher', 9), C('chick', 10), C('emperor', 10)] },
       ],
     },
     {
@@ -1204,7 +1204,7 @@
         { turn: 3, at: [16, 1], units: [C('scarab', 45), C('heavyscout', 45), C('phalanx', 45), C('wasp', 45), C('scarab', 45), C('heavyscout', 45), C('scarab', 45), C('heavyscout', 45)] },
         { turn: 5, at: [8, 0], units: [C('scout', 45), C('wasp', 45), C('cannon', 45), C('scout', 45), C('wasp', 45), C('cannon', 45), C('scout', 45), C('wasp', 45)] },
         { turn: 7, at: [1, 6], units: [C('scout', 45), C('heavyscout', 45), C('wasp', 45), C('detector', 45), C('scout', 45), C('heavyscout', 45), C('scout', 45), C('heavyscout', 45)] },
-        { turn: 9, at: [16, 6], units: [C('bigchick', 46), C('heavyscout', 45), C('cannon', 45), C('cannon', 45), C('bigchick', 46), C('heavyscout', 45), C('heavyscout', 45)] },
+        { turn: 9, at: [16, 6], units: [C('bigchick', 46), C('heavyscout', 45), C('cannon', 45), C('cannon', 45), C('bigchick', 46)] },
       ],
     },
     {
@@ -1440,11 +1440,11 @@
       ],
       starts: [[7, 14], [10, 14], [7, 13], [10, 13], [8, 14], [9, 14], [7, 15], [6, 14]],
       waves: [
-        { turn: 1, at: [8, 6], units: [C('scout', 60), C('wasp', 60), C('scarab', 60), C('heavyscout', 60), C('scout', 60), C('wasp', 60), C('scout', 60), C('wasp', 60)] },
-        { turn: 2, at: [1, 8], units: [C('scout', 60), C('wasp', 60), C('scarab', 60), C('heavyscout', 60), C('scout', 60), C('wasp', 60), C('scout', 60), C('wasp', 60)] },
-        { turn: 3, at: [16, 8], units: [C('heavyscout', 60), C('scarab', 60), C('wasp', 60), C('heavyscout', 60), C('heavyscout', 60), C('scarab', 60), C('heavyscout', 60), C('scarab', 60)] },
-        { turn: 5, at: [5, 0], units: [C('legion', 60), C('sniper', 60), C('detector', 60), C('phalanx', 60), C('phalanx', 60), C('sniper', 60), C('legion', 60), C('phalanx', 60)] },
-        { turn: 7, at: [12, 0], units: [C('legion', 60), C('phalanx', 60), C('centurion', 64), C('sniper', 60), C('sniper', 60), C('phalanx', 60), C('phalanx', 60), C('legion', 60), C('phalanx', 60), C('goltarion', 61)] },
+        { turn: 1, at: [8, 6], units: [C('scout', 58), C('wasp', 58), C('scarab', 58), C('heavyscout', 58), C('scout', 58), C('wasp', 58), C('scout', 58), C('wasp', 58)] },
+        { turn: 2, at: [1, 8], units: [C('scout', 58), C('wasp', 58), C('scarab', 58), C('heavyscout', 58), C('scout', 58), C('wasp', 58), C('scout', 58)] },
+        { turn: 3, at: [16, 8], units: [C('heavyscout', 58), C('scarab', 58), C('wasp', 58), C('heavyscout', 58), C('heavyscout', 58), C('scarab', 58), C('heavyscout', 58)] },
+        { turn: 5, at: [5, 0], units: [C('legion', 56), C('sniper', 56), C('detector', 56), C('phalanx', 56), C('phalanx', 56), C('sniper', 56), C('legion', 56), C('phalanx', 56)] },
+        { turn: 7, at: [12, 0], units: [C('legion', 56), C('centurion', 60), C('sniper', 56), C('phalanx', 56), C('legion', 56), C('goltarion', 57)] }, // 마지막 증원이 너무 길게 늘어져 넷을 뺐다
       ],
     },
     {
@@ -1473,9 +1473,9 @@
       ],
       starts: [[9, 14], [10, 14], [9, 15], [10, 15], [8, 14], [11, 14], [9, 13], [10, 13]],
       waves: [
-        { turn: 1, at: [9, 5], units: [C('g_rampart', 62), C('g_amg', 62), C('g_pupphead', 62), C('g_fallen', 62), C('g_seljuq', 62), C('g_rampart', 62), C('g_amg', 62), C('g_rampart', 62), C('g_pupphead', 62), C('g_rampart', 62)] },
-        { turn: 3, at: [14, 2], units: [C('g_drone', 62), C('g_stinger', 62), C('g_gigantes', 62), C('g_pupphead', 62), C('g_seljuq', 62), C('g_drone', 62), C('g_stinger', 62), C('g_drone', 62), C('g_pupphead', 62)] },
-        { turn: 5, at: [5, 2], units: [C('g_gigantes', 62), C('g_amg', 62), C('g_seljuq', 62), C('g_rampart', 62), C('g_rampart', 62), C('g_pupphead', 62), C('g_seljuq', 62), C('g_rampart', 62), C('g_rampart', 62)] },
+        { turn: 1, at: [9, 5], units: [C('g_rampart', 60), C('g_amg', 60), C('g_pupphead', 60), C('g_fallen', 60), C('g_seljuq', 60), C('g_rampart', 60), C('g_amg', 60), C('g_pupphead', 60)] }, // 처음부터 진격하는 무리라 둘을 뺐다
+        { turn: 3, at: [14, 2], units: [C('g_drone', 60), C('g_stinger', 60), C('g_gigantes', 60), C('g_pupphead', 60), C('g_seljuq', 60), C('g_drone', 60), C('g_stinger', 60), C('g_drone', 60)] },
+        { turn: 5, at: [5, 2], units: [C('g_gigantes', 60), C('g_amg', 60), C('g_seljuq', 60), C('g_rampart', 60), C('g_rampart', 60), C('g_pupphead', 60), C('g_seljuq', 60), C('g_rampart', 60)] },
       ],
     },
     {
@@ -1558,7 +1558,7 @@
       ],
       starts: [[7, 13], [8, 13], [6, 13], [9, 13], [7, 12], [8, 12], [7, 14], [8, 14]],
       waves: [
-        { turn: 1, at: [8, 7], units: [C('pm_ts', 70), C('pm_tn', 71), C('pm_mt', 70), C('pm_tt', 71), C('pm_ts', 70)] },
+        { turn: 1, at: [8, 7], units: [C('pm_ts', 70), C('pm_tn', 71), C('pm_mt', 70), C('pm_tt', 71)] },
         { turn: 2, at: [14, 2], units: [C('pm_mt', 70), C('pm_tn', 71), C('pm_ts', 70), C('pm_tt', 72), C('pm_mt', 70), C('pm_tn', 71), C('pm_mt', 70), C('pm_ts', 70)] },
         { turn: 4, at: [1, 2], units: [C('pm_ts', 70), C('pm_mt', 71), C('pm_mn', 72), C('pm_ts', 70), C('pm_tt', 71), C('pm_ts', 70), C('pm_mt', 71)] },
         { turn: 6, at: [8, 0], units: [C('pm_ts', 71), C('pm_mn', 71), C('pm_ms', 71), C('pm_tt', 71), C('pm_mt', 71), C('pm_mn', 71), C('pm_ts', 71), C('pm_ms', 71)] },
@@ -1589,11 +1589,11 @@
       ],
       starts: [[8, 13], [9, 13], [8, 14], [9, 14], [7, 13], [10, 13], [8, 12], [9, 12]],
       waves: [
-        { turn: 1, at: [8, 7], units: [C('scarab', 71), C('quarter', 71), C('legionsp', 72), C('chick', 72), C('scarab', 71)] },
-        { turn: 2, at: [14, 4], units: [C('shielderx', 72), C('legionsp', 72), C('phalanx', 72), C('scarab', 72), C('chick', 71), C('shielderx', 72), C('phalanx', 72)] },
-        { turn: 4, at: [3, 4], units: [C('chick', 72), C('quarter', 72), C('phalanx', 73), C('detector', 72), C('chick', 72), C('legionsp', 72), C('quarter', 72)] },
-        { turn: 6, at: [8, 1], units: [C('legion', 72), C('quarter', 73), C('tortoise', 73), C('shielderx', 72), C('chick', 73), C('legion', 72)] },
-        { turn: 8, at: [9, 1], units: [C('phalanx', 73), C('detector', 73), C('sniper', 74), C('legionsp', 73), C('tortoise', 73), C('quarter', 73), C('ironprince', 73)] }, // 좁은 통로에서 너무 늘어져 둘을 뺐다
+        { turn: 1, at: [8, 7], units: [C('scarab', 63), C('quarter', 63), C('legionsp', 64), C('chick', 64), C('scarab', 63)] },
+        { turn: 3, at: [14, 4], units: [C('shielderx', 64), C('legionsp', 64), C('phalanx', 64), C('scarab', 64), C('chick', 63), C('phalanx', 64)] }, // 첫 무리와 거의 같이 들이닥쳐 한 턴 늦추고 하나 뺐다
+        { turn: 4, at: [3, 4], units: [C('chick', 64), C('quarter', 64), C('phalanx', 65), C('detector', 64), C('chick', 64), C('legionsp', 64), C('quarter', 64)] },
+        { turn: 6, at: [8, 1], units: [C('legion', 64), C('tortoise', 65), C('chick', 65)] }, // 통로 소모전이 30턴 가까이 늘어져 셋을 뺐다
+        { turn: 8, at: [9, 1], units: [C('phalanx', 65), C('sniper', 66), C('legionsp', 65), C('tortoise', 65), C('ironprince', 65)] }, // 좁은 통로에서 너무 늘어져 둘을 뺐다
       ],
     },
     {
@@ -1649,7 +1649,7 @@
       ],
       starts: [[7, 14], [10, 14], [7, 13], [10, 13], [8, 14], [9, 14], [7, 15], [6, 14]],
       waves: [
-        { turn: 1, at: [8, 8], units: [C('pm_tt', 75), C('pm_ts', 75), C('pm_mt', 75), C('pm_tt', 75), C('pm_tt', 75)] },
+        { turn: 1, at: [8, 8], units: [C('pm_tt', 75), C('pm_ts', 75), C('pm_mt', 75), C('pm_tt', 75)] },
         { turn: 2, at: [8, 1], units: [C('pm_tt', 75), C('pm_tn', 75), C('pm_as', 76), C('pm_tt', 75), C('pm_tn', 75), C('pm_tt', 75), C('pm_as', 76)] },
         { turn: 4, at: [1, 3], units: [C('pm_ms', 75), C('pm_an', 76), C('pm_mn', 75), C('pm_at', 75), C('pm_ts', 75), C('pm_an', 76), C('pm_ms', 75), C('pm_ts', 75)] },
         { turn: 6, at: [16, 3], units: [C('pm_tt', 76), C('pm_ts', 75), C('pm_at', 75), C('pm_ms', 76), C('pm_mt', 76), C('pm_tt', 76), C('pm_ts', 75), C('pm_tt', 76), C('pm_ts', 75)] },
@@ -1746,8 +1746,8 @@
       ],
       starts: [[9, 15], [10, 15], [9, 14], [10, 14], [8, 15], [11, 15], [9, 16], [10, 16]],
       waves: [
-        { turn: 1, at: [9, 8], units: [C('goblin', 83), C('goblin', 84), C('goblina', 85), C('goblina', 84), C('expgen', 86), C('goblin', 83), C('goblin', 84), C('goblina', 85), C('goblin', 83), C('goblin', 84), C('goblina', 85)] },
-        { turn: 4, at: [9, 1], boss: 'executioner', units: [C('exe_lb', 86), C('executioner', 88), C('exe_rb', 86)] },
+        { turn: 1, at: [9, 8], units: [C('goblin', 83), C('goblin', 84), C('goblina', 85), C('goblina', 84), C('expgen', 86), C('goblin', 83), C('goblina', 85), C('goblin', 83), C('goblina', 85)] },
+        { turn: 5, at: [9, 1], boss: 'executioner', units: [C('exe_lb', 86), C('executioner', 88), C('exe_rb', 86)] }, // 첫 무리를 정리할 틈을 한 턴 더
       ],
     },
   ];

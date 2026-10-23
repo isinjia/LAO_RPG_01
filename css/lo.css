@@ -731,3 +731,7 @@ i.dlv { font: normal 11px 'LO_B', sans-serif; color: #111; background: #8fd0ff; 
 .pd-drill b { font: 15px 'LO_B', sans-serif; color: #fff; } .pd-drill small { font-size: 12px; color: #9aa6c4; }
 .rparts { display: flex; align-items: center; gap: 8px; margin: 4px 0 2px; font: 15px 'LO_B', sans-serif; color: #fff; }
 .rparts b { color: var(--lo-y); } .rparts small { font: 12px sans-serif; color: #9aa6c4; }
+/* 결과 화면: 추가 목표 (달성 ★ 노랑, 못 함 ☆ 흐리게) */
+.rbonus { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin: 4px 0 2px; font: 14px 'LO_B', sans-serif; }
+.rbonus .ok { color: var(--lo-y); } .rbonus .no { color: #6f7890; } .rbonus b { font: 11px 'LO_B', sans-serif; color: #111; background: var(--lo-y); padding: 0 4px; }
+.rbonus small { flex-basis: 100%; font: 12px sans-serif; color: #9aa6c4; }

@@ -25,18 +25,19 @@ const show = (a, d, nm) => {
   const p = R.combat(G, a, d, a.x, a.y);
   const f = (v) => v.toFixed(0).padStart(3);
   const dl = R.soldiers(d) - R.soldiers(d, d.troop ? d.troop.hp - p.dT : 0), al = R.soldiers(a) - R.soldiers(a, a.troop ? a.troop.hp - p.aT : 0);
-  console.log(nm.padEnd(28), `방어측 병사-${dl}명 영웅-${f(p.dH)} | 공격측 병사-${al}명 영웅-${f(p.aH)}`, p.counter ? '' : '(반격 없음)');
+  console.log(nm.padEnd(28), `거리 ${p.dist} · 방어측 병사-${dl}명 영웅-${f(p.dH)} | 공격측 병사-${al}명 영웅-${f(p.aH)}`, p.counter ? '' : '(반격 없음: 사거리 밖)');
 };
 const H = (id, lv, troop, x, y) => R.makeHero(G, id, { lv, exp: 0, tier: lv >= 10 ? 2 : lv >= 5 ? 1 : 0 }, troop, x, y);
 const con = H('constantia', 1, 'gunner', 0, 0), gri = H('griffon', 1, 'flyer', 0, 2), joh = H('johanna', 1, 'shield', 0, 4), lrl = H('lrl', 1, 'guard', 0, 6), pup = H('pupphead', 1, 'raider', 0, 8);
 const ch = R.makeEnemy(G, 'chick', 2, 1, 2), la = R.makeEnemy(G, 'launcher', 1, 2, 0), sh = R.makeEnemy(G, 'shielder', 2, 1, 4), ch2 = R.makeEnemy(G, 'chick', 2, 1, 6), la2 = R.makeEnemy(G, 'launcher', 2, 1, 8);
-console.log('이동력: 콘스탄챠', R.mov(con), '그리폰', R.mov(gri), '펍 헤드(기병)', R.mov(pup), '/ 펍 헤드에 보병 배속하면', (pup.troop = { ...pup.troop, def: DATA.TROOPS.guard }, R.mov(pup)));
+console.log('이동력: 콘스탄챠', R.mov(con), '그리폰', R.mov(gri), '펍 헤드(기동병)', R.mov(pup), '/ 펍 헤드에 소총병 배속하면', (pup.troop = { ...pup.troop, def: DATA.TROOPS.guard }, R.mov(pup)));
 pup.troop.def = DATA.TROOPS.raider;
-show(con, la, '콘스탄챠(궁병)→런처 2칸');
-show(gri, ch, '그리폰(비병)→나이트칙');
-show(la, gri, '런처→그리폰 (궁병▶비병)');
-show(joh, sh, '요안나(창병)→실더(창병)');
-show(lrl, ch2, 'LRL(보병)→나이트칙(보병)');
-show(pup, la2, '펍헤드(기병)→런처 (붙어서)');
+show(con, la, '콘스탄챠(사격병)→런처 2칸');
+show(gri, ch, '그리폰(공중병)→나이트칙');
+show(la, gri, '런처→그리폰 (사격병▶공중병)');
+show(joh, sh, '요안나(중장병)→실더(중장병)');
+show(lrl, ch2, 'LRL(소총병)→나이트칙(소총병)');
+show(pup, la2, '펍헤드(기동병)→런처 (붙어서)');
 show(la2, pup, '런처→펍헤드 (런처가 붙어서)');
-show(lrl, sh, 'LRL(보병)→실더 (보병▶창병)');
+lrl.x = 1; lrl.y = 5; // 실더 바로 옆에서
+show(lrl, sh, 'LRL(소총병)→실더 (소총병▶중장병)');

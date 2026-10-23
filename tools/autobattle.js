@@ -48,13 +48,13 @@ function battle(st, party, save, drill = {}) {
       if (plan.act === 'attack' && plan.target.alive && R.dist(u.x, u.y, plan.target.x, plan.target.y) <= u.rng) {
         const d = plan.target, res = R.combat(G, u, d, u.x, u.y, Math.random);
         R.apply(d, res.dT, res.dH); R.apply(u, res.aT, res.aH);
-        if (d.hp <= 0) { d.alive = false; d.hp = 0; }
+        if (d.hp <= 0) { d.alive = false; d.hp = 0; if (process.env.WHY && d.lead) console.log(`    지휘관 쓰러짐: ${G.turn}턴 ${u.key}(Lv${u.lv}) 공격 @${d.x},${d.y} · 피해 병사 ${res.dT.toFixed(0)} 영웅 ${res.dH.toFixed(0)}`); }
         if (u.hp <= 0) { u.alive = false; u.hp = 0; }
       } else if (plan.act === 'skill') {
         const s = D.SKILLS[plan.skill];
         u.cd[plan.skill] = s.cd + 1;
         for (const r of R.skillEffect(G, u, plan.skill, plan.tx, plan.ty, Math.random)) {
-          if (r.toT != null) { R.apply(r.u, r.toT, r.toH); if (s.slow) r.u.slowNext = s.slow; if (r.u.hp <= 0) { r.u.alive = false; r.u.hp = 0; } }
+          if (r.toT != null) { R.apply(r.u, r.toT, r.toH); if (process.env.WHY && r.u.lead && r.u.hp <= 0) console.log(`    지휘관 쓰러짐: ${G.turn}턴 ${u.key} 특기 ${plan.skill}`); if (s.slow) r.u.slowNext = s.slow; if (r.u.hp <= 0) { r.u.alive = false; r.u.hp = 0; } }
           else {
             if (r.hH || r.hT) { r.u.hp += r.hH; if (r.u.troop) r.u.troop.hp += r.hT; }
             if (r.buff) { r.u.buffs = r.u.buffs.filter((b) => !Object.keys(s.buff).some((k) => b[k])); r.u.buffs.push({ ...s.buff, until: G.turn + 1, side: u.side }); }
@@ -124,12 +124,14 @@ for (let run = 0; run < RUNS; run++) {
       const used = [...new Set(party.map((id) => CL.cur(id, save[id]).troops[0]))];
       for (;;) {
         if (process.env.NODRILL) break;
-        const k = used.filter((t) => (drill[t] || 0) < R.DRILL_MAX).sort((a, b) => (drill[a] || 0) - (drill[b] || 0))[0];
+        const cnt = (t) => party.filter((id) => CL.cur(id, save[id]).troops[0] === t).length;
+        const k = used.filter((t) => (drill[t] || 0) < R.DRILL_MAX).sort((a, b) => (process.env.FOCUS ? cnt(b) - cnt(a) || (drill[b] || 0) - (drill[a] || 0) : 0) || (drill[a] || 0) - (drill[b] || 0))[0]; // FOCUS=1: 많이 쓰는 병종에 몰아 준다
         if (!k || parts < R.drillCost(drill[k] || 0)) break;
         parts -= R.drillCost(drill[k] || 0); drill[k] = (drill[k] || 0) + 1;
       }
       const gain = R.stageExp(st.id - 1, res.win);
       for (const id of party) { const u = { side: 'p', lv: save[id].lv, exp: save[id].exp }; R.addExp(u, R.expFor(u.lv, R.foeLv(st), gain)); save[id].lv = u.lv; save[id].exp = u.exp; }
+      if (play && !res.win && process.env.WHY) { const G = res.G, ld = G.units.find((u) => u.lead); console.log(`  ${st.idx} 진 판: ${res.turn}턴 · 지휘관 ${ld && ld.alive ? '생존' : '퇴각'} · 아군 ${G.units.filter((u) => u.side === 'p' && u.alive).length}/${party.length} · 평균Lv ${(party.reduce((a, id) => a + save[id].lv, 0) / party.length).toFixed(1)} · 목표 칸 적 ${G.units.filter((u) => u.side === 'e' && u.alive && R.onTarget(G, u.x, u.y)).length}`); }
       if (play) {
         const s = stat[st.idx] || (stat[st.idx] = { n: 0, win: 0, turn: 0, alive: 0, lv: 0, party: 0, foes: 0, slow: 0, left: 0 });
         s.n++; if (!res.win && res.turn > 40) s.slow++; if (!res.win) s.left += res.G.units.filter((u) => u.side === 'e' && u.alive).length; if (res.win) { s.win++; s.turn += res.turn; s.alive += res.G.units.filter((u) => u.side === 'p' && u.alive).length; }
