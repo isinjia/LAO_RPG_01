@@ -403,3 +403,7 @@
   #info .nm { font-size: 18px; }
   #info { width: 380px; }
 }
+/* 가로 화면(PC): 위쪽 작전 목표 띠 글씨를 조금 크게 */
+@media (orientation: landscape) and (min-width: 1000px) {
+  #goalBox { font-size: 14.5px; padding-top: 10px; padding-bottom: 10px; }
+}

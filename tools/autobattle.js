@@ -48,13 +48,13 @@ function battle(st, party, save, drill = {}) {
       if (plan.act === 'attack' && plan.target.alive && R.dist(u.x, u.y, plan.target.x, plan.target.y) <= u.rng) {
         const d = plan.target, res = R.combat(G, u, d, u.x, u.y, Math.random);
         R.apply(d, res.dT, res.dH); R.apply(u, res.aT, res.aH);
-        if (d.hp <= 0) { d.alive = false; d.hp = 0; }
+        if (d.hp <= 0) { d.alive = false; d.hp = 0; if (process.env.WHY && d.lead) console.log(`    지휘관 쓰러짐: ${G.turn}턴 ${u.key}(Lv${u.lv}) 공격 @${d.x},${d.y} · 피해 병사 ${res.dT.toFixed(0)} 영웅 ${res.dH.toFixed(0)}`); }
         if (u.hp <= 0) { u.alive = false; u.hp = 0; }
       } else if (plan.act === 'skill') {
         const s = D.SKILLS[plan.skill];
         u.cd[plan.skill] = s.cd + 1;
         for (const r of R.skillEffect(G, u, plan.skill, plan.tx, plan.ty, Math.random)) {
-          if (r.toT != null) { R.apply(r.u, r.toT, r.toH); if (s.slow) r.u.slowNext = s.slow; if (r.u.hp <= 0) { r.u.alive = false; r.u.hp = 0; } }
+          if (r.toT != null) { R.apply(r.u, r.toT, r.toH); if (process.env.WHY && r.u.lead && r.u.hp <= 0) console.log(`    지휘관 쓰러짐: ${G.turn}턴 ${u.key} 특기 ${plan.skill}`); if (s.slow) r.u.slowNext = s.slow; if (r.u.hp <= 0) { r.u.alive = false; r.u.hp = 0; } }
           else {
             if (r.hH || r.hT) { r.u.hp += r.hH; if (r.u.troop) r.u.troop.hp += r.hT; }
             if (r.buff) { r.u.buffs = r.u.buffs.filter((b) => !Object.keys(s.buff).some((k) => b[k])); r.u.buffs.push({ ...s.buff, until: G.turn + 1, side: u.side }); }

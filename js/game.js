@@ -548,7 +548,7 @@
       soldiers.push(s);
     }
     const big = !!(u.lead || u.boss || u.def.big);
-    const ring = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.9), new THREE.MeshBasicMaterial({ map: getRingTex(u.side, big), transparent: true, depthTest: false, depthWrite: false }));
+    const ring = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 1.0), new THREE.MeshBasicMaterial({ map: getRingTex(u.side, big), transparent: true, depthTest: false, depthWrite: false }));
     ring.rotation.x = -Math.PI / 2; ring.position.y = 0.012; ring.renderOrder = 4;
     g.add(ring);
     const bc = canvas(112, 40);
@@ -1824,6 +1824,10 @@
     '1-2': '길잡이 · 빨간 칸의 적을 누르면 예상 피해가 나옵니다. 사격병은 공중병에, 소총병은 중장병에 강합니다',
     '1-3': '길잡이 · 적과 맞닿는 칸에 들어서면 멈춥니다(지배 영역). 다친 부대는 움직이지 않고 「정비」로 병사를 채우세요',
     '1-4': '길잡이 · 오른쪽 위 「위험」(R)을 켜면 적이 다음 차례에 닿는 칸이 보입니다',
+    '1-5': '길잡이 · 지휘관 콘스탄챠 곁 2칸 안의 부대는 차례마다 병사 1명을 보충받습니다. 함께 움직이세요',
+    '1-6': '길잡이 · 버티기 작전: 정한 턴까지 살아남으면 이깁니다. 숲(+20%)·언덕(+10%)에서 버티세요',
+    '1-7': '길잡이 · 제한 턴 안에 적을 모두 쓰러뜨려야 합니다. 특기(S)는 재사용 대기가 있으니 아끼지 말고 쓰세요',
+    '1-8': '길잡이 · 우두머리를 쓰러뜨리면 이깁니다. 호위는 우두머리 곁을 떠나지 않으니 하나씩 끌어내세요',
   };
   // ── 작전 중 저장 (이어하기): 아군 차례가 시작될 때마다 판 상태를 따로 저장해 두고, 타이틀의 「작전 이어하기」로 그 차례부터 되살린다 ──
   // 본편 작전(D.STAGES)만. 작전이 끝나면(승패) 지운다
@@ -2127,6 +2131,7 @@
       <button data-a="help">도움말 (규칙·조작)</button>
       <button data-a="keys">키보드 단축키 (H)</button>
       <button data-a="goal">승리·패배 조건</button>
+      ${suspendLoad() && suspendLoad().idx === G.stage.idx && suspendLoad().turn === G.turn ? '<button data-a="redo">이번 차례 다시 (차례가 시작될 때로)</button>' : ''}
       <button data-a="retry">처음부터 다시</button>
       <button data-a="quit" class="red">작전 포기 (선택 화면으로)</button>
       <button data-a="close" class="gold">닫기</button></div>`, (a) => {
@@ -2140,6 +2145,7 @@
       else if (a === 'keys') keyHelp();
       else if (a === 'goal') goalInfo();
       else if (a === 'retry') { const st = G.stage; leaveMap(); prep(st); }
+      else if (a === 'redo') resumeSuspend(); // 차례가 시작될 때 해 둔 작전 중 저장으로 되돌린다
       else if (a === 'quit') { suspendClear(); leaveMap(); stageSelect(); } // 포기한 작전은 이어하기에 남기지 않는다
     });
   }

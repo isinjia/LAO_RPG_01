@@ -160,9 +160,9 @@
   // 난이도: 적 능력치(이동 제외) 배율. 작전을 시작할 때 옵션에서 정한다 (game.js)
   // ai: 적 판단의 대담함 — fear 다음 차례에 맞을 걱정, bar 공격을 그만두는 문턱(밑지는 정도), wake 나온 뒤 스스로 진격하기까지의 차례, kill 격파 노리기
   R.DIFF = {
-    easy: { k: 0.85, name: '쉬움', ai: { fear: 0.4, bar: -1.5, wake: 2, kill: 0 } },
-    normal: { k: 1.05, name: '보통', ai: { fear: 0.15, bar: -4, wake: 1, kill: 0 } },
-    hard: { k: 1.15, name: '어려움', ai: { fear: 0.05, bar: -6, wake: 0, kill: 4 } },
+    easy: { k: 0.85, name: '쉬움', ai: { fear: 0.4, bar: -1.5, wake: 2, kill: 0, lead: 1.3 } },
+    normal: { k: 1.05, name: '보통', ai: { fear: 0.15, bar: -4, wake: 1, kill: 0, lead: 1.6 } },
+    hard: { k: 1.15, name: '어려움', ai: { fear: 0.05, bar: -6, wake: 0, kill: 4, lead: 2.4 } }, // lead: 적이 아군 지휘관을 노리는 무게
   };
   R.aiOf = () => (R.DIFF[R.diff] || R.DIFF.normal).ai;
   // 장마다 적 능력치 배율: 뒤로 갈수록 아군은 전직·병사 훈련이 쌓여 레벨보다 빨리 강해진다 (자동 대전에서 1장이 가장 어렵고 뒤는 쉬웠다)
@@ -209,7 +209,7 @@
   //  · 마을·기지 칸: 차례 시작에 영웅·병사 회복 (기지는 병사를 더 보충)
   R.DRILL_K = 0.08; R.DRILL_MAX = 5; // 한 단계 +8% (최대 +40%): 무엇을 훈련할지 고르는 맛이 나게
   R.drillCost = (lv) => Math.round((120 * (lv + 1) * Math.pow(1.4, lv)) / 10) * 10; // lv → lv+1 에 드는 부품: 120·340·710·1320·2300 (한 병종 최대 4790). 본편 부품(약 1만 4천)으로는 병종 서넛만 끝까지 올릴 수 있어 고르는 맛이 남는다
-  R.parts = (stageIndex, win, kind) => Math.round((60 + 10 * stageIndex) * (win ? 1 : 0.3) * (kind === 'repeat' ? 0.6 : kind === 'side' ? 1.2 : 1));
+  R.parts = (stageIndex, win, kind) => Math.round((52 + 9 * stageIndex) * (win ? 1 : 0.3) * (kind === 'repeat' ? 0.6 : kind === 'side' ? 1.2 : 1));
   R.CMD_RANGE = 2; R.CMD_SUPPLY = 0.1;
   R.REFIT_T = 0.3; R.REFIT_H = 0.1;
   R.canRefit = (u) => u.side === 'p' && (u.hp < u.hpMax || !!(u.troop && u.troop.hp < u.troop.hpMax));
@@ -537,12 +537,14 @@
     }
     return m;
   };
-  const value = (o) => (o.lead ? 2.4 : o.boss ? 2 : 1);
+  let foeTurn = false; // 지금 판단하는 쪽이 적인가 (아군 지휘관을 노리는 무게는 난이도마다, 아군 자동 진행은 지휘관을 늘 아낀다)
+  const value = (o) => (o.lead ? (foeTurn ? R.aiOf().lead : 2.4) : o.boss ? 2 : 1);
   const caution = (u) => (u.lead ? 2.2 : u.boss ? 1.2 : u.side === 'p' && u.hp < u.hpMax * 0.5 ? 1.2 : 0);
   // 한 유닛의 할 일: { to:[x,y], act:'attack'|'skill'|'wait', target, skill, tx, ty }
   R.plan = function (G, u, fields) {
     const reach = R.reach(G, u);
     const foeAI = u.side === 'e';
+    foeTurn = foeAI;
     if (foeAI && !u.awake) { // 깨어나기: 무리 중 하나라도 아군과 가까워지거나(이동+사거리+2) 나온 지 한 차례가 지나면 무리 전체가 함께 진격한다
       const mates = G.units.filter((o) => o.alive && o.side === 'e' && (o === u || (o.wave != null && o.wave === u.wave)));
       const close = mates.some((m) => m.awake || G.units.some((o) => o.alive && o.side === 'p' && R.dist(o.x, o.y, m.x, m.y) <= R.mov(m) + m.rng + 2));
