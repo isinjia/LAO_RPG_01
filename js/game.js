@@ -1853,7 +1853,10 @@
     const lost = live && G && G.units.some((u) => u.side === 'p' && !u.alive && !u.escaped);
     const t = b.turns ? (live ? `${G.turn > b.turns ? '☆' : rec.t ? '★' : '◇'} ${b.turns}턴 안에${G.turn <= b.turns ? ` (${b.turns - G.turn + 1}턴 남음)` : ' (지남)'}` : `${rec.t ? '★' : '☆'} ${b.turns}턴 안에 승리`) : '';
     const n = live ? `${lost ? '☆' : rec.n ? '★' : '◇'} 퇴각 없이${lost ? ' (실패)' : ''}` : `${rec.n ? '★' : '☆'} 영웅 퇴각 없이 승리`;
-    return [t, n].filter(Boolean).join(' · ');
+    const killed = live && G ? G.units.filter((u) => u.side === 'e' && !u.alive).length : 0;
+    const k = b.kills ? (live ? `${killed >= b.kills ? '★' : '◇'} 적 ${b.kills}기 격파 (${killed}/${b.kills})` : `${rec.k ? '★' : '☆'} 버티며 적 ${b.kills}기 이상 격파`) : '';
+    const easy = live && G && G.easedTo ? ' <small>(난이도를 낮춰 이번 판 추가 목표 보상 없음)</small>' : '';
+    return [t, k, n].filter(Boolean).join(' · ') + easy;
   }
   // ── 작전 중 저장 (이어하기): 아군 차례가 시작될 때마다 판 상태를 따로 저장해 두고, 타이틀의 「작전 이어하기」로 그 차례부터 되살린다 ──
   // 본편 작전(D.STAGES)만. 작전이 끝나면(승패) 지운다
@@ -1889,7 +1892,7 @@
       hp: u.hp, thp: u.troop ? u.troop.hp : 0, hpMax: u.hpMax, thpMax: u.troop ? u.troop.hpMax : 0, alive: u.alive, escaped: !!u.escaped, cd: u.cd, buffs: u.buffs, slow: u.slow || 0, slowNext: u.slowNext || 0, dealt: u.dealt || 0,
       nAct: u.nAct || 0, ai: u.ai, home: u.home, boss: !!u.boss, awake: !!u.awake, wave: u.wave, bornT: u.bornT, cmd: u.cmd ? G.units.indexOf(u.cmd) : -1, acted: u.side === 'p' && !!u.acted,
     }));
-    const d = { v: 1, si, idx: G.stage.idx, diff: R.diff, turn: G.turn, wave: G.wave, spawned: [...(G.spawned || [])], ev: [...(G.evDone || [])].map((e) => ev.indexOf(e)).filter((i) => i >= 0), units, rs: G.rs >>> 0, seed0: G.seed0 >>> 0, start: stageStart, heroes: G.stage.heroes, free: G.stage.free, lock: G.stage.lock, stage };
+    const d = { v: 1, si, idx: G.stage.idx, diff: R.diff, turn: G.turn, wave: G.wave, spawned: [...(G.spawned || [])], ev: [...(G.evDone || [])].map((e) => ev.indexOf(e)).filter((i) => i >= 0), units, rs: G.rs >>> 0, seed0: G.seed0 >>> 0, replay: !!G.stage.replay, easedTo: G.easedTo || null, start: stageStart, heroes: G.stage.heroes, free: G.stage.free, lock: G.stage.lock, stage };
     return d;
   }
   function suspendSave(turnStart) {
@@ -1942,7 +1945,7 @@
   async function resumeSuspend(given, msg) {
     const d = given || suspendLoad();
     if (!d) return stageSelect();
-    const st = d.stage || Object.assign({}, D.STAGES[d.si], d.heroes ? { heroes: d.heroes, free: d.free, lock: d.lock } : {});
+    const st = d.stage || Object.assign({}, D.STAGES[d.si], d.heroes ? { heroes: d.heroes, free: d.free, lock: d.lock } : {}, d.replay ? { replay: true } : {});
     hideScreen();
     if (G) leaveMap();
     R.diff = save.opts.diff || d.diff || 'normal'; // 지금 옵션의 난이도로 (저장 뒤 바꿨으면 적 체력은 applySnap 이 비율대로 맞춘다)
@@ -1951,6 +1954,7 @@
     buildWorld();
     applySnap(d);
     G.turnSnap = d.turnStart || (d.units.some((s) => s.acted) ? null : d); // 차례 처음의 판이 없으면 「이번 차례 다시」는 숨긴다
+    G.easedTo = d.easedTo || null;
     G.undo = d.undo || [];
     stageStart = d.start || { lv: {} };
     const rigs = new Set();
@@ -2244,7 +2248,7 @@
       <button data-a="fast">빠른 진행: <b>${onoff(o.fast)}</b></button>
       <button data-a="autoEnd">모두 행동하면 자동 턴 종료: <b>${onoff(o.autoEnd)}</b></button></div>
       <div class="osec">난이도</div><div class="opts">${Object.keys(R.DIFF).map((k) => `<button data-a="dset:${k}" class="${(o.diff || 'normal') === k ? 'gold' : ''}">${R.DIFF[k].name} <small>${G && !G.ended && mode === 'map' ? `이 작전 ${Math.round(R.diffK(k) * 100)}%` : `${Math.round(R.DIFF[k].k * 100)}%`}</small></button>`).join('')}</div>
-      <div class="opts"><button data-a="diffinfo" disabled>현재 <b>${R.DIFF[o.diff || 'normal'].name}</b> <small>(${G && !G.ended && mode === 'map' ? `이 작전의 적 능력치 ${Math.round(R.diffK() * 100)}% · 지금 바로` : `적 능력치 ${Math.round(R.DIFF[o.diff || 'normal'].k * 100)}% × 장마다 ${Math.round(R.CH_K[0] * 100)}~${Math.round(R.CH_K[R.CH_K.length - 1] * 100)}%`})</small></button>
+      <div class="opts"><button data-a="diffinfo" disabled><small>(${G && !G.ended && mode === 'map' ? `이 작전의 적 능력치 ${Math.round(R.diffK() * 100)}% · 지금 바로` : `적 능력치 ${Math.round(R.DIFF[o.diff || 'normal'].k * 100)}% × 장마다 ${Math.round(R.CH_K[0] * 100)}~${Math.round(R.CH_K[R.CH_K.length - 1] * 100)}%`})</small></button>
       <button data-a="close" class="gold">닫기</button></div>`, (a) => {
       if (['sound', 'blip', 'fight', 'fast', 'autoEnd'].includes(a)) { o[a] = !o[a]; if (a === 'fast') delete o.spd; }
       else if (a && a.startsWith('dset:')) { const k = a.slice(5); if (k !== (o.diff || 'normal')) { o.diff = k; diffNow(); if (G && !G.ended && mode === 'map') toast(`난이도 ${R.DIFF[k].name} · 지금 적 체력·능력치가 바뀌었습니다 (되돌리기도 새 배율로)`); } }
@@ -2261,6 +2265,8 @@
   // 작전 도중 난이도 바꾸기: 적의 최대 체력을 새 배율로 다시 셈하고 남은 체력은 비율대로 (되돌리기 기록은 남기고, 되살릴 때 applySnap 이 비율대로 맞춘다)
   function diffNow() {
     if (!G || G.ended || mode !== 'map') return;
+    const l = Object.keys(R.DIFF);
+    if (l.indexOf(save.opts.diff || 'normal') < l.indexOf(R.diff)) G.easedTo = save.opts.diff; // 작전 도중 낮췄다 (추가 목표 보상 없음)
     R.diff = save.opts.diff || 'normal';
     for (const u of G.units) {
       if (u.side !== 'e') continue;
@@ -2306,7 +2312,7 @@
       <p><b>난이도</b> · 옵션에서 고릅니다 (작전 도중에 바꾸면 그 자리에서 적의 체력·능력치가 바뀝니다). 쉬움: 적 능력치 85%, 적이 조심스럽고 늦게 움직임 · 보통: 107%(사수 작전은 ×0.95) · 어려움: 115%, 적이 처음부터 진격하고 쓰러뜨릴 수 있는 영웅을 집요하게 노림 (어려움은 배우는 1장 ×0.93·긴 6장 ×0.97, 적이 지킬 칸으로 몰려드는 사수 작전 ×0.88을 더 곱해 덜어 줌). 여기에 장마다 배율(95~106%)이 곱해지고, 옵션 창에는 지금 작전의 실제 배율이 나옵니다.</p>
       <div class="osec">성장 · 진행</div>
       <p><b>경험치</b> · 전투가 끝나면 참가한 영웅 전원이 같은 양을 받고, 가장 많이 친 영웅(MVP)은 20%를 더 받습니다.</p>
-      <p><b>추가 목표</b> · 본편 작전마다 「정한 턴 안에 승리」(버티기·사수 작전은 없음)와 「영웅 퇴각 없이 승리」가 있습니다. 달성할 때마다 부품 보상이 25% 늘고, 작전 정보에 ★로 남습니다. 전투 중에는 위쪽 줄에 남은 턴이 보이고, 놓친 목표는 깬 작전의 「본편 다시 하기」(부품 60%)로 다시 노립니다.</p>
+      <p><b>추가 목표</b> · 본편 작전마다 「정한 턴 안에 승리」(버티기·사수 작전은 「버티며 적 60% 이상 격파」)와 「영웅 퇴각 없이 승리」가 있습니다. 작전 도중 난이도를 낮춘 판은 세지 않습니다. 달성할 때마다 부품 보상이 25% 늘고, 작전 정보에 ★로 남습니다. 전투 중에는 위쪽 줄에 남은 턴이 보이고, 놓친 목표는 깬 작전의 「본편 다시 하기」(부품 60%)로 다시 노립니다.</p>
       <p><b>저장</b> · 작전 도중에도 행동이 끝날 때마다 저장되어 타이틀의 「작전 이어하기」로 돌아옵니다. 이번 차례 안에서는 U(또는 메뉴)로 한 수씩 되돌리거나, 메뉴의 「이번 차례 다시」로 차례 처음으로 돌아갈 수 있습니다.</p>
       <p><b>특기</b> · 쓰고 나면 정해진 턴 동안 다시 쓸 수 없습니다(괄호 안 숫자).</p>
       <p><b>지배 영역</b> · 적과 맞닿는 칸에 들어서면 그 자리에서 멈춥니다. 적 사이를 빠져나갈 수 없으니 길목을 막아 지키세요 (적도 마찬가지).</p>
@@ -2653,7 +2659,7 @@
       acts = `<div class="wi-sub">할 수 있는 일</div><div class="wi-acts">
         ${sides.map((s) => `<button class="wact side" data-side="${s.idx}"><b>${s.kind === 'Ex' ? '고난도' : '의뢰'} · ${s.title}</b><small>${s.desc}</small><em>적 Lv.${Math.min(...s.waves.flat().map((u) => u[1]))}~</em></button>`).join('')}
         <div class="wi-row"><label>추가 목표</label><span>${bonusLine(st)}</span></div>
-        ${(() => { const b = R.bonusOf(st), rec = (save.bonus || {})[st.idx] || {}; return (b.turns && !rec.t) || !rec.n; })() ? '<button class="wact" id="sReplay"><b>본편 다시 하기</b><small>놓친 추가 목표에 다시 도전한다. 적 편성은 본편 그대로, 부품은 60%.</small></button>' : ''}
+        ${(() => { const b = R.bonusOf(st), rec = (save.bonus || {})[st.idx] || {}; return (b.turns && !rec.t) || (b.kills && !rec.k) || !rec.n; })() ? '<button class="wact" id="sReplay"><b>본편 다시 하기</b><small>놓친 추가 목표에 다시 도전한다. 적 편성은 본편 그대로, 부품은 60%.</small></button>' : ''}
         <button class="wact" id="sRep"><b>소탕전</b><small>이 지역에 남은 철충을 다시 쓸어 낸다. 적이 부대 레벨에 맞춰 나온다. 출격은 시나리오대로 ${st.heroes.length}명.</small><em>적 Lv.${lv - 1}~</em></button>
         ${S ? '<button class="wact dim" id="sStory"><b>이야기 다시 보기</b><small>이 작전의 앞뒤 대화를 다시 본다.</small></button>' : ''}
         ${done.map((s) => `<div class="wdone">완료한 의뢰 · ${s.title}</div>`).join('')}</div>`;
@@ -3271,6 +3277,8 @@
     if (win && !st.kind) {
       const b = R.bonusOf(st), noLoss = g.units.filter((u) => u.side === 'p').every((u) => u.alive || u.escaped);
       if (b.turns) bonus.push({ k: 't', name: `${b.turns}턴 안에 승리`, ok: g.turn <= b.turns });
+      if (b.kills) bonus.push({ k: 'k', name: `버티며 적 ${b.kills}기 이상 격파`, ok: g.units.filter((u) => u.side === 'e' && !u.alive).length >= b.kills });
+      if (g.easedTo) bonus.forEach((x) => { x.ok = false; x.name += ' (난이도를 낮춘 판)'; }); // 작전 도중 난이도를 낮췄으면 이 판은 추가 목표를 세지 않는다
       bonus.push({ k: 'n', name: '영웅 퇴각 없이 승리', ok: noLoss });
       const rec = (save.bonus = save.bonus || {})[st.idx] = save.bonus[st.idx] || {};
       for (const x of bonus) { x.first = x.ok && !rec[x.k]; if (x.ok) rec[x.k] = 1; }
@@ -3280,7 +3288,7 @@
     save.parts = (save.parts || 0) + parts;
     const clear0 = save.clear;
     if (win && !st.kind) save.clear = Math.max(save.clear, st.id);
-    if (!st.kind) { save.loss = save.loss || {}; save.loss[st.idx] = win ? 0 : (save.loss[st.idx] || 0) + 1; } // 두 번 지면 출격 준비에서 난이도를 낮출지 묻는다
+    if (!st.kind && !st.replay) { save.loss = save.loss || {}; save.loss[st.idx] = win ? 0 : (save.loss[st.idx] || 0) + 1; } // 두 번 지면 출격 준비에서 난이도를 낮출지 묻는다
     if (win && st.kind === 'side') { save.side = save.side || {}; save.side[st.idx] = 'done'; }
     window.GAME_LAST = { idx: st.idx, win, turn: g.turn, wave: g.wave + 1, alive: g.units.filter((u) => u.side === 'p').map((u) => u.name + (u.alive ? ':' + Math.round(u.hp) : u.escaped ? ':탈출' : 'x')).join(' ') };
     writeSave();

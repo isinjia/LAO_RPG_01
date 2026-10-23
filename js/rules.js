@@ -215,7 +215,8 @@
   R.bonusOf = (st) => {
     const last = Math.max(1, ...st.waves.map((w) => w.turn || 1));
     const timed = st.win !== 'survive' && st.win !== 'defend';
-    return { turns: timed ? Math.max(6, last + 6) : 0 };
+    const foes = st.waves.reduce((n, w) => n + w.units.length, 0);
+    return { turns: timed ? Math.max(6, last + 6) : 0, kills: timed ? 0 : Math.ceil(foes * 0.6) }; // 버티기·사수: 버티면서 적의 60% 이상 격파
   };
   R.TROOP_CAP = 0.7; // 한 교전에 잃는 병사 체력의 상한 (최대의 70%)
   R.DRILL_COST = [120, 320, 640, 1100, 1700]; // lv → lv+1 에 드는 부품 (한 병종 최대 3880). 본편 부품(기본 약 1만 600, 추가 목표를 다 이루면 1만 6천)으로 병종 셋~넷을 끝까지, 나머지는 중간까지
