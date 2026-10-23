@@ -86,10 +86,11 @@ PIECES = {
     'd_crack2': ('IW/IW_Ground_Crack_B_Final.png', 154, 137, 1785, 429, 480),
     'd_grate': (SUB, 1316, 789, 363, 73, 200),
     # 여러 장에서 함께 쓰는 소품
+    't0_lamp': (SUB, 11, 775, 177, 484, 240),  # 공원 가로등
     't0_mgnest': ('BG_OBJ/defense_line.png', 35, 558, 968, 442, 480),
 }
 # 6장 거실·휴게실: 교외 집에 눈을 얹어 쓴다
-SNOWHOUSE = [('t6_cafe', SUB, 10, 1495, 535, 380, 560), ('t6_cmd', 'BG_School/BG_School_main_02.png', 540, 29, 1484, 508, 760)]  # 산장, 버려진 분교 (은신처 본관)
+SNOWHOUSE = [('t6_cafe', SUB, 10, 1495, 535, 380, 560), ('t6_cmd', 'BG_School/BG_School_main_02.png', 540, 29, 1484, 508, 760), ('t6_lab', 'BG_Tropical_island/BG_Tropical_island _1.png', 14, 13, 764, 633, 560)]  # 산장, 버려진 분교 (은신처 본관)
 # 바닥 질감 (지도 칸에 반복해서 깐다)
 GROUND = {
     'g_snow': (XMAS, 0, 1500, 640, 520),
