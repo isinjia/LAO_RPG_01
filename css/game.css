@@ -338,3 +338,19 @@ html.kbd #acts kbd { display: inline; }
 html.kbd .tbtns button[data-key] { position: relative; }
 html.kbd .tbtns button[data-key]::after { content: attr(data-key); position: absolute; right: 2px; bottom: -9px; padding: 0 3px; font: 700 9px/12px sans-serif; color: #cfe0ff; background: #0b1324; border: 1px solid #ffffff33; border-radius: 3px; pointer-events: none; }
 html.kbd #roster .rh::after { content: attr(data-n); position: absolute; left: 2px; top: 1px; font: 800 11px/14px sans-serif; color: #fff; text-shadow: 0 1px 2px #000, 0 0 3px #000; }
+
+/* 낮은 모바일 화면에서도 마지막 타이틀 버튼까지 손가락으로 스크롤 */
+.title2 .tmenu {
+  bottom: calc(44px + var(--safe-b));
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px 0 12px;
+}
+.title2 .tmenu button { flex: 0 0 52px; }
+@media (orientation: landscape) and (max-height: 540px) {
+  .title2 .tcenter { top: 24%; width: min(58vw, 640px); }
+  .title2 .tsub { letter-spacing: 3px; font-size: 12px; }
+  .title2 .tmenu { top: 46%; }
+}
