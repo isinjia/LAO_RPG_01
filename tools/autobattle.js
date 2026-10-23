@@ -113,6 +113,7 @@ for (let run = 0; run < RUNS; run++) {
     // 전직: 레벨이 되면 갈래를 번갈아 고른다
     for (const id of joined) while (CL.canChange(id, save[id])) { save[id].tier++; if (save[id].tier === 1) save[id].br = (id.length % 2) ? 'A' : 'B'; }
     for (const id of joined) if (save[id].lv >= R.PERK_LV && !save[id].perk) save[id].perk = ['at', 'df', 'hp'][id.length % 3]; // 각성: 영웅마다 고정으로 고른다
+    for (const id of joined) if (save[id].lv >= R.PERK2_LV && !save[id].perk2) save[id].perk2 = ['df', 'hp', 'at'][id.length % 3];
     const lock = st.heroes.filter((id) => id === 'constantia' || speaks(st, id));
     const party = [...lock, ...[...joined].filter((id) => !lock.includes(id)).sort((a, b) => save[b].lv - save[a].lv)].slice(0, MAX_SORTIE);
     const play = si + 1 >= FROM;

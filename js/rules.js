@@ -37,7 +37,7 @@
     const u = {
       uid: ++uid, side: 'p', key: id, def: h, name: h.name, rig: CL ? CL.rigOf(id, st) : h.rig, icon: CL ? CL.iconOf(id, st) : h.icon,
       kind: tier.kind || h.kind, move: tier.move || h.move, rng: tier.rng || h.rng, form: CL ? tier : null,
-      lv: st.lv, exp: st.exp, tier: st.tier, br: st.br || 'A', perk: st.lv >= R.PERK_LV ? st.perk || null : null, cls: tier.cls, x, y, alive: true, acted: false, buffs: [], cd: {}, lead: !!h.lead,
+      lv: st.lv, exp: st.exp, tier: st.tier, br: st.br || 'A', perk: st.lv >= R.PERK_LV ? st.perk || null : null, perk2: st.lv >= R.PERK2_LV && st.perk2 !== st.perk ? st.perk2 || null : null, cls: tier.cls, x, y, alive: true, acted: false, buffs: [], cd: {}, lead: !!h.lead,
       troop: null,
     };
     const tk = troopKey && tier.troops.includes(troopKey) ? troopKey : tier.troops[0];
@@ -168,7 +168,7 @@
   R.aiOf = () => (R.DIFF[R.diff] || R.DIFF.normal).ai;
   R.healK = () => ((R.DIFF[R.diff] || R.DIFF.normal).heal || 1); // 아군 정비·지휘관 곁 보충 배율 (어려움은 줄어든다)
   // 장마다 적 능력치 배율: 뒤로 갈수록 아군은 전직·병사 훈련이 쌓여 레벨보다 빨리 강해진다 (자동 대전에서 1장이 가장 어렵고 뒤는 쉬웠다)
-  R.CH_K = [0.95, 1, 1.03, 1.04, 1.05, 1.06];
+  R.CH_K = [0.95, 1, 1.03, 1.05, 1.07, 1.08]; // 4장부터는 Lv40 둘째 각성만큼 조금 더
   R.chK = 1;
   R.diff = 'normal';
   // 실제 배율 = 난이도 x 장 배율 x (어려움만) 장 보정 x 작전 종류 보정. 작전 하나하나를 깎지 않고 규칙으로 덜어 준다
@@ -182,14 +182,15 @@
     hp: { name: '생존 각성', desc: '영웅·병사 체력 +15%', k: { hp: 0.15 } },
     mv: { name: '기동 각성', desc: '영웅·병사 이동 +1', k: { mov: 1 } },
   };
-  const perkK = (u, k) => (u.side === 'p' && u.perk && R.PERKS[u.perk] && R.PERKS[u.perk].k[k]) || 0;
-  R.heroStat = function (u, k) {
+  R.PERK2_LV = 40; // 두 번째 각성 (첫째와 다른 것)
+  const perkK = (u, k) => (u.side !== 'p' ? 0 : [u.perk, u.perk2].reduce((n, p) => n + ((p && R.PERKS[p] && R.PERKS[p].k[k]) || 0), 0));
+  R.heroStat = function (u, k, noPerk) {
     if (u.side === 'p') {
       const t = u.form || u.def.tiers[u.tier];
       if (k === 'mov') return t.mov + perkK(u, 'mov');
       const m = (u.form && u.form.m[k]) || 1; // 전직한 직업의 병종 경향
       // 레벨 성장은 1레벨부터 이어서 세고, 전직 단계마다 6%씩 더 (전직해도 약해지지 않게)
-      return u.def.tiers[0][k] * (1 + 0.07 * (u.lv - 1)) * (1 + 0.06 * u.tier) * m * (1 + perkK(u, k));
+      return u.def.tiers[0][k] * (1 + 0.07 * (u.lv - 1)) * (1 + 0.06 * u.tier) * m * (noPerk ? 1 : 1 + perkK(u, k));
     }
     if (k === 'mov') return u.def.mov;
     return u.def[k] * (1 + 0.07 * (u.lv - 1)) * diffK();
@@ -198,7 +199,7 @@
   R.troopStat = function (u, k) {
     const t = u.troop.def;
     const v = t[k] * (1 + 0.06 * (u.lv - 1));
-    return (k === 'hp' ? v * (u.side === 'e' ? diffK() : 1) : v + R.heroStat(u, k) * 0.25) * (1 + R.DRILL_K * (u.troop.drill || 0)) * (1 + perkK(u, k));
+    return (k === 'hp' ? v * (u.side === 'e' ? diffK() : 1) : v + R.heroStat(u, k, true) * 0.25) * (1 + R.DRILL_K * (u.troop.drill || 0)) * (1 + perkK(u, k)); // 각성은 병사에 한 번만
   };
   R.atk = (u, part) => (part === 'T' ? R.troopStat(u, 'at') : R.heroStat(u, 'at')) * buffK(u, 'at');
   R.def = (u, part) => (part === 'T' ? R.troopStat(u, 'df') : R.heroStat(u, 'df')) * buffK(u, 'df');

@@ -754,3 +754,5 @@ i.dlv { font: normal 11px 'LO_B', sans-serif; color: #111; background: #8fd0ff; 
 .rcard .pperk { position: absolute; right: 6px; top: 34px; z-index: 3; font: 11px 'LO_B', sans-serif; padding: 3px 8px; background: #1a1d26e6; color: var(--lo-y); border: 1px solid var(--lo-y); cursor: pointer; }
 .rcard .pperk.new { background: var(--lo-y); color: #111; animation: pperkPulse 1.2s ease-in-out infinite alternate; }
 @keyframes pperkPulse { from { box-shadow: 0 0 0 #ffcc0000; } to { box-shadow: 0 0 12px #ffcc00aa; } }
+/* 출격 준비: 오른쪽 정보가 아래 도움말·출격 단추(높이 약 110px) 위에서 끝나게 */
+@media (orientation: landscape) and (min-width: 1000px) { .pdetail { bottom: calc(118px + var(--safe-b)); } }
