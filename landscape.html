@@ -7,14 +7,45 @@
 <title>오르카 전기</title>
 <style>
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000}
-iframe{position:absolute;border:0;display:block;left:0;top:0;width:100%;height:100%;background:#000}
-@media(orientation:portrait){iframe{width:100dvh;height:100vw;transform-origin:0 0;transform:translateX(100vw) rotate(90deg)}}
+iframe{position:absolute;border:0;display:block;left:50%;top:50%;background:#000;transform-origin:50% 50%}
 </style>
 </head>
 <body>
 <iframe id="game" title="오르카 전기" allow="autoplay; fullscreen" allowfullscreen></iframe>
 <script>
-document.getElementById('game').src='index.html'+location.search+location.hash;
+const game = document.getElementById('game');
+let portraitRotation = 90;
+function screenRotation() {
+  const orientation = screen.orientation;
+  const angle = orientation && Number.isFinite(orientation.angle)
+    ? orientation.angle : Number(window.orientation) || 0;
+  portraitRotation = (orientation && orientation.type === 'portrait-secondary') || Math.abs(angle) === 180 ? -90 : 90;
+  fitGame();
+}
+// 기울기를 받을 수 있으면 세로 고정 상태에서도 좌우로 돌리는 방향에 맞춘다.
+function deviceRotation(event) {
+  if (document.documentElement.clientHeight <= document.documentElement.clientWidth) return;
+  if (!Number.isFinite(event.gamma) || Math.abs(event.gamma) < 40) return;
+  const next = event.gamma < 0 ? 90 : -90;
+  if (next !== portraitRotation) { portraitRotation = next; fitGame(); }
+}
+// 낮은 해상도에서도 배치 영역을 확보하고 화면 전체를 같은 비율로 줄인다.
+function fitGame() {
+  const w = document.documentElement.clientWidth, h = document.documentElement.clientHeight;
+  const rotated = h > w;
+  const availableW = rotated ? h : w, availableH = rotated ? w : h;
+  const scale = Math.min(1, availableW / 1280, availableH / 720);
+  game.style.width = (availableW / scale) + 'px';
+  game.style.height = (availableH / scale) + 'px';
+  game.style.transform = 'translate(-50%, -50%) rotate(' + (rotated ? portraitRotation : 0) + 'deg) scale(' + scale + ')';
+}
+screenRotation();
+addEventListener('resize', fitGame);
+addEventListener('orientationchange', screenRotation);
+addEventListener('deviceorientation', deviceRotation);
+if (screen.orientation && screen.orientation.addEventListener) screen.orientation.addEventListener('change', screenRotation);
+if (window.visualViewport) visualViewport.addEventListener('resize', fitGame);
+game.src = 'index.html' + location.search + location.hash;
 </script>
 </body>
 </html>
