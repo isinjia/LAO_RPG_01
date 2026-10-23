@@ -7,7 +7,7 @@
   const FIGHT = {};
   let scene, cam, bgMesh, bgMat;
   let VW = 16, VH = 9;
-  const GROUND = -1.6;
+  const GROUND = -0.5; // 부대가 서는 높이: 아래 구석 초상에 가리지 않게 길 가운데쯤 (배경은 그대로)
   let actors = [], fxs = [], tl = [], T = 0, done = null, active = false;
   const tweens = [];
   const el = () => document.getElementById('fight');
