@@ -2324,7 +2324,7 @@
       <p><b>난이도</b> · 옵션에서 고릅니다 (작전 도중에 바꾸면 그 자리에서 적의 체력·능력치가 바뀝니다). 쉬움: 적 능력치 85%, 적이 조심스럽고 늦게 움직임 · 보통: 111%(배우는 1장 ×0.96, 사수 작전은 ×0.95) · 어려움: 120%, 적이 처음부터 진격하고 쓰러뜨릴 수 있는 영웅을 집요하게 노림 (어려움은 배우는 1장 ×0.9·긴 6장 ×0.97, 적이 지킬 칸으로 몰려드는 사수 작전 ×0.88을 더 곱해 덜어 줌). 여기에 장마다 배율(${Math.round(R.CH_K[0] * 100)}~${Math.round(R.CH_K[R.CH_K.length - 1] * 100)}%)이 곱해지고, 옵션 창에는 지금 작전의 실제 배율이 나옵니다.</p>
       <div class="osec">성장 · 진행</div>
       <p><b>경험치</b> · 전투가 끝나면 참가한 영웅 전원이 같은 양을 받고, 가장 많이 친 영웅(MVP)은 20%를 더 받습니다.</p>
-      <p><b>작전 전술</b> · 출격 준비 아래 「작전 전술」 단추로 작전마다 하나 고릅니다: ${Object.values(R.TACTICS).filter((t) => t.buff).map((t) => `${t.name}(${t.desc})`).join(' · ')}. 아군 영웅·병사 전원에게 걸리고, 걸려 있는 동안 위쪽 줄에 노랗게 표시됩니다.</p>
+      <p><b>작전 전술</b> · 출격 준비 아래 「작전 전술」 단추로 작전마다 하나 고릅니다: ${Object.values(R.TACTICS).filter((t) => t.buff).map((t) => `${t.name}(${t.desc})`).join(' · ')}. 출격한 아군 영웅·병사 전원에게 걸리고(도중에 합류한 아군은 빠짐), 처음엔 그 작전의 추천 전술이 골라져 있습니다. 걸려 있는 동안 위쪽 줄에 노랗게 표시됩니다.</p>
       <p><b>각성</b> · 영웅이 Lv.${R.PERK_LV}에 이르면 「출격 준비」나 「부대 현황」에서 각성 하나를 고릅니다: ${Object.values(R.PERKS).map((p) => `${p.name}(${p.desc})`).join(' · ')}. Lv.${R.PERK2_LV}에는 첫째와 다른 둘째 각성을 하나 더 고릅니다 (꾸준히 출격하면 보통 2장 중반에 첫째, 3장 끝 무렵에 둘째가 열립니다). 출격 준비·부대 현황에서 언제든 바꿀 수 있습니다.</p>
       <p><b>추가 목표</b> · 본편 작전마다 「정한 턴 안에 승리」(버티기·사수 작전은 「버티며 적 60% 이상 격파」)와 「영웅 퇴각 없이 승리」가 있습니다. 작전 도중 난이도를 낮춘 판은 세지 않습니다. 달성할 때마다 부품 보상이 25% 늘고, 작전 정보에 ★로 남습니다. 전투 중에는 위쪽 줄에 남은 턴이 보이고, 놓친 목표는 깬 작전의 「본편 다시 하기」(부품 60%)로 다시 노립니다.</p>
       <p><b>저장</b> · 작전 도중에도 행동이 끝날 때마다 저장되어 타이틀의 「작전 이어하기」로 돌아옵니다. 이번 차례 안에서는 U(또는 메뉴)로 한 수씩 되돌리거나, 메뉴의 「이번 차례 다시」로 차례 처음으로 돌아갈 수 있습니다.</p>
@@ -2392,7 +2392,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.38';
+  const GAME_VERSION = '1.39';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2807,8 +2807,8 @@
     $('modal').querySelectorAll('.rcard').forEach((c) => (c.dataset.a = 'hero'));
     liveCards();
   }
-  // 작전 전술: 작전마다 따로 기억 (고른 적 없으면 전술 없음)
-  const tacOf = (st) => ((save.tactics || {})[st.idx]) || 'none';
+  // 작전 전술: 작전마다 따로 기억 (고른 적 없으면 그 작전 추천 전술)
+  const tacOf = (st) => ((save.tactics || {})[st.idx]) || R.tacFor(st);
   // 각성 고르기 (Lv20부터, 출격 밖에서 언제든 바꿀 수 있다)
   function perkPick(id, back) {
     const s = save.heroes[id], h = D.HEROES[id], two = s.lv >= R.PERK2_LV;
@@ -3033,7 +3033,7 @@
       $('pTac').onclick = () => {
         AU.play('lo_click', 0.6);
         const rec = R.tacFor(st), now = tacOf(st);
-        modal(`<h3 style="white-space:nowrap">작전 전술 <small style="font:13px LO_M">처음 몇 턴 아군 전원에게 · 작전마다 기억</small></h3><div class="opts">${Object.entries(R.TACTICS).map(([k, t]) => `<button data-a="${k}" class="${now === k ? 'gold' : ''}"><b>${t.name}</b>${k === rec ? ' <i class="trec">이 작전 추천</i>' : ''} <small>${t.desc}</small></button>`).join('')}</div>`, (a) => {
+        modal(`<h3 style="white-space:nowrap">작전 전술 <small style="font:13px LO_M">처음 몇 턴 출격한 아군 전원에게 · 작전마다 기억</small></h3><div class="opts">${Object.entries(R.TACTICS).map(([k, t]) => `<button data-a="${k}" class="${now === k ? 'gold' : ''}"><b>${t.name}</b>${k === rec ? ' <i class="trec">이 작전 추천</i>' : ''} <small>${t.desc}</small></button>`).join('')}</div>`, (a) => {
           if (a && R.TACTICS[a]) { (save.tactics = save.tactics || {})[st.idx] = a; writeSave(); const b = $('pTac'); if (b) b.querySelector('b').textContent = R.TACTICS[a].name; }
         });
       };

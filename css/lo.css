@@ -804,3 +804,5 @@ i.dlv { font: normal 11px 'LO_B', sans-serif; color: #111; background: #8fd0ff; 
 .gtac { display: inline-block; padding: 0 6px; margin-right: 2px; background: var(--lo-y); color: #111; font-weight: bold; }
 .mbox .trec { font: normal 11px 'LO_B', sans-serif; color: #111; background: var(--lo-y); padding: 1px 6px; margin-left: 4px; }
 .mbox .opts button.gold .trec { background: #111; color: var(--lo-y); }
+/* 작전 전술 창: 조금 넓고 글씨 크게 */
+.mbox:has(.trec) { width: min(640px, 92vw); } .mbox:has(.trec) .opts button small { font-size: 14px; }
