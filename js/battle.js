@@ -390,10 +390,11 @@
             const speed = Math.max(1, dur / (f.hero ? 1.6 : 1.1)) * sp * (0.9 + Math.random() * 0.25);
             const go = () => { // 병사마다 0~0.14초 어긋나게: 한 박자에 다 같이 움직이지 않는다
               if (!f.alive) return;
-              if (Math.random() < (f.hero ? 1 : 0.8)) { f.rig.once('atk', speed); muzzle(f, s.au); if (!split) strike(f, s.to, s.au, sp); }
+              const volley = !f.hero && !isMelee(f); // 원거리 병사는 일제 사격: 모두 함께 쏜다
+              if (volley || Math.random() < (f.hero ? 1 : 0.8)) { f.rig.once('atk', speed); muzzle(f, s.au); if (!split) strike(f, s.to, s.au, sp); }
               if (split && isRanged(f, s.au) && Math.random() < (f.hero ? 1 : 0.55)) bolt(f, s.to, s.au);
             };
-            if (f.hero) go(); else later(T + Math.random() * 0.14 / sp, go);
+            if (f.hero) go(); else later(T + Math.random() * (isMelee(f) ? 0.14 : 0.04) / sp, go); // 근접은 어긋나게, 일제 사격은 거의 한꺼번에
           }
         } });
         const far = split;
@@ -499,7 +500,7 @@
       const d = tg[Math.floor(Math.random() * tg.length)], q = d.rig.g.position;
       const x1 = q.x + (Math.random() - 0.5) * 0.3, y1 = q.y + lift(d) + (d.hero ? 0.8 : 0.45);
       if (f.u.troop.kind === 'mage') fx('hit_energy', x1, y1, { k: 0.55, tint: 0xd6a8ff, renderOrder: 515 }); // 전자전: 적 몸에서 번쩍
-      else tracer(p.x + dir * 0.42, p.y + lift(f) + 0.62, x1, y1, au.side === 'e', 0.24, f.u.troop.def.sfx === 'missile');
+      else { tracer(p.x + dir * 0.42, p.y + lift(f) + 0.62, x1, y1, au.side === 'e', 0.24, f.u.troop.def.sfx === 'missile'); later(T + 0.24 / sp, () => { if (d.alive) { d.kb = 0.18; d.kbT = T; d.flashT = T; } }); } // 탄이 꽂히면 맞은 병사가 움찔
     }
   }
 
