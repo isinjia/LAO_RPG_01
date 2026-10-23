@@ -122,7 +122,7 @@
         R(0, 0, 26, 4, 'b'); R(0, 0, 1, 18, '#'); R(25, 0, 1, 18, '#'); R(0, 17, 26, 1, '#');
         R(1, 7, 24, 1, '_'); R(12, 7, 2, 11, '_'); R(3, 9, 20, 6, 's'); R(12, 7, 2, 11, '_'); R(21, 8, 1, 2, '_');
       }),
-      floor: { base: 'tiles/concrete', zone: 'tiles/factory', zoneA: 0.22, path: 'town/g_asph', wall: 'tiles/concrete', back: '#3b3a3c', lane: 'rgba(230,180,40,.8)', edge: 'rgba(0,0,0,0)' },
+      floor: { base: 'tiles/concrete', zone: 'tiles/factory', zoneA: 0.22, path: 'town/g_asph', wall: 'tiles/concrete', back: '#3b3a3c', crisp: 1, lane: 'rgba(230,180,40,.8)', edge: 'rgba(0,0,0,0)' },
       sky: ['#5d5a68', '#c79a72'], fx: 'sparks', start: [12, 16],
       back: [{ art: 'town/t2_fence', by: 4.05, h: 2.0, repeat: 1 }],
       objects: [
@@ -201,14 +201,14 @@
         R(0, 0, 26, 5, 'b'); R(0, 0, 1, 18, '#'); R(25, 0, 1, 18, '#'); R(0, 17, 26, 1, '#');
         R(3, 9, 20, 6, 's'); R(1, 8, 24, 1, '_'); R(12, 8, 2, 10, '_');
       }),
-      floor: { base: 'tiles/labd', zone: 'tiles/factory', zoneA: 0.3, path: 'tiles/labw', wall: 'tiles/labd', back: '#0b1218', pathA: 0.3, lane: 'rgba(90,220,255,.35)' },
+      floor: { base: 'tiles/labd', zone: 'tiles/factory', zoneA: 0.3, path: 'tiles/labw', wall: 'tiles/labd', back: '#0b1218', pathA: 0.3, crisp: 1, wallDark: 0.12, lane: 'rgba(90,220,255,.35)' },
       sky: ['#04070b', '#0d1c26'], fx: 'dust', edgeLine: 5, start: [12, 16],
       back: [{ art: 'town/t5_platform', by: 5.15, h: 5.2, repeat: 1 }],
       objects: [
         BLD('cmd', 'town/t5_cmd', 10, 5, 6, 3, 12, { plinth: 0, glow: '140,230,255' }), BLD('shop', 'town/t5_shop', 18, 5, 6, 3, 20, { plinth: 0, glow: '255,90,90' }), BLD('cafe', 'town/t5_cafe', 2, 5, 6, 3, 4, { plinth: 0 }),
         D('town/t5_server', 3, 10, 3, 1.8, { lit: [110, '90,255,180'] }), D('town/t5_server', 20, 10, 3, 1.8, { lit: [110, '90,255,180'] }),
         D('town/t5_core', 8, 12, 2, 1.6, { lit: [130, '150,220,255'] }), D('town/t5_core', 16, 12, 2, 1.6, { lit: [130, '150,220,255'] }),
-        D('town/t5_pillar', 1, 13, 1, 4.0), D('town/t5_pillar', 24, 13, 1, 4.0), D('town/t5_pillar', 9, 16, 1, 3.6), D('town/t5_pillar', 16, 16, 1, 3.6),
+        D('tiles/crate1', 1, 13, 1, 1.0), D('tiles/crate0', 24, 13, 1, 0.9), D('town/b_bench', 8, 16, 2, 0.9), D('town/b_bench', 16, 16, 2, 0.9),
         D('tiles/console', 6, 15, 2, 1.4, { lit: [90, '120,220,255'] }), D('tiles/tank0', 21, 15, 1, 1.9, { lit: [90, '90,255,170'] }), D('tiles/tank1', 3, 15, 1, 1.9, { lit: [90, '90,255,170'] }),
         D('town/b_bench', 10, 9, 2, 0.9), D('town/b_bench', 14, 9, 2, 0.9), D('tiles/crate0', 22, 8, 1, 0.9), D('tiles/crate1', 23, 8, 1, 1.0), D('tiles/crate1', 1, 9, 1, 1.0),
         DEC('town/d_grate', 5, 13, 1.5), DEC('town/d_grate', 18, 13, 1.5), DEC('town/d_grate', 10, 16, 1.5), DEC('town/d_crack', 19, 15, 2, 0.45),
@@ -405,12 +405,12 @@
     };
     const STEP = 6, SW = Math.ceil(W / STEP), SH = Math.ceil(H / STEP);
     let layerNo = 0;
-    const layerOf = (test, fill, blur) => {
+    const layerOf = (test, fill, blur, crisp) => {
       layerNo++;
       const at = (x, y) => (test(map.rows[Math.max(0, Math.min(map.h - 1, y))][Math.max(0, Math.min(map.w - 1, x))]) ? 1 : 0);
       const m = document.createElement('canvas'); m.width = SW; m.height = SH;
       const mg = m.getContext('2d'), id = mg.createImageData(SW, SH), D = id.data;
-      const amp = Math.min(0.32, Math.max(0.16, blur / TILE)), soft = 0.06 + Math.min(0.2, (blur / TILE) * 0.35);
+      const amp = crisp ? 0 : Math.min(0.36, Math.max(0.26, blur / TILE)), soft = crisp ? 0.025 : 0.06 + Math.min(0.2, (blur / TILE) * 0.35);
       for (let py = 0; py < SH; py++) for (let px = 0; px < SW; px++) {
         const u = ((px + 0.5) * STEP) / TILE - 0.5, v = ((py + 0.5) * STEP) / TILE - 0.5;
         const xi = Math.floor(u), yi = Math.floor(v), fx = sstep(u - xi), fy = sstep(v - yi);
@@ -434,11 +434,10 @@
     g.globalAlpha = F.zoneA || 1;
     layerOf((t) => t === 's' || (sea && t === '~'), pat(F.zone || 'tiles/asphalt', 0.9), TILE * 0.35);
     g.globalAlpha = 1;
-    layerOf((t) => t === '_', F.edge || 'rgba(40,30,20,.08)', TILE * 0.3); // 길 둘레가 살짝 패이고 어둡게
     g.globalAlpha = F.pathA || 1;
-    layerOf((t) => t === '_', pat(F.path || 'tiles/asphalt'), TILE * 0.12);
+    layerOf((t) => t === '_', pat(F.path || 'tiles/asphalt'), TILE * 0.12, F.crisp);
     g.globalAlpha = 1;
-    if (F.pathTint) layerOf((t) => t === '_', F.pathTint, TILE * 0.12);
+    if (F.pathTint) layerOf((t) => t === '_', F.pathTint, TILE * 0.12, F.crisp);
     if (F.lane) { // 차선: 길 한가운데 끊어진 노란 줄
       g.fillStyle = F.lane;
       for (let y = 0; y < map.h; y++) for (let x = 0; x < map.w; x++) {
@@ -455,7 +454,7 @@
     }
     if (map.rows.some((r) => r.includes('#'))) { // 벼랑·잔해·덤불: 거친 질감을 어둡게
       layerOf((t) => t === '#', pat(F.wall || F.base || 'tiles/grass', 0.6), TILE * 0.25);
-      layerOf((t) => t === '#', `rgba(8,10,14,${F.wallDark != null ? F.wallDark : 0.45})`, TILE * 0.3);
+      layerOf((t) => t === '#', `rgba(8,10,14,${F.wallDark != null ? F.wallDark : 0.3})`, TILE * 0.3);
     }
     if (map.water === 'sea') {
       const sg = g.createLinearGradient(0, 0, 0, TILE * 3);
@@ -512,6 +511,7 @@
     const st = map.stage, im = img(st.bg), mw = map.w * TILE, mh = map.h * TILE;
     g.fillStyle = '#05070c'; g.fillRect(0, 0, mw, mh);
     if (st.back) { g.fillStyle = st.back; g.fillRect(0, st.off, mw, st.top0); } // 그림의 뚫린 창·하늘 자리
+    else { const cg = g.createLinearGradient(0, st.off, 0, st.off + st.top0); cg.addColorStop(0, '#0d1118'); cg.addColorStop(1, '#3a4250'); g.fillStyle = cg; g.fillRect(0, st.off, mw, st.top0); } // 뚫린 문 너머: 불 켜진 복도처럼 흐린 빛
     if (ok(im)) {
       const k = im.width / 1024;
       g.drawImage(im, 0, st.fl * k, im.width, (st.h - st.fl) * k, 0, st.off + st.top0, mw, st.floorH);
@@ -563,23 +563,41 @@
     ctx.fillStyle = rg; ctx.fillRect(cx - 40, by - 58, 80, 80);
     ctx.restore();
   }
-  function drawLighthouse(cx, by) { // 등대 (원작에 맞는 그림이 없어 직접): 흰·빨강 띠 탑과 등불
-    const h = TILE * 4.2, w0 = TILE * 1.2, w1 = TILE * 0.75;
-    ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(cx + 16, by - 4, w0 * 0.9, 12, 0, 0, 7); ctx.fill();
+  function drawLighthouse(cx, by) { // 등대 (원작에 맞는 그림이 없어 직접): 돌 받침, 흰·빨강 띠 탑에 둥근 음영, 난간, 돌아가는 불빛
+    const h = TILE * 4.2, w0 = TILE * 1.25, w1 = TILE * 0.78;
+    ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(cx + 18, by - 2, w0, 13, 0, 0, 7); ctx.fill();
+    // 돌 받침
+    ctx.fillStyle = '#7c7468'; ctx.beginPath(); ctx.ellipse(cx, by - 6, w0 * 0.72, 10, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#958c7f'; ctx.fillRect(cx - w0 * 0.72, by - 22, w0 * 1.44, 16);
+    ctx.fillStyle = '#a99f91'; ctx.beginPath(); ctx.ellipse(cx, by - 22, w0 * 0.72, 9, 0, 0, 7); ctx.fill();
+    const base = by - 22, hh = h - 22;
     for (let i = 0; i < 6; i++) {
-      const y0 = by - (h * i) / 6, y1 = by - (h * (i + 1)) / 6, a = w0 + ((w1 - w0) * i) / 6, b = w0 + ((w1 - w0) * (i + 1)) / 6;
-      ctx.fillStyle = i % 2 ? '#c8423a' : '#ece8de';
-      ctx.beginPath(); ctx.moveTo(cx - a / 2, y0); ctx.lineTo(cx + a / 2, y0); ctx.lineTo(cx + b / 2, y1); ctx.lineTo(cx - b / 2, y1); ctx.closePath(); ctx.fill();
+      const y0 = base - (hh * i) / 6, y1 = base - (hh * (i + 1)) / 6, a = w0 + ((w1 - w0) * i) / 6, b = w0 + ((w1 - w0) * (i + 1)) / 6;
+      const gr = ctx.createLinearGradient(cx - a / 2, 0, cx + a / 2, 0);
+      if (i % 2) { gr.addColorStop(0, '#e05a4c'); gr.addColorStop(0.55, '#c3392f'); gr.addColorStop(1, '#7e2019'); } else { gr.addColorStop(0, '#ffffff'); gr.addColorStop(0.55, '#e6e0d4'); gr.addColorStop(1, '#a9a297'); }
+      ctx.fillStyle = gr; ctx.beginPath(); ctx.moveTo(cx - a / 2, y0); ctx.lineTo(cx + a / 2, y0); ctx.lineTo(cx + b / 2, y1); ctx.lineTo(cx - b / 2, y1); ctx.closePath(); ctx.fill();
     }
-    ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.fillRect(cx, by - h, w0 / 2, h);
+    ctx.fillStyle = '#3a3f48'; ctx.fillRect(cx - 5, base - hh * 0.42, 10, 14); // 작은 창
     const ty = by - h;
-    ctx.fillStyle = '#2b2f36'; ctx.fillRect(cx - w1 / 2 - 6, ty - 6, w1 + 12, 8);
-    const glow = 0.6 + Math.sin(T * 2.4) * 0.25;
-    ctx.fillStyle = `rgba(255,226,140,${glow})`; ctx.fillRect(cx - w1 / 2 + 4, ty - 34, w1 - 8, 28);
-    ctx.fillStyle = '#2b2f36'; ctx.beginPath(); ctx.moveTo(cx - w1 / 2 - 4, ty - 34); ctx.lineTo(cx, ty - 54); ctx.lineTo(cx + w1 / 2 + 4, ty - 34); ctx.closePath(); ctx.fill();
+    // 난간 발코니
+    ctx.fillStyle = '#2b2f36'; ctx.fillRect(cx - w1 / 2 - 9, ty - 4, w1 + 18, 6);
+    ctx.strokeStyle = '#2b2f36'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(cx - w1 / 2 - 9, ty - 12); ctx.lineTo(cx + w1 / 2 + 9, ty - 12); ctx.stroke();
+    for (let x = -w1 / 2 - 8; x <= w1 / 2 + 8; x += 6) { ctx.beginPath(); ctx.moveTo(cx + x, ty - 12); ctx.lineTo(cx + x, ty - 4); ctx.stroke(); }
+    const glow = 0.7 + Math.sin(T * 2.4) * 0.2;
+    ctx.fillStyle = `rgba(255,232,150,${glow})`; ctx.fillRect(cx - w1 / 2 + 5, ty - 34, w1 - 10, 22);
+    ctx.strokeStyle = '#2b2f36'; ctx.lineWidth = 2; for (const f of [-0.2, 0.2]) { ctx.beginPath(); ctx.moveTo(cx + w1 * f, ty - 34); ctx.lineTo(cx + w1 * f, ty - 12); ctx.stroke(); }
+    ctx.fillStyle = '#c3392f'; ctx.beginPath(); ctx.moveTo(cx - w1 / 2 - 4, ty - 34); ctx.quadraticCurveTo(cx, ty - 62, cx + w1 / 2 + 4, ty - 34); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#2b2f36'; ctx.fillRect(cx - 1.5, ty - 66, 3, 8);
+    // 돌아가는 불빛 줄기
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    const rg = ctx.createRadialGradient(cx, ty - 20, 4, cx, ty - 20, 80); rg.addColorStop(0, `rgba(255,220,140,${glow * 0.5})`); rg.addColorStop(1, 'rgba(255,220,140,0)');
-    ctx.fillStyle = rg; ctx.fillRect(cx - 80, ty - 100, 160, 160); ctx.restore();
+    const ang = T * 0.9, len = 260, ly = ty - 23;
+    for (const dir of [0, Math.PI]) {
+      const a = ang + dir, gx = Math.cos(a), gy = Math.sin(a) * 0.35;
+      const bg = ctx.createLinearGradient(cx, ly, cx + gx * len, ly + gy * len); bg.addColorStop(0, `rgba(255,236,170,${0.32 * glow})`); bg.addColorStop(1, 'rgba(255,236,170,0)');
+      ctx.fillStyle = bg; ctx.beginPath(); ctx.moveTo(cx, ly); ctx.lineTo(cx + gx * len - gy * 60, ly + gy * len + gx * 21); ctx.lineTo(cx + gx * len + gy * 60, ly + gy * len - gx * 21); ctx.closePath(); ctx.fill();
+    }
+    const rg = ctx.createRadialGradient(cx, ly, 4, cx, ly, 70); rg.addColorStop(0, `rgba(255,220,140,${glow * 0.5})`); rg.addColorStop(1, 'rgba(255,220,140,0)');
+    ctx.fillStyle = rg; ctx.fillRect(cx - 70, ly - 70, 140, 140); ctx.restore();
   }
   // 어두운 곳의 밝은 건물 그림은 미리 그늘을 입혀 둔다 (캔버스 filter 는 무시되는 브라우저가 있어 직접 칠한다)
   const DIM = new Map();
