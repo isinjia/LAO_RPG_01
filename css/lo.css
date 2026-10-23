@@ -841,3 +841,4 @@ i.dlv { font: normal 11px 'LO_B', sans-serif; color: #111; background: #8fd0ff; 
 .wnode em .wst { font-size: 13px; letter-spacing: 0; } .wnode em .wst .hs { text-shadow: 0 0 4px #ff2a44, 0 0 2px #000; }
 .wtools .wstar { font-size: 17px; } .wtools .wstar small { font-size: 13px; }
 .wnode em .wst { display: inline-block; margin-top: 1px; padding: 0 4px; background: rgba(8, 11, 18, .78); border-radius: 2px; }
+.wnode em .wst { display: block; width: max-content; margin: 2px auto 0; font-size: 14px; }

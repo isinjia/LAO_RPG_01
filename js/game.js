@@ -2407,7 +2407,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.67';
+  const GAME_VERSION = '1.68';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -3434,7 +3434,7 @@
     const side = Object.keys(save.side || {}).length, st = starCount(), mx = starMax();
     modal(`<h3>1부 완결 · 플레이해 주셔서 감사합니다</h3>
       <p>오르카 호와 함께 ${CHAPTERS.filter((c) => c.inGame).length}개 지역, 본편 작전 ${D.STAGES.length}개를 모두 마쳤습니다.</p>
-      <div class="rsum" style="margin:10px 0"><span>합류 영웅 <b>${H.length}</b>명</span><span>평균 레벨 <b>${avg}</b></span><span>추가 목표 <b>★ ${st}</b>/${mx}</span><span>마친 의뢰 <b>${side}</b>개</span><span>남은 부품 <b>${save.parts || 0}</b></span></div>
+      <div class="rsum" style="margin:10px 0"><span>합류 영웅 <b>${H.length}</b>명</span><span>평균 레벨 <b>${avg}</b></span><span>추가 목표 <b>★ ${st}</b>/${mx}</span><span>어려움 <b style="color:#ff5a6e">✦ ${Object.values(save.bonus || {}).reduce((n, r) => n + Object.values(r).filter((v) => v >= 2).length, 0)}</b></span><span>마친 의뢰 <b>${side}</b>개</span><span>남은 부품 <b>${save.parts || 0}</b></span></div>
       <p style="color:#9aa6c4">다음 장은 준비 중입니다. 그동안 「본편 다시 하기」로 남은 ★를 모으거나(10개마다 부품 보상), 어려움 난이도에 도전하거나, 마을 의뢰를 마쳐 보세요.</p>
       <div class="opts"><button class="gold" data-a="ok">확인</button></div>`, () => {});
   }
