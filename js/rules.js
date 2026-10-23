@@ -13,7 +13,7 @@
   // ── 지도 ───────────────────────────────────────────────
   R.newGame = function (stage) {
     const map = stage.map.map((row) => row.split(''));
-    R.ch = stage.ch || 1; R.stageIdx = stage.kind ? null : stage.idx; // 작전 보정(stageAdj)은 본편 작전에만 (같은 번호의 소탕전·의뢰에는 걸지 않는다)
+    R.ch = stage.ch || 1; R.win = stage.win; // 어려움의 사수 작전은 적이 지킬 칸으로 몰려들어 배율을 덜어 준다 (winAdj)
     R.chK = R.CH_K[R.ch - 1] || R.CH_K[R.CH_K.length - 1]; // 장마다 적 능력치 배율 (아래). 어려움은 1장(배우는 장)·6장(긴 장)만 조금 덜어 준다 (chAdj)
     return { stage, map, w: map[0].length, h: map.length, units: [], turn: 1, side: 'p', wave: 0, drill: {} }; // drill: 병사 훈련 단계 (save.drill)
   };
@@ -163,14 +163,15 @@
   R.DIFF = {
     easy: { k: 0.85, name: '쉬움', ai: { fear: 0.4, bar: -1.5, wake: 2, kill: 0, lead: 1.3, focus: 0 } },
     normal: { k: 1.07, name: '보통', ai: { fear: 0.1, bar: -4, wake: 1, kill: 2, lead: 1.6, focus: 0.5 } }, // 보통도 쓰러뜨릴 수 있는 영웅은 노린다 (아군을 잃을 긴장)
-    hard: { k: 1.15, name: '어려움', chAdj: { 1: 0.93, 6: 0.97 }, stageAdj: { '4-6': 0.88, '5-7': 0.85 }, ai: { fear: 0.05, bar: -6, wake: 0, kill: 4, lead: 2.4, focus: 2 } }, // focus: 이미 다친 영웅을 몰아 치는 협공 // lead: 적이 아군 지휘관을 노리는 무게
+    hard: { k: 1.15, name: '어려움', chAdj: { 1: 0.93, 6: 0.97 }, winAdj: { defend: 0.88 }, ai: { fear: 0.05, bar: -6, wake: 0, kill: 4, lead: 2.4, focus: 2 } }, // focus: 이미 다친 영웅을 몰아 치는 협공 // lead: 적이 아군 지휘관을 노리는 무게
   };
   R.aiOf = () => (R.DIFF[R.diff] || R.DIFF.normal).ai;
   // 장마다 적 능력치 배율: 뒤로 갈수록 아군은 전직·병사 훈련이 쌓여 레벨보다 빨리 강해진다 (자동 대전에서 1장이 가장 어렵고 뒤는 쉬웠다)
   R.CH_K = [0.95, 1, 1.03, 1.04, 1.05, 1.06];
   R.chK = 1;
   R.diff = 'normal';
-  const diffK = () => { const D0 = R.DIFF[R.diff] || R.DIFF.normal; return D0.k * R.chK * ((D0.chAdj && D0.chAdj[R.ch]) || 1) * ((D0.stageAdj && D0.stageAdj[R.stageIdx]) || 1); };
+  // 실제 배율 = 난이도 x 장 배율 x (어려움만) 장 보정 x 작전 종류 보정. 작전 하나하나를 깎지 않고 규칙으로 덜어 준다
+  const diffK = (k = R.diff) => { const D0 = R.DIFF[k] || R.DIFF.normal; return D0.k * R.chK * ((D0.chAdj && D0.chAdj[R.ch]) || 1) * ((D0.winAdj && D0.winAdj[R.win]) || 1); };
   R.diffK = diffK; // 지금 작전의 실제 적 능력치 배율 (옵션 창이 그대로 보여 준다)
   R.heroStat = function (u, k) {
     if (u.side === 'p') {
@@ -674,6 +675,7 @@
       sc -= terrDef(G, u, t.x, t.y) * 0.5;
       sc += moveRisk(t.x, t.y) * (foeAI ? 0.4 : 1);
       if (lead) sc += Math.max(0, R.dist(t.x, t.y, lead.x, lead.y) - (lead.ai === 'guard' ? 4 : 2)) * 2.5; // 지휘관 둘레(2칸, 버티는 우두머리면 4칸)에서 벗어나지 않게
+      if (foeAI && u.rng > 1 && foes.some((o) => R.dist(o.x, o.y, t.x, t.y) === 1)) sc += 4; // 원거리 적은 그냥 움직일 때도 아군 바로 옆에는 서지 않는다
       if (!mv || sc < mv.sc) mv = { sc, t };
     }
     return mv ? { to: [mv.t.x, mv.t.y], act: 'wait' } : { to: [u.x, u.y], act: 'wait' };
