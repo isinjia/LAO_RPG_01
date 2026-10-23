@@ -1,6 +1,12 @@
 // 효과음·배경음: HTMLAudio 복제 재생 (file:// 에서도 동작). 첫 터치 뒤부터 소리가 난다.
 (function () {
   const cache = {};
+  // ms 동안 k 를 0→1 로 (창이 숨어 화면 갱신이 멈춰도 돌도록 타이머로)
+  function fade(ms, set, end) {
+    const t0 = performance.now();
+    const f = () => { const k = Math.min(1, (performance.now() - t0) / ms); set(k); if (k < 1) setTimeout(f, 40); else if (end) end(); };
+    f();
+  }
   const AU = {
     on: true,
     vol: 0.55,
@@ -17,6 +23,7 @@
       if (!this.on || this.away || !name) return;
       const now = performance.now();
       if (this.last[name] && now - this.last[name] < 60) return; // 같은 소리 겹침 방지
+      if (this.live.size >= 16) return; // 한꺼번에 울리는 효과음은 16개까지
       this.last[name] = now;
       let base = cache[name];
       if (!base) { base = cache[name] = new Audio('assets/sfx/' + name + '.mp3'); base.preload = 'auto'; }
@@ -34,12 +41,29 @@
     },
     bgm(name) {
       if (this.bgmName === name && this.bgmEl) { if (this.on && !this.away && this.bgmEl.paused) this.bgmEl.play().catch(() => {}); return; }
-      if (this.bgmEl) { this.bgmEl.pause(); this.bgmEl = null; }
+      if (this.bgmEl) { // 앞 곡은 0.5초 동안 서서히 줄여 끊는다
+        const old = this.bgmEl, v0 = old.volume;
+        this.bgmEl = null;
+        fade(500, (k) => { old.volume = v0 * (1 - k); }, () => old.pause());
+      }
       this.bgmName = name;
       if (!name) return;
       const el = new Audio('assets/bgm/' + name + '.mp3');
-      el.loop = true; el.volume = this.bgmVol;
+      el.loop = true; el.volume = 0;
       this.bgmEl = el;
+      fade(600, (k) => { if (this.bgmEl === el) el.volume = this.bgmVol * k; }); // 새 곡은 0.6초 동안 서서히 키운다
+      if (this.on && !this.away) el.play().catch(() => {});
+    },
+    // 환경음 (파도·바람): 작게 되풀이. null 이면 서서히 끈다
+    amb(name, vol = 0.35) {
+      if (this.ambName === name) return;
+      if (this.ambEl) { const old = this.ambEl, v0 = old.volume; this.ambEl = null; fade(600, (k) => { old.volume = v0 * (1 - k); }, () => old.pause()); }
+      this.ambName = name;
+      if (!name) return;
+      const el = new Audio('assets/sfx/' + name + '.mp3');
+      el.loop = true; el.volume = 0; this.ambEl = el;
+      this.ambK = vol;
+      fade(800, (k) => { if (this.ambEl === el) el.volume = Math.min(1, this.vol * vol) * k; });
       if (this.on && !this.away) el.play().catch(() => {});
     },
     voice(name, vol = 1) {
@@ -72,10 +96,12 @@
     setVolume(bgm, sfx, voice) {
       this.bgmVol = 0.45 * bgm; this.vol = 0.69 * sfx; this.voiceVol = Math.min(1, 0.86 * voice);
       if (this.bgmEl) this.bgmEl.volume = this.bgmVol;
+      if (this.ambEl) this.ambEl.volume = Math.min(1, this.vol * (this.ambK || 0.3));
     },
     setOn(v) {
       this.on = v;
       if (this.bgmEl) { if (v && !this.away) this.bgmEl.play().catch(() => {}); else this.bgmEl.pause(); }
+      if (this.ambEl) { if (v && !this.away) this.ambEl.play().catch(() => {}); else this.ambEl.pause(); }
     },
     // 창 포커스: 잃으면 배경음·음성·효과음을 다 멈추고, 돌아오면 배경음만 이어서 튼다
     setAway(v) {
@@ -83,12 +109,14 @@
       this.away = v;
       if (v) {
         if (this.bgmEl) this.bgmEl.pause();
+        if (this.ambEl) this.ambEl.pause();
         if (this.vEl) this.vEl.pause();
         for (const a of this.live) a.pause();
         this.live.clear();
         if (this.actx && this.actx.state === 'running') this.actx.suspend();
       } else {
         if (this.on && this.bgmEl) this.bgmEl.play().catch(() => {});
+        if (this.on && this.ambEl) this.ambEl.play().catch(() => {});
         if (this.actx && this.actx.state === 'suspended') this.actx.resume();
       }
     },
@@ -106,7 +134,7 @@
   const FOE_SFX = { stalker: 'death skill2', predator: 'death roar skill1 skill2', trickster: 'death skill1 skill2', harvester: 'death skill1 skill2',
     raider: 'death skill1', raiderx: 'death skill1', blackknight: 'death skill1 skill2', goltarion: 'skill1 skill2', underwatcher: 'death skill1 skill2',
     scout: 'skill1 skill2', heavyscout: 'skill1 skill2', legion: 'skill', legionsp: 'skill', centurion: 'skill2', chieftain: 'skill2', bigchick: 'skill1',
-    sniper: 'skill2', chemical: 'skill1 skill2', detector: 'skill1 skill2' };
+    sniper: 'skill2', chemical: 'skill1 skill2', detector: 'skill1 skill2', zapper: 'win' };
   const FOE_DIR = { raiderx: 'raider', heavyscout: 'scout', legionsp: 'legion', chieftain: 'centurion' };
   const MECH_HERO = new Set(['pupphead', 'fallen', 'coco']);
   // 그 몸이 기계인가 (철충 전부 + 기계 영웅)
@@ -135,5 +163,6 @@
   addEventListener('blur', sync);
   addEventListener('focus', sync);
   document.addEventListener('visibilitychange', sync);
+  sync(); // 처음 열 때 이미 다른 창을 보고 있으면 바로 멈춘 상태로
   window.AU = AU;
 })();

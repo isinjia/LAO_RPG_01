@@ -15,6 +15,8 @@ BGM = {  # 게임 이름 -> 원작 파일
     'lo_talk_04': '10 BGM_Talk_04',  # 5지역 원작 대본이 쓰는 대화 배경음
     'lo_battle1': '03 BGM_Battle_01', 'lo_battle2': '05 BGM_Battle_02', 'lo_battle3': '12 BGM_Battle_03', 'lo_boss1': '04 BGM_Battle_Boss_01',
     'lo_boss2': '06 BGM_Battle_Boss_02', 'lo_boss3': '31 BGM_Battle_Boss_03',  # 6지역 대본의 Prefab_Sound 가 트는 곡
+    'lo_battle4': '22 BGM_Battle_04', 'lo_battle5': '30 BGM_Battle_05',  # 4~6지역 작전 전투곡
+    'lo_town': '11 BGM_Talk_05', 'lo_sad': '75 BGM_Sad_Story_01',  # 마을, 패배 결과
 }
 SFX = {
     'lo_battle_start': 'UI/battle_start.wav', 'lo_win': 'UI/battle_win.wav', 'lo_clear': 'UI/stage_clear.wav',
@@ -29,6 +31,7 @@ SFX = {
     'lo_d_whiteout': 'DialogSfx/WhiteOut_01.mp3',
     # 월드맵 부대 걷는 소리 (한 걸음짜리 흙길 발소리)
     'lo_walk': 'Common/Move/Walk/footstep_dirt_walk_run_01.wav',
+    'lo_amb_wave': 'DialogSfx/Wave_01.mp3', 'lo_amb_wind': 'DialogSfx/Wind_02.mp3',  # 마을 바깥 환경음 (되풀이)
     'lo_d_explosion2': 'DialogSfx/Explosion_02.mp3', 'lo_d_gunfire2': 'DialogSfx/GunFire_02.wav', 'lo_d_knock': 'DialogSfx/DoorKnock_01.mp3',
     # 전투: 맞는 소리 (무기 갈래 × 바이오로이드·기계)
     'lo_hit_gun': 'Common/Hit/Human/hit_human_gun_small.wav', 'lo_hit_gun_r': 'Common/Hit/Robot/hit_robot_gun_small.wav',
@@ -93,7 +96,7 @@ HERO_VOICE = {'constantia': ('ConstantiaS2', '3P_ConstantiaS2'), 'griffon': ('PA
               'aeda': ('Aeda', 'AGS_Aeda'), 'tomoe': ('Tomoe', 'BR_Tomoe'), 'vanilla': ('Vanilla', '3P_Vanilla'),
               'scathy': ('Scathy', 'BR_Scathy'), 'may': ('May', 'BR_May'), 'nightangel': ('NightAngel', 'BR_NightAngel'),
               'daika': ('Daika', 'BR_Daika'), 'labiata': ('Labiata', '3P_Labiata')}
-VOICE_KIND = ['Join', 'SortiePick', 'SquadJoin', 'StageStart', 'MVP', 'Retreat', 'ActionApprove', 'SpSkill', 'BattleFocus', 'Leader', 'Login', 'SearchEnd', 'Reinforce']
+VOICE_KIND = ['Join', 'SortiePick', 'SquadJoin', 'StageStart', 'MVP', 'Retreat', 'ActionApprove', 'SpSkill', 'BattleFocus', 'Leader', 'Login', 'SearchEnd', 'Reinforce', 'SearchStart', 'ItemEquip', 'Repair']
 VOICE = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8',
          'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4',
          'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5']

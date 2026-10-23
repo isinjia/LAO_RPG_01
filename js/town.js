@@ -33,7 +33,7 @@
   }
   const MAPS = {
     base: {
-      name: '등대 아래 비밀기지', rows: outdoor(), bgm: 'lo_lobby',
+      name: '등대 아래 비밀기지', rows: outdoor(), bgm: 'lo_town',
       objects: [
         { t: 'building', x: 4, y: 5, w: 5, h: 4, art: 'town/b_center', label: '지휘실', door: 6, to: ['cmd', 6, 7] },
         { t: 'building', x: 16, y: 5, w: 6, h: 4, art: 'town/b_shop', label: '정비실', door: 18, to: ['shop', 6, 7] },
@@ -227,7 +227,7 @@
         objects: [...o.objects.filter((x) => x.t === 'exit' || x.t === 'npc'), ...r.deco] }) : o;
     }
     const objects = R ? m.objects.map((o) => (o.t === 'building' && R[o.to[0]] ? Object.assign({}, o, { label: R[o.to[0]].label }) : o)) : m.objects;
-    return Object.assign({}, m, { name: name || TOWNMAPS.coast.name, bgm: 'lo_lobby', objects });
+    return Object.assign({}, m, { name: name || TOWNMAPS.coast.name, bgm: 'lo_town', objects });
   }
   let backTo = null; // 방에서 나가면 돌아갈 자리 (들어간 건물 문 앞)
   // 실내 방 그림: 원작 방 배경의 위쪽(뒷벽)과 아래쪽(바닥)을 나눠 쓴다 (라켓몬스터와 같은 방식)
@@ -235,6 +235,7 @@
 
   // ── 상태 ──────────────────────────────────────────────
   let cv = null, ctx = null, hud = null, map = null, layer = null, open = false, done = null, opts = null;
+  let look = 'coast'; // 마을 모습 (환경음 고르기)
   let px = 0, py = 0, pfx = 0, pfy = 0, dir = 1, path = [], moving = 0, busy = false, fade = 0, fadeTo = 0, pendingWarp = null, onArrive = null;
   let ents = [], blocks = null, S = 1, camX = 0, camY = 0, T = 0, banner = 0;
   const player = { id: 'commander', face: 'up', anim: 0 }; // 사령관: SD 리그가 아니라 js/commander.js 로 그린다
@@ -305,6 +306,7 @@
     hud.querySelector('.tn-name').textContent = map.name;
     if (window.SD) for (const e of ents) SD.prepare(e.id);
     if (map.bgm) AU.bgm(map.bgm);
+    AU.amb(map.indoor ? null : look === 'coast' ? 'lo_amb_wave' : 'lo_amb_wind', look === 'coast' ? 0.3 : 0.22); // 바깥은 원작 파도·바람 소리, 방 안은 조용히
   }
 
   // 바닥 미리 그리기 (원작 손그림 질감: assets/tiles)
@@ -606,6 +608,7 @@
 
   function close() {
     open = false;
+    AU.amb(null);
     removeEventListener('keydown', onKey);
     removeEventListener('resize', resize);
     for (const e of ents) if (e.sd) { e.sd.root.parent && e.sd.root.parent.remove(e.sd.root); e.sd.dispose(); e.sd = null; e.slot = null; }
@@ -618,7 +621,7 @@
   function enter(o) {
     return new Promise((res) => {
       opts = o; done = res;
-      MAPS.base = baseFor(o.look, o.name); backTo = null;
+      MAPS.base = baseFor(o.look, o.name); backTo = null; look = o.look || 'coast';
       sdInit();
       // 건물·소품·방 그림 미리 불러오기
       for (const m of Object.values(MAPS)) { if (m.bg) img(m.bg); for (const ob of m.objects) if (ob.art) img(ob.art); }

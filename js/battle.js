@@ -242,6 +242,7 @@
       setSide('L', L); setSide('R', Rr);
       K.AU.play('lo_whoosh', 0.45); // 전투 장면으로 넘어가는 바람 소리
       if (a.side === 'p') K.AU.voice(a.key + '_BattleFocus', 0.85); // 먼저 치는 우리 영웅의 원작 전투 음성
+      else if (d.side === 'p') K.AU.voice(d.key + '_BattleFocus', 0.85); // 적이 먼저 치면 막는 우리 영웅의 원작 전투 음성
 
       const mk = (u, side) => {
         const dir = side === 'L' ? -1 : 1;
@@ -464,7 +465,7 @@
           const at = f.hero ? 3 : 8, cyc = f.hero ? 16 : 24;
           if (f.timer === 1) f.rig.once('atk', 1.2);
           if (f.timer === at) { const l = foes(f); if (l.length) shot(f, l.slice().sort((x, y) => (x.pend || 0) - (y.pend || 0) || Math.random() - 0.5)[0]); }
-          if (f.timer >= cyc) { f.timer = 0; if (--f.atk <= 0) { f.st = 'done'; f.rig.loop('idle'); } }
+          if (f.timer >= cyc) { f.timer = 0; if (--f.atk <= 0) { f.st = 'done'; f.rig.loop('idle'); } else if (f.hero) window.KIT.AU.play('lo_reload', 0.3); } // 다시 쏘기 전 원작 장전 소리
           break;
         }
         case 'cast': { // 마법 지휘관: 한 번 주문을 건다
@@ -536,7 +537,7 @@
     if (alive().length > keep && victim && !victim.hero) die(victim);
     while (alive().length > keep) { const q = (victim || heroF).rig.g.position; die(alive().sort((x, y) => Math.abs(x.rig.g.position.x - q.x) - Math.abs(y.rig.g.position.x - q.x))[0]); }
     setBars(S.toSide, S.du, Sx.thp, Sx.hp);
-    if (dH > 0) { shakeBust(S.toSide); shake(adv ? 0.38 : 0.22, 0.28); hitStop(adv ? 0.12 : 0.07); } else shake(0.08, 0.14);
+    if (dH > 0) { shakeBust(S.toSide); shake(adv ? 0.38 : 0.22, 0.28); hitStop(adv ? 0.12 : 0.07); if (adv) window.KIT.AU.play('lo_hit_big', 0.5); } else shake(0.08, 0.14); // 상성 우위로 지휘관을 친 강한 일격: 묵직한 원작 타격음
     if (Sx.hp <= 0.5 && heroF && heroF.alive) die(heroF);
     return true;
   }
@@ -635,7 +636,7 @@
     while (s.to.filter((f) => !f.hero && f.alive).length > keep) die(s.to.filter((f) => !f.hero && f.alive).sort((p, q) => Math.abs(p.x) - Math.abs(q.x))[0]);
     setBars(s.toSide, s.du, Sx.thp, Sx.hp);
     if (dH > 0) { shakeBust(s.toSide); shake(0.22, 0.24); hitStop(0.07); } else shake(0.1, 0.16);
-    if (dH > 0 && adv) { shake(0.38, 0.32); hitStop(0.12); } // 상성 우위 강한 일격
+    if (dH > 0 && adv) { shake(0.38, 0.32); hitStop(0.12); window.KIT.AU.play('lo_hit_big', 0.5); } // 상성 우위 강한 일격
     if (Sx.hp <= 0.5 && heroF && heroF.alive) die(heroF);
   }
 
@@ -690,7 +691,11 @@
         AU.play('lo_hit_big', 0.6);
         const won = [a, d].find((x) => x.side === 'p' && x !== u && hpEnd(x) > 0.5);
         if (u.side === 'e' && won) later(T + 0.35, () => { const w = AU.unitSfx(won, 'win'); if (w) AU.play(w, 0.6); });
-        else if (u.side === 'p') later(T + 0.3, () => AU.voice(u.key + '_Retreat', 0.9));
+        else if (u.side === 'p') {
+          later(T + 0.3, () => AU.voice(u.key + '_Retreat', 0.9));
+          const foe = [a, d].find((x) => x.side === 'e' && hpEnd(x) > 0.5), w = foe && AU.unitSfx(foe, 'win'); // 이긴 철충 지휘관의 원작 승리 소리
+          if (w) later(T + 0.6, () => AU.cut(AU.play(w, 0.5), 2.5));
+        }
         actors.filter((f) => f.alive && f.side !== side).forEach((f, i) => { // 이긴 쪽은 펄쩍 뛰며 무기를 든다
           const q = f.rig.g.position, y0 = q.y, t = T + 0.05 + (i % 4) * 0.05;
           tween(q, 'y', y0, y0 + 0.3, t, t + 0.14); tween(q, 'y', y0 + 0.3, y0, t + 0.14, t + 0.3);
