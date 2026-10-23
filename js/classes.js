@@ -110,7 +110,8 @@
   // 그 단계·갈래의 능력치: rules.js R.heroStat 과 같은 식 (1레벨부터 이어지는 성장 × 전직 단계마다 6% × 직업 병종 경향)
   function stats(id, s, tier = s.tier, br = s.br) {
     const h = D.HEROES[id], n = node(id, tier, br), t0 = h.tiers[0], k = (1 + 0.07 * (s.lv - 1)) * (1 + 0.06 * (tier || 0));
-    return { t: n, cls: n.cls, hp: Math.round(t0.hp * k * n.m.hp), at: Math.round(t0.at * k * n.m.at), df: Math.round(t0.df * k * n.m.df), mov: n.mov, rng: n.rng, kind: n.kind };
+    const P = (window.RULES && s.perk && s.lv >= RULES.PERK_LV && RULES.PERKS[s.perk]) ? RULES.PERKS[s.perk].k : {}; // 각성 (Lv20)
+    return { t: n, cls: n.cls, hp: Math.round(t0.hp * k * n.m.hp * (1 + (P.hp || 0))), at: Math.round(t0.at * k * n.m.at * (1 + (P.at || 0))), df: Math.round(t0.df * k * n.m.df * (1 + (P.df || 0))), mov: n.mov + (P.mov || 0), rng: n.rng, kind: n.kind };
   }
   // 다음 전직 후보: 기본 → 갈래 A·B 첫 직업, 1단계 → 같은 갈래의 2단계
   function options(id, s) {

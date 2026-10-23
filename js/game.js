@@ -1893,7 +1893,7 @@
     if (si < 0) { try { stage = JSON.parse(JSON.stringify(G.stage)); } catch (e) { return null; } }
     const ev = (window.BATTLE_EVENTS || {})[G.stage.idx] || [];
     const units = G.units.map((u) => ({
-      side: u.side, key: u.key, lv: u.lv, exp: u.exp, tier: u.tier, br: u.br, troop: u.troop ? u.troop.key : null, x: u.x, y: u.y,
+      side: u.side, key: u.key, lv: u.lv, exp: u.exp, tier: u.tier, br: u.br, perk: u.perk || null, troop: u.troop ? u.troop.key : null, x: u.x, y: u.y,
       hp: u.hp, thp: u.troop ? u.troop.hp : 0, hpMax: u.hpMax, thpMax: u.troop ? u.troop.hpMax : 0, alive: u.alive, escaped: !!u.escaped, cd: u.cd, buffs: u.buffs, slow: u.slow || 0, slowNext: u.slowNext || 0, dealt: u.dealt || 0,
       nAct: u.nAct || 0, ai: u.ai, home: u.home, boss: !!u.boss, awake: !!u.awake, wave: u.wave, bornT: u.bornT, cmd: u.cmd ? G.units.indexOf(u.cmd) : -1, acted: u.side === 'p' && !!u.acted,
     }));
@@ -1920,7 +1920,7 @@
   function applySnap(d) {
     G.units = [];
     for (const s of d.units) {
-      const u = s.side === 'p' ? R.makeHero(G, s.key, { lv: s.lv, exp: s.exp, tier: s.tier, br: s.br }, s.troop, s.x, s.y) : R.makeEnemy(G, s.key, s.lv, s.x, s.y, { ai: s.ai, boss: s.boss });
+      const u = s.side === 'p' ? R.makeHero(G, s.key, { lv: s.lv, exp: s.exp, tier: s.tier, br: s.br, perk: s.perk }, s.troop, s.x, s.y) : R.makeEnemy(G, s.key, s.lv, s.x, s.y, { ai: s.ai, boss: s.boss });
       Object.assign(u, { hp: s.hp, alive: s.alive, escaped: s.escaped, cd: s.cd || {}, buffs: s.buffs || [], slow: s.slow, slowNext: s.slowNext, dealt: s.dealt, nAct: s.nAct || 0, awake: s.awake, wave: s.wave, bornT: s.bornT, acted: !!s.acted });
       if (s.home) u.home = s.home;
       if (u.troop) u.troop.hp = s.thp;
@@ -2320,6 +2320,7 @@
       <p><b>난이도</b> · 옵션에서 고릅니다 (작전 도중에 바꾸면 그 자리에서 적의 체력·능력치가 바뀝니다). 쉬움: 적 능력치 85%, 적이 조심스럽고 늦게 움직임 · 보통: 107%(사수 작전은 ×0.95) · 어려움: 115%, 적이 처음부터 진격하고 쓰러뜨릴 수 있는 영웅을 집요하게 노림 (어려움은 배우는 1장 ×0.93·긴 6장 ×0.97, 적이 지킬 칸으로 몰려드는 사수 작전 ×0.88을 더 곱해 덜어 줌). 여기에 장마다 배율(95~106%)이 곱해지고, 옵션 창에는 지금 작전의 실제 배율이 나옵니다.</p>
       <div class="osec">성장 · 진행</div>
       <p><b>경험치</b> · 전투가 끝나면 참가한 영웅 전원이 같은 양을 받고, 가장 많이 친 영웅(MVP)은 20%를 더 받습니다.</p>
+      <p><b>각성</b> · 영웅이 Lv.${R.PERK_LV}에 이르면 「부대 현황」에서 각성 하나를 고릅니다: ${Object.values(R.PERKS).map((p) => `${p.name}(${p.desc})`).join(' · ')}. 출격 밖에서 언제든 바꿀 수 있습니다.</p>
       <p><b>추가 목표</b> · 본편 작전마다 「정한 턴 안에 승리」(버티기·사수 작전은 「버티며 적 60% 이상 격파」)와 「영웅 퇴각 없이 승리」가 있습니다. 작전 도중 난이도를 낮춘 판은 세지 않습니다. 달성할 때마다 부품 보상이 25% 늘고, 작전 정보에 ★로 남습니다. 전투 중에는 위쪽 줄에 남은 턴이 보이고, 놓친 목표는 깬 작전의 「본편 다시 하기」(부품 60%)로 다시 노립니다.</p>
       <p><b>저장</b> · 작전 도중에도 행동이 끝날 때마다 저장되어 타이틀의 「작전 이어하기」로 돌아옵니다. 이번 차례 안에서는 U(또는 메뉴)로 한 수씩 되돌리거나, 메뉴의 「이번 차례 다시」로 차례 처음으로 돌아갈 수 있습니다.</p>
       <p><b>특기</b> · 쓰고 나면 정해진 턴 동안 다시 쓸 수 없습니다(괄호 안 숫자).</p>
@@ -2787,17 +2788,27 @@
       const h = D.HEROES[id], s = save.heroes[id], c = CL.stats(id, s);
       return `<div class="pcard rcard" data-h="${id}"><div class="pimg ${id === 'pupphead' || id === 'fallen' ? 'whole' : ''}"><canvas class="pcv" data-stand="${standOf(id)}"></canvas></div>
         ${CL.canChange(id, s) ? '<i class="pcc">전직 가능</i>' : ''}
+        ${s.lv >= R.PERK_LV ? `<button class="pperk ${s.perk ? '' : 'new'}" data-a="perk:${id}">${s.perk ? R.PERKS[s.perk].name : '각성 고르기'}</button>` : ''}
         <div class="pfoot"><span class="plv">Lv.${s.lv}</span><b>${h.name}</b><small>${kindTag(c.kind)} · ${c.cls}</small></div>
         <div class="ptroop rst"><span>체력 ${c.hp}</span><span>공격 ${c.at}</span><span>방어 ${c.df}</span></div></div>`;
     }).join('');
     $('modal').classList.add('wide');
     modal(`<h3>부대 현황 <small style="color:#8d95a8;font:13px LO_M">합류 ${j.size}명 · 카드를 누르면 전직</small></h3><div class="rgrid">${cards}</div><div class="opts"><button class="gold" data-a="ok">닫기</button></div>`, (a, b) => {
       $('modal').classList.remove('wide');
+      if (a && a.startsWith('perk:')) { perkPick(a.slice(5), heroRoster); return; }
       const c = b && b.closest && b.closest('.rcard');
       if (c) classChange(c.dataset.h, heroRoster);
     });
     $('modal').querySelectorAll('.rcard').forEach((c) => (c.dataset.a = 'hero'));
     liveCards();
+  }
+  // 각성 고르기 (Lv20부터, 출격 밖에서 언제든 바꿀 수 있다)
+  function perkPick(id, back) {
+    const s = save.heroes[id], h = D.HEROES[id];
+    modal(`<h3>${h.name} · 각성 <small style="color:#8d95a8;font:13px LO_M">Lv.${R.PERK_LV}부터 하나를 고릅니다 · 언제든 바꿀 수 있음</small></h3><div class="opts">${Object.keys(R.PERKS).map((k) => `<button data-a="p:${k}" class="${s.perk === k ? 'gold' : ''}"><b>${R.PERKS[k].name}</b> <small>${R.PERKS[k].desc}</small></button>`).join('')}<button data-a="back">돌아가기</button></div>`, (a) => {
+      if (a && a.startsWith('p:')) { s.perk = a.slice(2); writeSave(); AU.play('lo_reinforce_eq', 0.6); heroVoice(id, 'Reinforce'); toast(`${h.name} · ${R.PERKS[s.perk].name}`); }
+      if (back) back();
+    });
   }
   const joined = () => new Set(D.STAGES.slice(0, Math.min(D.STAGES.length, save.clear + 1)).flatMap((s) => s.heroes));
   function heroStatLine(id) {
@@ -3292,6 +3303,7 @@
       row.lv1 = u.lv; row.exp1 = u.exp;
       // 전직은 랑그릿사처럼 직접 고른다: 레벨이 되면 알려 주기만 (출격 준비·부대 현황의 전직 버튼)
       if (CL.canChange(u.key, s) && !(row.lv0 >= D.TIER_LV[s.tier + 1])) row.notes.push(`<b>전직 가능</b> · 출격 준비에서 전직할 수 있습니다`);
+      if (row.lv0 < R.PERK_LV && u.lv >= R.PERK_LV && !s.perk) row.notes.push(`<b>각성 가능</b> · 월드맵 「부대 현황」에서 각성을 고르세요`);
       void h;
       rows.push(row);
     }

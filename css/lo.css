@@ -750,3 +750,7 @@ i.dlv { font: normal 11px 'LO_B', sans-serif; color: #111; background: #8fd0ff; 
 .htabs { display: flex; gap: 6px; margin: 4px 0 10px; flex-wrap: wrap; }
 .htabs button { font: 13px 'LO_B', sans-serif; padding: 6px 14px; background: #1a1d26; color: #9aa6c4; border: 1px solid #ffffff1a; cursor: pointer; }
 .htabs button.on { background: var(--lo-y); color: #111; border-color: var(--lo-y); }
+/* 부대 현황 카드의 각성 단추 */
+.rcard .pperk { position: absolute; right: 6px; top: 34px; z-index: 3; font: 11px 'LO_B', sans-serif; padding: 3px 8px; background: #1a1d26e6; color: var(--lo-y); border: 1px solid var(--lo-y); cursor: pointer; }
+.rcard .pperk.new { background: var(--lo-y); color: #111; animation: pperkPulse 1.2s ease-in-out infinite alternate; }
+@keyframes pperkPulse { from { box-shadow: 0 0 0 #ffcc0000; } to { box-shadow: 0 0 12px #ffcc00aa; } }
