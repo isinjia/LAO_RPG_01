@@ -737,8 +737,14 @@
     const ins = insets(), half = (innerWidth - ins.left - ins.right) / (2 * cam.zoom * innerHeight / VIEW_H);
     return G.w + 2 > half * 2 ? Math.max(half - 1, Math.min(G.w - half + 1, x)) : G.w / 2; // 가로가 다 들어가면 늘 가운데
   }
+  // 세로도 같은 식: 지도가 화면 안에 다 들어가면 가운데, 아니면 화면 끝이 지도 끝에서 한 칸 넘게 벗어나지 않게
+  function edgeZ(z) {
+    const ins = insets(), ppw = cam.zoom * innerHeight / VIEW_H, vis = (innerHeight - ins.top - ins.bottom) / (ppw * Math.sin(TILT));
+    const offY = (ins.top - ins.bottom) / 2 / ppw / Math.sin(TILT);
+    return G.h + 2 > vis ? Math.max(vis / 2 - 1 - offY, Math.min(G.h - vis / 2 + 1 - offY, z)) : G.h / 2 - 0.35 - offY;
+  }
   function clampCam() {
-    cam.x = edgeX(cam.x);
+    cam.x = edgeX(cam.x); cam.z = edgeZ(cam.z);
     cam.x = Math.max(-0.5, Math.min(G.w + 0.5, cam.x));
     cam.z = Math.max(-0.5, Math.min(G.h + 1, cam.z));
   }
@@ -749,7 +755,7 @@
     if (!force && s.x > m && s.x < innerWidth - m && s.y > ins.top + m && s.y < innerHeight - ins.bottom - m) return;
     const wpp = VIEW_H / (innerHeight * cam.zoom);
     const offY = (ins.top - ins.bottom) / 2 * wpp / Math.sin(TILT);
-    cam.tx = edgeX(x + 0.5); cam.tz = y + 0.5 - offY;
+    cam.tx = edgeX(x + 0.5); cam.tz = edgeZ(y + 0.5 - offY);
   }
 
   // ── 입력 ─────────────────────────────────────────────────
