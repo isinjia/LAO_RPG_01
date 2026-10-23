@@ -806,3 +806,7 @@ i.dlv { font: normal 11px 'LO_B', sans-serif; color: #111; background: #8fd0ff; 
 .mbox .opts button.gold .trec { background: #111; color: var(--lo-y); }
 /* 작전 전술 창: 조금 넓고 글씨 크게 */
 .mbox:has(.trec) { width: min(640px, 92vw); } .mbox:has(.trec) .opts button small { font-size: 14px; }
+/* 결과 화면 작전 요약 (목록 아래) */
+.rsum { display: flex; flex-wrap: wrap; gap: 6px 22px; padding: 10px 14px; font-size: 14px; color: #aab2c4; background: rgba(255,255,255,.04); border-top: 2px solid var(--lo-line); }
+.rsum b { font: 18px 'LO_B', sans-serif; color: #fff; margin-left: 4px; }
+@media (orientation: landscape) and (min-width: 1000px) { .rlist { flex: 0 1 auto; } .rsum { margin-top: auto; } }
