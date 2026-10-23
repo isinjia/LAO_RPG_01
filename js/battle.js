@@ -131,21 +131,21 @@
   const lift = (f) => (f.air ? f.air + Math.sin(T * 3 + f.bob) * 0.07 : 0);
   // 랑그릿사 모바일처럼: 영웅은 맨 뒤(바깥쪽), 병사 무리는 영웅 앞(적 쪽)에 3줄
   // 영웅은 바깥쪽이되, 모서리 인물 그림에 가리지 않게 가장자리에서 조금 들인다
-  const EDGE = () => Math.min(2.6, VW * 0.19); // 지휘관이 화면 끝·구석 초상에 걸리지 않게 안쪽으로
+  const EDGE = () => (PORT() ? Math.min(2.6, VW * 0.19) : Math.min(1.5, VW * 0.1)); // 지휘관은 화면 끝 가까이 (대열 뒤)
   const PORT = () => VW < VH; // 세로 화면
   // 세로 화면은 폭이 좁아 진형을 촘촘히: 앞줄 0.75, 열 간격 0.4, 영웅은 맨 뒷열 바로 뒤 (화면 안)
   const heroX = (dir) => dir * (PORT() ? Math.min(VW / 2 - 0.6, 0.75 + 3 * 0.4 + 1.0) : VW / 2 - EDGE());
   function soldierSlots(n, side, wide = 1) {
     const dir = side === 'L' ? -1 : 1;
-    const front = PORT() ? 0.75 : 1.6, back = VW / 2 - EDGE() - 0.9; // 앞줄은 가운데에서 떨어뜨려 돌격할 거리가 남게
+    const front = PORT() ? 0.75 : Math.min(2.6, VW * 0.175), back = VW / 2 - EDGE() - 0.9; // 두 대열은 화면 양쪽에서 시작: 가운데까지 길게 돌격한다
     const span = PORT() ? 0.4 : Math.min(0.95 * wide, Math.max(0.5, (back - front) / 3.2));
     const out = [];
     const R5 = PORT() ? 3 : 5; // 세로 줄 수 (가로 화면은 5줄: 다섯 쌍이 나란히 맞붙는 넓은 전선)
     for (let i = 0; i < n; i++) {
       const row = i % R5, col = Math.floor(i / R5); // 앞 열부터 채운다
       const jx = PORT() ? 0 : (Math.random() - 0.5) * 0.18, jy = (Math.random() - 0.5) * 0.08; // 자로 잰 듯한 격자가 아니게 살짝
-      const x = PORT() ? front + col * span + (row === 1 ? span * 0.45 : 0) : front + col * 1.05 * wide + (row % 2) * 0.3; // 줄마다 반 걸음 어긋나게
-      const y = PORT() ? GROUND - 0.3 + row * 0.45 : GROUND - 1.05 + row * 0.52;
+      const x = PORT() ? front + col * span + (row === 1 ? span * 0.45 : 0) : front + col * 1.25 * wide + (row % 2) * 0.3; // 줄마다 반 걸음 어긋나게 (성긴 격자: 몇 명 남았는지 읽힌다)
+      const y = PORT() ? GROUND - 0.3 + row * 0.45 : GROUND - 1.15 + row * 0.6;
       out.push([dir * (x + jx), y + jy, row]);
     }
     return out;
@@ -291,19 +291,21 @@
         const dA = attSide === 'L' ? 1 : -1;
         const meleeA = att.some((f) => !f.hero && isMelee(f)), meleeD = res.counter && def.some((f) => !f.hero && isMelee(f));
         const fA = frontX(att, dA), fD = frontX(def, -dA);
-        const meetX = fA != null && fD != null ? (meleeD ? (fA + fD) / 2 : fD - dA * 0.7) : null; // 몸집 큰 철충과도 겹치지 않을 만큼
-        const meleeOf = (f) => (f.hero ? ['rush', 'wall', 'lance', 'swoop'].includes(styleOf(f)) : isMelee(f)); // 지휘관: 보병·창병·기병이면 맞붙으러 나간다
+        const meetX = fA != null && fD != null ? (meleeD ? (fA + fD) / 2 : fD - dA * 0.5) : null; // 맞붙으면 몸이 닿는 거리
+        const meleeOf = (f) => (f.hero ? f.u.rng <= 1 && !RANGED_KIND.includes(f.u.kind) : isMelee(f)); // 지휘관: 공격 거리 1칸(근접)인 근접 병종이면 맞붙으러 나간다, 2칸 이상이면 제자리에서 쏜다
         const charge = (list, side, foe) => {
           const dir = side === 'L' ? 1 : -1, me = frontX(list, dir), theirs = frontX(foe, -dir) ?? (foe.find((f) => f.hero) || {}).x;
-          const shift = meetX != null && me != null ? meetX - dir * 0.55 - me : 0; // 내 앞줄이 맞붙는 선까지
+          const shift = meetX != null && me != null ? meetX - dir * 0.5 - me : 0; // 내 앞줄이 맞붙는 선까지 (마주 선 적과 몸이 닿는 거리)
           list.forEach((f) => {
             const sty = styleOf(f), p = f.rig.g.position;
             const run = (speed, dust) => tl.push({ t: t0, fn: () => { f.rig.loop('move', speed); if (Math.random() < dust) fx('dust_step', p.x, f.y + 0.05, { flipX: side === 'R', k: f.hero ? 1 : 0.7, renderOrder: 90 }); } });
             if (meleeOf(f) && shift * dir > 0.05) { // 줄을 지킨 채 달려든다 (기병은 빠르게, 중장병은 천천히)
               const ts = sty, d = ts === 'lance' ? 0.4 : ts === 'wall' ? 0.6 : 0.5;
               run(ts === 'lance' ? 2.4 : ts === 'wall' ? 0.9 : 1.5, ts === 'lance' ? 0.9 : f.hero ? 1 : 0.4);
-              const x1 = f.hero ? meetX - dir * (!list.some((o) => !o.hero && isMelee(o)) ? 1.3 + (f.u.def.big ? 0.6 : 0) : ts === 'lance' ? 2.6 : 2.8) : f.x + shift + (Math.random() - 0.5) * 0.1; // 지휘관은 제 병사들 바로 뒤 (병사가 총을 들고 남으면 홀로 맞붙는 선까지)
-              if ((x1 - f.x) * dir > 0.05) { tween(p, 'x', f.x, x1, t0, t0 + d / sp); f.x = x1; }
+              const x1 = f.hero ? meetX - dir * (0.95 + (f.u.def.big ? 0.6 : 0)) : f.x + shift + (Math.random() - 0.5) * 0.1; // 지휘관은 제 병사들 바로 뒤 (병사가 총을 들고 남으면 홀로 맞붙는 선까지)
+              const lag = f.hero ? 0 : Math.random() * 0.14; // 병사마다 조금씩 어긋나게 도착
+              if (f.hero) { const y0 = p.y, lane = GROUND - 1.3; tween(p, 'y', y0, lane, t0, t0 + d / sp); f.yHome = y0; } // 지휘관은 대열 맨 앞(화면 쪽) 길로 나서 눈에 띄게
+              if ((x1 - f.x) * dir > 0.05) { tween(p, 'x', f.x, x1, t0 + lag, t0 + lag + d / sp); f.x = x1; }
               if (ts === 'swoop') tween(f, 'air', f.air, 1.2, t0, t0 + d / sp); // 공중병: 높이 떠서 덮친다
               return;
             }
@@ -364,7 +366,7 @@
     // 접전은 최대 4번으로 묶는다 (랑그릿사처럼 돌격 왕복이 3~4번)
     const NP = Math.min(r0.length, 4), rounds = Array.from({ length: NP }, () => ({ dT: 0, dH: 0, aT: 0, aH: 0 }));
     r0.forEach((r, i) => { const q = rounds[Math.floor((i * NP) / r0.length)]; for (const k in q) q[k] += r[k] || 0; });
-    const step = (split ? 0.55 : 0.52) / sp; // 접전 사이 간격
+    const step = (split ? 0.6 : 0.62) / sp; // 접전 사이 간격 (여러 번 치고받는 시간)
     // 기댓값이 아니라 실제로 들어간 피해(정수)에 맞춰 접전별 피해를 나눈다
     const tot = (k) => rounds.reduce((s, r) => s + r[k], 0) || 1;
     const share = { dT: res.dT / tot('dT'), dH: res.dH / tot('dH'), aT: res.aT / tot('aT'), aH: res.aH / tot('aH') };
@@ -450,23 +452,24 @@
         });
         later(T + 0.45, () => retreat(sp)); // 환호 뒤 제자리로
       } });
-      return t1 + 1.4 / sp; // 결판 글자 → 환호 → 복귀까지
+      return t1 + 1.7 / sp; // 결판 글자 → 환호 → 복귀까지
     }
     tl.push({ t: t1 + 0.15 / sp, fn: () => {
       if (!split) { tween(CAM, 'z', CAM.z, 1.06, T, T + 0.5 / sp); tween(CAM, 'x', CAM.x, 0, T, T + 0.5 / sp); tween(CAM, 'y', CAM.y, 0, T, T + 0.5 / sp); }
       retreat(sp);
     } });
-    return t1 + 1.15 / sp;
+    return t1 + 1.35 / sp;
   }
   // 복귀 (랑그릿사 전통): 접전이 끝나면 살아남은 병사와 지휘관이 제 대열 자리로 돌아간다
   function retreat(sp) {
     for (const f of actors) {
       if (!f.alive || f.home == null || Math.abs(f.rig.g.position.x - f.home) < 0.1) continue;
-      const p = f.rig.g.position;
-      f.rig.loop('move', 1.3);
-      tween(p, 'x', p.x, f.home, T, T + 0.45 / sp); f.x = f.home;
-      if (f.air) tween(f, 'air', f.air, f.hero ? 0.85 : 0.6, T, T + 0.45 / sp); // 공중병은 원래 높이로
-      later(T + 0.47 / sp, () => f.alive && f.rig.loop('idle'));
+      const p = f.rig.g.position, face = f.side === 'L' ? 1 : -1, t1 = T + (f.hero ? 0 : Math.random() * 0.22) / sp, d = (0.6 + Math.random() * 0.15) / sp;
+      later(t1, () => { if (!f.alive) return; f.rig.face(-face); f.rig.loop('move', 1.1); });
+      tween(p, 'x', p.x, f.home, t1, t1 + d); f.x = f.home;
+      if (f.yHome != null) tween(p, 'y', p.y, f.yHome, t1, t1 + d);
+      if (f.air) tween(f, 'air', f.air, f.hero ? 0.85 : 0.6, t1, t1 + d); // 공중병은 원래 높이로
+      later(t1 + d, () => { if (!f.alive) return; f.rig.face(face); f.rig.loop('idle'); }); // 제자리에서 다시 적을 본다
     }
   }
   // 결판 글자: 원작 노란 띠 위 큰 글자
@@ -481,13 +484,14 @@
   // 병과별 싸우는 모습 (랑그릿사): 소총병·해병·변이체는 달려들고(rush), 중장병은 대열로 밀고 나가 찌르며(wall),
   // 기동병은 깊숙이 돌격해 들이받고(lance), 공중병은 떠올라 내리꽂으며(swoop), 침투병은 사라졌다 적 코앞에 나타난다(blink).
   // 사격병·전자전병·의무병은 뒤에 남아 쏘거나 주문을 건다(stay)
-  const STYLE = { inf: 'rush', water: 'rush', demon: 'rush', pike: 'wall', cav: 'lance', fly: 'swoop', assassin: 'blink', arch: 'stay', mage: 'stay', priest: 'stay' };
+  // 랑그릿사 규칙: 보병·창병·기병·비병·침투(근접 병종)는 달려 나가 맞붙고, 궁병·법사·승려(원거리 병종)는 제자리에서 쏜다
+  const STYLE = { inf: 'rush', water: 'rush', demon: 'rush', pike: 'rush', cav: 'lance', fly: 'swoop', assassin: 'blink', arch: 'stay', mage: 'stay', priest: 'stay' };
   const styleOf = (f) => STYLE[f.hero ? f.u.kind : f.u.troop && f.u.troop.kind] || 'rush'; // 지휘관은 지휘관 자신의 병종대로
   // 접전마다 병과에 맞는 한 동작: 찌르기·들이받기·내리꽂기 / 뒤에서 쏘는 병과는 제 손으로 탄·주문을 날린다
   function strike(f, to, au, sp) {
     const sty = styleOf(f), p = f.rig.g.position, dir = f.side === 'L' ? 1 : -1, x = f.x;
     const out = (d, a, b) => { tween(p, 'x', x, x + d * dir, T, T + a / sp); tween(p, 'x', x + d * dir, x, T + a / sp, T + b / sp); };
-    if (f.hero ? ['rush', 'wall', 'lance', 'swoop'].includes(sty) : isMelee(f)) { out(sty === 'lance' ? 0.45 : 0.3, 0.08, 0.3); return; } // 맞붙은 자리에서 찌르듯 한 걸음
+    if (f.hero ? f.u.rng <= 1 && !RANGED_KIND.includes(f.u.kind) : isMelee(f)) { out(sty === 'lance' ? 0.55 : 0.42, 0.08, 0.3); return; } // 맞붙은 자리에서 마주 선 적에게 파고들며 친다
     if (sty === 'swoop') { out(0.25, 0.12, 0.4); tween(f, 'air', f.air, 0.3, T, T + 0.12 / sp); tween(f, 'air', 0.3, 1.5, T + 0.14 / sp, T + 0.42 / sp); }
     else if (sty === 'stay' && !f.hero && f.u.troop.kind !== 'priest') {
       const tg = to.filter((o) => o.alive);
@@ -500,11 +504,12 @@
   }
 
   // 몸으로 맞붙는 병사: 근접 무기이거나, 돌격(기동)·밀고 나가는(중장) 병과
-  const isMelee = (f) => { const tr = f.u.troop; return !!tr && (['lance', 'wall', 'swoop'].includes(STYLE[tr.kind]) || WEAPON[tr.def.sfx] === 'melee'); }; // 공중병도 맞붙는 선까지 날아가 싸운다
+  const RANGED_KIND = ['arch', 'mage', 'priest'];
+  const isMelee = (f) => { const tr = f.u.troop; return !!tr && !RANGED_KIND.includes(tr.kind); }; // 병사: 원거리 병종이 아니면 근접 (무기 모양과 상관없이)
   const isRanged = (src, au) => { const kind = src.hero ? au.kind : au.troop && au.troop.kind; return au.rng > 1 || kind === 'arch'; };
 
   // 쓰러질 때 (랑그릿사식): 한 번 하얗게 번쩍인 뒤 맞은 반대쪽으로 튕겨 날아가며 뒤로 넘어가고, 어두워지며 옅어져 사라진다
-  const DIE_KNOCK = 0.42, DIE_END = 0.95; // 날아가는 시간, 사라질 때까지
+  const DIE_KNOCK = 0.22, DIE_END = 0.65; // 밀려나는 시간, 사라질 때까지
   function die(f) {
     if (!f || !f.alive) return;
     f.alive = false;
@@ -518,7 +523,7 @@
     if (PORT()) k *= 0.7; // 세로 화면은 좁아서 덜 밀려난다
     const g = f.rig.g.position;
     const heavy = f.u.def.big || f.hero; // 큰 몸·영웅은 덜 날아간다
-    f.fly = { t: 0, x0: g.x, y0: g.y, dx: away * (heavy ? 0.8 : 1.6 + Math.random() * 1.1) * k, hop: (heavy ? 0.3 : 0.7 + Math.random() * 0.45) * k, tilt: -away * (heavy ? 0.5 : 1.0 + Math.random() * 0.9) };
+    f.fly = { t: 0, x0: g.x, y0: g.y, dx: away * (heavy ? 0.35 : 0.5 + Math.random() * 0.3) * k, hop: (heavy ? 0.1 : 0.18 + Math.random() * 0.1) * k, tilt: -away * (heavy ? 0.15 : 0.3 + Math.random() * 0.2) };
     if (f.hero) { hitStop(0.14, true); shake(0.45, 0.4); } // 병사는 멈추지 않는다 (멈춤이 쌓여 늘어지지 않게)
     const lx = g.x + f.fly.dx, ly = g.y; later(T + DIE_KNOCK, () => fx('dust_fall', lx, ly + 0.1, { k: f.hero ? 1.3 : 0.9, renderOrder: 95 })); // 떨어진 자리에 흙먼지
     f.rig.c.speed = 0.25; // 자세는 맞은 순간에서 거의 멈춘다
@@ -697,7 +702,7 @@
         g.position.y = q.y0 + q.hop * Math.sin(Math.PI * a);
         g.rotation.z = q.tilt * e;
         f.rig.c.setFlash(0.7 * Math.max(0, 1 - q.t / 0.1)); // 맞은 순간 한 번만 번쩍
-        const dk = Math.min(1, q.t / DIE_KNOCK); f.rig.c.setTint(1 - 0.55 * dk, 1 - 0.58 * dk, 1 - 0.5 * dk); // 어두워진다
+        const dk = Math.min(1, q.t / DIE_KNOCK); f.rig.c.setTint(1 - 0.3 * dk, 1 - 0.32 * dk, 1 - 0.28 * dk); // 살짝 어두워진다
         f.rig.c.setOpacity(q.t < DIE_KNOCK ? 1 : Math.max(0, 1 - (q.t - DIE_KNOCK) / (DIE_END - DIE_KNOCK)));
         if (q.t >= DIE_END) { g.visible = false; f.fly = null; }
       }
