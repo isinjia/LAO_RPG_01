@@ -269,7 +269,8 @@
   const player = { id: 'commander', face: 'up', anim: 0 }; // 사령관: SD 리그가 아니라 js/commander.js 로 그린다
 
   // ── SD 그리기: 화면 밖 WebGL 한 장에 칸별로 ──
-  const SDF = { CW: 380, CH: 210, COLS: 6, // 칸이 좁으면 긴 무기·날개가 잘려 보인다
+  const SDF = { CW: 380, CH: 420, NH: 210, COLS: 6, // NH: 몸 높이 기준 칸. 위로 든 창·날개는 CH 남는 자리에 그린다
+    // 칸이 좁으면 긴 무기·날개가 잘려 보인다
     R: null, scene: null, cam: null, c: null };
   function sdInit() {
     if (SDF.R) return;
@@ -291,7 +292,7 @@
       if (e.sdAnim !== anim && c.has(anim)) { c.play(anim, null, true); e.sdAnim = anim; }
       c.update(dt);
       const t = c.tpl, bw = Math.max(t.box.max.x - t.box.min.x, 0.01);
-      const k = Math.min((SDF.CH - 26) / Math.max(t.height, 0.01) * (e.big ? 0.95 : 0.8), (SDF.CW - 10) / bw);
+      const k = Math.min((SDF.NH - 26) / Math.min(Math.max(t.height, 0.01), 10.5) * (e.big ? 0.95 : 0.8), (SDF.CW - 10) / bw); // 창을 높이 든 동료(라비아타)도 몸 크기는 같게
       const col = i % SDF.COLS, row = Math.floor(i / SDF.COLS);
       const cx = col * SDF.CW + SDF.CW / 2, by = (1 - row) * SDF.CH + 8;
       const f = e.flip ? -1 : 1;
@@ -307,7 +308,7 @@
   }
   function sdDraw(e, X, Y) { // 발 위치 (X, Y)
     if (!e.slot || !e.sd) return false;
-    const w = SDF.CW, h = SDF.CH, s = (TILE * 2.2) / h;
+    const w = SDF.CW, h = SDF.CH, s = (TILE * 2.2) / SDF.NH;
     ctx.drawImage(SDF.c, e.slot.sx, e.slot.sy, w, h, X - (w * s) / 2, Y - h * s + 8 * s, w * s, h * s);
     return true;
   }
@@ -674,7 +675,7 @@
     if (map.tint) { ctx.save(); ctx.globalCompositeOperation = 'multiply'; ctx.fillStyle = map.tint; ctx.fillRect(camX, camY, vw, vh); ctx.restore(); }
     if (!map.indoor) { drawLights(vw, vh); drawFx(vw, vh); }
     // 의뢰 표시는 어둠·날씨 위에 (늘 잘 보이게)
-    for (const e of ents) if (opts.marker(e.id)) drawMarker(e.x * TILE + TILE / 2, e.y * TILE + TILE - 4 - TILE * 2.45);
+    for (const e of ents) if (opts.marker(e.id)) drawMarker(e.x * TILE + TILE / 2, e.y * TILE + TILE - 4 - TILE * (e.big ? 2.4 : 2.05));
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     if (fade > 0) { ctx.fillStyle = `rgba(0,0,0,${fade})`; ctx.fillRect(0, 0, W, H); }
   }
