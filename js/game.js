@@ -1859,7 +1859,7 @@
     const ev = (window.BATTLE_EVENTS || {})[G.stage.idx] || [];
     const units = G.units.map((u) => ({
       side: u.side, key: u.key, lv: u.lv, exp: u.exp, tier: u.tier, br: u.br, troop: u.troop ? u.troop.key : null, x: u.x, y: u.y,
-      hp: u.hp, thp: u.troop ? u.troop.hp : 0, alive: u.alive, escaped: !!u.escaped, cd: u.cd, buffs: u.buffs, slow: u.slow || 0, slowNext: u.slowNext || 0, dealt: u.dealt || 0,
+      hp: u.hp, thp: u.troop ? u.troop.hp : 0, hpMax: u.hpMax, thpMax: u.troop ? u.troop.hpMax : 0, alive: u.alive, escaped: !!u.escaped, cd: u.cd, buffs: u.buffs, slow: u.slow || 0, slowNext: u.slowNext || 0, dealt: u.dealt || 0,
       ai: u.ai, home: u.home, boss: !!u.boss, awake: !!u.awake, wave: u.wave, bornT: u.bornT, cmd: u.cmd ? G.units.indexOf(u.cmd) : -1, acted: u.side === 'p' && !!u.acted,
     }));
     const d = { v: 1, si, idx: G.stage.idx, diff: R.diff, turn: G.turn, wave: G.wave, spawned: [...(G.spawned || [])], ev: [...(G.evDone || [])].map((e) => ev.indexOf(e)).filter((i) => i >= 0), units, start: stageStart, heroes: G.stage.heroes, free: G.stage.free, lock: G.stage.lock, stage };
@@ -1888,6 +1888,8 @@
       Object.assign(u, { hp: s.hp, alive: s.alive, escaped: s.escaped, cd: s.cd || {}, buffs: s.buffs || [], slow: s.slow, slowNext: s.slowNext, dealt: s.dealt, awake: s.awake, wave: s.wave, bornT: s.bornT, acted: !!s.acted });
       if (s.home) u.home = s.home;
       if (u.troop) u.troop.hp = s.thp;
+      if (s.hpMax && s.hpMax !== u.hpMax) u.hp = (s.hp * u.hpMax) / s.hpMax; // 그 사이 난이도가 바뀌었으면 체력을 비율대로
+      if (u.troop && s.thpMax && s.thpMax !== u.troop.hpMax) u.troop.hp = (s.thp * u.troop.hpMax) / s.thpMax;
     }
     d.units.forEach((s, i) => { if (s.cmd >= 0) G.units[i].cmd = G.units[s.cmd]; });
     G.turn = d.turn; G.wave = d.wave; G.spawned = new Set(d.spawned); G.side = 'p';
@@ -1918,7 +1920,7 @@
     G.drill = save.drill || {};
     buildWorld();
     applySnap(d);
-    G.turnSnap = d.turnStart || d;
+    G.turnSnap = d.turnStart || (d.units.some((s) => s.acted) ? null : d); // 차례 처음의 판이 없으면 「이번 차례 다시」는 숨긴다
     stageStart = d.start || { lv: {} };
     const rigs = new Set();
     G.units.forEach((u) => { rigs.add(u.rig); if (u.troop) rigs.add(u.troop.rig); });
@@ -2216,7 +2218,7 @@
       <button data-a="fight">전투 장면: <b>${onoff(o.fight)}</b></button>
       <button data-a="fast">빠른 진행: <b>${onoff(o.fast)}</b></button>
       <button data-a="autoEnd">모두 행동하면 자동 턴 종료: <b>${onoff(o.autoEnd)}</b></button>
-      <button data-a="diff">난이도: <b>${R.DIFF[o.diff || 'normal'].name}</b> <small>(적 능력치 ${Math.round(R.DIFF[o.diff || 'normal'].k * 100)}% · ${G && !G.ended && mode === 'map' ? '지금 바로' : '다음 작전부터'})</small></button>
+      <button data-a="diff">난이도: <b>${R.DIFF[o.diff || 'normal'].name}</b> <small>(${G && !G.ended && mode === 'map' ? `이 작전의 적 능력치 ${Math.round(R.DIFF[o.diff || 'normal'].k * R.chK * 100)}% · 지금 바로` : `적 능력치 ${Math.round(R.DIFF[o.diff || 'normal'].k * 100)}% × 장마다 ${Math.round(R.CH_K[0] * 100)}~${Math.round(R.CH_K[R.CH_K.length - 1] * 100)}%`})</small></button>
       <button data-a="close" class="gold">닫기</button></div>`, (a) => {
       if (['sound', 'blip', 'fight', 'fast', 'autoEnd'].includes(a)) { o[a] = !o[a]; if (a === 'fast') delete o.spd; }
       else if (a === 'diff') { const l = Object.keys(R.DIFF); o.diff = l[(l.indexOf(o.diff || 'normal') + 1) % l.length]; diffNow(); }
@@ -2241,7 +2243,7 @@
       if (u.troop) { u.troop.hpMax = Math.round(R.troopStat(u, 'hp')); u.troop.hp = u.troop.hpMax * rT; }
       refreshView(u);
     }
-    G.undo = []; G.pendingSnap = null; G.turnSnap = null;
+    // 되돌리기·「이번 차례 다시」의 판은 그대로 둔다: 되살릴 때 체력을 새 배율에 비율대로 맞춘다 (applySnap)
     updateDanger(); setTop(); suspendSave();
   }
   function goalInfo() {

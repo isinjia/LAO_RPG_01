@@ -131,6 +131,7 @@ for (let run = 0; run < RUNS; run++) {
       }
       const gain = R.stageExp(st.id - 1, res.win);
       for (const id of party) { const u = { side: 'p', lv: save[id].lv, exp: save[id].exp }; R.addExp(u, R.expFor(u.lv, R.foeLv(st), gain)); save[id].lv = u.lv; save[id].exp = u.exp; }
+      if (play && !res.win && process.env.WHY) { const G = res.G, ld = G.units.find((u) => u.lead); console.log(`  ${st.idx} 진 판: ${res.turn}턴 · 지휘관 ${ld && ld.alive ? '생존' : '퇴각'} · 아군 ${G.units.filter((u) => u.side === 'p' && u.alive).length}/${party.length} · 평균Lv ${(party.reduce((a, id) => a + save[id].lv, 0) / party.length).toFixed(1)} · 목표 칸 적 ${G.units.filter((u) => u.side === 'e' && u.alive && R.onTarget(G, u.x, u.y)).length}`); }
       if (play) {
         const s = stat[st.idx] || (stat[st.idx] = { n: 0, win: 0, turn: 0, alive: 0, lv: 0, party: 0, foes: 0, slow: 0, left: 0 });
         s.n++; if (!res.win && res.turn > 40) s.slow++; if (!res.win) s.left += res.G.units.filter((u) => u.side === 'e' && u.alive).length; if (res.win) { s.win++; s.turn += res.turn; s.alive += res.G.units.filter((u) => u.side === 'p' && u.alive).length; }
