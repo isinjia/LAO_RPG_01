@@ -166,7 +166,7 @@
   };
   R.aiOf = () => (R.DIFF[R.diff] || R.DIFF.normal).ai;
   // 장마다 적 능력치 배율: 뒤로 갈수록 아군은 전직·병사 훈련이 쌓여 레벨보다 빨리 강해진다 (자동 대전에서 1장이 가장 어렵고 뒤는 쉬웠다)
-  R.CH_K = [0.95, 1, 1.03, 1.06, 1.08, 1.1];
+  R.CH_K = [0.95, 1, 1.03, 1.05, 1.06, 1.07];
   R.chK = 1;
   R.diff = 'normal';
   const diffK = () => (R.DIFF[R.diff] || R.DIFF.normal).k * R.chK;
@@ -208,7 +208,7 @@
   //  · 정비: 움직이지 않은 영웅이 이번 행동을 쉬면 병사 3명 보충 + 영웅 체력 10% (고전작의 치료 명령)
   //  · 마을·기지 칸: 차례 시작에 영웅·병사 회복 (기지는 병사를 더 보충)
   R.DRILL_K = 0.08; R.DRILL_MAX = 5; // 한 단계 +8% (최대 +40%): 무엇을 훈련할지 고르는 맛이 나게
-  R.drillCost = (lv) => 120 * (lv + 1); // lv → lv+1 에 드는 부품
+  R.drillCost = (lv) => Math.round((120 * (lv + 1) * Math.pow(1.4, lv)) / 10) * 10; // lv → lv+1 에 드는 부품: 120·340·710·1320·2300 (한 병종 최대 4790). 본편 부품(약 1만 4천)으로는 병종 서넛만 끝까지 올릴 수 있어 고르는 맛이 남는다
   R.parts = (stageIndex, win, kind) => Math.round((60 + 10 * stageIndex) * (win ? 1 : 0.3) * (kind === 'repeat' ? 0.6 : kind === 'side' ? 1.2 : 1));
   R.CMD_RANGE = 2; R.CMD_SUPPLY = 0.1;
   R.REFIT_T = 0.3; R.REFIT_H = 0.1;

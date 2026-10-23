@@ -397,7 +397,7 @@
     const L = landOf(G.stage), DK = decoTex(L);
     const root = new THREE.Group();
     const night = !!G.stage.night && !L.indoor; // 실내는 바닥 그림부터 어두워 밤빛을 덧씌우지 않는다 (지형이 안 보이게 되므로)
-    const pc = new THREE.Color(night ? 0xaab4dc : 0xffffff); // 소품 빛깔 (밤, 갈래 빛깔). 밤이어도 지형은 읽히게
+    const pc = new THREE.Color(night ? 0xbcc6e8 : 0xffffff); // 소품 빛깔 (밤, 갈래 빛깔). 밤이어도 지형은 읽히게
     if (L.prop) pc.multiply(new THREE.Color(L.prop));
     // 바닥 바깥 (어두운 판)
     const outer = new THREE.Mesh(new THREE.PlaneGeometry(G.w + 80, G.h + 80), new THREE.MeshBasicMaterial({ color: night ? 0x0b0f1a : L.outer }));
@@ -407,7 +407,7 @@
     const gc = drawGround(G);
     const gt = new THREE.CanvasTexture(gc);
     gt.anisotropy = renderer.capabilities.getMaxAnisotropy();
-    const ground = new THREE.Mesh(new THREE.PlaneGeometry(G.w + PAD * 2, G.h + PAD * 2), new THREE.MeshBasicMaterial({ map: gt, color: night ? 0xa6b2dc : 0xffffff }));
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(G.w + PAD * 2, G.h + PAD * 2), new THREE.MeshBasicMaterial({ map: gt, color: night ? 0xbac4e6 : 0xffffff }));
     ground.rotation.x = -Math.PI / 2; ground.position.set(G.w / 2, 0, G.h / 2);
     root.add(ground);
     // 물결 (움직이는 겹 무늬)
@@ -1816,8 +1816,15 @@
     G.units.forEach(refreshView);
     updateDanger();
     if (side === 'e') await enemyPhase();
-    else { suspendSave(); setTop(); setHint(''); const lead = G.units.find((u) => u.lead && u.alive); if (lead) panTo(lead.x, lead.y); if (autoOn) autoPlayer(); }
+    else { suspendSave(); setTop(); setHint(G.turn === 1 && !G.stage.kind ? EARLY_TIPS[G.stage.idx] || '' : ''); const lead = G.units.find((u) => u.lead && u.alive); if (lead) panTo(lead.x, lead.y); if (autoOn) autoPlayer(); }
   }
+  // 첫 작전들의 한 줄 길잡이 (첫 차례 아래 안내 줄에)
+  const EARLY_TIPS = {
+    '1-1': '길잡이 · 영웅을 누르고 파란 칸을 눌러 움직이세요. 빛나는 칸에 서면 그 영웅은 지도를 빠져나갑니다',
+    '1-2': '길잡이 · 빨간 칸의 적을 누르면 예상 피해가 나옵니다. 사격병은 공중병에, 소총병은 중장병에 강합니다',
+    '1-3': '길잡이 · 적과 맞닿는 칸에 들어서면 멈춥니다(지배 영역). 다친 부대는 움직이지 않고 「정비」로 병사를 채우세요',
+    '1-4': '길잡이 · 오른쪽 위 「위험」(R)을 켜면 적이 다음 차례에 닿는 칸이 보입니다',
+  };
   // ── 작전 중 저장 (이어하기): 아군 차례가 시작될 때마다 판 상태를 따로 저장해 두고, 타이틀의 「작전 이어하기」로 그 차례부터 되살린다 ──
   // 본편 작전(D.STAGES)만. 작전이 끝나면(승패) 지운다
   const SUSPEND_KEY = 'orca_srpg_suspend';
@@ -1827,7 +1834,7 @@
   }
   function suspendSave() {
     if (!G || G.ended) return;
-    const si = D.STAGES.indexOf(G.stage);
+    const si = G.stage.kind ? -1 : D.STAGES.findIndex((b) => b.idx === G.stage.idx); // 출격 준비는 본편 작전을 복사해(출전 인원) 넘긴다
     if (si < 0) { suspendClear(); return; }
     const ev = (window.BATTLE_EVENTS || {})[G.stage.idx] || [];
     const units = G.units.map((u) => ({
@@ -1835,13 +1842,13 @@
       hp: u.hp, thp: u.troop ? u.troop.hp : 0, alive: u.alive, escaped: !!u.escaped, cd: u.cd, buffs: u.buffs, slow: u.slow || 0, slowNext: u.slowNext || 0, dealt: u.dealt || 0,
       ai: u.ai, home: u.home, boss: !!u.boss, awake: !!u.awake, wave: u.wave, bornT: u.bornT, cmd: u.cmd ? G.units.indexOf(u.cmd) : -1,
     }));
-    const d = { v: 1, si, idx: G.stage.idx, diff: R.diff, turn: G.turn, wave: G.wave, spawned: [...(G.spawned || [])], ev: [...(G.evDone || [])].map((e) => ev.indexOf(e)).filter((i) => i >= 0), units, start: stageStart };
+    const d = { v: 1, si, idx: G.stage.idx, diff: R.diff, turn: G.turn, wave: G.wave, spawned: [...(G.spawned || [])], ev: [...(G.evDone || [])].map((e) => ev.indexOf(e)).filter((i) => i >= 0), units, start: stageStart, heroes: G.stage.heroes, free: G.stage.free, lock: G.stage.lock };
     try { localStorage.setItem(SUSPEND_KEY, JSON.stringify(d)); } catch (e) { /* 저장 불가 환경 */ }
   }
   async function resumeSuspend() {
     const d = suspendLoad();
     if (!d) return stageSelect();
-    const st = D.STAGES[d.si];
+    const st = Object.assign({}, D.STAGES[d.si], d.heroes ? { heroes: d.heroes, free: d.free, lock: d.lock } : {});
     hideScreen();
     if (G) leaveMap();
     R.diff = d.diff || 'normal';
@@ -2133,7 +2140,7 @@
       else if (a === 'keys') keyHelp();
       else if (a === 'goal') goalInfo();
       else if (a === 'retry') { const st = G.stage; leaveMap(); prep(st); }
-      else if (a === 'quit') { leaveMap(); stageSelect(); }
+      else if (a === 'quit') { suspendClear(); leaveMap(); stageSelect(); } // 포기한 작전은 이어하기에 남기지 않는다
     });
   }
   // 옵션 창: 소리 크기는 밀대로 바로 바뀌고, 켜기/끄기·속도는 누를 때마다 바뀐다. back: 닫은 뒤 돌아갈 곳
@@ -2753,7 +2760,18 @@
     const lock = b.heroes.filter((id) => id === 'constantia' || speaks(id) || !(save.joined || []).includes(id));
     return Object.assign({}, b, { free: MAX_SORTIE, lock, heroes: [...lock, ...b.heroes.filter((id) => !lock.includes(id))] });
   }
+  // 출격 준비: 같은 본편 작전에서 두 번 넘게 졌으면 난이도를 한 단계 낮출지 묻는다 (바로 이번 출격부터)
   function prep(x) {
+    prepScreen(x);
+    const st = stageOf(x), n = (save.loss || {})[st.idx] || 0, l = Object.keys(R.DIFF), i = l.indexOf(save.opts.diff || 'normal');
+    if (st.kind || n < 2 || i <= 0) return;
+    setTimeout(() => modal(`<h3>난이도 낮추기</h3><p>${st.idx} ${st.title}에서 ${n}번 졌습니다. 난이도를 <b>${R.DIFF[l[i]].name}</b>에서 <b>${R.DIFF[l[i - 1]].name}</b>으로 낮출까요? 이번 출격부터 적용되고, 옵션에서 언제든 되돌릴 수 있습니다.</p>
+      <div class="opts"><button class="gold" data-a="y">${R.DIFF[l[i - 1]].name}으로 낮추기</button><button data-a="n">이대로 도전</button></div>`, (a) => {
+      if (a === 'y') { save.opts.diff = l[i - 1]; toast(`난이도 ${R.DIFF[l[i - 1]].name}`); }
+      save.loss[st.idx] = 0; writeSave();
+    }), 700);
+  }
+  function prepScreen(x) {
     let st = stageOf(x);
     if (!st.kind && !st.lock) st = sortieOf(st);
     // 고정 인원 (소탕전·의뢰는 지휘관 콘스탄챠만), 나머지는 합류한 영웅 중에서 st.free 명까지 고른다
@@ -3117,6 +3135,7 @@
     save.parts = (save.parts || 0) + parts;
     const clear0 = save.clear;
     if (win && !st.kind) save.clear = Math.max(save.clear, st.id);
+    if (!st.kind) { save.loss = save.loss || {}; save.loss[st.idx] = win ? 0 : (save.loss[st.idx] || 0) + 1; } // 두 번 지면 출격 준비에서 난이도를 낮출지 묻는다
     if (win && st.kind === 'side') { save.side = save.side || {}; save.side[st.idx] = 'done'; }
     window.GAME_LAST = { idx: st.idx, win, turn: g.turn, wave: g.wave + 1, alive: g.units.filter((u) => u.side === 'p').map((u) => u.name + (u.alive ? ':' + Math.round(u.hp) : u.escaped ? ':탈출' : 'x')).join(' ') };
     writeSave();
