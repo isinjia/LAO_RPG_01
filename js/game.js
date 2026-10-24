@@ -129,7 +129,7 @@
       this.c.speed = speed; this.cur = name; this.hold = false;
     }
     once(name, speed = 1, hold = false, onEnd = null) {
-      this.c.play(name, () => { this.cur = 'idle'; if (onEnd) onEnd(); });
+      this.c.play(name, () => { this.cur = 'idle'; this.hold = false; this.c.speed = 1; if (onEnd) onEnd(); });
       this.c.speed = speed; this.cur = name; this.hold = hold;
     }
     update(dt) {
@@ -2486,7 +2486,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '2.30';
+  const GAME_VERSION = '2.31';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
