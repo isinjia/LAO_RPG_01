@@ -433,8 +433,10 @@
     }
     // 겹쳐 그리는 판: 이동·공격 범위, 지휘 범위
     const OS = 32;
-    const oc = canvas(G.w * OS, G.h * OS);
+    const overlayScale = Math.max(1, Math.min(MOBILE ? 2 : 4, Math.floor(renderer.capabilities.maxTextureSize / (Math.max(G.w, G.h) * OS))));
+    const oc = canvas(G.w * OS * overlayScale, G.h * OS * overlayScale);
     const ot = new THREE.CanvasTexture(oc);
+    ot.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
     const overlay = new THREE.Mesh(new THREE.PlaneGeometry(G.w, G.h), new THREE.MeshBasicMaterial({ map: ot, transparent: true, depthWrite: false, depthTest: false }));
     overlay.rotation.x = -Math.PI / 2; overlay.position.set(G.w / 2, 0.01, G.h / 2);
     overlay.renderOrder = 2;
@@ -1040,7 +1042,10 @@
   function drawOverlay() {
     if (!world) return;
     const OS = 32, g = world.oc.getContext('2d');
+    g.setTransform(1, 0, 0, 1, 0, 0);
     g.clearRect(0, 0, world.oc.width, world.oc.height);
+    const scale = world.oc.width / (G.w * OS);
+    g.scale(scale, scale);
     // 원작 전투 칸 결: 가장자리가 밝은 판 + 얇은 테 + 네 모서리 꺾쇠, 공격·위험 칸은 사선 빗금
     const hatch = (g.__hatch = g.__hatch || (() => {
       const c = document.createElement('canvas'); c.width = c.height = 8;
@@ -1085,6 +1090,12 @@
         if (!set.has((x - 1) + ',' + y)) { g.beginPath(); g.moveTo(x * OS + 1, y * OS); g.lineTo(x * OS + 1, y * OS + OS); g.stroke(); }
         if (!set.has((x + 1) + ',' + y)) { g.beginPath(); g.moveTo(x * OS + OS - 1, y * OS); g.lineTo(x * OS + OS - 1, y * OS + OS); g.stroke(); }
       }
+    }
+    if (OV.path && OV.path.length) {
+      const [x, y] = OV.path[OV.path.length - 1];
+      g.beginPath(); g.arc(x * OS + OS / 2, y * OS + OS / 2, 11, 0, Math.PI * 2);
+      g.strokeStyle = 'rgba(0,0,0,.7)'; g.lineWidth = 5; g.stroke();
+      g.strokeStyle = '#ffcc00'; g.lineWidth = 2; g.stroke();
     }
     if (OV.path && OV.path.length > 1) {
       // 이동 길: 노란 띠 + 끝에 원작 결 꺾쇠 화살
@@ -1152,9 +1163,19 @@
     if (!u) {
       const t = R.terr(G, tile[0], tile[1]);
       const cs = (v) => (v >= 99 ? '불가' : v);
-      el.innerHTML = `<div class="pic" style="background:#203050"></div><div class="nm">${terrName(tile[0], tile[1])}</div>
+      el.innerHTML = `<canvas class="pic" width="128" height="128" role="img" aria-label="${terrName(tile[0], tile[1])}"></canvas><div class="nm">${terrName(tile[0], tile[1])}</div>
         <div class="st">방어 보정 <b>${t.def > 0 ? '+' : ''}${Math.round(t.def * 100)}%</b>${t.heal ? ' · 차례 시작 시 체력 <b>+' + Math.round(t.heal * 100) + '%</b>' : ''}</div>
         <div class="st">이동 소모: 도보 <b>${cs(t.cost.foot)}</b> · 기동 <b>${cs(t.cost.horse)}</b> · 비행 <b>${cs(t.cost.fly)}</b></div>`;
+      const preview = el.querySelector('canvas.pic'), g = preview.getContext('2d');
+      const [x, y] = tile, ground = world && world.ground.material.map.image;
+      if (ground) g.drawImage(ground, (x + PAD) * TS, (y + PAD) * TS, TS, TS, 0, 0, 128, 128);
+      const L = landOf(G.stage), c = G.map[y][x];
+      const props = c === 'f' ? L.tree : c === 'm' ? L.mount : c === '#' ? L.rubble : c === 's' ? L.ruins : c === 'c' ? L.camp : null;
+      const art = props && TILE[props[0]];
+      if (art) {
+        const scale = Math.min(112 / art.width, 112 / art.height), w = art.width * scale, h = art.height * scale;
+        g.drawImage(art, (128 - w) / 2, 120 - h, w, h);
+      }
       el.classList.remove('hidden'); syncInfoH(); return;
     }
     const t = R.terr(G, u.x, u.y);
@@ -1276,13 +1297,16 @@
     if (t) kcur = t;
     if (t) { world.cursor.visible = true; world.cursor.position.set(t[0] + 0.5, 0.02, t[1] + 0.5); } else world.cursor.visible = false;
     if (busy) return;
-    if (ui.state === 'move' && t) {
-      const n = ui.reach.get(ui.reach.key(t[0], t[1]));
-      OV.path = n && n.stop ? R.path(ui.reach, t[0], t[1]) : null;
+    if (ui.state === 'move') {
+      const enemy = t && R.unitAt(G, t[0], t[1]);
+      const n = t && ui.reach.get(ui.reach.key(t[0], t[1]));
+      const spot = enemy && enemy.side === 'e' ? bestSpot(ui.sel, enemy) : n && n.stop ? t : null;
+      OV.path = spot ? R.path(ui.reach, spot[0], spot[1]) : null;
       drawOverlay();
       // 옮길 칸이 적 여럿의 공격이 닿는 곳이면 미리 알린다 (지휘관·다친 영웅은 한 기만 닿아도)
       if (OV.path && ui.sel) {
-        const th = ui.threat || (ui.threat = R.threatMap(G, 'p')), c = th[t[1] * G.w + t[0]], u = ui.sel;
+        const dest = OV.path[OV.path.length - 1];
+        const th = ui.threat || (ui.threat = R.threatMap(G, 'p')), c = th[dest[1] * G.w + dest[0]], u = ui.sel;
         const risky = c >= 3 || (u.lead && c >= 2) || (c >= 1 && u.hp < u.hpMax * 0.5); // 지휘관은 2기, 체력 절반 아래 영웅은 1기부터
         setHint(risky ? `⚠ 이 칸은 적 ${c}기의 공격이 닿습니다${u.lead ? ` — ${u.name}${(() => { const c = u.name.charCodeAt(u.name.length - 1) - 0xac00; return c >= 0 && c < 11172 ? (c % 28 ? '이' : '가') : '이(가)'; })()} 쓰러지면 패배` : c >= 3 ? ' — 집중 공격 위험(3기 이상)' : ' — 영웅이 다쳐 있음'}` : ui.moveHint);
         $('hint').classList.toggle('warn', risky);
@@ -2462,7 +2486,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '2.29';
+  const GAME_VERSION = '2.30';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
