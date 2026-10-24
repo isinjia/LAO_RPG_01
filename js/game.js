@@ -551,10 +551,11 @@
     const ring = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 1.0), new THREE.MeshBasicMaterial({ map: getRingTex(u.side, big), transparent: true, depthTest: false, depthWrite: false }));
     ring.rotation.x = -Math.PI / 2; ring.position.y = 0.012; ring.renderOrder = 4;
     g.add(ring);
-    const bc = canvas(174, 40);
+    const mobileBadge = document.documentElement.classList.contains('touch-ui');
+    const bc = canvas(mobileBadge ? 112 : 174, 40);
     const bt = new THREE.CanvasTexture(bc);
     const badge = new THREE.Sprite(new THREE.SpriteMaterial({ map: bt, depthTest: false, transparent: true }));
-    badge.scale.set(0.96, 0.22, 1);
+    badge.scale.set(mobileBadge ? 0.62 : 0.96, 0.22, 1);
     badge.center.set(0.5, 0.5);
     badge.position.set(0, 0.02, 0.5);
     badge.renderOrder = 5000;
@@ -578,8 +579,22 @@
       para(24, y, W - 30, 10, 4); g.fillStyle = '#05070a'; g.fill();
       if (k > 0) { const lg = g.createLinearGradient(24, 0, W - 6, 0); lg.addColorStop(0, acted ? '#666' : c0); lg.addColorStop(1, acted ? '#999' : c1); g.fillStyle = lg; para(24, y, Math.max(8, (W - 30) * k), 10, 4); g.fill(); }
     };
-    if (u.troop) bar(9, u.troop.hp / u.troop.hpMax, u.side === 'p' ? '#2a7cff' : '#ff7a2a', u.side === 'p' ? '#8fd0ff' : '#ffc070');
-    bar(u.troop ? 22 : 15, u.hp / u.hpMax, u.side === 'p' ? '#21c060' : '#e8203f', u.side === 'p' ? '#a6ffc4' : '#ff8aa0');
+    const mobileBadge = v.bc.width === 112;
+    if (u.troop) bar(mobileBadge ? 22 : 9, u.troop.hp / u.troop.hpMax, u.side === 'p' ? '#2a7cff' : '#ff7a2a', u.side === 'p' ? '#8fd0ff' : '#ffc070');
+    bar(mobileBadge ? 9 : u.troop ? 22 : 15, u.hp / u.hpMax, u.side === 'p' ? '#21c060' : '#e8203f', u.side === 'p' ? '#a6ffc4' : '#ff8aa0');
+    if (mobileBadge) {
+      // 캐릭터 앞 숫자 칸: 위는 영웅, 아래는 용병. 체력 막대도 같은 순서.
+      const icon = (kind, y, faded) => {
+        g.save(); g.globalAlpha = faded ? 0.3 : 1;
+        g.fillStyle = '#101722'; g.fillRect(2, y, 21, 19);
+        g.translate(3, y); g.scale(0.78, 0.78);
+        g.strokeStyle = D.KIND[kind].color; g.lineWidth = 2;
+        g.lineJoin = 'round'; g.lineCap = 'round';
+        g.stroke(new Path2D(KIND_PATH[kind])); g.restore();
+      };
+      icon(u.kind, 1, false);
+      if (u.troop) icon(u.troop.kind, 20, !R.troopAlive(u));
+    } else {
     para(4, 7, 20, 26, 5); g.fillStyle = u.lead || u.boss ? '#ffcc00' : u.side === 'p' ? '#1d6fd0' : '#c0183a'; g.fill();
     g.fillStyle = u.lead || u.boss ? '#111' : '#fff';
     g.font = '16px LO_B, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
@@ -596,6 +611,7 @@
     };
     icon(u.kind, 115, '영', false);
     if (u.troop) icon(u.troop.kind, 145, '병', !R.troopAlive(u));
+    }
     v.bt.needsUpdate = true;
   }
 
@@ -2133,7 +2149,7 @@
       b.className = 'rh' + (u.acted ? ' done' : '') + (ui.sel === u ? ' sel' : '');
       b.dataset.n = i < 9 ? i + 1 : '';
       const hp = u.hp / u.hpMax, tp = u.troop ? u.troop.hp / u.troop.hpMax : 0;
-      b.innerHTML = `<span class="roster-kinds"><span title="영웅 · ${D.KIND[u.kind].name}" style="color:${D.KIND[u.kind].color}">${kindIcon(u.kind)}</span>${u.troop ? `<span class="${R.troopAlive(u) ? '' : 'lost'}" title="용병 · ${D.KIND[u.troop.kind].name}" style="color:${D.KIND[u.troop.kind].color}">${kindIcon(u.troop.kind)}</span>` : ''}</span><img src="${IMG[u.icon]}"><i class="t" style="width:${tp * 100}%"></i><i class="h" style="width:${hp * 100}%"></i>${u.acted ? '<em>완료</em>' : ''}`;
+      b.innerHTML = `<img src="${IMG[u.icon]}"><i class="t" style="width:${tp * 100}%"></i><i class="h" style="width:${hp * 100}%"></i>${u.acted ? '<em>완료</em>' : ''}`;
       b.title = u.name;
       b.onclick = (e) => { e.stopPropagation(); rosterPick(u); };
       el.appendChild(b);
@@ -2436,7 +2452,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '2.12';
+  const GAME_VERSION = '2.13';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
