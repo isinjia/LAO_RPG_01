@@ -409,7 +409,7 @@
 /* 월드맵: 부대 표지, 의뢰 표시, 마을 지점, 할 일 목록 */
 .wtoken { position: absolute; z-index: 2000; /* 지점 표지(깊이 순서로 1000 안팎)보다 늘 위 */ width: calc(98 * var(--n)); height: calc(126 * var(--n)); min-width: 56px; min-height: 72px; transform: translate(-50%, -83%); /* 사령관 발이 지점에 */ transition: left .4s linear, top .4s linear; pointer-events: none; }
 .wtoken canvas { width: 100%; height: 100%; filter: drop-shadow(0 0 6px rgba(255, 204, 0, .55)); } /* 사령관 (js/commander.js) */
-.wnode .wq { position: absolute; left: 50%; bottom: calc(118 * var(--n)); transform: translateX(-50%); font: 900 max(18px, calc(34 * var(--n))) 'LO_B', sans-serif; color: var(--lo-y); text-shadow: 0 0 6px #000, 0 2px 0 #3a2a00; animation: wbob 1.2s ease-in-out infinite; }
+.wnode .wq { position: absolute; left: 50%; bottom: calc(118 * var(--n)); transform: translateX(-50%); font: 900 max(32px, calc(60 * var(--n))) / 1 'LO_B', sans-serif; color: var(--lo-y); -webkit-text-stroke: 1px #3a2a00; text-shadow: 0 0 7px #000, 0 3px 0 #3a2a00; pointer-events: none; animation: wbob 1.2s ease-in-out infinite; }
 .wnode.town .tag { background: #8bf03a; }
 .wnode em.town, .wi-name em.town { color: #8bf03a; }
 .wi-no.wi-town { color: #8bf03a; font-size: 30px; }
