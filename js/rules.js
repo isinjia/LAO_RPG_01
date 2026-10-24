@@ -606,6 +606,42 @@
   let foeTurn = false; // 지금 판단하는 쪽이 적인가 (아군 지휘관을 노리는 무게는 난이도마다, 아군 자동 진행은 지휘관을 늘 아낀다)
   const value = (o) => (o.lead ? (foeTurn ? R.aiOf().lead : 2.4) : o.boss ? 2 : 1);
   const caution = (u) => (u.lead ? 2.2 : u.boss ? 1.2 : u.side === 'p' && u.hp < u.hpMax * 0.5 ? 1.2 : 0);
+  // 적은 고정된 순서로 판단한다: 제자리 공격 → 가까운 대상에게 이동 공격 → 제자리 특기 → 진격.
+  // 피해 예측·반격 회피·약한 영웅 집중 공격은 하지 않는다. 같은 거리면 배치 순서를 따른다.
+  function enemyPlan(G, u, fields, tiles) {
+    const foes = G.units.filter((o) => o.alive && o.side !== u.side)
+      .sort((a, b) => R.dist(u.x, u.y, a.x, a.y) - R.dist(u.x, u.y, b.x, b.y));
+    const spots = [...tiles].sort((a, b) => a.c - b.c);
+    for (const o of foes) {
+      // 제자리에서 공격할 수 있는 상대가 있으면 이동 공격보다 먼저 처리한다.
+      if (R.dist(u.x, u.y, o.x, o.y) >= 1 && R.dist(u.x, u.y, o.x, o.y) <= u.rng && spots.some((t) => t.x === u.x && t.y === u.y))
+        return { to: [u.x, u.y], act: 'attack', target: o, sc: 10 };
+    }
+    for (const o of foes) {
+      const t = spots.find((t) => { const d = R.dist(t.x, t.y, o.x, o.y); return d >= 1 && d <= u.rng; });
+      if (t) return { to: [t.x, t.y], act: 'attack', target: o, sc: 10 };
+    }
+    for (const sk of R.skillsOf(u)) {
+      if (!R.skillReady(u, sk)) continue;
+      const s = SKILLS[sk];
+      if (s.buff && !foes.some((o) => R.dist(o.x, o.y, u.x, u.y) <= 6)) continue;
+      for (const [tx, ty] of R.skillTargets(G, u, sk)) {
+        const useful = R.skillEffect(G, u, sk, tx, ty).some((r) =>
+          r.u.side !== u.side ? (r.toT || 0) + (r.toH || 0) > 0 : (r.hH || 0) + (r.hT || 0) > 0 || r.buff);
+        if (useful) return { to: [u.x, u.y], act: 'skill', skill: sk, tx, ty, sc: 5 };
+      }
+    }
+    if (u.ai === 'guard' || !foes.length) return { to: [u.x, u.y], act: 'wait' };
+    const f = fields[u.move + u.side] || (fields[u.move + u.side] = R.distField(G, u.move, u.side));
+    const lead = u.cmd && u.cmd !== u && u.cmd.alive ? u.cmd : null;
+    let best = null;
+    for (const t of spots) {
+      const leash = lead ? Math.max(0, R.dist(t.x, t.y, lead.x, lead.y) - (lead.ai === 'guard' ? 4 : 2)) * 2.5 : 0;
+      const score = f[t.y * G.w + t.x] + leash;
+      if (!best || score < best.score) best = { t, score };
+    }
+    return best ? { to: [best.t.x, best.t.y], act: 'wait' } : { to: [u.x, u.y], act: 'wait' };
+  }
   // 한 유닛의 할 일: { to:[x,y], act:'attack'|'skill'|'wait', target, skill, tx, ty }
   R.plan = function (G, u, fields) {
     const reach = R.reach(G, u);
@@ -618,6 +654,7 @@
       mates.forEach((m) => { m.awake = true; });
     }
     const tiles = [...reach.values()].filter((t) => t.stop && (u.ai !== 'guard' || R.dist(t.x, t.y, u.home[0], u.home[1]) <= 2));
+    if (foeAI) return enemyPlan(G, u, fields, tiles);
     const th = caution(u) ? (fields.threat || (fields.threat = R.threatMap(G, u.side))) : null;
     // 작전 목표 (아군 자동): 사수 작전은 지킬 칸에 올라서서 막고, 도달·탈출 작전은 목표 칸으로 다가간다
     const W0 = G.stage.win, tgts = u.side === 'p' && G.stage.target ? G.stage.target : null;
