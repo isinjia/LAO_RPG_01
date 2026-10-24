@@ -848,3 +848,9 @@ i.dlv { font: normal 11px 'LO_B', sans-serif; color: #111; background: #8fd0ff; 
 /* 병사 훈련 제목 옆 도움말 */
 .mbox .drill-help { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 26px; height: 26px; min-width: 0; padding: 0; border: 1px solid var(--lo-y); border-radius: 50%; background: transparent; color: var(--lo-y); font: 16px 'LO_B', sans-serif; cursor: pointer; }
 .mbox .drill-help:hover, .mbox .drill-help:focus-visible { background: var(--lo-y); color: #111; }
+
+/* 피시 대화: 다섯 줄 본문과 아래 조작 버튼의 영역을 분리한다. */
+@media (orientation: landscape) {
+  #talk .tbox { height: calc(400 * var(--u)); }
+  #talk .ttext { bottom: calc(80 * var(--u)); overflow-y: auto; scrollbar-width: thin; }
+}
