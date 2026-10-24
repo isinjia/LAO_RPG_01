@@ -212,7 +212,7 @@
         R(0, 0, 26, 5, 'b'); R(0, 0, 1, 18, '#'); R(25, 0, 1, 18, '#'); R(0, 17, 26, 1, '#');
         R(3, 9, 20, 6, 's'); R(1, 8, 24, 1, '_'); R(12, 8, 2, 10, '_');
       }),
-      floor: { base: 'tiles/labd', zone: 'tiles/factory', zoneA: 0.3, path: 'tiles/labw', wall: 'tiles/labd', back: '#0b1218', pathA: 0.3, crisp: 1, wallDark: 0.12, lane: 'rgba(90,220,255,.35)' },
+      floor: { base: 'tiles/labd', zone: 'tiles/factory', zoneA: 0.3, path: 'tiles/labw', wall: 'tiles/labd', back: '#0b1218', pathA: 0.2, crisp: 1, wallDark: 0.12, lane: 'rgba(90,220,255,.35)' },
       sky: ['#04070b', '#0d1c26'], fx: 'dust', edgeLine: 5, start: [12, 16],
       back: [{ art: 'town/t5_platform', by: 5.15, h: 5.2, repeat: 1 }],
       objects: [
@@ -267,7 +267,7 @@
       }),
       floor: { base: 'tiles/concrete', zone: 'tiles/factory', zoneA: 0.16, path: 'town/g_asph', wall: 'tiles/concrete', back: '#2d6f8f', crisp: 1, lane: 'rgba(230,180,40,.8)' },
       sky: ['#3f8fd0', '#8fd0ea'], fx: 'dust', edgeLine: 6, start: [12, 16],
-      back: [{ art: 'town/t7_sea', by: 6.05, h: 6.4, repeat: 1, mirror: 1 }, { art: 'town/t7_city', by: 6.15, h: 1.5, x: 17.5, alpha: 0.55 }], // 바다 건너 무너진 도시
+      back: [{ art: 'town/t7_sea', by: 6.05, h: 6.4, repeat: 1, mirror: 1 }, { art: 'town/t7_city', by: 6.15, h: 1.5, x: 17.5, alpha: 0.55 }, { kind: 'ship', x: 22.5, by: 4.7, len: 1.6, alpha: 0.85 }, { kind: 'ship', x: 13.5, by: 5.6, len: 3.4 }, { kind: 'crane', x: 9.3, by: 6.2, h: 2.6 }], // 바다 건너 무너진 도시, 군함, 부두 기중기
       objects: [
         BLD('cmd', 'town/t7_tower', 4, 7, 3, 3, 5, { plinth: 0, lightR: 50, glow: '200,220,255' }), BLD('shop', 'town/t7_terminal', 14, 7, 8, 3, 18, { plinth: 0 }), BLD('cafe', 'town/t7_cafe', 19, 13, 5, 3, 21, { plinth: 0 }),
         BOLLARD(1, 6), BOLLARD(8, 6), BOLLARD(13, 6), BOLLARD(23, 6), BOLLARD(24, 6),
@@ -477,7 +477,15 @@
     let layerNo = 0;
     const layerOf = (test, fill, blur, crisp) => {
       layerNo++;
-      const at = (x, y) => (test(map.rows[Math.max(0, Math.min(map.h - 1, y))][Math.max(0, Math.min(map.w - 1, x))]) ? 1 : 0);
+      const at0 = (x, y) => (test(map.rows[Math.max(0, Math.min(map.h - 1, y))][Math.max(0, Math.min(map.w - 1, x))]) ? 1 : 0);
+      // 넓게 번지는 층(땅 얼룩·벼랑)은 칸 격자를 두 번 흐려 경계를 두세 칸에 걸쳐 풀고, 큰 잡음으로 잘라 네모가 아닌 얼룩 모양으로
+      const wide = !crisp && blur >= TILE * 0.25 && !(map.floor || {}).crisp; // 쇠·콘크리트 바닥(crisp)은 얼룩이 연기처럼 보여 그대로 둔다
+      let G2 = null;
+      if (wide) {
+        G2 = []; for (let y = -1; y <= map.h; y++) { const r = []; for (let x = -1; x <= map.w; x++) r.push(at0(x, y)); G2.push(r); }
+        for (let pass = 0; pass < 2; pass++) G2 = G2.map((r, y) => r.map((_, x) => { let t = 0, n = 0; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const rr = G2[y + dy]; if (!rr || rr[x + dx] === undefined) continue; const k = (2 - Math.abs(dx)) * (2 - Math.abs(dy)); t += rr[x + dx] * k; n += k; } return t / n; }));
+      }
+      const at = wide ? (x, y) => G2[Math.max(0, Math.min(map.h + 1, y + 1))][Math.max(0, Math.min(map.w + 1, x + 1))] : at0;
       const m = document.createElement('canvas'); m.width = SW; m.height = SH;
       const mg = m.getContext('2d'), id = mg.createImageData(SW, SH), D = id.data;
       const amp = crisp ? 0 : Math.min(0.36, Math.max(0.26, blur / TILE)), soft = crisp ? 0.025 : 0.06 + Math.min(0.2, (blur / TILE) * 0.35);
@@ -487,7 +495,8 @@
         const c00 = at(xi, yi), c10 = at(xi + 1, yi), c01 = at(xi, yi + 1), c11 = at(xi + 1, yi + 1);
         let val = (c00 + (c10 - c00) * fx) * (1 - fy) + (c01 + (c11 - c01) * fx) * fy;
         if (val > 0 && val < 1 && amp > 0) { // 경계 근처만 흔든다
-          const n = (vnoise(u * 0.9, v * 0.9, layerNo) - 0.5) * 0.75 + (vnoise(u * 2.3, v * 2.3, layerNo + 9) - 0.5) * 0.35;
+          const n = wide ? (vnoise(u * 0.42, v * 0.42, layerNo) - 0.5) * 1.1 + (vnoise(u * 1.1, v * 1.1, layerNo + 9) - 0.5) * 0.55 + (vnoise(u * 2.7, v * 2.7, layerNo + 4) - 0.5) * 0.25
+            : (vnoise(u * 0.9, v * 0.9, layerNo) - 0.5) * 0.75 + (vnoise(u * 2.3, v * 2.3, layerNo + 9) - 0.5) * 0.35;
           val += n * amp * 2;
         }
         const al = Math.max(0, Math.min(1, (val - (0.5 - soft)) / (2 * soft)));
@@ -754,6 +763,8 @@
       ctx.fillStyle = sg; ctx.fillRect(-TILE, -TILE * 4, mw + TILE * 2, nb * TILE + TILE * 4);
     }
     for (const L of B || []) {
+      if (L.kind === 'ship') { drawShip(L.x * TILE, L.by * TILE, L.len * TILE, L.alpha || 1); continue; }
+      if (L.kind === 'crane') { drawCrane(L.x * TILE, L.by * TILE, L.h * TILE); continue; }
       const im = img(L.art); if (!ok(im)) continue;
       const dh = L.h * TILE, dw = L.w ? L.w * TILE : (im.naturalWidth * dh) / im.naturalHeight, y = L.by * TILE - dh;
       ctx.globalAlpha = L.alpha || 1;
@@ -762,6 +773,35 @@
       else one(L.x * TILE - dw / 2);
       ctx.globalAlpha = 1;
     }
+  }
+  // 군함 (원작에 배 그림이 없어 직접): 회색 선체, 함교, 돛대, 앞 포탑. 물결에 살짝 흔들린다
+  function drawShip(cx, wy, L, alpha) {
+    const t = performance.now() / 1000, bob = Math.sin(t * 0.8 + cx) * L * 0.006, x0 = cx - L / 2, x1 = cx + L / 2, y = wy + bob;
+    ctx.save(); ctx.globalAlpha = alpha;
+    ctx.fillStyle = 'rgba(10,40,70,.25)'; ctx.beginPath(); ctx.ellipse(cx, y + L * 0.012, L * 0.55, L * 0.03, 0, 0, 7); ctx.fill(); // 물에 비친 그늘
+    ctx.fillStyle = '#5c6a77'; ctx.beginPath(); ctx.moveTo(x0, y - L * 0.11); ctx.lineTo(x1 + L * 0.05, y - L * 0.14); ctx.lineTo(x1 - L * 0.07, y); ctx.lineTo(x0 + L * 0.03, y); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#3e4955'; ctx.beginPath(); ctx.moveTo(x0 + L * 0.015, y - L * 0.035); ctx.lineTo(x1 - L * 0.045, y - L * 0.035); ctx.lineTo(x1 - L * 0.07, y); ctx.lineTo(x0 + L * 0.03, y); ctx.closePath(); ctx.fill(); // 물에 잠긴 아랫배
+    ctx.fillStyle = '#8b98a4'; ctx.fillRect(x0, y - L * 0.118, L * 1.04, L * 0.012); // 갑판 줄
+    ctx.fillStyle = '#9ba8b4'; ctx.fillRect(x0 + L * 0.3, y - L * 0.27, L * 0.3, L * 0.155); ctx.fillRect(x0 + L * 0.37, y - L * 0.36, L * 0.17, L * 0.1); // 함교 두 층
+    ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.fillRect(x0 + L * 0.3, y - L * 0.13, L * 0.3, L * 0.015);
+    ctx.fillStyle = '#26303b'; for (let i = 0; i < 5; i++) ctx.fillRect(x0 + L * (0.385 + i * 0.03), y - L * 0.335, L * 0.018, L * 0.022); // 함교 창
+    ctx.strokeStyle = '#4a5560'; ctx.lineWidth = Math.max(1, L * 0.01); ctx.beginPath(); ctx.moveTo(x0 + L * 0.46, y - L * 0.36); ctx.lineTo(x0 + L * 0.46, y - L * 0.52); ctx.moveTo(x0 + L * 0.41, y - L * 0.47); ctx.lineTo(x0 + L * 0.51, y - L * 0.47); ctx.stroke(); // 돛대
+    ctx.fillStyle = '#7d8a96'; ctx.fillRect(x0 + L * 0.64, y - L * 0.19, L * 0.08, L * 0.07); ctx.fillRect(x0 + L * 0.13, y - L * 0.17, L * 0.12, L * 0.05); // 굴뚝·뒤 갑판실
+    ctx.fillStyle = '#8b98a4'; ctx.beginPath(); ctx.arc(x0 + L * 0.82, y - L * 0.14, L * 0.035, Math.PI, 0); ctx.fill(); ctx.fillRect(x0 + L * 0.82, y - L * 0.155, L * 0.09, L * 0.01); // 앞 포탑
+    ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.fillRect(x0 + L * 0.03, y - 1, L * 0.9, 2); // 물거품 줄
+    ctx.restore();
+  }
+  // 부두 기중기 (직접): 노란 다리 둘, 가로대, 바다 쪽으로 뻗은 팔, 매달린 줄
+  function drawCrane(cx, by, H) {
+    const w = H * 0.42, x0 = cx - w / 2, top = by - H, lw = Math.max(2, H * 0.035);
+    ctx.save(); ctx.lineCap = 'round';
+    const beam = (ax, ay, bx, cy, col, wd) => { ctx.strokeStyle = col; ctx.lineWidth = wd; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, cy); ctx.stroke(); };
+    for (const [c, d] of [['#3a2f14', lw * 1.5], ['#d9a62b', lw]]) { beam(x0, by, x0, top, c, d); beam(x0 + w, by, x0 + w, top, c, d); beam(x0 - w * 0.25, top, x0 + w * 1.15, top, c, d); beam(x0 + w * 0.5, top, x0 + w * 0.5, top - H * 0.6, c, d * 0.8); beam(x0 + w * 0.5, top - H * 0.55, x0 + w * 0.5, top - H * 0.12 - H * 0.55 + H * 0.12, c, d * 0.8); beam(x0 + w * 0.5, top - H * 0.58, x0 - w * 1.1, top - H * 0.15, c, d * 0.8); beam(x0 + w * 0.5, top - H * 0.58, x0 + w * 1.15, top, c, d * 0.6); }
+    for (const [c, d] of [['#3a2f14', lw], ['#c4921f', lw * 0.6]]) { beam(x0, by - H * 0.15, x0 + w, top + H * 0.2, c, d); beam(x0 + w, by - H * 0.15, x0, top + H * 0.2, c, d); beam(x0, by - H * 0.5, x0 + w, by - H * 0.5, c, d); } // 버팀대
+    ctx.strokeStyle = '#2b2b2b'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x0 - w * 0.9, top - H * 0.19); ctx.lineTo(x0 - w * 0.9, top + H * 0.35); ctx.stroke(); // 줄
+    ctx.fillStyle = '#4b5a68'; ctx.fillRect(x0 - w * 1.05, top + H * 0.35, w * 0.3, H * 0.14); ctx.fillStyle = '#d9a62b'; ctx.fillRect(x0 - w * 0.95, top + H * 0.33, w * 0.1, H * 0.03); // 매단 컨테이너
+    ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(x0 - lw, by - 2, w + lw * 2, 4);
+    ctx.restore();
   }
   // 물결: 바다는 흰 물마루가 밀려오고, 수로는 빛 줄기가 흔들린다
   function drawWater(x0, y0, x1, y1) {
