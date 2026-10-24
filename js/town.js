@@ -164,7 +164,7 @@
       sky: ['#6d88b3', '#f1c79a'], tint: '#ffe7c4', fx: 'leaves', start: [12, 16],
       back: [{ art: 'town/t3_plant', by: 4.3, h: 5.6, x: 13 }, { art: 'town/t3_fence', by: 5.05, h: 2.1, repeat: 1 }, { art: 'town/t3_gate', by: 5.05, h: 2.1, x: 13, w: 12.5 }, { art: 'town/t3_bush', by: 5.25, h: 0.7, repeat: 1, alpha: 0.9 }],
       objects: [
-        BLD('cmd', 'town/t3_cmd', 2, 6, 8, 3, 7, { plinth: 0 }), BLD('shop', 'town/b_ruin2', 17, 6, 6, 3, 21, { plinth: 0 }), BLD('cafe', 'town/t3_cafe', 4, 12, 5, 3, 7, { plinth: 0 }),
+        BLD('cmd', 'town/t3_ctent', 3, 6, 6, 3, 5, { plinth: 0 }), BLD('shop', 'town/b_ruin2', 17, 6, 6, 3, 21, { plinth: 0 }), BLD('cafe', 'town/t3_tent', 4, 12, 5, 3, 5, { plinth: 0 }),
         FIRE(15, 12), D('tiles/bags0', 9, 13, 2, 0.8), D('town/t3_mg', 10, 12, 1, 1.3, { block: 0 }), D('tiles/bags1', 17, 14, 2, 0.85),
         D('town/t3_radar', 21, 11, 1, 2.4), D('town/t3_sign', 14, 6, 1, 1.6), D('tiles/crate1', 16, 10, 1, 1.0), D('tiles/crate0', 17, 10, 1, 0.9), D('tiles/barrel', 18, 10, 1, 1.0),
         D('tiles/bags0', 10, 6, 2, 0.75), D('tiles/bags0', 14, 7, 2, 0.75, { flip: 1 }),
