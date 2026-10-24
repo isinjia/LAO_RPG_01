@@ -186,7 +186,7 @@
         R(11, 10, 12, 6, 's'); R(2, 9, 21, 1, '_'); R(12, 9, 2, 9, '_');
       }),
       floor: { base: 'tiles/cave', zone: 'tiles/concrete', path: 'tiles/labd', wall: 'tiles/cave', back: '#10161a', zoneA: 0.55 },
-      sky: ['#05080b', '#0f1a20'], dark: 0.56, torch: 1, water: 'canal', fx: 'drip', start: [12, 16],
+      sky: ['#05080b', '#0f1a20'], dark: 0.42, torch: 1, water: 'canal', fx: 'drip', start: [12, 16],
       lights: [[3, 3.4, 150, '255,90,60'], [9, 3.6, 120, '120,220,230'], [16, 3.6, 120, '120,220,230'], [22, 3.4, 150, '255,90,60']],
       back: [{ art: 'town/t4_cave', by: 4.15, h: 4.6, repeat: 1, mirror: 1 }, { art: 'town/t4_ceil', by: 1.1, h: 1.1, repeat: 1, mirror: 1 }],
       objects: [
@@ -295,7 +295,7 @@
     r_train_0: { fl: 335, h: 512, win: [339, 114, 727, 286, 0] }, r_dis2_0: { fl: 335, h: 512, blk: [[0.66, 1]], win: [327, 86, 712, 133, 0] }, r_mm4_0: { fl: 395, h: 512, blk: [[0.06, 0.27], [0.43, 0.63], [0.88, 1]] },
     r_rein1_0: { fl: 360, h: 512 }, r_dis1_0: { fl: 360, h: 512, win: [318, 78, 712, 312, 1] }, r_rein2_0: { fl: 345, h: 512, blk: [[0.66, 1]], win: [327, 86, 712, 133, 0] },
     r_parts_1: { fl: 370, h: 512, blk: [[0, 0.15], [0.27, 0.68]] }, r_rein3_0: { fl: 345, h: 512, blk: [[0.66, 1]], win: [327, 86, 712, 133, 0] },
-    r_cap: { fl: 425, h: 546, blk: [[0.56, 0.82]], win: [606, 124, 676, 194, 2], patch: [[461, 402, 524, 416, '#64775a']] }, r_mm0_0: { fl: 370, h: 512, win: [470, 118, 900, 272, 1] },
+    r_cap: { fl: 425, h: 546, blk: [[0.56, 0.82]], win: [606, 124, 676, 194, 2], patch: [[461, 402, 524, 416, '#64775a', 'WELCOME']] }, r_mm0_0: { fl: 370, h: 512, win: [470, 118, 900, 272, 1] },
     r_factory: { fl: 525, h: 750, back: '#c3ccd8' }, r_lab: { fl: 350, h: 445, win: [72, 60, 282, 152, 1] }, r_arch: { fl: 425, h: 552, blk: [[0, 0.16]] }, r_secret: { fl: 425, h: 556 },
     r_ware: { fl: 430, h: 552, blk: [[0, 0.2], [0.82, 1]] }, r_bio: { fl: 415, h: 498 },
     r_cafe1_0: { fl: 232, h: 340, win: [372, 96, 618, 172, 1] }, r_cafe2_0: { fl: 232, h: 340, win: [292, 105, 341, 153, 2] }, r_cafe3_0: { fl: 232, h: 340, win: [249, 113, 377, 149, 0] },
@@ -315,12 +315,12 @@
     const used = [];
     const free0 = (x) => { for (let d = 0; d < W; d++) for (const s of [1, -1]) { const t = x + d * s; if (t > 0 && t < W - 1 && !blocked(t) && t !== mx) return t; } return x; };
     const free = (x) => { for (let d = 0; d < W; d++) for (const sg of [1, -1]) { const t = x + d * sg; if (t > 0 && t < W - 1 && !blocked(t) && Math.abs(t - mx) > 0 && used.every((u) => Math.abs(u - t) >= 2)) { used.push(t); return t; } } return free0(x); };
-    const objects = [{ t: 'exit', x: mx, y: H - 1, w: 1, h: 1, to: 'back' }, ...STAGE_NPC[k].map(([id, fx, dy]) => ({ t: 'npc', id, x: free(Math.round(fx * W)), y: Math.min(H - 2, r0 + dy), dir: fx > 0.5 ? -1 : 1 }))];
+    const objects = [{ t: 'exit', x: mx, y: H - 1, w: 1, h: 1, to: 'back' }, ...STAGE_NPC[k].map(([id, fx0, dy0]) => { const hs = [...(roomLook + id)].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7), fx = Math.min(0.9, Math.max(0.1, fx0 + ((hs % 7) - 3) * 0.06)), dy = (dy0 + (hs >>> 3)) % 2; return { t: 'npc', id, x: free(Math.round(fx * W)), y: Math.min(H - 2, r0 + dy), dir: (hs >>> 5) % 3 === 0 ? (fx > 0.5 ? 1 : -1) : fx > 0.5 ? -1 : 1 }; })]; // 장마다 사람 자리를 조금씩 흩뜨린다
     for (const [art, fx, dy, w, hh, lit] of props || []) { const x = Math.max(1, Math.round(fx * W)), y = Math.min(H - 2, r0 + dy); if (x === mx || objects.some((o) => o.t === 'npc' && o.x >= x && o.x < x + w && o.y === y)) continue; objects.push({ t: 'deco', art, x, y, w, h: 1, hh, block: 1, lit }); }
     return { name, rows, indoor: 1, stage: { bg: bgPath, fl: st.fl, h: st.h, sc, top0, floorH, off, back: st.back, screen: st.screen, win: st.win, patch: st.patch }, bg: bgPath, tint, spawn: [mx, H - 2], objects };
   }
   // 방 안 분위기 (장별): 어둠, 어둠 빛깔, 사령관 둘레 등불, 떠다니는 것
-  const ROOMATMO = { works: { dark: 0.12, darkC: '30,18,8', torch: 1, fx: 'dust' }, camp: { dark: 0.14, darkC: '30,22,10', torch: 1, fx: 'dust' }, sewer: { dark: 0.5, darkC: '4,12,16', torch: 1, fx: 'drip', tint: '#b4c6cc' }, station: { dark: 0.25, darkC: '6,12,22', torch: 1, fx: 'dust' }, port: { dark: 0.14, darkC: '8,20,36', torch: 1, fx: 'dust', tint: '#c6d6ea' }, snow: { dark: 0.28, darkC: '40,22,8', torch: 1, fx: 'dust', tint: '#ffd6a8' } };
+  const ROOMATMO = { works: { dark: 0.12, darkC: '30,18,8', torch: 1, fx: 'dust' }, camp: { dark: 0.14, darkC: '30,22,10', torch: 1, fx: 'dust' }, sewer: { dark: 0.36, darkC: '4,12,16', torch: 1, fx: 'drip', tint: '#b4c6cc' }, station: { dark: 0.25, darkC: '6,12,22', torch: 1, fx: 'dust' }, port: { dark: 0.14, darkC: '8,20,36', torch: 1, fx: 'dust', tint: '#c6d6ea' }, snow: { dark: 0.28, darkC: '40,22,8', torch: 1, fx: 'dust', tint: '#ffd6a8' } };
   // 방 창 너머로 보이는 그 장의 바깥 (하늘 빛깔 위에 그림 층을 겹친다). y0~y1: 창 높이 비율, sy0~sy1: 그림에서 쓸 세로 비율, cx: 가로 가운데
   const WINVIEW = {
     coast: { sky: ['#7cc3ee', '#dff3fb'], layers: [{ art: 'town/t7_sea', sy0: 0.2, sy1: 0.9, y0: 0, y1: 1 }, { art: 'town/t7_isle', y0: 0.36, y1: 0.5, cx: 0.62, fit: 1 }, { art: 'town/b_palm1', y0: 0.2, y1: 1.15, cx: 0.08, fit: 1 }] },
@@ -329,10 +329,12 @@
     sewer: { sky: ['#0b1418', '#1d2c30'], layers: [{ art: 'town/t4_cave', sy0: 0.1, sy1: 1, y0: 0, y1: 1, cx: 0.3 }, { art: 'town/t4_ore', y0: 0.55, y1: 0.98, cx: 0.22, fit: 1 }, { art: 'town/t4_stal', y0: 0, y1: 0.4, cx: 0.7, fit: 1 }], haze: 'rgba(120,200,220,.28)', add: 1 },
     station: { sky: ['#06101a', '#12283a'], layers: [{ art: 'town/t5_platform', sy0: 0.25, sy1: 0.95, y0: 0, y1: 1.05, cx: 0.55 }] },
     snow: { sky: ['#9fb7cf', '#eef3f8'], layers: [{ art: 'town/t6_mount', y0: 0.12, y1: 1.05, cx: 0.5 }, { art: 'town/t6_pine', y0: 0.45, y1: 1.12, cx: 0.9, fit: 1 }], ground: '#f2f5f8' },
-    port: { sky: ['#5f8fbf', '#cfe2f2'], layers: [{ art: 'town/t7_sea', sy0: 0.32, sy1: 1, y0: 0, y1: 1 }, { art: 'town/t7_tower', y0: 0.1, y1: 0.9, cx: 0.86, fit: 1 }], haze: 'rgba(20,50,90,.12)' },
+    port: { sky: ['#5f8fbf', '#cfe2f2'], layers: [{ art: 'town/t7_sea', sy0: 0.32, sy1: 1, y0: 0, y1: 1 }, { art: 'town/t7_city', y0: 0.18, y1: 0.5, cx: 0.35, fit: 1, alpha: 0.5 }, { fill: '#5d6670', y0: 0.86, y1: 1 }, { fill: '#e2b23a', y0: 0.86, y1: 0.875 }, { art: 'town/t7_tower', y0: 0.08, y1: 0.9, cx: 0.86, fit: 1 }], haze: 'rgba(20,50,90,.12)' },
   };
   const ROOMBG0 = { cmd: 'town/r_train_0', shop: 'town/r_dis2_0', cafe: 'town/r_cafe4_0' }; // 1장
+  let roomLook = 'coast'; // 방 사람 자리를 흩뜨릴 씨앗
   function baseFor(look, name) {
+    roomLook = look;
     const m = TOWNMAPS[look] || TOWNMAPS.coast, R = m.rooms;
     for (const k of ['cmd', 'shop', 'cafe']) MAPS[k] = Object.assign(R ? stageRoom(k, R[k].label, R[k].bg, R[k].tint, PROPS[R[k].label]) : stageRoom(k, ROOMNAME0[k], ROOMBG0[k], undefined, PROPS[ROOMNAME0[k]]), ROOMATMO[look] || {}, { view: WINVIEW[look] });
     const objects = m.objects.map((o) => (o.t === 'building' ? Object.assign({}, o, { label: R ? R[o.to[0]].label : ROOMNAME0[o.to[0]] }) : o));
@@ -422,7 +424,7 @@
     initLights(); initFx();
     // 그림이 아직 안 왔으면 오는 대로 바닥을 다시 그린다
     const F = map.floor || {};
-    let need = map.indoor ? [img(map.bg), ...(map.stage && map.stage.win && map.view ? map.view.layers.map((L) => img(L.art)) : [])] : [...new Set([F.base || 'tiles/grass', F.zone || 'tiles/asphalt', F.path || 'tiles/asphalt', F.wall || 'tiles/grass'])].map(img);
+    let need = map.indoor ? [img(map.bg), ...(map.stage && map.stage.win && map.view ? map.view.layers.filter((L) => L.art).map((L) => img(L.art)) : [])] : [...new Set([F.base || 'tiles/grass', F.zone || 'tiles/asphalt', F.path || 'tiles/asphalt', F.wall || 'tiles/grass'])].map(img);
     for (const b of map.back || []) img(b.art);
     for (const o of map.objects) if (o.t === 'decal') need.push(img(o.art));
     need.filter((im) => !ok(im)).forEach((im) => im.addEventListener('load', () => { if (map && map.id === id) layer = buildLayer(); }, { once: true }));
@@ -578,13 +580,14 @@
   // 방 창: 그림 속 창(또는 새로 낸 창) 자리에 그 장의 바깥 풍경을 그린다. 0: 그림의 창 안만, 1: 창틀까지 그림, 2: 둥근 창
   function drawWindow(g, st, v) {
     const [a, b, c, d, kind] = st.win, x = a * st.sc, y = st.off + b * st.sc, w = (c - a) * st.sc, h = (d - b) * st.sc;
-    if (!v.layers.every((L) => ok(img(L.art)))) return;
+    if (!v.layers.every((L) => L.fill || ok(img(L.art)))) return;
     g.save(); g.beginPath();
     if (kind === 2) g.ellipse(x + w / 2, y + h / 2, w / 2, h / 2, 0, 0, 7); else g.rect(x, y, w, h);
     g.clip();
     const sk = g.createLinearGradient(0, y, 0, y + h); sk.addColorStop(0, v.sky[0]); sk.addColorStop(1, v.sky[1]); g.fillStyle = sk; g.fillRect(x, y, w, h);
     if (v.ground) { g.fillStyle = v.ground; g.fillRect(x, y + h * 0.82, w, h * 0.18); }
     for (const L of v.layers) {
+      if (L.fill) { g.fillStyle = L.fill; g.fillRect(x, y + L.y0 * h, w, (L.y1 - L.y0) * h); continue; } // 땅·부두 띠
       const im = img(L.art), iw = im.width, ih = im.height, sy0 = (L.sy0 || 0) * ih, sh = ((L.sy1 || 1) - (L.sy0 || 0)) * ih, th = (L.y1 - L.y0) * h, k = th / sh, cx = L.cx === undefined ? 0.5 : L.cx;
       g.globalAlpha = L.alpha || 1;
       if (!L.fit && iw * k < w) { const sh2 = (th * iw) / w, sy2 = sy0 + (sh - sh2) / 2; g.drawImage(im, 0, sy2, iw, sh2, x, y + L.y0 * h, w, th); } // 창보다 좁은 풍경은 너비에 맞추고 위아래를 덜어낸다
@@ -616,7 +619,7 @@
       g.drawImage(im, 0, 0, im.width, st.fl * k + 2, 0, st.off, mw, st.top0 + 2 * st.sc); // 바닥과 2픽셀 겹쳐 이음선이 안 보이게
       const sc = st.screen && img(st.screen[0]); // 벽 화면에 띄울 그림
       if (sc && ok(sc)) { const [, x0, y0, x1, y1] = st.screen; g.globalAlpha = 0.9; g.drawImage(sc, x0 * mw, st.off + y0 * st.h * st.sc, (x1 - x0) * mw, (y1 - y0) * st.h * st.sc); g.globalAlpha = 1; } // 그림 좌표(비율)는 뒷벽과 같은 배율
-      for (const [a, b, c, d, col] of st.patch || []) { g.fillStyle = col; g.fillRect(a * st.sc, st.off + b * st.sc, (c - a) * st.sc, (d - b) * st.sc); } // 그림 속 글씨 지우기 (깔개의 틀린 철자)
+      for (const [a, b, c, d, col, tx] of st.patch || []) { g.fillStyle = col; g.fillRect(a * st.sc, st.off + b * st.sc, (c - a) * st.sc, (d - b) * st.sc); if (tx) { g.font = `bold ${Math.round((d - b) * st.sc * 0.62)}px sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = 'rgba(214,224,196,.85)'; g.fillText(tx, ((a + c) / 2) * st.sc, st.off + ((b + d) / 2) * st.sc); } } // 그림 속 틀린 철자를 지우고 바로 쓴다 (깔개)
       if (st.win && map.view) drawWindow(g, st, map.view);
     }
     const sg = g.createLinearGradient(0, mh - TILE * 1.2, 0, mh); sg.addColorStop(0, 'rgba(0,0,0,0)'); sg.addColorStop(1, 'rgba(0,0,0,.35)');
