@@ -443,3 +443,7 @@ html.touch-ui .tbtns button {
   padding: calc(6 * var(--touch-unit, 1px));
   font-size: calc(13 * var(--touch-unit, 1px));
 }
+
+/* 병종 이름 옆에 같은 모양의 병종 아이콘을 함께 표시 */
+.kind .kind-icon { display: inline-block; width: 1.15em; height: 1.15em; margin-right: 3px; vertical-align: -0.2em; flex: none; }
+.kind-icon path { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }

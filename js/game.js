@@ -551,10 +551,10 @@
     const ring = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 1.0), new THREE.MeshBasicMaterial({ map: getRingTex(u.side, big), transparent: true, depthTest: false, depthWrite: false }));
     ring.rotation.x = -Math.PI / 2; ring.position.y = 0.012; ring.renderOrder = 4;
     g.add(ring);
-    const bc = canvas(112, 40);
+    const bc = canvas(174, 40);
     const bt = new THREE.CanvasTexture(bc);
     const badge = new THREE.Sprite(new THREE.SpriteMaterial({ map: bt, depthTest: false, transparent: true }));
-    badge.scale.set(0.62, 0.22, 1);
+    badge.scale.set(0.96, 0.22, 1);
     badge.center.set(0.5, 0.5);
     badge.position.set(0, 0.02, 0.5);
     badge.renderOrder = 5000;
@@ -568,10 +568,10 @@
   }
   // 지도 유닛 막대 (원작 전투 막대 결): 짙은 사선 판 위 병사·영웅 사선 막대, 왼쪽 칸에 남은 병사 수
   function drawBadge(v) {
-    const u = v.u, g = v.bc.getContext('2d'), W = v.bc.width;
+    const u = v.u, g = v.bc.getContext('2d'), W = 112;
     const acted = u.acted && u.side === G.side && u.side === 'p';
     const para = (x, y, w, h, sk) => { g.beginPath(); g.moveTo(x + sk, y); g.lineTo(x + w, y); g.lineTo(x + w - sk, y + h); g.lineTo(x, y + h); g.closePath(); };
-    g.clearRect(0, 0, W, 40);
+    g.clearRect(0, 0, v.bc.width, 40);
     para(0, 3, W, 34, 8); g.fillStyle = 'rgba(12,14,18,.82)'; g.fill();
     g.strokeStyle = u.side === 'p' ? 'rgba(63,180,255,.9)' : 'rgba(255,59,92,.9)'; g.lineWidth = 2; g.stroke();
     const bar = (y, k, c0, c1) => {
@@ -584,6 +584,18 @@
     g.fillStyle = u.lead || u.boss ? '#111' : '#fff';
     g.font = '16px LO_B, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
     g.fillText(u.troop ? String(R.soldiers(u)) : (u.lead || u.boss ? '★' : '●'), 14, 21);
+    // 왼쪽은 영웅, 오른쪽은 배속 병사. 병사가 전멸하면 병사 표시를 흐리게 한다.
+    const icon = (kind, x, label, faded) => {
+      g.save(); g.globalAlpha = faded ? 0.35 : 1;
+      g.fillStyle = '#101722'; g.fillRect(x, 2, 27, 36);
+      g.translate(x + 3, 3); g.scale(0.86, 0.86);
+      g.strokeStyle = D.KIND[kind].color; g.lineWidth = 2; g.lineJoin = 'round'; g.lineCap = 'round';
+      g.stroke(new Path2D(KIND_PATH[kind])); g.restore();
+      g.fillStyle = faded ? '#777' : '#fff'; g.font = '9px LO_B, sans-serif';
+      g.fillText(label, x + 13, 32);
+    };
+    icon(u.kind, 115, '영', false);
+    if (u.troop) icon(u.troop.kind, 145, '병', !R.troopAlive(u));
     v.bt.needsUpdate = true;
   }
 
@@ -1103,7 +1115,10 @@
   let busy = false;
   let mode = 'boot'; // boot | screen | talk | map | fight
   function setHint(t) { $('hint').textContent = t || ''; $('hint').classList.remove('warn'); }
-  const kindTag = (k) => `<span class="kind" style="color:${D.KIND[k].color}">${D.KIND[k].name}</span>`;
+  // 병종별 상징: 소총·방패·차량·항공기·조준선·십자·변이체·닻·회로·단검.
+  const KIND_PATH = {"inf": "M4 7H17V11H4Z M17 8H22 M8 11L6 18H10L12 11 M4 8L2 12", "pike": "M12 2L21 6V12Q20 19 12 22Q4 19 3 12V6Z M12 6V17 M7 11H17", "cav": "M3 7H16L21 13V17H3Z M6 17A2 2 0 1 0 10 17 M15 17A2 2 0 1 0 19 17 M6 4H13 M8 10H15", "fly": "M12 3V20 M12 9L3 15V18L12 15L21 18V15L12 9 M8 21L12 18L16 21", "arch": "M12 2V7 M12 17V22 M2 12H7 M17 12H22 M12 5A7 7 0 1 0 12 19A7 7 0 1 0 12 5 M12 10V14 M10 12H14", "priest": "M9 3H15V9H21V15H15V21H9V15H3V9H9Z", "demon": "M4 3L8 7H16L20 3L19 15L12 22L5 15Z M7 11L10 13 M17 11L14 13 M9 17H15", "water": "M12 3V17 M9 5A3 3 0 1 0 15 5A3 3 0 1 0 9 5 M6 10H18 M3 14Q4 21 12 21Q20 21 21 14 M3 14L7 16 M21 14L17 16", "mage": "M7 3V7H3V17H7V21H17V17H21V7H17V3Z M14 7L9 13H14L10 18", "assassin": "M19 2L17 13L12 16L8 12L11 7Z M6 13L11 18 M8 16L3 21 M2 19L5 22"};
+  const kindIcon = (k) => `<svg class="kind-icon" viewBox="0 0 24 24" role="img" aria-label="${D.KIND[k].name}"><path d="${KIND_PATH[k]}"/></svg>`;
+  const kindTag = (k) => `<span class="kind" style="color:${D.KIND[k].color}">${kindIcon(k)}${D.KIND[k].name}</span>`;
   const bars = (u) => `<div class="bars2 ${u.side}">${u.troop ? `<div class="bar2 t"><i style="width:${(u.troop.hp / u.troop.hpMax) * 100}%"></i><b>병사 ${R.soldiers(u)}/10명 · ${Math.round(u.troop.hp)}</b></div>` : ''}<div class="bar2 h"><i style="width:${(u.hp / u.hpMax) * 100}%"></i><b>영웅 ${Math.round(u.hp)} / ${u.hpMax}</b></div></div>`;
   function showInfo(u, tile) {
     const el = $('info');
@@ -2421,7 +2436,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.98';
+  const GAME_VERSION = '1.99';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
