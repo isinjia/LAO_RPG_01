@@ -87,6 +87,7 @@
   // 소품: art 그림, (x, y) 왼쪽 위 칸, w 칸 넓이, hh 그림 높이(칸). o: { h 칸 높이, block 0 이면 지나감, cells 막을 칸만 [dx,dy], lit [반지름, 색], ox 픽셀 밀기, flip }
   const D = (art, x, y, w, hh, o) => Object.assign({ t: 'deco', art, x, y, w, h: 1, hh, block: 1 }, o);
   const DEC = (art, x, y, w, a = 1) => ({ t: 'decal', art, x, y, w, a }); // 바닥에 납작하게 까는 무늬 (금·맨홀·물웅덩이)
+  const BOLLARD = (x, y) => ({ t: 'deco', kind: 'bollard', x, y, w: 1, h: 1, block: 1 }); // 부두 계류 말뚝 (직접 그림)
   const FIRE = (x, y) => ({ t: 'deco', kind: 'fire', x, y, w: 1, h: 1, block: 1, lit: [150, '255,170,90'] }); // 모닥불 (직접 그림)
   // 건물: to 들어갈 방, door 문 칸(x), label 은 방 이름으로 바뀐다
   const BLD = (to, art, x, y, w, h, door, o) => Object.assign({ t: 'building', x, y, w, h, art, label: '', door, to: [to, 6, 7] }, o);
@@ -220,7 +221,7 @@
         D('town/t5_core', 8, 12, 2, 1.6, { lit: [130, '150,220,255'] }), D('town/t5_core', 16, 12, 2, 1.6, { lit: [130, '150,220,255'] }),
         D('tiles/crate1', 1, 13, 1, 1.0), D('tiles/crate0', 24, 13, 1, 0.9), D('town/b_bench', 8, 16, 2, 0.9), D('town/b_bench', 16, 16, 2, 0.9),
         D('tiles/console', 6, 15, 2, 1.4, { lit: [90, '120,220,255'] }), D('tiles/tank0', 21, 15, 1, 1.9, { lit: [90, '90,255,170'] }), D('tiles/tank1', 3, 15, 1, 1.9, { lit: [90, '90,255,170'] }),
-        D('town/b_bench', 10, 9, 2, 0.9), D('town/b_bench', 14, 9, 2, 0.9), D('tiles/crate0', 22, 8, 1, 0.9), D('tiles/crate1', 23, 8, 1, 1.0), D('tiles/crate1', 1, 9, 1, 1.0),
+        D('town/b_bench', 10, 9, 2, 0.9), D('town/b_bench', 14, 9, 2, 0.9), D('tiles/crate1', 1, 9, 1, 1.0),
         DEC('town/d_grate', 5, 13, 1.5), DEC('town/d_grate', 18, 13, 1.5), DEC('town/d_grate', 10, 16, 1.5), DEC('town/d_crack', 19, 15, 2, 0.45),
         EXIT(12, 17), ...NPC([12, 11], [7, 10], [18, 13]), CON(14, 15),
       ],
@@ -269,6 +270,7 @@
       back: [{ art: 'town/t7_sea', by: 6.05, h: 6.4, repeat: 1, mirror: 1 }],
       objects: [
         BLD('cmd', 'town/t7_tower', 4, 7, 3, 3, 5, { plinth: 0 }), BLD('shop', 'town/t7_terminal', 14, 7, 8, 3, 18, { plinth: 0 }), BLD('cafe', 'town/t2_cafe', 19, 13, 5, 3, 21, { plinth: 0 }),
+        BOLLARD(1, 6), BOLLARD(8, 6), BOLLARD(13, 6), BOLLARD(23, 6), BOLLARD(24, 6),
         D('town/t3_radar', 23, 9, 1, 2.4), D('town/t0_mgnest', 10, 7, 3, 1.1), D('town/t3_mg', 11, 7, 1, 1.2, { block: 0 }),
         D('tiles/crate1', 3, 12, 1, 1.0), D('tiles/crate0', 4, 12, 1, 0.9), D('tiles/crate1', 3, 13, 1, 1.0), D('tiles/barrel', 15, 12, 1, 1.1), D('tiles/barrel', 16, 12, 1, 1.0),
         D('tiles/console', 8, 14, 2, 1.4, { lit: [90, '120,220,255'] }), D('tiles/gas', 1, 15, 2, 1.4), D('tiles/bags1', 15, 15, 2, 0.8), D('town/b_bench', 5, 15, 2, 0.9),
@@ -290,7 +292,7 @@
   // 그림의 뒷벽은 비율 그대로, 바닥 부분만 걸을 자리가 넉넉하도록(3칸 남짓) 세로로 늘린다.
   // fl: 그림(가로 1024 기준)에서 바닥이 시작하는 높이, blk: 바닥 위에 선 큰 기계 자리(가로 비율 구간, 지나갈 수 없음)
   const STAGE = {
-    r_train_0: { fl: 335, h: 512 }, r_dis2_0: { fl: 335, h: 512, blk: [[0.66, 1]] }, r_mm4_0: { fl: 395, h: 512, blk: [[0.06, 0.27], [0.43, 0.63], [0.88, 1]] },
+    r_train_0: { fl: 335, h: 512, screen: ['town/r_andr1_11', 0.345, 0.29, 0.695, 0.6] }, r_dis2_0: { fl: 335, h: 512, blk: [[0.66, 1]] }, r_mm4_0: { fl: 395, h: 512, blk: [[0.06, 0.27], [0.43, 0.63], [0.88, 1]] },
     r_rein1_0: { fl: 360, h: 512 }, r_dis1_0: { fl: 360, h: 512 }, r_rein2_0: { fl: 345, h: 512, blk: [[0.66, 1]] },
     r_parts_1: { fl: 370, h: 512, blk: [[0, 0.15], [0.27, 0.68]] }, r_rein3_0: { fl: 345, h: 512, blk: [[0.66, 1]] },
     r_cap: { fl: 425, h: 546, blk: [[0.56, 0.82]] }, r_mm0_0: { fl: 370, h: 512 },
@@ -315,7 +317,7 @@
     const free = (x) => { for (let d = 0; d < W; d++) for (const sg of [1, -1]) { const t = x + d * sg; if (t > 0 && t < W - 1 && !blocked(t) && Math.abs(t - mx) > 0 && used.every((u) => Math.abs(u - t) >= 2)) { used.push(t); return t; } } return free0(x); };
     const objects = [{ t: 'exit', x: mx, y: H - 1, w: 1, h: 1, to: 'back' }, ...STAGE_NPC[k].map(([id, fx, dy]) => ({ t: 'npc', id, x: free(Math.round(fx * W)), y: Math.min(H - 2, r0 + dy), dir: fx > 0.5 ? -1 : 1 }))];
     for (const [art, fx, dy, w, hh, lit] of props || []) { const x = Math.max(1, Math.round(fx * W)), y = Math.min(H - 2, r0 + dy); if (x === mx || objects.some((o) => o.t === 'npc' && o.x >= x && o.x < x + w && o.y === y)) continue; objects.push({ t: 'deco', art, x, y, w, h: 1, hh, block: 1, lit }); }
-    return { name, rows, indoor: 1, stage: { bg: bgPath, fl: st.fl, h: st.h, sc, top0, floorH, off, back: st.back }, bg: bgPath, tint, spawn: [mx, H - 2], objects };
+    return { name, rows, indoor: 1, stage: { bg: bgPath, fl: st.fl, h: st.h, sc, top0, floorH, off, back: st.back, screen: st.screen }, bg: bgPath, tint, spawn: [mx, H - 2], objects };
   }
   // 방 안 분위기 (장별): 어둠, 어둠 빛깔, 사령관 둘레 등불, 떠다니는 것
   const ROOMATMO = { works: { dark: 0.12, darkC: '30,18,8', torch: 1, fx: 'dust' }, camp: { dark: 0.14, darkC: '30,22,10', torch: 1, fx: 'dust' }, sewer: { dark: 0.5, darkC: '4,12,16', torch: 1, fx: 'drip', tint: '#b4c6cc' }, station: { dark: 0.25, darkC: '6,12,22', torch: 1, fx: 'dust' }, port: { dark: 0.1, darkC: '10,20,30', torch: 1, fx: 'dust' }, snow: { dark: 0.28, darkC: '40,22,8', torch: 1, fx: 'dust', tint: '#ffd6a8' } };
@@ -363,7 +365,7 @@
       if (e.sdAnim !== anim && c.has(anim)) { c.play(anim, null, true); e.sdAnim = anim; }
       c.update(dt);
       // 조종 손잡이(이름이 _CTRL 로 끝나는 뼈)에 붙은 빨간 조준 고리 그림은 끈다 (그 아래 몸은 그대로)
-      if (!e.mute) { const N = c.tpl.data.nodes; e.mute = c.tpl.rends.map((r, k) => (N[r.node] && /_CTRL$/.test(N[r.node].n) ? k : -1)).filter((k) => k >= 0); }
+      if (!e.mute) { const N = c.tpl.data.nodes; e.mute = c.tpl.rends.map((r, k) => (N[r.node] && /_CTRL$|shadow/i.test(N[r.node].n) ? k : -1)).filter((k) => k >= 0); } // 리그 자체 그림자도 끈다 (마을 그림자와 두 겹이 된다)
       for (const k of e.mute) c.rEn[k] = 0;
       const t = c.tpl, bw = Math.max(t.box.max.x - t.box.min.x, 0.01);
       const k = Math.min((SDF.NH - 26) / Math.min(Math.max(t.height, 0.01), 10.5) * (e.big ? 0.95 : 0.8), (SDF.CW - 10) / bw); // 창을 높이 든 동료(라비아타)도 몸 크기는 같게
@@ -573,6 +575,8 @@
       const k = im.width / 1024;
       g.drawImage(im, 0, st.fl * k, im.width, (st.h - st.fl) * k, 0, st.off + st.top0, mw, st.floorH);
       g.drawImage(im, 0, 0, im.width, st.fl * k + 2, 0, st.off, mw, st.top0 + 2 * st.sc); // 바닥과 2픽셀 겹쳐 이음선이 안 보이게
+      const sc = st.screen && img(st.screen[0]); // 벽 화면에 띄울 그림
+      if (sc && ok(sc)) { const [, x0, y0, x1, y1] = st.screen; g.globalAlpha = 0.9; g.drawImage(sc, x0 * mw, st.off + y0 * st.h * st.sc, (x1 - x0) * mw, (y1 - y0) * st.h * st.sc); g.globalAlpha = 1; } // 그림 좌표(비율)는 뒷벽과 같은 배율
     }
     const sg = g.createLinearGradient(0, mh - TILE * 1.2, 0, mh); sg.addColorStop(0, 'rgba(0,0,0,0)'); sg.addColorStop(1, 'rgba(0,0,0,.35)');
     g.fillStyle = sg; g.fillRect(0, mh - TILE * 1.2, mw, TILE * 1.2);
@@ -596,6 +600,7 @@
     const X = o.x * TILE + (o.ox || 0), Y = o.y * TILE, w = o.w * TILE, h = o.h * TILE;
     if (o.kind === 'lighthouse') return drawLighthouse(X + w / 2, Y + h);
     if (o.kind === 'fire') return drawFire(X + w / 2, Y + h - 10);
+    if (o.kind === 'bollard') { const cx = X + w / 2, by = Y + h - 8; ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(cx, by + 2, 14, 5, 0, 0, 7); ctx.fill(); const gr = ctx.createLinearGradient(cx - 10, 0, cx + 10, 0); gr.addColorStop(0, '#3b4148'); gr.addColorStop(0.45, '#6c747d'); gr.addColorStop(1, '#262b31'); ctx.fillStyle = gr; ctx.fillRect(cx - 9, by - 22, 18, 22); ctx.beginPath(); ctx.ellipse(cx, by - 22, 13, 5, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#c9a42a'; ctx.fillRect(cx - 9, by - 10, 18, 3); return; }
     const im = img(o.art); if (!ok(im)) return;
     const dh = TILE * (o.hh || 1.6), dw = (im.naturalWidth * dh) / im.naturalHeight;
     ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(X + w / 2, Y + h - 4, Math.max(dw, w) * 0.42, 8, 0, 0, 7); ctx.fill();
@@ -670,7 +675,7 @@
       let dw = w * 1.1, dh = (im.naturalHeight * dw) / im.naturalWidth;
       const maxH = (b.h + 2.6) * TILE; if (dh > maxH) { dw *= maxH / dh; dh = maxH; }
       const x = b.x * TILE + w / 2 - dw / 2;
-      ctx.fillStyle = 'rgba(0,0,0,0.26)'; ctx.beginPath(); ctx.ellipse(x + dw / 2, base - 4, dw * 0.5, 12, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = 'rgba(0,0,0,0.2)'; ctx.beginPath(); ctx.ellipse(x + dw / 2, base - 4, dw * 0.44, 9, 0, 0, 7); ctx.fill();
       if (b.plinth !== 0) { // 바닥 받침 (1장 기지 건물)
         ctx.fillStyle = '#a89f8c'; ctx.fillRect(x - 8, base - 8, dw + 16, 14);
         ctx.fillStyle = '#cfc6b4'; ctx.fillRect(x - 8, base - 12, dw + 16, 10);

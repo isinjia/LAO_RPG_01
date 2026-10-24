@@ -197,7 +197,7 @@ def composite():
     W, H = rock.size
     out = Image.new('RGBA', (W, H), (0, 0, 0, 0))
     out.alpha_composite(rock)
-    dh = int(H * 0.62); dw = int(door.width * dh / door.height)
+    dh = int(H * 0.8); dw = int(door.width * dh / door.height)
     door = door.resize((dw, dh), Image.LANCZOS)
     # 문 둘레를 바위 속 그늘로 (파낸 자리)
     hole = Image.new('RGBA', (dw + 40, dh + 24), (0, 0, 0, 0))
