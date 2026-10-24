@@ -1005,18 +1005,18 @@
     return false;
   }
   function warp(to) {
-    busy = true; path = []; AU.play('lo_d_door', 0.5);
+    clearKeys(); busy = true; path = []; AU.play('lo_d_door', 0.5);
     fadeTo = 1;
     pendingWarp = to;
   }
-  function leave() { busy = true; path = []; fadeTo = 1; pendingWarp = 'leave'; }
+  function leave() { clearKeys(); busy = true; path = []; fadeTo = 1; pendingWarp = 'leave'; }
 
   // 말 걸기: 사람 옆까지 가서
   function talkTo(e) {
     const near = [[e.x, e.y + 1], [e.x - 1, e.y], [e.x + 1, e.y], [e.x, e.y - 1]].filter(([x, y]) => walkable(x, y) || (x === px && y === py));
     near.sort((a, b) => Math.abs(a[0] - px) + Math.abs(a[1] - py) - (Math.abs(b[0] - px) + Math.abs(b[1] - py)));
     const start = async () => {
-      busy = true;
+      clearKeys(); busy = true;
       dir = e.x < px ? -1 : e.x > px ? 1 : dir;
       player.face = e.x < px ? 'left' : e.x > px ? 'right' : e.y < py ? 'up' : 'down';
       e.flip = px < e.x; // 사령관 쪽을 본다
@@ -1031,6 +1031,7 @@
   // ── 입력 ───────────────────────────────────────────────
   function onPointer(ev) {
     if (!open || busy || fade > 0.05) return;
+    clearKeys();
     const r = cv.getBoundingClientRect(), dpr = cv.width / r.width;
     const wx = ((ev.clientX - r.left) * dpr) / S + camX, wy = ((ev.clientY - r.top) * dpr) / S + camY;
     const tx = Math.floor(wx / TILE), ty = Math.floor(wy / TILE);
@@ -1042,18 +1043,22 @@
     if (b) { goTo(b.door, b.y + b.h - 1); return; }
     goTo(tx, ty);
   }
+  const moveKeys = { ArrowLeft: [-1, 0], KeyA: [-1, 0], ArrowRight: [1, 0], KeyD: [1, 0], ArrowUp: [0, -1], KeyW: [0, -1], ArrowDown: [0, 1], KeyS: [0, 1] };
+  const heldKeys = new Set();
+  function clearKeys() { heldKeys.clear(); }
+  function onKeyUp(ev) { heldKeys.delete(ev.code); }
+  function onVisibility() { if (document.hidden) clearKeys(); }
   function onKey(ev) {
-    if (!open || busy) return;
-    const d = { ArrowLeft: [-1, 0], KeyA: [-1, 0], ArrowRight: [1, 0], KeyD: [1, 0], ArrowUp: [0, -1], KeyW: [0, -1], ArrowDown: [0, 1], KeyS: [0, 1] }[ev.code];
-    if (d && !moving) {
-      if (d[0]) dir = d[0];
-      player.face = d[0] < 0 ? 'left' : d[0] > 0 ? 'right' : d[1] < 0 ? 'up' : 'down';
-      const nx = px + d[0], ny = py + d[1];
-      if (walkable(nx, ny)) path = [[nx, ny]];
+    if (!open) return;
+    if (moveKeys[ev.code]) {
       ev.preventDefault();
-    } else if (ev.code === 'Enter' || ev.code === 'Space') {
+      if (busy || fade > 0.05 || ev.repeat) return;
+      heldKeys.delete(ev.code); heldKeys.add(ev.code);
+      // 걷던 한 칸은 마치고 클릭 이동과 도착 후 대화 예약을 취소한다.
+      path = moving ? [[px, py]] : []; onArrive = null;
+    } else if (!busy && (ev.code === 'Enter' || ev.code === 'Space')) {
       const e = ents.find((x) => Math.abs(x.x - px) + Math.abs(x.y - py) === 1);
-      if (e) talkTo(e);
+      if (e && !ev.repeat) { clearKeys(); talkTo(e); }
       ev.preventDefault();
     }
   }
@@ -1078,20 +1083,35 @@
       if (to === 'leave') { close(); return; }
       loadMap(to[0], to[1], to[2]); fadeTo = 0; busy = false;
     } } else if (fade > fadeTo) fade = Math.max(fadeTo, fade - dt * 3);
-    // 걷기
-    if (!moving && path.length && !busy) {
-      const [nx, ny] = path[0];
-      if (!walkable(nx, ny)) path = [];
-      else { if (nx !== px) dir = nx < px ? -1 : 1; player.face = nx < px ? 'left' : nx > px ? 'right' : ny < py ? 'up' : 'down'; moving = 1; player.from = [px, py]; px = nx; py = ny; player.t = 0; AU.play('lo_walk', 0.35, 0.92 + Math.random() * 0.16); } // 한 칸마다 원작 흙길 발소리
-    }
-    if (moving) {
-      player.t += dt * 4.6; player.anim += dt * 9;
-      const k = Math.min(1, player.t);
-      pfx = player.from[0] + (px - player.from[0]) * k; pfy = player.from[1] + (py - player.from[1]) * k;
-      if (k >= 1) {
-        moving = 0; path.shift();
-        if (!arrived() && !path.length && onArrive) { const f = onArrive; onArrive = null; f(); }
+    // 키 반복 주기와 관계없이 누른 방향으로 이어 걷는다. 남은 시간도 다음 칸에 넘긴다.
+    let remaining = dt;
+    while (!busy && fade <= 0.05) {
+      if (!moving) {
+        const code = Array.from(heldKeys).pop();
+        if (code) {
+          const [dx, dy] = moveKeys[code];
+          if (dx) dir = dx;
+          player.face = dx < 0 ? 'left' : dx > 0 ? 'right' : dy < 0 ? 'up' : 'down';
+          path = walkable(px + dx, py + dy) ? [[px + dx, py + dy]] : [];
+        }
+        if (!path.length) break;
+        const [nx, ny] = path[0];
+        if (!walkable(nx, ny)) { path = []; break; }
+        if (nx !== px) dir = nx < px ? -1 : 1;
+        player.face = nx < px ? 'left' : nx > px ? 'right' : ny < py ? 'up' : 'down';
+        moving = 1; player.from = [px, py]; px = nx; py = ny; player.t = 0;
+        AU.play('lo_walk', 0.35, 0.92 + Math.random() * 0.16);
       }
+      const used = Math.min(remaining, (1 - player.t) / 4.6);
+      player.t = Math.min(1, player.t + used * 4.6); player.anim += used * 9;
+      remaining = Math.max(0, remaining - used);
+      pfx = player.from[0] + (px - player.from[0]) * player.t;
+      pfy = player.from[1] + (py - player.from[1]) * player.t;
+      if (player.t < 1) break;
+      moving = 0; path.shift();
+      if (arrived()) break;
+      if (!path.length && onArrive) { const f = onArrive; onArrive = null; f(); }
+      if (remaining <= 0) break;
     }
     player.walk = !!moving || path.length > 0;
     player.flip = dir < 0;
@@ -1105,7 +1125,11 @@
   function close() {
     open = false;
     AU.amb(null);
+    clearKeys();
     removeEventListener('keydown', onKey);
+    removeEventListener('keyup', onKeyUp);
+    removeEventListener('blur', clearKeys);
+    document.removeEventListener('visibilitychange', onVisibility);
     removeEventListener('resize', resize);
     for (const e of ents) if (e.sd) { e.sd.root.parent && e.sd.root.parent.remove(e.sd.root); e.sd.dispose(); e.sd = null; e.slot = null; }
     cv.remove(); hud.remove(); cv = null;
@@ -1139,7 +1163,11 @@
       document.body.appendChild(cv); document.body.appendChild(hud);
       hud.querySelector('.tn-out').onclick = () => { if (!busy) { AU.play('lo_click', 0.6); leave(); } };
       cv.addEventListener('pointerdown', onPointer);
+      clearKeys();
       addEventListener('keydown', onKey);
+      addEventListener('keyup', onKeyUp);
+      addEventListener('blur', clearKeys);
+      document.addEventListener('visibilitychange', onVisibility);
       addEventListener('resize', resize);
       resize();
       open = true; fade = 1; fadeTo = 1; busy = true; T = 0;
