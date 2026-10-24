@@ -38,6 +38,11 @@ function fitGame() {
   game.style.width = (availableW / scale) + 'px';
   game.style.height = (availableH / scale) + 'px';
   game.style.transform = 'translate(-50%, -50%) rotate(' + (rotated ? portraitRotation : 0) + 'deg) scale(' + scale + ')';
+  const root = game.contentDocument && game.contentDocument.documentElement;
+  if (root) {
+    root.style.setProperty('--touch-unit', (1 / scale) + 'px');
+    root.classList.toggle('touch-ui', matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0);
+  }
 }
 screenRotation();
 addEventListener('resize', fitGame);
@@ -45,6 +50,7 @@ addEventListener('orientationchange', screenRotation);
 addEventListener('deviceorientation', deviceRotation);
 if (screen.orientation && screen.orientation.addEventListener) screen.orientation.addEventListener('change', screenRotation);
 if (window.visualViewport) visualViewport.addEventListener('resize', fitGame);
+game.addEventListener('load', fitGame);
 game.src = 'index.html' + location.search + location.hash;
 </script>
 </body>
