@@ -2456,7 +2456,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '2.20';
+  const GAME_VERSION = '2.21';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2809,7 +2809,7 @@
         if (q) {
           // 원작 의뢰 대화 (곁가지 작전 앞 대화)
           const S = window.STORY && STORY[q.idx];
-          if (S) { AU.bgm(S.bgmStart); await story(S.start.map((n) => ({ ...n, bg: '', see: 1 }))); AU.bgm('lo_town'); }
+          if (S) { AU.bgm(S.bgmStart); await story(S.start.map((n) => ({ ...n, bg: '', see: 1, place: [] }))); AU.bgm('lo_town'); }
           save.side = save.side || {}; save.side[q.idx] = 'open'; writeSave();
           AU.play('lo_join', 0.6);
           await new Promise((r) => modal(`<h3>의뢰를 받았습니다</h3><p><b>${q.title}</b></p><p>${q.desc}</p><p style="color:#9aa6c4">월드맵의 ${D.STAGES[q.base - 1].idx} ${D.STAGES[q.base - 1].title} 지점에서 출격할 수 있습니다.</p><div class="opts"><button class="gold" data-a="ok">확인</button></div>`, r));
