@@ -2460,7 +2460,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '2.25';
+  const GAME_VERSION = '2.26';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2672,7 +2672,7 @@
       tokPos = save.wposCh[CH.id].slice();
       WM3D.setFocus(tokPos); // 카메라 가운데에 늘 부대
       WM3D.setMarker(here === WT ? null : nodePos(here));
-      WM3D.setStage(here === WT ? null : here - chFirst(ch));
+      WM3D.setStage(here === WT ? null : here - chFirst(ch), save.clear - chFirst(ch));
       WM3D.onFrame(place);
       place();
       map.classList.add('ready');
@@ -2697,7 +2697,7 @@
       if (my !== moving || !tok.isConnected) return;
       tok.classList.remove('walk');
       save.wposCh[CH.id] = p.slice();
-      if (node != null) { save.node = node; WM3D.setMarker(node === WT ? null : nodePos(node)); WM3D.setStage(node === WT ? null : node - chFirst(curCh())); }
+      if (node != null) { save.node = node; WM3D.setMarker(node === WT ? null : nodePos(node)); WM3D.setStage(node === WT ? null : node - chFirst(curCh()), save.clear - chFirst(curCh())); }
       writeSave();
       moving = 0;
       if (node != null) { stageSel = node; nodeInfo(); }

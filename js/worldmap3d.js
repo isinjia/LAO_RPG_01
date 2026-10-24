@@ -128,9 +128,11 @@
               gl_FragColor = vec4(c, 1.0);
             }`,
           extensions: { derivatives: true },
+          transparent: true, // 반투명 차례에서 바닥판 아래 배경 그림 조각 뒤에 그려 그 조각을 덮는다 (깊이를 안 남겨도 덮이게)
         }));
       sea.renderOrder = -2;
       scene.add(sea);
+      for (const o of Object.values(byPath)) if (o.material && o.material.uniforms && o.material.uniforms.color && o.position.y < b.min.y) o.renderOrder = -3;
     }
     // 작전 지점 표시(원작 map_point 입자: 2초마다 하나, 커지며 흰색→빨강으로 사라짐)
     const marker = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex(S.marker), transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending }));
@@ -268,12 +270,14 @@
     // 작전 지점 표시를 그 자리(3D)에. null 이면 끈다
     setMarker(p) { marker = p; if (cur) { cur.marker.visible = !!p; if (p) cur.marker.position.set(p[0], p[1] + 0.012, p[2]); } },
     // 고른 작전(장 안 순서, null 이면 없음)에 맞춰 원작처럼 물체를 끈다 (2장 6~8: 바닥판을 꺼 그 아래 지하 제철소를 드러낸다).
-    // 끈 동안 바다는 깊이를 남기지 않아, 바닥판 밖으로 뻗은 지하 시설이 바다에 덮이지 않는다
-    setStage(i) {
+    // done: 이 장에서 깬 작전 수. 물체를 끄는 첫 작전(2-6)을 깼거나 지금 그 작전들을 고르면 바다가 깊이를 남기지 않아,
+    // 바닥판 밖으로 뻗은 지하 통로가 바다에 덮이지 않고 늘 보인다
+    setStage(i, done = 0) {
       if (!cur) return;
       const hide = new Set((i != null && cur.S.stages[i] && cur.S.stages[i].hide) || []);
       for (const s of cur.S.stages) for (const p of s.hide || []) if (cur.byPath[p]) cur.byPath[p].visible = !hide.has(p);
-      if (cur.sea) cur.sea.material.depthWrite = !hide.size;
+      const first = cur.S.stages.findIndex((s) => s.hide);
+      if (cur.sea) cur.sea.material.depthWrite = !(hide.size || (first >= 0 && done > first));
     },
     onFrame(cb) { frameCbs.push(cb); },
     // 카메라가 따라갈 자리 [x, y, z] (배열을 바꾸면 다음 그림부터 따라간다). null 이면 지도 한가운데
