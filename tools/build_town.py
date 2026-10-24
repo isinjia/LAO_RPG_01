@@ -144,7 +144,7 @@ def add_snow(im):
     return Image.fromarray(np.dstack([np.clip(rgb, 0, 255), a[:, :, 3:]]).astype(np.uint8))
 
 
-FADE = {'t4_cafe': {'t': 0.3, 'r': 0.18}, 't4_pillar': {'t': 0.25}, 't4_cmd': {'t': 0.12}}
+FADE = {'t4_cafe': {'t': 0.3, 'r': 0.18}, 't4_pillar': {'t': 0.25}, 't4_cmd': {'t': 0.12}, 't2_cafe': {'l': 0.1, 't': 0.06}}
 ONLY = set(os.sys.argv[1:])  # 이름을 주면 그 조각만 다시 만든다
 
 
@@ -231,6 +231,12 @@ def composite():
     # 양옆 눈 더미를 다시 덮어 문이 눈 속에 묻힌 것처럼
     L = mound.crop((0, 0, int(W * 0.36), mh)); R = mound.crop((int(W * 0.64), 0, W, mh))
     out.alpha_composite(L, (0, H - mh)); out.alpha_composite(R, (int(W * 0.64), H - mh))
+    oa = np.asarray(out).astype(np.float32); hh2, ww2 = oa.shape[:2]  # 눈 더미 양 끝의 곧은 자른 자국을 녹인다
+    for side in ('l', 'r'):
+        n = int(ww2 * 0.12); r = (np.arange(n) / n) ** 1.4
+        if side == 'l': oa[:, :n, 3] *= r[None, :]
+        else: oa[:, ww2 - n:, 3] *= r[None, ::-1]
+    out = Image.fromarray(oa.astype(np.uint8))
     out.save(os.path.join(OUT, 't6_bunker.webp'), quality=90, method=6)
 
 
