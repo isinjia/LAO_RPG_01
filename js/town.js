@@ -268,7 +268,7 @@
       sky: ['#3f8fd0', '#8fd0ea'], fx: 'dust', edgeLine: 6, start: [12, 16],
       back: [{ art: 'town/t7_sea', by: 6.05, h: 6.4, repeat: 1, mirror: 1 }],
       objects: [
-        BLD('cmd', 'town/t4_shop', 1, 7, 9, 3, 6, { plinth: 0 }), BLD('shop', 'town/t5_shop', 15, 7, 7, 3, 18, { plinth: 0, glow: '255,120,110' }), BLD('cafe', 'town/t2_cafe', 19, 13, 5, 3, 21, { plinth: 0 }),
+        BLD('cmd', 'town/t7_tower', 4, 7, 3, 3, 5, { plinth: 0 }), BLD('shop', 'town/t7_terminal', 14, 7, 8, 3, 18, { plinth: 0 }), BLD('cafe', 'town/t2_cafe', 19, 13, 5, 3, 21, { plinth: 0 }),
         D('town/t3_radar', 23, 9, 1, 2.4), D('town/t0_mgnest', 10, 7, 3, 1.1), D('town/t3_mg', 11, 7, 1, 1.2, { block: 0 }),
         D('tiles/crate1', 3, 12, 1, 1.0), D('tiles/crate0', 4, 12, 1, 0.9), D('tiles/crate1', 3, 13, 1, 1.0), D('tiles/barrel', 15, 12, 1, 1.1), D('tiles/barrel', 16, 12, 1, 1.0),
         D('tiles/console', 8, 14, 2, 1.4, { lit: [90, '120,220,255'] }), D('tiles/gas', 1, 15, 2, 1.4), D('tiles/bags1', 15, 15, 2, 0.8), D('town/b_bench', 5, 15, 2, 0.9),

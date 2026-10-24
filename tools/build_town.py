@@ -89,6 +89,8 @@ PIECES = {
     't4_cave': ('IW/IW_BG_Final.png', 0, 0, 4500, 1952, 1600),  # 동굴 바위 벽
     't4_ceil': ('IW/IW_Ceiling_Near_View 01_Final.png', 0, 0, 9562, 766, 1600),  # 종유석 천장
     't7_sea': ('BG_Ch09/BG_Ch09_sky_Far.png', 0, 500, 2048, 880, 1600),  # 먼 바다 수평선 (7장 군항)
+    't7_tower': ('BG_Ch09/BG_Vancouver_Airport1.png', 1309, 1, 94, 317, 400),  # 관제탑 (7장 주둔지 지휘소)
+    't7_terminal': ('BG_Ch09/BG_Vancouver_Airport1.png', 420, 19, 470, 150, 640),  # 터미널 가운데 동 (7장 함대 통신실)
     't7_isle': ('BG_Ch09/BG_Ch09_sky_Far.png', 0, 1848, 2048, 158, 900),  # 먼 섬
     't0_lamp': (SUB, 11, 775, 177, 484, 240),  # 공원 가로등
     't0_mgnest': ('BG_OBJ/defense_line.png', 35, 558, 968, 442, 480),
