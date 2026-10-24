@@ -115,7 +115,7 @@
       floor: { base: 'town/g_grass', zone: 'tiles/sand', path: 'tiles/sand', wall: 'tiles/forest', edge: 'rgba(70,50,20,.3)' },
       objects: [
         BLD('cmd', 'town/t1_bunker', 3, 5, 7, 4, 6, { plinth: 0, glow: '255,220,160' }), BLD('shop', 'town/b_shop', 16, 5, 6, 4, 18), BLD('cafe', 'town/b_cafe', 9, 12, 6, 2, 11, { plinth: 0 }),
-        { t: 'deco', kind: 'lighthouse', x: 2, y: 3, w: 2, h: 2, block: 1, lit: [170, '255,226,150'] },
+        { t: 'deco', kind: 'lighthouse', x: 11, y: 4, w: 2, h: 2, block: 1, lit: [170, '255,226,150'] },
         D('town/t0_mgnest', 14, 3, 3, 1.2), D('town/t3_mg', 15, 3, 1, 1.25, { block: 0, ox: 6 }), D('tiles/bags0', 8, 3, 2, 0.75),
         D('town/b_palm1', 1, 7, 1, 2.6), D('town/b_palm2', 23, 4, 1, 2.6), D('town/b_palm1', 10, 3, 1, 2.4), D('town/b_palm2', 22, 13, 1, 2.6),
         D('tiles/tree0', 1, 12, 1, 2.2), D('tiles/tree1', 2, 15, 1, 2.0), D('tiles/tree2', 23, 10, 1, 2.2), D('tiles/tree3', 24, 16, 1, 1.7), D('town/b_pine2', 20, 15, 1, 2.2),
@@ -186,7 +186,7 @@
         R(11, 10, 12, 6, 's'); R(2, 9, 21, 1, '_'); R(12, 9, 2, 9, '_');
       }),
       floor: { base: 'tiles/cave', zone: 'tiles/concrete', path: 'tiles/labd', wall: 'tiles/cave', back: '#10161a', zoneA: 0.55 },
-      sky: ['#05080b', '#0f1a20'], dark: 0.42, torch: 1, water: 'canal', fx: 'drip', start: [12, 16],
+      sky: ['#05080b', '#0f1a20'], dark: 0.3, torch: 1, water: 'canal', fx: 'drip', start: [12, 16],
       lights: [[3, 3.4, 150, '255,90,60'], [9, 3.6, 120, '120,220,230'], [16, 3.6, 120, '120,220,230'], [22, 3.4, 150, '255,90,60']],
       back: [{ art: 'town/t4_cave', by: 4.15, h: 4.6, repeat: 1, mirror: 1 }, { art: 'town/t4_ceil', by: 1.1, h: 1.1, repeat: 1, mirror: 1 }],
       objects: [
@@ -267,7 +267,7 @@
       }),
       floor: { base: 'tiles/concrete', zone: 'tiles/factory', zoneA: 0.16, path: 'town/g_asph', wall: 'tiles/concrete', back: '#2d6f8f', crisp: 1, lane: 'rgba(230,180,40,.8)' },
       sky: ['#3f8fd0', '#8fd0ea'], fx: 'dust', edgeLine: 6, start: [12, 16],
-      back: [{ art: 'town/t7_sea', by: 6.05, h: 6.4, repeat: 1, mirror: 1 }, { art: 'town/t7_city', by: 6.15, h: 1.5, x: 17.5, alpha: 0.88 }, { kind: 'ship', x: 22.5, by: 4.7, len: 1.6, alpha: 0.85 }, { kind: 'ship', x: 13.5, by: 5.6, len: 3.4 }, { kind: 'crane', x: 9.3, by: 6.2, h: 2.6 }], // 바다 건너 무너진 도시, 군함, 부두 기중기
+      back: [{ art: 'town/t7_sea', by: 6.05, h: 6.4, repeat: 1, mirror: 1 }, { kind: 'ship', x: 22.5, by: 4.7, len: 1.6, alpha: 0.85 }, { kind: 'ship', x: 13.5, by: 5.6, len: 3.4 }, { kind: 'crane', x: 9.3, by: 6.2, h: 2.6 }], // 바다 건너 무너진 도시, 군함, 부두 기중기
       objects: [
         BLD('cmd', 'town/t7_tower', 4, 7, 3, 3, 5, { plinth: 0, lightR: 50, glow: '200,220,255' }), BLD('shop', 'town/t7_terminal', 14, 7, 8, 3, 18, { plinth: 0 }), BLD('cafe', 'town/t7_cafe', 19, 13, 5, 3, 21, { plinth: 0 }),
         BOLLARD(1, 6), BOLLARD(8, 6), BOLLARD(13, 6), BOLLARD(23, 6), BOLLARD(24, 6),
@@ -299,7 +299,7 @@
     r_factory: { fl: 525, h: 750, back: '#c3ccd8' }, r_lab: { fl: 350, h: 445, win: [72, 60, 282, 152, 1] }, r_arch: { fl: 425, h: 552, blk: [[0, 0.16]] }, r_secret: { fl: 425, h: 556 },
     r_ware: { fl: 430, h: 552, blk: [[0, 0.2], [0.82, 1]] }, r_bio: { fl: 415, h: 498 },
     r_cafe1_0: { fl: 232, h: 340, win: [372, 96, 618, 172, 1] }, r_cafe2_0: { fl: 232, h: 340, win: [292, 105, 341, 153, 2] }, r_cafe3_0: { fl: 232, h: 340, win: [249, 113, 377, 149, 0] },
-    r_cafe4_0: { fl: 232, h: 340, win: [245, 112, 372, 149, 0] }, r_cafe5_0: { fl: 232, h: 340, win: [283, 112, 359, 146, 0] }, r_dis3_0: { fl: 345, h: 512, blk: [[0.68, 1]], win: [327, 86, 712, 133, 0] },
+    r_cafe4_0: { fl: 232, h: 340, win: [245, 112, 400, 149, 0] }, r_cafe5_0: { fl: 232, h: 340, win: [283, 112, 359, 146, 0] }, r_dis3_0: { fl: 345, h: 512, blk: [[0.68, 1]], win: [327, 86, 712, 133, 0] },
   };
   // 사람 자리 (가로 비율, 바닥 첫 줄에서 몇 줄 아래)
   const STAGE_NPC = { cmd: [['johanna', 0.6, 0], ['marie', 0.3, 1], ['labiata', 0.76, 1]], shop: [['fortune', 0.5, 0], ['pupphead', 0.26, 1], ['coco', 0.72, 1]], cafe: [['amy', 0.22, 1], ['scathy', 0.8, 1]] };
@@ -314,13 +314,13 @@
     const mid = Math.floor(W / 2), mx = blocked(mid) ? [...Array(W).keys()].filter((x) => !blocked(x)).sort((a, b) => Math.abs(a - mid) - Math.abs(b - mid))[0] : mid;
     const used = [];
     const free0 = (x) => { for (let d = 0; d < W; d++) for (const s of [1, -1]) { const t = x + d * s; if (t > 0 && t < W - 1 && !blocked(t) && t !== mx) return t; } return x; };
-    const free = (x) => { for (let d = 0; d < W; d++) for (const sg of [1, -1]) { const t = x + d * sg; if (t > 0 && t < W - 1 && !blocked(t) && Math.abs(t - mx) > 0 && used.every((u) => Math.abs(u - t) >= 2)) { used.push(t); return t; } } return free0(x); };
-    const objects = [{ t: 'exit', x: mx, y: H - 1, w: 1, h: 1, to: 'back' }, ...STAGE_NPC[k].map(([id, fx0, dy0]) => { const hs = [...(roomLook + id)].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7), fx = Math.min(0.9, Math.max(0.1, fx0 + ((hs % 7) - 3) * 0.06)), dy = (dy0 + (hs >>> 3)) % 2; return { t: 'npc', id, x: free(Math.round(fx * W)), y: Math.min(H - 2, r0 + dy), dir: (hs >>> 5) % 3 === 0 ? (fx > 0.5 ? 1 : -1) : fx > 0.5 ? -1 : 1 }; })]; // 장마다 사람 자리를 조금씩 흩뜨린다
+    const free = (x) => { for (let d = 0; d < W; d++) for (const sg of [1, -1]) { const t = x + d * sg; if (t > 0 && t < W - 1 && !blocked(t) && Math.abs(t - mx) > 1 && used.every((u) => Math.abs(u - t) >= 2)) { used.push(t); return t; } } return free0(x); };
+    const objects = [{ t: 'exit', x: mx, y: H - 1, w: 1, h: 1, to: 'back' }, ...STAGE_NPC[k].map(([id, fx0, dy0]) => { const hs = [...(roomLook + id)].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7), fx = Math.min(0.8, Math.max(0.2, fx0 + ((hs % 7) - 3) * 0.06)), dy = (dy0 + (hs >>> 3)) % 2; return { t: 'npc', id, x: free(Math.round(fx * W)), y: Math.min(H - 2, r0 + dy), dir: (hs >>> 5) % 3 === 0 ? (fx > 0.5 ? 1 : -1) : fx > 0.5 ? -1 : 1 }; })]; // 장마다 사람 자리를 조금씩 흩뜨린다
     for (const [art, fx, dy, w, hh, lit] of props || []) { const x = Math.max(1, Math.round(fx * W)), y = Math.min(H - 2, r0 + dy); if (x === mx || objects.some((o) => o.t === 'npc' && o.x >= x && o.x < x + w && o.y === y)) continue; objects.push({ t: 'deco', art, x, y, w, h: 1, hh, block: 1, lit }); }
     return { name, rows, indoor: 1, stage: { bg: bgPath, fl: st.fl, h: st.h, sc, top0, floorH, off, back: st.back, screen: st.screen, win: st.win, patch: st.patch }, bg: bgPath, tint, spawn: [mx, H - 2], objects };
   }
   // 방 안 분위기 (장별): 어둠, 어둠 빛깔, 사령관 둘레 등불, 떠다니는 것
-  const ROOMATMO = { works: { dark: 0.12, darkC: '30,18,8', torch: 1, fx: 'dust' }, camp: { dark: 0.14, darkC: '30,22,10', torch: 1, fx: 'dust' }, sewer: { dark: 0.36, darkC: '4,12,16', torch: 1, fx: 'drip', tint: '#b4c6cc' }, station: { dark: 0.25, darkC: '6,12,22', torch: 1, fx: 'dust' }, port: { dark: 0.14, darkC: '8,20,36', torch: 1, fx: 'dust', tint: '#c6d6ea' }, snow: { dark: 0.28, darkC: '40,22,8', torch: 1, fx: 'dust', tint: '#ffd6a8' } };
+  const ROOMATMO = { works: { dark: 0.12, darkC: '30,18,8', torch: 1, fx: 'dust' }, camp: { dark: 0.14, darkC: '30,22,10', torch: 1, fx: 'dust' }, sewer: { dark: 0.26, darkC: '4,12,16', torch: 1, fx: 'drip', tint: '#b4c6cc' }, station: { dark: 0.25, darkC: '6,12,22', torch: 1, fx: 'dust' }, port: { dark: 0.14, darkC: '8,20,36', torch: 1, fx: 'dust', tint: '#c6d6ea' }, snow: { dark: 0.28, darkC: '40,22,8', torch: 1, fx: 'dust', tint: '#ffd6a8' } };
   // 방 창 너머로 보이는 그 장의 바깥 (하늘 빛깔 위에 그림 층을 겹친다). y0~y1: 창 높이 비율, sy0~sy1: 그림에서 쓸 세로 비율, cx: 가로 가운데
   const WINVIEW = {
     coast: { sky: ['#7cc3ee', '#dff3fb'], layers: [{ art: 'town/t7_sea', sy0: 0.2, sy1: 0.9, y0: 0, y1: 1 }, { art: 'town/t7_isle', y0: 0.36, y1: 0.5, cx: 0.62, fit: 1 }, { art: 'town/b_palm1', y0: 0.2, y1: 1.15, cx: 0.08, fit: 1 }] },
@@ -329,7 +329,7 @@
     sewer: { sky: ['#0b1418', '#1d2c30'], layers: [{ art: 'town/t4_cave', sy0: 0.1, sy1: 1, y0: 0, y1: 1, cx: 0.3 }, { art: 'town/t4_ore', y0: 0.55, y1: 0.98, cx: 0.22, fit: 1 }], haze: 'rgba(120,200,220,.28)', add: 1 },
     station: { sky: ['#06101a', '#12283a'], layers: [{ art: 'town/t5_platform', sy0: 0.25, sy1: 0.95, y0: 0, y1: 1.05, cx: 0.55 }] },
     snow: { sky: ['#9fb7cf', '#eef3f8'], layers: [{ art: 'town/t6_mount', y0: 0.12, y1: 1.05, cx: 0.5 }, { art: 'town/t6_pine', y0: 0.45, y1: 1.12, cx: 0.9, fit: 1 }], ground: '#f2f5f8' },
-    port: { sky: ['#5f8fbf', '#cfe2f2'], layers: [{ art: 'town/t7_sea', sy0: 0.32, sy1: 1, y0: 0, y1: 1 }, { art: 'town/t7_city', y0: 0.18, y1: 0.5, cx: 0.35, fit: 1, alpha: 0.9 }, { fill: '#5d6670', y0: 0.86, y1: 1 }, { fill: '#e2b23a', y0: 0.86, y1: 0.875 }, { art: 'town/t7_tower', y0: 0.08, y1: 0.9, cx: 0.86, fit: 1 }], haze: 'rgba(20,50,90,.12)' },
+    port: { sky: ['#5f8fbf', '#cfe2f2'], layers: [{ art: 'town/t7_sea', sy0: 0.32, sy1: 1, y0: 0, y1: 1 }, { fill: '#5d6670', y0: 0.86, y1: 1 }, { fill: '#e2b23a', y0: 0.86, y1: 0.875 }, { art: 'town/t7_tower', y0: 0.08, y1: 0.9, cx: 0.86, fit: 1 }], haze: 'rgba(20,50,90,.12)' },
   };
   const ROOMBG0 = { cmd: 'town/r_train_0', shop: 'town/r_dis2_0', cafe: 'town/r_cafe4_0' }; // 1장
   let roomLook = 'coast'; // 방 사람 자리를 흩뜨릴 씨앗
@@ -780,7 +780,7 @@
     const t = performance.now() / 1000, bob = Math.sin(t * 0.8 + cx) * L * 0.006, x0 = cx - L / 2, x1 = cx + L / 2, y = wy + bob;
     ctx.save(); ctx.globalAlpha = alpha;
     ctx.fillStyle = 'rgba(10,40,70,.25)'; ctx.beginPath(); ctx.ellipse(cx, y + L * 0.012, L * 0.55, L * 0.03, 0, 0, 7); ctx.fill(); // 물에 비친 그늘
-    ctx.fillStyle = '#5c6a77'; ctx.beginPath(); ctx.moveTo(x0, y - L * 0.11); ctx.lineTo(x1 + L * 0.05, y - L * 0.14); ctx.lineTo(x1 - L * 0.07, y); ctx.lineTo(x0 + L * 0.03, y); ctx.closePath(); ctx.fill();
+    const hg = ctx.createLinearGradient(0, y - L * 0.14, 0, y); hg.addColorStop(0, '#7d8b98'); hg.addColorStop(1, '#4f5b67'); ctx.fillStyle = hg; ctx.beginPath(); ctx.moveTo(x0, y - L * 0.11); ctx.lineTo(x1 + L * 0.05, y - L * 0.14); ctx.lineTo(x1 - L * 0.07, y); ctx.lineTo(x0 + L * 0.03, y); ctx.closePath(); ctx.fill();
     ctx.fillStyle = '#3e4955'; ctx.beginPath(); ctx.moveTo(x0 + L * 0.015, y - L * 0.035); ctx.lineTo(x1 - L * 0.045, y - L * 0.035); ctx.lineTo(x1 - L * 0.07, y); ctx.lineTo(x0 + L * 0.03, y); ctx.closePath(); ctx.fill(); // 물에 잠긴 아랫배
     ctx.fillStyle = '#8b98a4'; ctx.fillRect(x0, y - L * 0.118, L * 1.04, L * 0.012); // 갑판 줄
     ctx.fillStyle = '#9ba8b4'; ctx.fillRect(x0 + L * 0.3, y - L * 0.27, L * 0.3, L * 0.155); ctx.fillRect(x0 + L * 0.37, y - L * 0.36, L * 0.17, L * 0.1); // 함교 두 층

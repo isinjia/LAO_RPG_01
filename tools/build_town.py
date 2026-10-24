@@ -29,12 +29,10 @@ SNOWR = 'BG_Ch13/BG_Ch13_snow_far_road.png'
 XMAS = 'BG_Christmas/BG_Christmas_snow_road.png'
 
 ISLE = 'BG_Tropical_island/BG_Tropical_island _2.png'
-CITY = 'BG_Coastal_city_ruins/BG_Coastal_city_ruins_2.png'
 
 PIECES = {
-    # 방 창 너머 풍경과 7장 건너편 기슭
+    # 방 창 너머 풍경
     'v_forest': (ISLE, 0, 0, 2048, 534, 1024),      # 3장 창밖: 안개 낀 숲
-    't7_city': (CITY, 20, 1080, 2028, 600, 1400),   # 7장 바다 건너 무너진 도시
     # 2장: 공단 창고 거리 (식량 창고 배경 띠를 건물 단위로 나눈다)
     't2_cmd': (FOOD, 80, 80, 610, 466, 720),        # 컨테이너를 쌓은 작업 지휘소
     't2_shop': (FOOD, 686, 80, 730, 466, 760),      # 지게차가 선 초록 창고 (철공 작업장)
@@ -154,7 +152,7 @@ def add_snow(im, grass=True):
     return Image.fromarray(np.dstack([np.clip(rgb, 0, 255), a[:, :, 3:]]).astype(np.uint8))
 
 
-FADE = {'t4_cafe': {'t': 0.3, 'r': 0.18}, 't4_pillar': {'t': 0.25}, 't4_cmd': {'t': 0.12}, 't2_cafe': {'l': 0.1, 't': 0.06}}
+FADE = {'t4_cafe': {'t': 0.14, 'r': 0.08}, 't4_pillar': {'t': 0.25}, 't4_cmd': {'t': 0.12}, 't2_cafe': {'l': 0.1, 't': 0.06}}
 ONLY = set(os.sys.argv[1:])  # 이름을 주면 그 조각만 다시 만든다
 
 
