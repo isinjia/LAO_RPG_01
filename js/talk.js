@@ -336,5 +336,5 @@
     next();
   });
 
-  window.TALK = { play, update, next, skip, askSkip, get active() { return !!cur; }, get busy() { return busy; } };
+  window.TALK = { play, preload, update, next, skip, askSkip, get active() { return !!cur; }, get busy() { return busy; } };
 })();

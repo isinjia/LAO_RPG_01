@@ -2456,7 +2456,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '2.18';
+  const GAME_VERSION = '2.19';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2784,6 +2784,20 @@
     hideScreen();
     leaveMap();
     mode = 'town';
+    // 마을 동료의 모든 대화 표정과 현재 받을 의뢰의 등장인물을 미리 불러 둔다.
+    const townPortraits = [];
+    for (const [id, lines] of Object.entries(window.LOBBY || {})) {
+      if (!inTown(id)) continue;
+      for (const line of lines) {
+        const stand = STAND_OF[id] || line.f || HERO_STAND[id];
+        if (stand) townPortraits.push({ cast: [['C', stand, 1]] });
+      }
+    }
+    for (const q of sideNew()) {
+      const scene = window.STORY && STORY[q.idx];
+      for (const n of (scene && scene.start) || []) townPortraits.push({ cast: n.cast || [] });
+    }
+    TALK.preload(townPortraits);
     await TOWNF.enter({
       name: townOf().name, look: townOf().look,
       present: inTown,
