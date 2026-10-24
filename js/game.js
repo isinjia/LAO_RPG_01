@@ -2668,6 +2668,7 @@
       tokPos = save.wposCh[CH.id].slice();
       WM3D.setFocus(tokPos); // 카메라 가운데에 늘 부대
       WM3D.setMarker(here === WT ? null : nodePos(here));
+      WM3D.setStage(here === WT ? null : here - chFirst(ch));
       WM3D.onFrame(place);
       place();
       map.classList.add('ready');
@@ -2692,7 +2693,7 @@
       if (my !== moving || !tok.isConnected) return;
       tok.classList.remove('walk');
       save.wposCh[CH.id] = p.slice();
-      if (node != null) { save.node = node; WM3D.setMarker(node === WT ? null : nodePos(node)); }
+      if (node != null) { save.node = node; WM3D.setMarker(node === WT ? null : nodePos(node)); WM3D.setStage(node === WT ? null : node - chFirst(curCh())); }
       writeSave();
       moving = 0;
       if (node != null) { stageSel = node; nodeInfo(); }

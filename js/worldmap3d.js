@@ -58,8 +58,8 @@
     const c3 = (a = [1, 1, 1]) => new THREE.Vector3(a[0], a[1], a[2]);
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(S.cam.bg[0], S.cam.bg[1], S.cam.bg[2]);
-    const scroll = [];
-    let ground = null;
+    const scroll = [], byPath = {};
+    let ground = null, sea = null;
 
     function material(m, name) {
       const p = m.p, add = { transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor };
@@ -102,13 +102,14 @@
           transparent: true, depthWrite: false, side: THREE.DoubleSide }));
       } else continue;
       obj.position.fromArray(o.pos); obj.quaternion.fromArray(o.rot); obj.scale.fromArray(o.scl);
+      byPath[o.path] = obj;
       scene.add(obj);
     }
     // 지도 밖 바다: 지도 판 가장자리 높이 바로 아래에 넓게 깔고, 지도 안쪽은 비운다.
     // 해안선을 따라 겹겹이 퍼지는 등고선(지도 안 등고선과 같은 결)이 천천히 밀려 나가고, 멀어질수록 어둠에 묻힌다
     if (ground) {
       const b = new THREE.Box3().setFromObject(ground);
-      const sea = new THREE.Mesh(new THREE.PlaneGeometry(80, 80).rotateX(-Math.PI / 2).translate((b.min.x + b.max.x) / 2, b.min.y - 0.01, (b.min.z + b.max.z) / 2),
+      sea = new THREE.Mesh(new THREE.PlaneGeometry(80, 80).rotateX(-Math.PI / 2).translate((b.min.x + b.max.x) / 2, b.min.y - 0.01, (b.min.z + b.max.z) / 2),
         new THREE.ShaderMaterial({
           uniforms: { time, rect: { value: new THREE.Vector4(b.min.x, b.min.z, b.max.x, b.max.z) } },
           vertexShader: 'varying vec3 vW; void main() { vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }',
@@ -139,7 +140,7 @@
     scene.updateMatrixWorld(true);
     const clips = {};
     for (const k in S.clips) clips[k] = { len: S.clips[k].len, d: f32(S.clips[k].cam) };
-    return { S, scene, clips, ground, marker, scroll, stages: S.stages.map((s) => s.pos), town: S.town, center: S.stages.reduce((a, s) => a.add(new THREE.Vector3().fromArray(s.pos)), new THREE.Vector3()).multiplyScalar(1 / S.stages.length) };
+    return { S, scene, clips, ground, sea, byPath, marker, scroll, stages: S.stages.map((s) => s.pos), town: S.town, center: S.stages.reduce((a, s) => a.add(new THREE.Vector3().fromArray(s.pos)), new THREE.Vector3()).multiplyScalar(1 / S.stages.length) };
   }
 
   // ── 카메라: 위에서 비스듬히 내려다보는 쿼터뷰 고정. 끌어서 돌리고, 휠·두 손가락으로 당기고 민다 ──
@@ -266,6 +267,14 @@
     get data() { return cur; },
     // 작전 지점 표시를 그 자리(3D)에. null 이면 끈다
     setMarker(p) { marker = p; if (cur) { cur.marker.visible = !!p; if (p) cur.marker.position.set(p[0], p[1] + 0.012, p[2]); } },
+    // 고른 작전(장 안 순서, null 이면 없음)에 맞춰 원작처럼 물체를 끈다 (2장 6~8: 바닥판을 꺼 그 아래 지하 제철소를 드러낸다).
+    // 끈 동안 바다는 깊이를 남기지 않아, 바닥판 밖으로 뻗은 지하 시설이 바다에 덮이지 않는다
+    setStage(i) {
+      if (!cur) return;
+      const hide = new Set((i != null && cur.S.stages[i] && cur.S.stages[i].hide) || []);
+      for (const s of cur.S.stages) for (const p of s.hide || []) if (cur.byPath[p]) cur.byPath[p].visible = !hide.has(p);
+      if (cur.sea) cur.sea.material.depthWrite = !hide.size;
+    },
     onFrame(cb) { frameCbs.push(cb); },
     // 카메라가 따라갈 자리 [x, y, z] (배열을 바꾸면 다음 그림부터 따라간다). null 이면 지도 한가운데
     setFocus(p) { focus = p; },
