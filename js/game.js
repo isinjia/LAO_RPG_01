@@ -735,13 +735,15 @@
     cam.minZoom = Math.min(cam.fitZoom, cam.zoom) * 0.9;
     // 확대는 처음 비율보다 훨씬 가까이까지 (큰 화면에서는 처음 비율이 예전 한계 110을 넘었다)
     cam.maxZoom = (Math.max(110, ppw) * 2.2 * VIEW_H) / innerHeight;
+    // 피시 기본은 최대 축소와 최대 확대 사이의 중간값.
+    if (!MOBILE) cam.zoom = (cam.minZoom + cam.maxZoom) / 2;
     // 직접 맞춘 확대 비율(칸 하나의 화면 크기)이 저장돼 있으면 그 비율로 시작 (가로·세로 화면 따로)
     const saved = save.opts[zoomKey()];
     if (saved > 0) {
       const savedPpw = MOBILE ? aw / saved : saved;
       cam.zoom = Math.max(cam.minZoom, Math.min(cam.maxZoom, savedPpw * VIEW_H / innerHeight));
-      ppw = cam.zoom * innerHeight / VIEW_H;
     }
+    ppw = cam.zoom * innerHeight / VIEW_H;
     // 사용 가능 영역 가운데에 지도 중심이 오도록
     const wpp = VIEW_H / (innerHeight * cam.zoom);
     const offY = (ins.top - ins.bottom) / 2 * wpp / Math.sin(TILT);
@@ -2460,7 +2462,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '2.28';
+  const GAME_VERSION = '2.29';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
