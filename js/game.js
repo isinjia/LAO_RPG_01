@@ -2797,9 +2797,14 @@
       const scene = window.STORY && STORY[q.idx];
       for (const n of (scene && scene.start) || []) townPortraits.push({ cast: n.cast || [] });
     }
+    $('boot').querySelector('.logo').classList.remove('hidden');
+    $('boot').querySelector('.bstage').textContent = '';
+    $('loadMsg').textContent = '마을과 동료들을 불러오는 중…';
+    $('boot').classList.remove('hidden');
     const portraitsReady = TALK.preload(townPortraits);
     await TOWNF.enter({
       loading: portraitsReady,
+      onReady: () => $('boot').classList.add('hidden'),
       name: townOf().name, look: townOf().look,
       present: inTown,
       marker: (id) => sideNew().some((s) => giverOf(s) === id),

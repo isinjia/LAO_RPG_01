@@ -854,12 +854,3 @@ i.dlv { font: normal 11px 'LO_B', sans-serif; color: #111; background: #8fd0ff; 
   #talk .tbox { height: calc(400 * var(--u)); }
   #talk .ttext { bottom: calc(80 * var(--u)); overflow-y: auto; scrollbar-width: thin; }
 }
-
-/* 마을 입장 준비 */
-#townHud .tn-loading { display: none; }
-#townHud.loading > :not(.tn-loading) { visibility: hidden; }
-#townHud.loading .tn-loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; background: #101622; color: #fff; pointer-events: auto; }
-.tn-loading b { font: 22px 'LO_B', sans-serif; }
-.tn-loading span { font: 15px 'LO_M', sans-serif; color: #b8c2da; }
-.tn-loading i { width: 36px; height: 36px; border: 3px solid #ffffff25; border-top-color: var(--lo-y); border-radius: 50%; animation: townLoading 1s linear infinite; }
-@keyframes townLoading { to { transform: rotate(360deg); } }
