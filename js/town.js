@@ -65,6 +65,7 @@
     '서버 관제실': [['town/r_mm1_12', 0.74, 2, 1, 1.7, [80, '90,255,180']]],
     '열차 정비실': [['town/r_res2_6', 0.1, 2, 2, 1.4], ['town/r_var2_3', 0.9, 2, 1, 1.3]],
     '주둔지 지휘소': [['town/r_mk4_1', 0.1, 2, 1, 1.4], ['town/r_mm2_2', 0.9, 2, 1, 1.5]],
+    '수병 숙소': [['town/r_cafe1_1', 0.66, 1, 3, 1.0], ['town/r_mk0_6', 0.84, 1, 1, 0.9], ['town/r_res2_16', 0.88, 2, 1, 1.4], ['town/r_cafe2_3', 0.12, 2, 1, 0.6]],
     '함대 병기고': [['town/r_res2_16', 0.1, 2, 1, 1.4], ['town/r_var2_3', 0.6, 2, 1, 1.3]],
     '분교 은신처': [['town/r_cafe3_2', 0.1, 2, 1, 1.0], ['town/r_mk0_6', 0.86, 2, 1, 0.9]],
     '연구소 정비실': [['town/r_andr1_15', 0.1, 2, 1, 1.9, [80, '90,255,170']]],
@@ -269,7 +270,7 @@
       sky: ['#3f8fd0', '#8fd0ea'], fx: 'dust', edgeLine: 6, start: [12, 16],
       back: [{ art: 'town/t7_sea', by: 6.05, h: 6.4, repeat: 1, mirror: 1 }, { kind: 'ship', x: 22.5, by: 4.7, len: 1.6, alpha: 0.85 }, { kind: 'ship', x: 13.5, by: 5.6, len: 3.4 }, { kind: 'crane', x: 9.3, by: 6.2, h: 2.6 }], // 바다 건너 무너진 도시, 군함, 부두 기중기
       objects: [
-        BLD('cmd', 'town/t7_tower', 4, 7, 3, 3, 5, { plinth: 0, lightR: 50, glow: '200,220,255' }), BLD('shop', 'town/t7_terminal', 14, 7, 8, 3, 18, { plinth: 0 }), BLD('cafe', 'town/t7_cafe', 19, 13, 5, 3, 21, { plinth: 0 }),
+        BLD('cmd', 'town/t7_tower', 4, 7, 3, 3, 5, { plinth: 0, lightR: 50, glow: '200,220,255' }), BLD('shop', 'town/t7_terminal', 14, 7, 8, 3, 18, { plinth: 0 }), BLD('cafe', 'town/b_center', 19, 13, 5, 3, 21, { plinth: 0, glow: '170,220,255' }),
         BOLLARD(1, 6), BOLLARD(8, 6), BOLLARD(13, 6), BOLLARD(23, 6), BOLLARD(24, 6),
         D('town/t3_radar', 23, 9, 1, 2.4), D('town/t0_mgnest', 10, 7, 3, 1.1), D('town/t3_mg', 11, 7, 1, 1.2, { block: 0 }),
         D('tiles/crate1', 3, 12, 1, 1.0), D('tiles/crate0', 4, 12, 1, 0.9), D('tiles/crate1', 3, 13, 1, 1.0), D('town/p_barrel', 15, 12, 1, 1.1), D('town/p_barrel', 16, 12, 1, 1.0),
@@ -282,7 +283,7 @@
       rooms: {
         cmd: ROOM('주둔지 지휘소', 'r_dis1_0', 345, ['#2f4f4a', '#7fa69c'], []),
         shop: ROOM('함대 병기고', 'r_rein3_0', 345, ['#3c5a5c', '#88a9ab'], []),
-        cafe: ROOM('부두 식당', 'r_cafe4_0', 232, ['#8f877a', '#ece7de'], []),
+        cafe: ROOM('수병 숙소', 'r_secret', 425, ['#3a3550', '#8f88b0'], []),
       },
     },
   };
@@ -296,7 +297,7 @@
     r_rein1_0: { fl: 360, h: 512 }, r_dis1_0: { fl: 360, h: 512, win: [318, 78, 712, 312, 1] }, r_rein2_0: { fl: 345, h: 512, blk: [[0.66, 1]], win: [327, 86, 712, 133, 0] },
     r_parts_1: { fl: 370, h: 512, blk: [[0, 0.15], [0.27, 0.68]] }, r_rein3_0: { fl: 345, h: 512, blk: [[0.66, 1]], win: [327, 86, 712, 133, 0] },
     r_cap: { fl: 425, h: 546, blk: [[0.56, 0.82]], win: [606, 124, 676, 194, 2], patch: [[461, 402, 524, 416, '#64775a', 'WELCOME']] }, r_mm0_0: { fl: 370, h: 512, win: [470, 118, 900, 272, 1] },
-    r_factory: { fl: 525, h: 750, back: '#c3ccd8' }, r_lab: { fl: 350, h: 445, win: [72, 60, 282, 152, 1] }, r_arch: { fl: 425, h: 552, blk: [[0, 0.16]] }, r_secret: { fl: 425, h: 556 },
+    r_factory: { fl: 525, h: 750, back: '#c3ccd8' }, r_lab: { fl: 350, h: 445, win: [72, 60, 282, 152, 1] }, r_arch: { fl: 425, h: 552, blk: [[0, 0.16]] }, r_secret: { fl: 425, h: 556, win: [606, 129, 679, 199, 2], patch: [[461, 394, 525, 409, '#225e3a', 'WELCOME']] },
     r_ware: { fl: 430, h: 552, blk: [[0, 0.2], [0.82, 1]] }, r_bio: { fl: 415, h: 498 },
     r_cafe1_0: { fl: 232, h: 340, win: [372, 96, 618, 172, 1] }, r_cafe2_0: { fl: 232, h: 340, win: [292, 105, 341, 153, 2] }, r_cafe3_0: { fl: 232, h: 340, win: [249, 113, 377, 149, 0] },
     r_cafe4_0: { fl: 232, h: 340, win: [245, 112, 400, 149, 0] }, r_cafe5_0: { fl: 232, h: 340, win: [283, 112, 359, 146, 0] }, r_dis3_0: { fl: 345, h: 512, blk: [[0.68, 1]], win: [327, 86, 712, 133, 0] },
