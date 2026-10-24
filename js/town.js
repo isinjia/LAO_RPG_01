@@ -297,7 +297,7 @@
     r_rein1_0: { fl: 360, h: 512 }, r_dis1_0: { fl: 360, h: 512, win: [318, 78, 712, 312, 1] }, r_rein2_0: { fl: 345, h: 512, blk: [[0.66, 1]], win: [327, 86, 712, 133, 0] },
     r_parts_1: { fl: 370, h: 512, blk: [[0, 0.15], [0.27, 0.68]] }, r_rein3_0: { fl: 345, h: 512, blk: [[0.66, 1]], win: [327, 86, 712, 133, 0] },
     r_cap: { fl: 425, h: 546, blk: [[0.56, 0.82]], win: [606, 124, 676, 194, 2], patch: [[461, 402, 524, 416, '#64775a', 'WELCOME']] }, r_mm0_0: { fl: 370, h: 512, win: [470, 118, 900, 272, 1] },
-    r_factory: { fl: 525, h: 750, back: '#c3ccd8' }, r_lab: { fl: 350, h: 445, win: [72, 60, 282, 152, 1] }, r_arch: { fl: 425, h: 552, blk: [[0, 0.16]] }, r_secret: { fl: 425, h: 556, win: [606, 129, 679, 199, 2], patch: [[461, 394, 525, 409, '#225e3a', 'WELCOME']] },
+    r_factory: { fl: 525, h: 750, floorTiles: 6, back: '#c3ccd8' }, r_lab: { fl: 350, h: 445, win: [72, 60, 282, 152, 1] }, r_arch: { fl: 425, h: 552, blk: [[0, 0.16]] }, r_secret: { fl: 425, h: 556, win: [606, 129, 679, 199, 2], patch: [[461, 394, 525, 409, '#225e3a', 'WELCOME']] },
     r_ware: { fl: 430, h: 552, blk: [[0, 0.2], [0.82, 1]] }, r_bio: { fl: 415, h: 498 },
     r_cafe1_0: { fl: 232, h: 340, win: [372, 96, 618, 172, 1] }, r_cafe2_0: { fl: 232, h: 340, win: [292, 105, 341, 153, 2] }, r_cafe3_0: { fl: 232, h: 340, win: [249, 113, 377, 149, 0] },
     r_cafe4_0: { fl: 232, h: 340, win: [245, 112, 400, 149, 0] }, r_cafe5_0: { fl: 232, h: 340, win: [283, 112, 359, 146, 0] }, r_dis3_0: { fl: 345, h: 512, blk: [[0.68, 1]], win: [327, 86, 712, 133, 0] },
@@ -306,7 +306,7 @@
   const STAGE_NPC = { cmd: [['johanna', 0.6, 0], ['marie', 0.3, 1], ['labiata', 0.76, 1]], shop: [['fortune', 0.5, 0], ['pupphead', 0.26, 1], ['coco', 0.72, 1]], cafe: [['amy', 0.22, 1], ['scathy', 0.8, 1]] };
   function stageRoom(k, name, bgPath, tint, props) {
     const key = bgPath.replace('town/', ''), st = STAGE[key] || { fl: 340, h: 512 };
-    const W = st.w || 20, sc = (W * TILE) / 1024, top0 = st.fl * sc, floorH = Math.max((st.h - st.fl) * sc, TILE * 3.3, TILE * 8.8 - top0); // 위아래 검은 띠 없이 화면을 채운다
+    const W = st.w || 20, sc = (W * TILE) / 1024, top0 = st.fl * sc, floorH = Math.max((st.h - st.fl) * sc, TILE * (st.floorTiles || 3.3), TILE * 8.8 - top0); // 위아래 검은 띠 없이 화면을 채운다
     const H = Math.ceil((top0 + floorH) / TILE), off = H * TILE - (top0 + floorH);
     const r0 = Math.min(H - 2, Math.ceil((off + top0) / TILE + 0.45));
     const blocked = (x) => x < 1 || x > W - 2 || (st.blk || []).some(([a, b]) => (x + 0.5) / W > a && (x + 0.5) / W < b);
