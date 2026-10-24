@@ -295,8 +295,8 @@
     r_train_0: { fl: 335, h: 512, win: [339, 114, 727, 286, 0] }, r_dis2_0: { fl: 335, h: 512, blk: [[0.66, 1]], win: [327, 86, 712, 133, 0] }, r_mm4_0: { fl: 395, h: 512, blk: [[0.06, 0.27], [0.43, 0.63], [0.88, 1]] },
     r_rein1_0: { fl: 360, h: 512 }, r_dis1_0: { fl: 360, h: 512, win: [318, 78, 712, 312, 1] }, r_rein2_0: { fl: 345, h: 512, blk: [[0.66, 1]], win: [327, 86, 712, 133, 0] },
     r_parts_1: { fl: 370, h: 512, blk: [[0, 0.15], [0.27, 0.68]] }, r_rein3_0: { fl: 345, h: 512, blk: [[0.66, 1]], win: [327, 86, 712, 133, 0] },
-    r_cap: { fl: 425, h: 546, blk: [[0.56, 0.82]] }, r_mm0_0: { fl: 370, h: 512, win: [470, 118, 900, 272, 1] },
-    r_factory: { fl: 525, h: 750, back: '#c3ccd8' }, r_lab: { fl: 350, h: 445 }, r_arch: { fl: 425, h: 552, blk: [[0, 0.16]] }, r_secret: { fl: 425, h: 556 },
+    r_cap: { fl: 425, h: 546, blk: [[0.56, 0.82]], win: [606, 124, 676, 194, 2], patch: [[461, 402, 524, 416, '#64775a']] }, r_mm0_0: { fl: 370, h: 512, win: [470, 118, 900, 272, 1] },
+    r_factory: { fl: 525, h: 750, back: '#c3ccd8' }, r_lab: { fl: 350, h: 445, win: [72, 60, 282, 152, 1] }, r_arch: { fl: 425, h: 552, blk: [[0, 0.16]] }, r_secret: { fl: 425, h: 556 },
     r_ware: { fl: 430, h: 552, blk: [[0, 0.2], [0.82, 1]] }, r_bio: { fl: 415, h: 498 },
     r_cafe1_0: { fl: 232, h: 340, win: [372, 96, 618, 172, 1] }, r_cafe2_0: { fl: 232, h: 340, win: [292, 105, 341, 153, 2] }, r_cafe3_0: { fl: 232, h: 340, win: [249, 113, 377, 149, 0] },
     r_cafe4_0: { fl: 232, h: 340, win: [245, 112, 372, 149, 0] }, r_cafe5_0: { fl: 232, h: 340, win: [283, 112, 359, 146, 0] }, r_dis3_0: { fl: 345, h: 512, blk: [[0.68, 1]], win: [327, 86, 712, 133, 0] },
@@ -317,7 +317,7 @@
     const free = (x) => { for (let d = 0; d < W; d++) for (const sg of [1, -1]) { const t = x + d * sg; if (t > 0 && t < W - 1 && !blocked(t) && Math.abs(t - mx) > 0 && used.every((u) => Math.abs(u - t) >= 2)) { used.push(t); return t; } } return free0(x); };
     const objects = [{ t: 'exit', x: mx, y: H - 1, w: 1, h: 1, to: 'back' }, ...STAGE_NPC[k].map(([id, fx, dy]) => ({ t: 'npc', id, x: free(Math.round(fx * W)), y: Math.min(H - 2, r0 + dy), dir: fx > 0.5 ? -1 : 1 }))];
     for (const [art, fx, dy, w, hh, lit] of props || []) { const x = Math.max(1, Math.round(fx * W)), y = Math.min(H - 2, r0 + dy); if (x === mx || objects.some((o) => o.t === 'npc' && o.x >= x && o.x < x + w && o.y === y)) continue; objects.push({ t: 'deco', art, x, y, w, h: 1, hh, block: 1, lit }); }
-    return { name, rows, indoor: 1, stage: { bg: bgPath, fl: st.fl, h: st.h, sc, top0, floorH, off, back: st.back, screen: st.screen, win: st.win }, bg: bgPath, tint, spawn: [mx, H - 2], objects };
+    return { name, rows, indoor: 1, stage: { bg: bgPath, fl: st.fl, h: st.h, sc, top0, floorH, off, back: st.back, screen: st.screen, win: st.win, patch: st.patch }, bg: bgPath, tint, spawn: [mx, H - 2], objects };
   }
   // 방 안 분위기 (장별): 어둠, 어둠 빛깔, 사령관 둘레 등불, 떠다니는 것
   const ROOMATMO = { works: { dark: 0.12, darkC: '30,18,8', torch: 1, fx: 'dust' }, camp: { dark: 0.14, darkC: '30,22,10', torch: 1, fx: 'dust' }, sewer: { dark: 0.5, darkC: '4,12,16', torch: 1, fx: 'drip', tint: '#b4c6cc' }, station: { dark: 0.25, darkC: '6,12,22', torch: 1, fx: 'dust' }, port: { dark: 0.14, darkC: '8,20,36', torch: 1, fx: 'dust', tint: '#c6d6ea' }, snow: { dark: 0.28, darkC: '40,22,8', torch: 1, fx: 'dust', tint: '#ffd6a8' } };
@@ -615,6 +615,7 @@
       g.drawImage(im, 0, 0, im.width, st.fl * k + 2, 0, st.off, mw, st.top0 + 2 * st.sc); // 바닥과 2픽셀 겹쳐 이음선이 안 보이게
       const sc = st.screen && img(st.screen[0]); // 벽 화면에 띄울 그림
       if (sc && ok(sc)) { const [, x0, y0, x1, y1] = st.screen; g.globalAlpha = 0.9; g.drawImage(sc, x0 * mw, st.off + y0 * st.h * st.sc, (x1 - x0) * mw, (y1 - y0) * st.h * st.sc); g.globalAlpha = 1; } // 그림 좌표(비율)는 뒷벽과 같은 배율
+      for (const [a, b, c, d, col] of st.patch || []) { g.fillStyle = col; g.fillRect(a * st.sc, st.off + b * st.sc, (c - a) * st.sc, (d - b) * st.sc); } // 그림 속 글씨 지우기 (깔개의 틀린 철자)
       if (st.win && map.view) drawWindow(g, st, map.view);
     }
     const sg = g.createLinearGradient(0, mh - TILE * 1.2, 0, mh); sg.addColorStop(0, 'rgba(0,0,0,0)'); sg.addColorStop(1, 'rgba(0,0,0,.35)');
