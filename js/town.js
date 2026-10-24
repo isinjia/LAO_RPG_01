@@ -1049,7 +1049,8 @@
   function onKeyUp(ev) { heldKeys.delete(ev.code); }
   function onVisibility() { if (document.hidden) clearKeys(); }
   function onKey(ev) {
-    if (!open) return;
+    // 대화를 넘긴 같은 입력은 마을의 말 걸기에 다시 쓰지 않는다.
+    if (!open || ev.defaultPrevented) return;
     if (moveKeys[ev.code]) {
       ev.preventDefault();
       if (busy || fade > 0.05 || ev.repeat) return;
