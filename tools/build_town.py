@@ -253,8 +253,8 @@ def variants():
     def navy(im):
         a = np.asarray(im.convert('RGBA')).astype(np.float32)
         l = a[:, :, :3].mean(axis=2, keepdims=True)
-        tint = np.array([0.55, 0.72, 1.0]) * l * 1.05
-        a[:, :, :3] = a[:, :, :3] * 0.3 + tint * 0.7
+        tint = np.array([0.42, 0.62, 0.95]) * l * 1.15
+        a[:, :, :3] = a[:, :, :3] * 0.15 + tint * 0.85
         return Image.fromarray(np.clip(a, 0, 255).astype(np.uint8))
     navy(Image.open(src['barrel'])).save(os.path.join(OUT, 'p_barrel.webp'), quality=90, method=6)
     navy(Image.open(os.path.join(OUT, 't2_cafe.webp'))).save(os.path.join(OUT, 't7_cafe.webp'), quality=90, method=6)
