@@ -447,3 +447,27 @@ html.touch-ui .tbtns button {
 /* 병종 이름 옆에 같은 모양의 병종 아이콘을 함께 표시 */
 .kind .kind-icon { display: inline-block; width: 1.15em; height: 1.15em; margin-right: 3px; vertical-align: -0.2em; flex: none; }
 .kind-icon path { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* 모바일 초상화 앞쪽: 위는 영웅 병종, 아래는 용병 병종 */
+#roster .roster-kinds { display: none; }
+html.touch-ui #roster {
+  top: calc(62 * var(--touch-unit, 1px));
+  max-height: calc(100vh - 78 * var(--touch-unit, 1px));
+  overflow-y: auto; pointer-events: auto; touch-action: pan-y;
+  gap: calc(5 * var(--touch-unit, 1px));
+}
+html.touch-ui #roster .rh {
+  flex: none; width: calc(64 * var(--touch-unit, 1px)); height: calc(42 * var(--touch-unit, 1px));
+}
+html.touch-ui #roster .rh::after { display: none; }
+html.touch-ui #roster .rh img { width: calc(100% - 22 * var(--touch-unit, 1px)); margin-left: calc(22 * var(--touch-unit, 1px)); }
+html.touch-ui #roster .roster-kinds {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: calc(22 * var(--touch-unit, 1px));
+  display: flex; flex-direction: column; align-items: center; justify-content: space-evenly;
+  background: #0b1020; pointer-events: none;
+}
+html.touch-ui #roster .roster-kinds > span { display: flex; }
+html.touch-ui #roster .roster-kinds .kind-icon { width: calc(17 * var(--touch-unit, 1px)); height: calc(17 * var(--touch-unit, 1px)); }
+html.touch-ui #roster .roster-kinds .lost { opacity: .3; }
+html.touch-ui #roster .rh em { left: calc(22 * var(--touch-unit, 1px)); }

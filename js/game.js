@@ -2133,7 +2133,7 @@
       b.className = 'rh' + (u.acted ? ' done' : '') + (ui.sel === u ? ' sel' : '');
       b.dataset.n = i < 9 ? i + 1 : '';
       const hp = u.hp / u.hpMax, tp = u.troop ? u.troop.hp / u.troop.hpMax : 0;
-      b.innerHTML = `<img src="${IMG[u.icon]}"><i class="t" style="width:${tp * 100}%"></i><i class="h" style="width:${hp * 100}%"></i>${u.acted ? '<em>완료</em>' : ''}`;
+      b.innerHTML = `<span class="roster-kinds"><span title="영웅 · ${D.KIND[u.kind].name}" style="color:${D.KIND[u.kind].color}">${kindIcon(u.kind)}</span>${u.troop ? `<span class="${R.troopAlive(u) ? '' : 'lost'}" title="용병 · ${D.KIND[u.troop.kind].name}" style="color:${D.KIND[u.troop.kind].color}">${kindIcon(u.troop.kind)}</span>` : ''}</span><img src="${IMG[u.icon]}"><i class="t" style="width:${tp * 100}%"></i><i class="h" style="width:${hp * 100}%"></i>${u.acted ? '<em>완료</em>' : ''}`;
       b.title = u.name;
       b.onclick = (e) => { e.stopPropagation(); rosterPick(u); };
       el.appendChild(b);
@@ -2436,7 +2436,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '2.09';
+  const GAME_VERSION = '2.10';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
