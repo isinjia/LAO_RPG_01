@@ -737,8 +737,22 @@
       }
       ctx.drawImage(b.dim ? dimmed(im, b.dim) : im, x, base - dh, dw, dh);
     }
-    // 문: 불빛 + 매트
+    // 실제 입장 칸 위에 문틀과 열린 문을 그려 간판 아래가 입구임을 보여 준다.
     const dx = b.door * TILE, by = base - 6;
+    ctx.save();
+    const doorX = dx + 3, doorY = by - 82, doorW = TILE - 6;
+    ctx.fillStyle = '#121820'; ctx.fillRect(doorX - 5, doorY - 5, doorW + 10, 91);
+    ctx.fillStyle = '#77808a'; ctx.fillRect(doorX - 3, doorY - 3, doorW + 6, 87);
+    ctx.fillStyle = '#202630'; ctx.fillRect(doorX, doorY, doorW, 82);
+    const inside = ctx.createLinearGradient(0, doorY, 0, by);
+    inside.addColorStop(0, '#111820'); inside.addColorStop(1, '#bd9654');
+    ctx.fillStyle = inside; ctx.fillRect(doorX + 4, doorY + 4, doorW - 8, 76);
+    // 양옆으로 열린 문짝과 손잡이, 문턱.
+    ctx.fillStyle = '#414b56'; ctx.fillRect(doorX + 2, doorY + 3, 7, 76); ctx.fillRect(doorX + doorW - 9, doorY + 3, 7, 76);
+    ctx.fillStyle = '#eccb75'; ctx.fillRect(doorX + 6, doorY + 43, 2, 8); ctx.fillRect(doorX + doorW - 8, doorY + 43, 2, 8);
+    ctx.fillStyle = '#c2b89c'; ctx.fillRect(doorX - 4, by - 2, doorW + 8, 6);
+    ctx.restore();
+    // 문 앞 불빛과 매트
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
     const gc = b.glow || '255,226,160', lg = ctx.createRadialGradient(dx + 24, by, 4, dx + 24, by, 44); lg.addColorStop(0, `rgba(${gc},0.4)`); lg.addColorStop(1, `rgba(${gc},0)`);
     ctx.fillStyle = lg; ctx.fillRect(dx - 24, by - 40, 96, 80); ctx.restore();
@@ -1049,7 +1063,8 @@
   function onKeyUp(ev) { heldKeys.delete(ev.code); }
   function onVisibility() { if (document.hidden) clearKeys(); }
   function onKey(ev) {
-    if (!open) return;
+    // 대화를 넘긴 같은 입력은 마을의 말 걸기에 다시 쓰지 않는다.
+    if (!open || ev.defaultPrevented) return;
     if (moveKeys[ev.code]) {
       ev.preventDefault();
       if (busy || fade > 0.05 || ev.repeat) return;
@@ -1076,7 +1091,7 @@
   function update(dt) {
     if (!open) return;
     T += dt;
-    if (hold) { hold.t += dt; if ((hold.list.every((im) => im.complete) && hold.portraitsReady) || hold.t > 12) { layer = buildLayer(); hold = null; hud.classList.remove('loading'); fadeTo = 0; busy = false; } }
+    if (hold) { hold.t += dt; if ((hold.list.every((im) => im.complete) && hold.portraitsReady) || hold.t > 12) { layer = buildLayer(); hold = null; hud.classList.remove('hidden'); if (opts.onReady) opts.onReady(); fadeTo = 0; busy = false; } }
     // 화면 전환 (어둡게 → 지도 바꾸기 → 밝게)
     if (fade < fadeTo) { fade = Math.min(fadeTo, fade + dt * 4); if (fade >= 1 && pendingWarp) {
       const to = pendingWarp; pendingWarp = null;
@@ -1124,6 +1139,7 @@
 
   function close() {
     open = false;
+    if (hold) { hold = null; if (opts.onReady) opts.onReady(); }
     AU.amb(null);
     clearKeys();
     removeEventListener('keydown', onKey);
@@ -1158,8 +1174,8 @@
       ['tiles/grass', 'tiles/asphalt'].forEach(img);
       cv = document.createElement('canvas'); cv.id = 'townCv';
       ctx = cv.getContext('2d');
-      hud = document.createElement('div'); hud.id = 'townHud'; hud.classList.add('loading');
-      hud.innerHTML = `<div class="tn-loading" role="status" aria-live="polite"><i></i><b>마을을 준비하고 있습니다</b><span>풍경과 동료들의 일러스트를 불러오는 중…</span></div><div class="tn-name"></div><div class="tn-quest"></div><button class="lo-btn dark tn-out">월드맵으로</button><div class="tn-help">누른 곳으로 걷기 · 동료를 누르면 대화 · 머리 위 <b>!</b> 는 새 의뢰</div>`;
+      hud = document.createElement('div'); hud.id = 'townHud'; hud.classList.add('hidden');
+      hud.innerHTML = `<div class="tn-name"></div><div class="tn-quest"></div><button class="lo-btn dark tn-out">월드맵으로</button><div class="tn-help">누른 곳으로 걷기 · 동료를 누르면 대화 · 머리 위 <b>!</b> 는 새 의뢰</div>`;
       document.body.appendChild(cv); document.body.appendChild(hud);
       hud.querySelector('.tn-out').onclick = () => { if (!busy) { AU.play('lo_click', 0.6); leave(); } };
       cv.addEventListener('pointerdown', onPointer);
