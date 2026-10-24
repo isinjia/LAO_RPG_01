@@ -28,7 +28,13 @@ LAB = 'BG_12_Laboratory/Laboratory_main.png'
 SNOWR = 'BG_Ch13/BG_Ch13_snow_far_road.png'
 XMAS = 'BG_Christmas/BG_Christmas_snow_road.png'
 
+ISLE = 'BG_Tropical_island/BG_Tropical_island _2.png'
+CITY = 'BG_Coastal_city_ruins/BG_Coastal_city_ruins_2.png'
+
 PIECES = {
+    # 방 창 너머 풍경과 7장 건너편 기슭
+    'v_forest': (ISLE, 0, 0, 2048, 534, 1024),      # 3장 창밖: 안개 낀 숲
+    't7_city': (CITY, 20, 1080, 2028, 600, 1400),   # 7장 바다 건너 무너진 도시
     # 2장: 공단 창고 거리 (식량 창고 배경 띠를 건물 단위로 나눈다)
     't2_cmd': (FOOD, 80, 80, 610, 466, 720),        # 컨테이너를 쌓은 작업 지휘소
     't2_shop': (FOOD, 686, 80, 730, 466, 760),      # 지게차가 선 초록 창고 (철공 작업장)
@@ -257,7 +263,13 @@ def variants():
         a[:, :, :3] = a[:, :, :3] * 0.15 + tint * 0.85
         return Image.fromarray(np.clip(a, 0, 255).astype(np.uint8))
     navy(Image.open(src['barrel'])).save(os.path.join(OUT, 'p_barrel.webp'), quality=90, method=6)
-    navy(Image.open(os.path.join(OUT, 't2_cafe.webp'))).save(os.path.join(OUT, 't7_cafe.webp'), quality=90, method=6)
+    # 부두 식당: 주황 컨테이너만 군항 남색으로 (빛깔 각도만 돌려 명암·채도·풀빛은 그대로 둔다)
+    im = Image.open(os.path.join(OUT, 't2_cafe.webp')).convert('RGBA'); al = im.getchannel('A')
+    h, sa, v = [np.asarray(c).astype(np.int32) for c in im.convert('RGB').convert('HSV').split()]
+    warm = ((h < 34) | (h > 238)) & (sa > 50)
+    h = np.where(warm, 150, h); sa = np.where(warm, (sa * 0.85).astype(np.int32), sa)
+    out = Image.merge('HSV', [Image.fromarray(c.clip(0, 255).astype(np.uint8)) for c in (h, sa, v)]).convert('RGB').convert('RGBA'); out.putalpha(al)
+    out.save(os.path.join(OUT, 't7_cafe.webp'), quality=90, method=6)
 
 
 def main():

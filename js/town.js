@@ -267,13 +267,13 @@
       }),
       floor: { base: 'tiles/concrete', zone: 'tiles/factory', zoneA: 0.16, path: 'town/g_asph', wall: 'tiles/concrete', back: '#2d6f8f', crisp: 1, lane: 'rgba(230,180,40,.8)' },
       sky: ['#3f8fd0', '#8fd0ea'], fx: 'dust', edgeLine: 6, start: [12, 16],
-      back: [{ art: 'town/t7_sea', by: 6.05, h: 6.4, repeat: 1, mirror: 1 }],
+      back: [{ art: 'town/t7_sea', by: 6.05, h: 6.4, repeat: 1, mirror: 1 }, { art: 'town/t7_city', by: 6.15, h: 1.5, x: 17.5, alpha: 0.55 }], // 바다 건너 무너진 도시
       objects: [
         BLD('cmd', 'town/t7_tower', 4, 7, 3, 3, 5, { plinth: 0, lightR: 50, glow: '200,220,255' }), BLD('shop', 'town/t7_terminal', 14, 7, 8, 3, 18, { plinth: 0 }), BLD('cafe', 'town/t7_cafe', 19, 13, 5, 3, 21, { plinth: 0 }),
         BOLLARD(1, 6), BOLLARD(8, 6), BOLLARD(13, 6), BOLLARD(23, 6), BOLLARD(24, 6),
         D('town/t3_radar', 23, 9, 1, 2.4), D('town/t0_mgnest', 10, 7, 3, 1.1), D('town/t3_mg', 11, 7, 1, 1.2, { block: 0 }),
         D('tiles/crate1', 3, 12, 1, 1.0), D('tiles/crate0', 4, 12, 1, 0.9), D('tiles/crate1', 3, 13, 1, 1.0), D('town/p_barrel', 15, 12, 1, 1.1), D('town/p_barrel', 16, 12, 1, 1.0),
-        D('tiles/console', 8, 14, 2, 1.4, { lit: [90, '120,220,255'] }), D('tiles/gas', 1, 15, 2, 1.4), D('tiles/bags1', 15, 15, 2, 0.8), D('town/b_bench', 5, 15, 2, 0.9),
+        D('town/p_barrel', 8, 14, 1, 1.1), D('town/p_barrel', 9, 14, 1, 1.0), D('tiles/gas', 1, 15, 2, 1.4), D('tiles/bags1', 15, 15, 2, 0.8), D('town/b_bench', 5, 15, 2, 0.9),
         D('town/t0_lamp', 11, 9, 1, 2.1, { lit: [120, '255,222,160'] }), D('town/t0_lamp', 22, 9, 1, 2.1, { lit: [120, '255,222,160'] }), D('town/t0_lamp', 10, 13, 1, 2.1, { lit: [120, '255,222,160'] }),
         D('tiles/wreck2', 1, 13, 2, 1.4), D('tiles/sign', 24, 11, 1, 1.4),
         DEC('town/d_grate', 7, 10, 1.4), DEC('town/d_grate', 17, 10, 1.4), DEC('town/d_crack', 5, 13, 2, 0.45),
@@ -325,7 +325,7 @@
   const WINVIEW = {
     coast: { sky: ['#7cc3ee', '#dff3fb'], layers: [{ art: 'town/t7_sea', sy0: 0.2, sy1: 0.9, y0: 0, y1: 1 }, { art: 'town/t7_isle', y0: 0.36, y1: 0.5, cx: 0.62, fit: 1 }, { art: 'town/b_palm1', y0: 0.2, y1: 1.15, cx: 0.08, fit: 1 }] },
     works: { sky: ['#c98a5a', '#f2d3a2'], layers: [{ art: 'town/t3_plant', y0: 0.22, y1: 1.12, cx: 0.45 }], haze: 'rgba(240,190,130,.18)' },
-    camp: { sky: ['#9cc4c0', '#e6efd8'], layers: [{ art: 'town/t3_plant', y0: 0.3, y1: 0.85, cx: 0.7, alpha: 0.55 }, { art: 'town/b_pine2', y0: 0.25, y1: 1.1, cx: 0.12, fit: 1 }, { art: 'town/b_tree1', y0: 0.35, y1: 1.12, cx: 0.4, fit: 1 }, { art: 'town/b_tree2', y0: 0.3, y1: 1.12, cx: 0.88, fit: 1 }] },
+    camp: { sky: ['#9cc4c0', '#e6efd8'], layers: [{ art: 'town/v_forest', y0: 0, y1: 1.05, cx: 0.4 }, { art: 'town/b_pine2', y0: 0.2, y1: 1.12, cx: 0.06, fit: 1 }] },
     sewer: { sky: ['#0b1418', '#1d2c30'], layers: [{ art: 'town/t4_cave', sy0: 0.1, sy1: 1, y0: 0, y1: 1, cx: 0.3 }, { art: 'town/t4_ore', y0: 0.55, y1: 0.98, cx: 0.22, fit: 1 }, { art: 'town/t4_stal', y0: 0, y1: 0.4, cx: 0.7, fit: 1 }], haze: 'rgba(120,200,220,.28)', add: 1 },
     station: { sky: ['#06101a', '#12283a'], layers: [{ art: 'town/t5_platform', sy0: 0.25, sy1: 0.95, y0: 0, y1: 1.05, cx: 0.55 }] },
     snow: { sky: ['#9fb7cf', '#eef3f8'], layers: [{ art: 'town/t6_mount', y0: 0.12, y1: 1.05, cx: 0.5 }, { art: 'town/t6_pine', y0: 0.45, y1: 1.12, cx: 0.9, fit: 1 }], ground: '#f2f5f8' },
@@ -587,7 +587,8 @@
     for (const L of v.layers) {
       const im = img(L.art), iw = im.width, ih = im.height, sy0 = (L.sy0 || 0) * ih, sh = ((L.sy1 || 1) - (L.sy0 || 0)) * ih, th = (L.y1 - L.y0) * h, k = th / sh, cx = L.cx === undefined ? 0.5 : L.cx;
       g.globalAlpha = L.alpha || 1;
-      if (L.fit || iw * k <= w) { const dw = iw * k; g.drawImage(im, 0, sy0, iw, sh, x + cx * w - dw / 2, y + L.y0 * h, dw, th); } // 그림 하나를 제 비율대로 놓는다
+      if (!L.fit && iw * k < w) { const sh2 = (th * iw) / w, sy2 = sy0 + (sh - sh2) / 2; g.drawImage(im, 0, sy2, iw, sh2, x, y + L.y0 * h, w, th); } // 창보다 좁은 풍경은 너비에 맞추고 위아래를 덜어낸다
+      else if (L.fit || iw * k <= w) { const dw = iw * k; g.drawImage(im, 0, sy0, iw, sh, x + cx * w - dw / 2, y + L.y0 * h, dw, th); } // 그림 하나를 제 비율대로 놓는다
       else { const sw = w / k, sx = Math.max(0, Math.min(iw - sw, cx * iw - sw / 2)); g.drawImage(im, sx, sy0, sw, sh, x, y + L.y0 * h, w, th); } // 넓은 그림은 창 너비만큼 잘라 채운다
       g.globalAlpha = 1;
     }
