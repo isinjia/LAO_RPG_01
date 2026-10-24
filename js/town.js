@@ -737,8 +737,22 @@
       }
       ctx.drawImage(b.dim ? dimmed(im, b.dim) : im, x, base - dh, dw, dh);
     }
-    // 문: 불빛 + 매트
+    // 실제 입장 칸 위에 문틀과 열린 문을 그려 간판 아래가 입구임을 보여 준다.
     const dx = b.door * TILE, by = base - 6;
+    ctx.save();
+    const doorX = dx + 3, doorY = by - 82, doorW = TILE - 6;
+    ctx.fillStyle = '#121820'; ctx.fillRect(doorX - 5, doorY - 5, doorW + 10, 91);
+    ctx.fillStyle = '#77808a'; ctx.fillRect(doorX - 3, doorY - 3, doorW + 6, 87);
+    ctx.fillStyle = '#202630'; ctx.fillRect(doorX, doorY, doorW, 82);
+    const inside = ctx.createLinearGradient(0, doorY, 0, by);
+    inside.addColorStop(0, '#111820'); inside.addColorStop(1, '#bd9654');
+    ctx.fillStyle = inside; ctx.fillRect(doorX + 4, doorY + 4, doorW - 8, 76);
+    // 양옆으로 열린 문짝과 손잡이, 문턱.
+    ctx.fillStyle = '#414b56'; ctx.fillRect(doorX + 2, doorY + 3, 7, 76); ctx.fillRect(doorX + doorW - 9, doorY + 3, 7, 76);
+    ctx.fillStyle = '#eccb75'; ctx.fillRect(doorX + 6, doorY + 43, 2, 8); ctx.fillRect(doorX + doorW - 8, doorY + 43, 2, 8);
+    ctx.fillStyle = '#c2b89c'; ctx.fillRect(doorX - 4, by - 2, doorW + 8, 6);
+    ctx.restore();
+    // 문 앞 불빛과 매트
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
     const gc = b.glow || '255,226,160', lg = ctx.createRadialGradient(dx + 24, by, 4, dx + 24, by, 44); lg.addColorStop(0, `rgba(${gc},0.4)`); lg.addColorStop(1, `rgba(${gc},0)`);
     ctx.fillStyle = lg; ctx.fillRect(dx - 24, by - 40, 96, 80); ctx.restore();
