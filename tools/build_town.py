@@ -28,7 +28,11 @@ LAB = 'BG_12_Laboratory/Laboratory_main.png'
 SNOWR = 'BG_Ch13/BG_Ch13_snow_far_road.png'
 XMAS = 'BG_Christmas/BG_Christmas_snow_road.png'
 
+ISLE = 'BG_Tropical_island/BG_Tropical_island _2.png'
+
 PIECES = {
+    # 방 창 너머 풍경
+    'v_forest': (ISLE, 0, 0, 2048, 534, 1024),      # 3장 창밖: 안개 낀 숲
     # 2장: 공단 창고 거리 (식량 창고 배경 띠를 건물 단위로 나눈다)
     't2_cmd': (FOOD, 80, 80, 610, 466, 720),        # 컨테이너를 쌓은 작업 지휘소
     't2_shop': (FOOD, 686, 80, 730, 466, 760),      # 지게차가 선 초록 창고 (철공 작업장)
@@ -89,6 +93,8 @@ PIECES = {
     't4_cave': ('IW/IW_BG_Final.png', 0, 0, 4500, 1952, 1600),  # 동굴 바위 벽
     't4_ceil': ('IW/IW_Ceiling_Near_View 01_Final.png', 0, 0, 9562, 766, 1600),  # 종유석 천장
     't7_sea': ('BG_Ch09/BG_Ch09_sky_Far.png', 0, 500, 2048, 880, 1600),  # 먼 바다 수평선 (7장 군항)
+    't7_tower': ('BG_Ch09/BG_Vancouver_Airport1.png', 1309, 1, 94, 317, 400),  # 관제탑 (7장 주둔지 지휘소)
+    't7_terminal': ('BG_Ch09/BG_Vancouver_Airport1.png', 420, 19, 470, 150, 640),  # 터미널 가운데 동 (7장 함대 통신실)
     't7_isle': ('BG_Ch09/BG_Ch09_sky_Far.png', 0, 1848, 2048, 158, 900),  # 먼 섬
     't0_lamp': (SUB, 11, 775, 177, 484, 240),  # 공원 가로등
     't0_mgnest': ('BG_OBJ/defense_line.png', 35, 558, 968, 442, 480),
@@ -118,7 +124,7 @@ def shrink(im, n):
     return im.convert('RGBa').resize((max(1, round(im.width * s)), max(1, round(im.height * s))), Image.LANCZOS).convert('RGBA')
 
 
-def add_snow(im):
+def add_snow(im, grass=True):
     """위로 드러난 면(지붕·처마·창틀)마다 눈을 얹고, 전체를 차가운 빛으로 누른다"""
     a = np.asarray(im).astype(np.float32)
     al = a[:, :, 3] > 40
@@ -138,13 +144,15 @@ def add_snow(im):
     # 밑동의 풀(초록 빛)은 눈에 덮인다
     g = (a[:, :, 1] > a[:, :, 0] * 1.08) & (a[:, :, 1] > a[:, :, 2] * 1.05) & al
     g[: int(h * 0.7)] = False
+    if not grass:
+        g[:] = False
     gm = np.asarray(Image.fromarray((g * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(1.5))).astype(np.float32)[:, :, None] / 255
     m = np.maximum(m, gm)
     rgb = cold * (1 - m) + snow * m
     return Image.fromarray(np.dstack([np.clip(rgb, 0, 255), a[:, :, 3:]]).astype(np.uint8))
 
 
-FADE = {'t4_cafe': {'t': 0.3, 'r': 0.18}, 't4_pillar': {'t': 0.25}, 't4_cmd': {'t': 0.12}}
+FADE = {'t4_cafe': {'t': 0.14, 'r': 0.08}, 't4_pillar': {'t': 0.25}, 't4_cmd': {'t': 0.12}, 't2_cafe': {'l': 0.1, 't': 0.06}}
 ONLY = set(os.sys.argv[1:])  # 이름을 주면 그 조각만 다시 만든다
 
 
@@ -183,7 +191,7 @@ ROOMBG = {
 }
 FLIP = set()
 TOP = {'r_lab': 120}  # 위쪽의 흐린 회색 띠는 잘라 낸다
-MAT = {'r_cap': (840, 790, 1100, 845)}  # 문 앞 깔개 글자가 거꾸로(180도) 그려져 있어 깔개만 바로 돌린다 (원본 좌표)
+MAT = {'r_cap': (840, 790, 1100, 845), 'r_secret': (840, 790, 1100, 845)}  # 문 앞 깔개 글자가 거꾸로(180도) 그려져 있어 깔개만 바로 돌린다 (원본 좌표)
 
 
 def composite():
@@ -195,7 +203,7 @@ def composite():
     W, H = rock.size
     out = Image.new('RGBA', (W, H), (0, 0, 0, 0))
     out.alpha_composite(rock)
-    dh = int(H * 0.62); dw = int(door.width * dh / door.height)
+    dh = int(H * 0.8); dw = int(door.width * dh / door.height)
     door = door.resize((dw, dh), Image.LANCZOS)
     # 문 둘레를 바위 속 그늘로 (파낸 자리)
     hole = Image.new('RGBA', (dw + 40, dh + 24), (0, 0, 0, 0))
@@ -231,7 +239,35 @@ def composite():
     # 양옆 눈 더미를 다시 덮어 문이 눈 속에 묻힌 것처럼
     L = mound.crop((0, 0, int(W * 0.36), mh)); R = mound.crop((int(W * 0.64), 0, W, mh))
     out.alpha_composite(L, (0, H - mh)); out.alpha_composite(R, (int(W * 0.64), H - mh))
+    oa = np.asarray(out).astype(np.float32); hh2, ww2 = oa.shape[:2]  # 눈 더미 양 끝의 곧은 자른 자국을 녹인다
+    for side in ('l', 'r'):
+        n = int(ww2 * 0.12); r = (np.arange(n) / n) ** 1.4
+        if side == 'l': oa[:, :n, 3] *= r[None, :]
+        else: oa[:, ww2 - n:, 3] *= r[None, ::-1]
+    out = Image.fromarray(oa.astype(np.uint8))
     out.save(os.path.join(OUT, 't6_bunker.webp'), quality=90, method=6)
+
+
+def variants():
+    """여러 장에서 함께 쓰던 소품을 장마다 다르게: 6장은 눈을 얹고, 7장은 해군 남색으로 다시 칠한다"""
+    T = os.path.join(ROOT, 'assets', 'tiles')
+    src = {'crate0': os.path.join(T, 'crate0.webp'), 'crate1': os.path.join(T, 'crate1.webp'), 'barrel': os.path.join(T, 'barrel.webp'), 'bench': os.path.join(OUT, 'b_bench.webp')}
+    for k, f in src.items():
+        add_snow(Image.open(f).convert('RGBA'), grass=False).save(os.path.join(OUT, 's_' + k + '.webp'), quality=90, method=6)
+    def navy(im):
+        a = np.asarray(im.convert('RGBA')).astype(np.float32)
+        l = a[:, :, :3].mean(axis=2, keepdims=True)
+        tint = np.array([0.42, 0.62, 0.95]) * l * 1.15
+        a[:, :, :3] = a[:, :, :3] * 0.15 + tint * 0.85
+        return Image.fromarray(np.clip(a, 0, 255).astype(np.uint8))
+    navy(Image.open(src['barrel'])).save(os.path.join(OUT, 'p_barrel.webp'), quality=90, method=6)
+    # 부두 식당: 주황 컨테이너만 군항 남색으로 (빛깔 각도만 돌려 명암·채도·풀빛은 그대로 둔다)
+    im = Image.open(os.path.join(OUT, 't2_cafe.webp')).convert('RGBA'); al = im.getchannel('A')
+    h, sa, v = [np.asarray(c).astype(np.int32) for c in im.convert('RGB').convert('HSV').split()]
+    warm = ((h < 34) | (h > 238)) & (sa > 50)
+    h = np.where(warm, 150, h); sa = np.where(warm, (sa * 0.85).astype(np.int32), sa)
+    out = Image.merge('HSV', [Image.fromarray(c.clip(0, 255).astype(np.uint8)) for c in (h, sa, v)]).convert('RGB').convert('RGBA'); out.putalpha(al)
+    out.save(os.path.join(OUT, 't7_cafe.webp'), quality=90, method=6)
 
 
 def main():
@@ -266,6 +302,7 @@ def main():
             im = im.transpose(Image.FLIP_LEFT_RIGHT)
         im.save(os.path.join(OUT, name + '.webp'), quality=88, method=6)
     composite()
+    variants()
     puddle().save(os.path.join(OUT, 'd_puddle.webp'), quality=90)
     for name, (src, x, y, w, h) in GROUND.items():
         im = Image.open(B + src).convert('RGB').crop((x, y, x + w, y + h)).resize((512, 512), Image.LANCZOS)

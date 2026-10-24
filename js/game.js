@@ -551,10 +551,11 @@
     const ring = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 1.0), new THREE.MeshBasicMaterial({ map: getRingTex(u.side, big), transparent: true, depthTest: false, depthWrite: false }));
     ring.rotation.x = -Math.PI / 2; ring.position.y = 0.012; ring.renderOrder = 4;
     g.add(ring);
-    const bc = canvas(112, 40);
+    const mobileBadge = document.documentElement.classList.contains('touch-ui');
+    const bc = canvas(mobileBadge ? 112 : 174, 40);
     const bt = new THREE.CanvasTexture(bc);
     const badge = new THREE.Sprite(new THREE.SpriteMaterial({ map: bt, depthTest: false, transparent: true }));
-    badge.scale.set(0.62, 0.22, 1);
+    badge.scale.set(mobileBadge ? 0.62 : 0.96, 0.22, 1);
     badge.center.set(0.5, 0.5);
     badge.position.set(0, 0.02, 0.5);
     badge.renderOrder = 5000;
@@ -568,22 +569,49 @@
   }
   // 지도 유닛 막대 (원작 전투 막대 결): 짙은 사선 판 위 병사·영웅 사선 막대, 왼쪽 칸에 남은 병사 수
   function drawBadge(v) {
-    const u = v.u, g = v.bc.getContext('2d'), W = v.bc.width;
+    const u = v.u, g = v.bc.getContext('2d'), W = 112;
     const acted = u.acted && u.side === G.side && u.side === 'p';
     const para = (x, y, w, h, sk) => { g.beginPath(); g.moveTo(x + sk, y); g.lineTo(x + w, y); g.lineTo(x + w - sk, y + h); g.lineTo(x, y + h); g.closePath(); };
-    g.clearRect(0, 0, W, 40);
+    g.clearRect(0, 0, v.bc.width, 40);
     para(0, 3, W, 34, 8); g.fillStyle = 'rgba(12,14,18,.82)'; g.fill();
     g.strokeStyle = u.side === 'p' ? 'rgba(63,180,255,.9)' : 'rgba(255,59,92,.9)'; g.lineWidth = 2; g.stroke();
     const bar = (y, k, c0, c1) => {
       para(24, y, W - 30, 10, 4); g.fillStyle = '#05070a'; g.fill();
       if (k > 0) { const lg = g.createLinearGradient(24, 0, W - 6, 0); lg.addColorStop(0, acted ? '#666' : c0); lg.addColorStop(1, acted ? '#999' : c1); g.fillStyle = lg; para(24, y, Math.max(8, (W - 30) * k), 10, 4); g.fill(); }
     };
-    if (u.troop) bar(9, u.troop.hp / u.troop.hpMax, u.side === 'p' ? '#2a7cff' : '#ff7a2a', u.side === 'p' ? '#8fd0ff' : '#ffc070');
-    bar(u.troop ? 22 : 15, u.hp / u.hpMax, u.side === 'p' ? '#21c060' : '#e8203f', u.side === 'p' ? '#a6ffc4' : '#ff8aa0');
+    const mobileBadge = v.bc.width === 112;
+    if (u.troop) bar(mobileBadge ? 22 : 9, u.troop.hp / u.troop.hpMax, u.side === 'p' ? '#2a7cff' : '#ff7a2a', u.side === 'p' ? '#8fd0ff' : '#ffc070');
+    bar(mobileBadge ? 9 : u.troop ? 22 : 15, u.hp / u.hpMax, u.side === 'p' ? '#21c060' : '#e8203f', u.side === 'p' ? '#a6ffc4' : '#ff8aa0');
+    if (mobileBadge) {
+      // 캐릭터 앞 숫자 칸: 위는 영웅, 아래는 용병. 체력 막대도 같은 순서.
+      const icon = (kind, y, faded) => {
+        g.save(); g.globalAlpha = faded ? 0.3 : 1;
+        g.fillStyle = '#101722'; g.fillRect(2, y, 21, 19);
+        g.translate(3, y); g.scale(0.78, 0.78);
+        g.strokeStyle = D.KIND[kind].color; g.lineWidth = 2;
+        g.lineJoin = 'round'; g.lineCap = 'round';
+        g.stroke(new Path2D(KIND_PATH[kind])); g.restore();
+      };
+      icon(u.kind, 1, false);
+      if (u.troop) icon(u.troop.kind, 20, !R.troopAlive(u));
+    } else {
     para(4, 7, 20, 26, 5); g.fillStyle = u.lead || u.boss ? '#ffcc00' : u.side === 'p' ? '#1d6fd0' : '#c0183a'; g.fill();
     g.fillStyle = u.lead || u.boss ? '#111' : '#fff';
     g.font = '16px LO_B, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
     g.fillText(u.troop ? String(R.soldiers(u)) : (u.lead || u.boss ? '★' : '●'), 14, 21);
+    // 왼쪽은 영웅, 오른쪽은 배속 병사. 병사가 전멸하면 병사 표시를 흐리게 한다.
+    const icon = (kind, x, label, faded) => {
+      g.save(); g.globalAlpha = faded ? 0.35 : 1;
+      g.fillStyle = '#101722'; g.fillRect(x, 2, 27, 36);
+      g.translate(x + 3, 3); g.scale(0.86, 0.86);
+      g.strokeStyle = D.KIND[kind].color; g.lineWidth = 2; g.lineJoin = 'round'; g.lineCap = 'round';
+      g.stroke(new Path2D(KIND_PATH[kind])); g.restore();
+      g.fillStyle = faded ? '#777' : '#fff'; g.font = '9px LO_B, sans-serif';
+      g.fillText(label, x + 13, 32);
+    };
+    icon(u.kind, 115, '영', false);
+    if (u.troop) icon(u.troop.kind, 145, '병', !R.troopAlive(u));
+    }
     v.bt.needsUpdate = true;
   }
 
@@ -701,7 +729,8 @@
     // 다 보이게(fit) 하되 칸이 너무 작으면 한 방향을 꽉 채우고(fill) 나머지는 끌어서 본다
     const fit = Math.min(aw / needW, ah / needH), fill = Math.max(aw / needW, ah / needH);
     cam.fitZoom = fit * VIEW_H / innerHeight;
-    let ppw = fit < 46 ? Math.max(fit, Math.min(fill, 60)) : fit;
+    // 모바일 기본: 화면 가로에 약 9.5칸이 보이도록 캐릭터와 병종 표시를 확대한다.
+    let ppw = MOBILE ? aw / 9.5 : fit < 46 ? Math.max(fit, Math.min(fill, 60)) : fit;
     cam.zoom = ppw * VIEW_H / innerHeight;
     cam.minZoom = Math.min(cam.fitZoom, cam.zoom) * 0.9;
     // 확대는 처음 비율보다 훨씬 가까이까지 (큰 화면에서는 처음 비율이 예전 한계 110을 넘었다)
@@ -709,7 +738,8 @@
     // 직접 맞춘 확대 비율(칸 하나의 화면 크기)이 저장돼 있으면 그 비율로 시작 (가로·세로 화면 따로)
     const saved = save.opts[zoomKey()];
     if (saved > 0) {
-      cam.zoom = Math.max(cam.minZoom, Math.min(cam.maxZoom, saved * VIEW_H / innerHeight));
+      const savedPpw = MOBILE ? aw / saved : saved;
+      cam.zoom = Math.max(cam.minZoom, Math.min(cam.maxZoom, savedPpw * VIEW_H / innerHeight));
       ppw = cam.zoom * innerHeight / VIEW_H;
     }
     // 사용 가능 영역 가운데에 지도 중심이 오도록
@@ -724,12 +754,14 @@
     clampCam();
     placeCamera();
   }
-  const zoomKey = () => (innerHeight > innerWidth ? 'zoomPort' : 'zoomLand');
+  const zoomKey = () => MOBILE ? 'zoomMobileCols' : (innerHeight > innerWidth ? 'zoomPort' : 'zoomLand');
   // 확대·축소: 한계 안으로 맞추고, 칸 크기(화면 점 수)로 저장해 다음 전투·다음 실행에도 쓴다
   function setZoom(z, keep) {
     cam.zoom = Math.max(cam.minZoom, Math.min(cam.maxZoom, z));
     placeCamera();
-    save.opts[zoomKey()] = cam.zoom * innerHeight / VIEW_H;
+    const ppw = cam.zoom * innerHeight / VIEW_H;
+    const ins = insets();
+    save.opts[zoomKey()] = MOBILE ? (innerWidth - ins.left - ins.right) / ppw : ppw;
     if (!keep) writeSave();
   }
   // 가로: 지도가 화면보다 넓으면 화면 끝이 지도 끝에서 한 칸 넘게 벗어나지 않게 (가장자리에서 시작해도 반쪽이 비지 않게)
@@ -1103,7 +1135,10 @@
   let busy = false;
   let mode = 'boot'; // boot | screen | talk | map | fight
   function setHint(t) { $('hint').textContent = t || ''; $('hint').classList.remove('warn'); }
-  const kindTag = (k) => `<span class="kind" style="color:${D.KIND[k].color}">${D.KIND[k].name}</span>`;
+  // 병종별 상징: 소총·방패·차량·항공기·조준선·십자·변이체·닻·회로·단검.
+  const KIND_PATH = {"inf": "M4 7H17V11H4Z M17 8H22 M8 11L6 18H10L12 11 M4 8L2 12", "pike": "M12 2L21 6V12Q20 19 12 22Q4 19 3 12V6Z M12 6V17 M7 11H17", "cav": "M3 7H16L21 13V17H3Z M6 17A2 2 0 1 0 10 17 M15 17A2 2 0 1 0 19 17 M6 4H13 M8 10H15", "fly": "M12 3V20 M12 9L3 15V18L12 15L21 18V15L12 9 M8 21L12 18L16 21", "arch": "M12 2V7 M12 17V22 M2 12H7 M17 12H22 M12 5A7 7 0 1 0 12 19A7 7 0 1 0 12 5 M12 10V14 M10 12H14", "priest": "M9 3H15V9H21V15H15V21H9V15H3V9H9Z", "demon": "M4 3L8 7H16L20 3L19 15L12 22L5 15Z M7 11L10 13 M17 11L14 13 M9 17H15", "water": "M12 3V17 M9 5A3 3 0 1 0 15 5A3 3 0 1 0 9 5 M6 10H18 M3 14Q4 21 12 21Q20 21 21 14 M3 14L7 16 M21 14L17 16", "mage": "M7 3V7H3V17H7V21H17V17H21V7H17V3Z M14 7L9 13H14L10 18", "assassin": "M19 2L17 13L12 16L8 12L11 7Z M6 13L11 18 M8 16L3 21 M2 19L5 22"};
+  const kindIcon = (k) => `<svg class="kind-icon" viewBox="0 0 24 24" role="img" aria-label="${D.KIND[k].name}"><path d="${KIND_PATH[k]}"/></svg>`;
+  const kindTag = (k) => `<span class="kind" style="color:${D.KIND[k].color}">${kindIcon(k)}${D.KIND[k].name}</span>`;
   const bars = (u) => `<div class="bars2 ${u.side}">${u.troop ? `<div class="bar2 t"><i style="width:${(u.troop.hp / u.troop.hpMax) * 100}%"></i><b>병사 ${R.soldiers(u)}/10명 · ${Math.round(u.troop.hp)}</b></div>` : ''}<div class="bar2 h"><i style="width:${(u.hp / u.hpMax) * 100}%"></i><b>영웅 ${Math.round(u.hp)} / ${u.hpMax}</b></div></div>`;
   function showInfo(u, tile) {
     const el = $('info');
@@ -1174,7 +1209,7 @@
   function placeActs() {
     const el = $('acts'), u = ui.sel;
     if (el.classList.contains('hidden')) return;
-    if (!(innerWidth > innerHeight) || !u || !G || !u.alive || el.children.length < 2) { el.classList.remove('pc'); el.style.left = el.style.top = ''; return; } // 취소 하나뿐(이동·목표 고르는 중)이면 칸을 가리지 않게 구석에
+    if (document.documentElement.classList.contains('touch-ui') || !(innerWidth > innerHeight) || !u || !G || !u.alive || el.children.length < 2) { el.classList.remove('pc'); el.style.left = el.style.top = ''; return; } // 취소 하나뿐(이동·목표 고르는 중)이면 칸을 가리지 않게 구석에
     el.classList.add('pc');
     const w = el.offsetWidth, h = el.offsetHeight, gap = 46;
     const scr = (o) => toScreen(new THREE.Vector3(o.x + 0.5, 1.0, o.y + 0.5));
@@ -2421,7 +2456,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.89';
+  const GAME_VERSION = '2.15';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2715,7 +2750,7 @@
       acts = `<div class="wi-row"><label>승리 조건</label><span>${st.goal}</span></div><div class="wi-row"><label>패배 조건</label><span>${st.lose}</span></div>${st.tip ? `<div class="wi-row"><label>작전 요지</label><span>${st.tip}</span></div>` : ''}
         <div class="wi-row"><label>추가 목표</label><span>${bonusLine(st)} <small>(하나마다 부품 +${R.diff === 'hard' ? 35 : 25}%)</small></span></div>
         <div class="wi-sub">적 정보 <small>${st.waves.length > 1 ? `증원 ${st.waves.slice(1).map((w) => w.turn + '턴').join(' · ')}` : '증원 없음'}</small></div><div class="wi-foes">${foeHtml}</div>
-        <div class="wi-sub">출격 인원 <small>기본 ${st.heroes.length}명 · 출격 준비에서 최대 ${Math.min(MAX_SORTIE, new Set([...j, ...st.heroes]).size)}명</small></div><div class="wi-heroes">${heroHtml}</div>
+        <div class="wi-sub">필수 출격 인원</div><div class="wi-heroes">${heroHtml}</div>
         <button class="wgo" id="sGo"><b>작전 개시</b><small>BATTLE START</small></button>`;
     } else {
       const lv = partyLv();
@@ -2796,11 +2831,17 @@
         <button class="dbtn ${max ? '' : 'gold'}" data-a="d:${k}" ${max || save.parts < cost ? 'disabled' : ''}>${max ? '최대' : `<b>훈련</b><small><img src="${PARTS_ICON}" alt="">${cost}</small>`}</button>
         ${lv ? `<button class="dbtn" data-a="u:${k}" title="한 단계 되돌리고 부품 ${Math.round(R.drillCost(lv - 1) * 0.8)} 돌려받기"><b>되돌리기</b><small><img src="${PARTS_ICON}" alt="">+${Math.round(R.drillCost(lv - 1) * 0.8)}</small></button>` : ''}</div>`;
     }).join('');
-    modal(`<h3>병사 훈련 <details class="drill-help"><summary aria-label="병사 훈련 도움말">?</summary><span class="drill-help-text">병사는 따로 사지 않습니다. 출격할 때마다 10명이 가득 찬 채로 나가고, 전투가 끝나면 다시 채워집니다.
+    const helpText = `<p class="dnote">병사는 따로 사지 않습니다. 출격할 때마다 10명이 가득 찬 채로 나가고, 전투가 끝나면 다시 채워집니다.
       전투에서 얻은 <b>부품</b>으로 병종을 훈련하면 그 병사를 쓰는 모든 영웅의 병사가 강해집니다 (한 단계 +${Math.round(R.DRILL_K * 100)}%).
-      단계마다 비용이 크게 오르므로 본편 부품으로는 <b>병종 셋쯤만 끝까지</b> 올릴 수 있습니다. 주력 영웅들이 함께 쓰는 병종에 몰아 주는 것이 좋습니다. 잘못 올렸으면 「되돌리기」로 한 단계 내리고 부품 80%를 돌려받습니다.</span></details><span class="dparts"><img src="${PARTS_ICON}" alt="">부품 <b>${save.parts || 0}</b></span></h3>
+      단계마다 비용이 크게 오르므로 본편 부품으로는 <b>병종 셋쯤만 끝까지</b> 올릴 수 있습니다. 주력 영웅들이 함께 쓰는 병종에 몰아 주는 것이 좋습니다. 잘못 올렸으면 「되돌리기」로 한 단계 내리고 부품 80%를 돌려받습니다.</p>`;
+    modal(`<h3>병사 훈련 <button class="drill-help" data-a="help" aria-label="병사 훈련 도움말">?</button><span class="dparts"><img src="${PARTS_ICON}" alt="">부품 <b>${save.parts || 0}</b></span></h3>
 
       <div class="dlist">${rows}</div><div class="opts"><button class="gold" data-a="ok">닫기</button></div>`, (a) => {
+      if (a === 'help') {
+        modal(`<h3>병사 훈련 도움말</h3>${helpText}<div class="opts"><button class="gold" data-a="back">돌아가기</button></div>`, () => drillMenu(done, focus));
+        return;
+      }
+
       if (a && a.startsWith('u:')) { // 훈련 되돌리기: 한 단계 내리고 그 단계 비용의 80%를 돌려받는다 (잘못 고른 배분을 고칠 수 있게)
         const k = a.slice(2), lv = drillLv(k);
         if (lv > 0) { save.drill[k] = lv - 1; save.parts = (save.parts || 0) + Math.round(R.drillCost(lv - 1) * 0.8); writeSave(); AU.play('lo_click', 0.5); }

@@ -846,8 +846,5 @@ i.dlv { font: normal 11px 'LO_B', sans-serif; color: #111; background: #8fd0ff; 
 .wnode { z-index: 3; }
 
 /* 병사 훈련 제목 옆 도움말 */
-.drill-help { position: relative; flex: none; }
-.drill-help summary { display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border: 1px solid var(--lo-y); border-radius: 50%; color: var(--lo-y); font: 16px 'LO_B', sans-serif; cursor: pointer; list-style: none; }
-.drill-help summary::-webkit-details-marker { display: none; }
-.drill-help summary:hover, .drill-help summary:focus-visible, .drill-help[open] summary { background: var(--lo-y); color: #111; }
-.drill-help-text { position: absolute; z-index: 5; top: 34px; left: -110px; width: min(520px, 75vw); box-sizing: border-box; padding: 14px 16px; border: 1px solid var(--lo-y); background: #171d29; box-shadow: 0 6px 24px #0009; color: #dfe4ee; font: 14px/1.65 'LO_M', sans-serif; }
+.mbox .drill-help { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 26px; height: 26px; min-width: 0; padding: 0; border: 1px solid var(--lo-y); border-radius: 50%; background: transparent; color: var(--lo-y); font: 16px 'LO_B', sans-serif; cursor: pointer; }
+.mbox .drill-help:hover, .mbox .drill-help:focus-visible { background: var(--lo-y); color: #111; }
