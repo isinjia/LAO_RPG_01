@@ -120,7 +120,7 @@ def shrink(im, n):
     return im.convert('RGBa').resize((max(1, round(im.width * s)), max(1, round(im.height * s))), Image.LANCZOS).convert('RGBA')
 
 
-def add_snow(im):
+def add_snow(im, grass=True):
     """위로 드러난 면(지붕·처마·창틀)마다 눈을 얹고, 전체를 차가운 빛으로 누른다"""
     a = np.asarray(im).astype(np.float32)
     al = a[:, :, 3] > 40
@@ -140,6 +140,8 @@ def add_snow(im):
     # 밑동의 풀(초록 빛)은 눈에 덮인다
     g = (a[:, :, 1] > a[:, :, 0] * 1.08) & (a[:, :, 1] > a[:, :, 2] * 1.05) & al
     g[: int(h * 0.7)] = False
+    if not grass:
+        g[:] = False
     gm = np.asarray(Image.fromarray((g * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(1.5))).astype(np.float32)[:, :, None] / 255
     m = np.maximum(m, gm)
     rgb = cold * (1 - m) + snow * m
@@ -242,6 +244,22 @@ def composite():
     out.save(os.path.join(OUT, 't6_bunker.webp'), quality=90, method=6)
 
 
+def variants():
+    """여러 장에서 함께 쓰던 소품을 장마다 다르게: 6장은 눈을 얹고, 7장은 해군 남색으로 다시 칠한다"""
+    T = os.path.join(ROOT, 'assets', 'tiles')
+    src = {'crate0': os.path.join(T, 'crate0.webp'), 'crate1': os.path.join(T, 'crate1.webp'), 'barrel': os.path.join(T, 'barrel.webp'), 'bench': os.path.join(OUT, 'b_bench.webp')}
+    for k, f in src.items():
+        add_snow(Image.open(f).convert('RGBA'), grass=False).save(os.path.join(OUT, 's_' + k + '.webp'), quality=90, method=6)
+    def navy(im):
+        a = np.asarray(im.convert('RGBA')).astype(np.float32)
+        l = a[:, :, :3].mean(axis=2, keepdims=True)
+        tint = np.array([0.55, 0.72, 1.0]) * l * 1.05
+        a[:, :, :3] = a[:, :, :3] * 0.3 + tint * 0.7
+        return Image.fromarray(np.clip(a, 0, 255).astype(np.uint8))
+    navy(Image.open(src['barrel'])).save(os.path.join(OUT, 'p_barrel.webp'), quality=90, method=6)
+    navy(Image.open(os.path.join(OUT, 't2_cafe.webp'))).save(os.path.join(OUT, 't7_cafe.webp'), quality=90, method=6)
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     for name, (src, x, y, w, h, n) in PIECES.items():
@@ -274,6 +292,7 @@ def main():
             im = im.transpose(Image.FLIP_LEFT_RIGHT)
         im.save(os.path.join(OUT, name + '.webp'), quality=88, method=6)
     composite()
+    variants()
     puddle().save(os.path.join(OUT, 'd_puddle.webp'), quality=90)
     for name, (src, x, y, w, h) in GROUND.items():
         im = Image.open(B + src).convert('RGB').crop((x, y, x + w, y + h)).resize((512, 512), Image.LANCZOS)
