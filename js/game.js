@@ -729,7 +729,8 @@
     // 다 보이게(fit) 하되 칸이 너무 작으면 한 방향을 꽉 채우고(fill) 나머지는 끌어서 본다
     const fit = Math.min(aw / needW, ah / needH), fill = Math.max(aw / needW, ah / needH);
     cam.fitZoom = fit * VIEW_H / innerHeight;
-    let ppw = fit < 46 ? Math.max(fit, Math.min(fill, 60)) : fit;
+    // 모바일 기본: 화면 가로에 약 9.5칸이 보이도록 캐릭터와 병종 표시를 확대한다.
+    let ppw = MOBILE ? aw / 9.5 : fit < 46 ? Math.max(fit, Math.min(fill, 60)) : fit;
     cam.zoom = ppw * VIEW_H / innerHeight;
     cam.minZoom = Math.min(cam.fitZoom, cam.zoom) * 0.9;
     // 확대는 처음 비율보다 훨씬 가까이까지 (큰 화면에서는 처음 비율이 예전 한계 110을 넘었다)
@@ -737,7 +738,8 @@
     // 직접 맞춘 확대 비율(칸 하나의 화면 크기)이 저장돼 있으면 그 비율로 시작 (가로·세로 화면 따로)
     const saved = save.opts[zoomKey()];
     if (saved > 0) {
-      cam.zoom = Math.max(cam.minZoom, Math.min(cam.maxZoom, saved * VIEW_H / innerHeight));
+      const savedPpw = MOBILE ? aw / saved : saved;
+      cam.zoom = Math.max(cam.minZoom, Math.min(cam.maxZoom, savedPpw * VIEW_H / innerHeight));
       ppw = cam.zoom * innerHeight / VIEW_H;
     }
     // 사용 가능 영역 가운데에 지도 중심이 오도록
@@ -752,12 +754,14 @@
     clampCam();
     placeCamera();
   }
-  const zoomKey = () => (innerHeight > innerWidth ? 'zoomPort' : 'zoomLand');
+  const zoomKey = () => MOBILE ? 'zoomMobileCols' : (innerHeight > innerWidth ? 'zoomPort' : 'zoomLand');
   // 확대·축소: 한계 안으로 맞추고, 칸 크기(화면 점 수)로 저장해 다음 전투·다음 실행에도 쓴다
   function setZoom(z, keep) {
     cam.zoom = Math.max(cam.minZoom, Math.min(cam.maxZoom, z));
     placeCamera();
-    save.opts[zoomKey()] = cam.zoom * innerHeight / VIEW_H;
+    const ppw = cam.zoom * innerHeight / VIEW_H;
+    const ins = insets();
+    save.opts[zoomKey()] = MOBILE ? (innerWidth - ins.left - ins.right) / ppw : ppw;
     if (!keep) writeSave();
   }
   // 가로: 지도가 화면보다 넓으면 화면 끝이 지도 끝에서 한 칸 넘게 벗어나지 않게 (가장자리에서 시작해도 반쪽이 비지 않게)
@@ -2452,7 +2456,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '2.13';
+  const GAME_VERSION = '2.14';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
