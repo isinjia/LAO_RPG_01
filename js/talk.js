@@ -35,14 +35,20 @@
   const IMGPRE = {};
 
   function preload(list) {
-    if (window.PORTRAIT) PORTRAIT.preload(list);
+    const pending = window.PORTRAIT ? [PORTRAIT.preload(list)] : [];
+    const urlsToWait = new Set();
     for (const n of list) {
       const urls = [];
       if (n.bg) urls.push(`assets/story/bg/${n.bg}.webp`);
       if (n.cg) urls.push(`assets/story/cg/${n.cg}.webp`);
       for (const c of n.cast || []) urls.push(`assets/story/stand/${c[1]}.webp`);
-      for (const u of urls) if (!IMGPRE[u]) { const im = new Image(); im.src = u; IMGPRE[u] = im; }
+      for (const u of urls) {
+        if (!IMGPRE[u]) { const im = new Image(); im.src = u; IMGPRE[u] = im; }
+        urlsToWait.add(u);
+      }
     }
+    for (const u of urlsToWait) pending.push(IMGPRE[u].decode());
+    return Promise.allSettled(pending);
   }
 
   function play(list) {

@@ -173,7 +173,7 @@
   function preload(nodes) {
     const ids = new Set();
     for (const n of nodes) for (const c of n.cast || []) { const u = rigOf(c[1]); if (u) ids.add(u); }
-    ids.forEach((u) => SD.prepare(u));
+    return Promise.allSettled([...ids].map((u) => SD.prepare(u)));
   }
 
   window.PORTRAIT = { rigOf, attach, change, detach, update, preload };

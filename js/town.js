@@ -1076,7 +1076,7 @@
   function update(dt) {
     if (!open) return;
     T += dt;
-    if (hold) { hold.t += dt; if (hold.list.every(ok) || hold.t > 2.5) { layer = buildLayer(); hold = null; fadeTo = 0; busy = false; } }
+    if (hold) { hold.t += dt; if ((hold.list.every((im) => im.complete) && hold.portraitsReady) || hold.t > 12) { layer = buildLayer(); hold = null; hud.classList.remove('loading'); fadeTo = 0; busy = false; } }
     // 화면 전환 (어둡게 → 지도 바꾸기 → 밝게)
     if (fade < fadeTo) { fade = Math.min(fadeTo, fade + dt * 4); if (fade >= 1 && pendingWarp) {
       const to = pendingWarp; pendingWarp = null;
@@ -1158,8 +1158,8 @@
       ['tiles/grass', 'tiles/asphalt'].forEach(img);
       cv = document.createElement('canvas'); cv.id = 'townCv';
       ctx = cv.getContext('2d');
-      hud = document.createElement('div'); hud.id = 'townHud';
-      hud.innerHTML = `<div class="tn-name"></div><div class="tn-quest"></div><button class="lo-btn dark tn-out">월드맵으로</button><div class="tn-help">누른 곳으로 걷기 · 동료를 누르면 대화 · 머리 위 <b>!</b> 는 새 의뢰</div>`;
+      hud = document.createElement('div'); hud.id = 'townHud'; hud.classList.add('loading');
+      hud.innerHTML = `<div class="tn-loading" role="status" aria-live="polite"><i></i><b>마을을 준비하고 있습니다</b><span>풍경과 동료들의 일러스트를 불러오는 중…</span></div><div class="tn-name"></div><div class="tn-quest"></div><button class="lo-btn dark tn-out">월드맵으로</button><div class="tn-help">누른 곳으로 걷기 · 동료를 누르면 대화 · 머리 위 <b>!</b> 는 새 의뢰</div>`;
       document.body.appendChild(cv); document.body.appendChild(hud);
       hud.querySelector('.tn-out').onclick = () => { if (!busy) { AU.play('lo_click', 0.6); leave(); } };
       cv.addEventListener('pointerdown', onPointer);
@@ -1172,8 +1172,10 @@
       resize();
       open = true; fade = 1; fadeTo = 1; busy = true; T = 0;
       loadMap('base', ...(MAPS.base.start || [12, 16]));
-      // 바닥·뒷배경·건물 그림이 다 올 때까지 (길어도 2.5초) 검은 화면으로 기다렸다가 밝힌다
-      hold = { t: 0, list: [F.base, F.zone, F.path, F.wall, ...(MAPS.base.back || []).map((b) => b.art), ...MAPS.base.objects.filter((ob) => ob.t === 'building').map((ob) => ob.art)].filter(Boolean).map(img) };
+      // 풍경과 대화 일러스트를 기다리는 동안 로딩 화면 표시 (통신 지연 시 12초 후 진입).
+      hold = { t: 0, portraitsReady: false, list: [F.base, F.zone, F.path, F.wall, ...(MAPS.base.back || []).map((b) => b.art), ...MAPS.base.objects.filter((ob) => ob.t === 'building').map((ob) => ob.art)].filter(Boolean).map(img) };
+      const waiting = hold;
+      Promise.resolve(o.loading).catch(() => {}).then(() => { waiting.portraitsReady = true; });
       questList();
       dir = 1;
     });
