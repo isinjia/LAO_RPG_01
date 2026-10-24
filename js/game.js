@@ -1174,7 +1174,7 @@
   function placeActs() {
     const el = $('acts'), u = ui.sel;
     if (el.classList.contains('hidden')) return;
-    if (!(innerWidth > innerHeight) || !u || !G || !u.alive || el.children.length < 2) { el.classList.remove('pc'); el.style.left = el.style.top = ''; return; } // 취소 하나뿐(이동·목표 고르는 중)이면 칸을 가리지 않게 구석에
+    if (document.documentElement.classList.contains('touch-ui') || !(innerWidth > innerHeight) || !u || !G || !u.alive || el.children.length < 2) { el.classList.remove('pc'); el.style.left = el.style.top = ''; return; } // 취소 하나뿐(이동·목표 고르는 중)이면 칸을 가리지 않게 구석에
     el.classList.add('pc');
     const w = el.offsetWidth, h = el.offsetHeight, gap = 46;
     const scr = (o) => toScreen(new THREE.Vector3(o.x + 0.5, 1.0, o.y + 0.5));
@@ -2421,7 +2421,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.97';
+  const GAME_VERSION = '1.98';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
