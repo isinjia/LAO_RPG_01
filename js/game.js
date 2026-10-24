@@ -2421,7 +2421,7 @@
   }
   function hideScreen() { keepSnap(); $('screen').innerHTML = ''; }
   // 타이틀: 원작과 같은 구성 (폐허를 올려다보는 배경 + 빛 + LAST ORIGIN 로고 + 화면 터치 + 타이틀 콜)
-  const GAME_VERSION = '1.94';
+  const GAME_VERSION = '1.95';
   const TITLE_CALLS = ['Title-2', 'Title-4', 'Title-6', 'Title-8', 'Voice_3P_ConstantiaS2_Title-4', 'Voice_3P_ConstantiaS2_Title-8', 'Voice_BR_PA00EL_Title-4', 'Voice_BR_PA00EL_Title-7', 'Voice_PECS_LRL_N_Title-1', 'Voice_PECS_LRL_N_Title-4', 'Voice_PECS_PuppHead_Title-3', 'Voice_PECS_PuppHead_Title-5'];
   function title() {
     leaveMap();
@@ -2715,7 +2715,7 @@
       acts = `<div class="wi-row"><label>승리 조건</label><span>${st.goal}</span></div><div class="wi-row"><label>패배 조건</label><span>${st.lose}</span></div>${st.tip ? `<div class="wi-row"><label>작전 요지</label><span>${st.tip}</span></div>` : ''}
         <div class="wi-row"><label>추가 목표</label><span>${bonusLine(st)} <small>(하나마다 부품 +${R.diff === 'hard' ? 35 : 25}%)</small></span></div>
         <div class="wi-sub">적 정보 <small>${st.waves.length > 1 ? `증원 ${st.waves.slice(1).map((w) => w.turn + '턴').join(' · ')}` : '증원 없음'}</small></div><div class="wi-foes">${foeHtml}</div>
-        <div class="wi-sub">출격 인원 <small>기본 ${st.heroes.length}명 · 출격 준비에서 최대 ${Math.min(MAX_SORTIE, new Set([...j, ...st.heroes]).size)}명</small></div><div class="wi-heroes">${heroHtml}</div>
+        <div class="wi-sub">필수 출격 인원 <small>기본 ${st.heroes.length}명 · 출격 준비에서 최대 ${Math.min(MAX_SORTIE, new Set([...j, ...st.heroes]).size)}명</small></div><div class="wi-heroes">${heroHtml}</div>
         <button class="wgo" id="sGo"><b>작전 개시</b><small>BATTLE START</small></button>`;
     } else {
       const lv = partyLv();
