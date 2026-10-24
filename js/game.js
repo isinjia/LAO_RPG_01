@@ -2796,10 +2796,10 @@
         <button class="dbtn ${max ? '' : 'gold'}" data-a="d:${k}" ${max || save.parts < cost ? 'disabled' : ''}>${max ? '최대' : `<b>훈련</b><small><img src="${PARTS_ICON}" alt="">${cost}</small>`}</button>
         ${lv ? `<button class="dbtn" data-a="u:${k}" title="한 단계 되돌리고 부품 ${Math.round(R.drillCost(lv - 1) * 0.8)} 돌려받기"><b>되돌리기</b><small><img src="${PARTS_ICON}" alt="">+${Math.round(R.drillCost(lv - 1) * 0.8)}</small></button>` : ''}</div>`;
     }).join('');
-    modal(`<h3>병사 훈련 <span class="dparts"><img src="${PARTS_ICON}" alt="">부품 <b>${save.parts || 0}</b></span></h3>
-      <p class="dnote">병사는 따로 사지 않습니다. 출격할 때마다 10명이 가득 찬 채로 나가고, 전투가 끝나면 다시 채워집니다.
+    modal(`<h3>병사 훈련 <details class="drill-help"><summary aria-label="병사 훈련 도움말">?</summary><span class="drill-help-text">병사는 따로 사지 않습니다. 출격할 때마다 10명이 가득 찬 채로 나가고, 전투가 끝나면 다시 채워집니다.
       전투에서 얻은 <b>부품</b>으로 병종을 훈련하면 그 병사를 쓰는 모든 영웅의 병사가 강해집니다 (한 단계 +${Math.round(R.DRILL_K * 100)}%).
-      단계마다 비용이 크게 오르므로 본편 부품으로는 <b>병종 셋쯤만 끝까지</b> 올릴 수 있습니다. 주력 영웅들이 함께 쓰는 병종에 몰아 주는 것이 좋습니다. 잘못 올렸으면 「되돌리기」로 한 단계 내리고 부품 80%를 돌려받습니다.</p>
+      단계마다 비용이 크게 오르므로 본편 부품으로는 <b>병종 셋쯤만 끝까지</b> 올릴 수 있습니다. 주력 영웅들이 함께 쓰는 병종에 몰아 주는 것이 좋습니다. 잘못 올렸으면 「되돌리기」로 한 단계 내리고 부품 80%를 돌려받습니다.</span></details><span class="dparts"><img src="${PARTS_ICON}" alt="">부품 <b>${save.parts || 0}</b></span></h3>
+
       <div class="dlist">${rows}</div><div class="opts"><button class="gold" data-a="ok">닫기</button></div>`, (a) => {
       if (a && a.startsWith('u:')) { // 훈련 되돌리기: 한 단계 내리고 그 단계 비용의 80%를 돌려받는다 (잘못 고른 배분을 고칠 수 있게)
         const k = a.slice(2), lv = drillLv(k);
